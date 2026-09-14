@@ -1,0 +1,15156 @@
+
+// BLOCK 5
+
+        // --- DEFAULT DATA SEEDS ---
+        const DEFAULT_SHIFT_TIMES = [
+            { id: "st1", dept: "Primary Level", shift: "Morning Shift", shiftBn: "প্রভাতি শিফট", startTime: "08:30 AM", endTime: "11:30 AM" },
+            { id: "st2", dept: "Primary Level", shift: "Afternoon Shift", shiftBn: "দিবা শিফট", startTime: "12:30 PM", endTime: "03:30 PM" },
+            { id: "st3", dept: "High Level", shift: "Morning Shift", shiftBn: "প্রভাতি শিফট", startTime: "09:00 AM", endTime: "12:00 PM" },
+            { id: "st4", dept: "High Level", shift: "Afternoon Shift", shiftBn: "দিবা শিফট", startTime: "01:00 PM", endTime: "04:00 PM" }
+        ];
+
+        const DEFAULT_BUILDINGS = [
+            { id: "b1", name: "Academic Bhaban A", floors: 4 },
+            { id: "b2", name: "Science Bhaban B", floors: 3 }
+        ];
+
+        const DEFAULT_ROOMS = [
+            { id: "r101", buildingId: "b1", number: "Room 101", floor: "1st Floor", benches: 15, gender: "Male" },
+            { id: "r102", buildingId: "b1", number: "Room 102", floor: "1st Floor", benches: 15, gender: "Female" },
+            { id: "r201", buildingId: "b2", number: "Room 201", floor: "2nd Floor", benches: 20, gender: "Both" },
+            { id: "r202", buildingId: "b2", number: "Room 202", floor: "2nd Floor", benches: 15, gender: "Female" }
+        ];
+
+        const DEFAULT_ROUTINES = [];
+
+        // --- DATA LOADERS ---
+        function populateExamTitleDropdown() {
+            const selectEl = document.getElementById('routine-exam-name');
+            if (!selectEl) return;
+
+            const currentVal = selectEl.value;
+
+            let examTypes = [];
+            try {
+                const stored = localStorage.getItem('school_exam_types');
+                if (stored) {
+                    examTypes = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error("Error loading school_exam_types:", e);
+            }
+
+            if (!Array.isArray(examTypes) || examTypes.length === 0) {
+                examTypes = [
+                    { name: "Half-Yearly Examination 2026" },
+                    { name: "Annual Examination 2026" },
+                    { name: "First Term Exam 2026" }
+                ];
+            }
+
+            selectEl.innerHTML = examTypes.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+            if (currentVal && Array.from(selectEl.options).some(opt => opt.value === currentVal)) {
+                selectEl.value = currentVal;
+            }
+        }
+
+        // =========================================================================
+        // =========================================================================
+        // 🚀 MAIN DATABASE API INTEGRATION FOR SEAT PLAN MODULE
+        // =========================================================================
+        function safeSaveSeatPlanKey(key, value) {
+            const valStr = typeof value === 'string' ? value : JSON.stringify(value);
+            try {
+                localStorage.setItem(key, valStr);
+                _seatPlanDataCache[key] = typeof value === 'string' ? JSON.parse(value) : value;
+                if (key === 'school_students') _cachedStudentsWithDefaults = null;
+            } catch (e) {
+                console.warn('[SeatPlan] Error saving to localStorage:', e);
+            }
+            if (typeof window.flushPushQueueNow === 'function') {
+                window.flushPushQueueNow();
+            }
+        }
+
+        function safeSaveSeatPlanBulk(dataMap) {
+            Object.entries(dataMap).forEach(([k, v]) => {
+                const valStr = typeof v === 'string' ? v : JSON.stringify(v);
+                try {
+                    localStorage.setItem(k, valStr);
+                    _seatPlanDataCache[k] = typeof v === 'string' ? JSON.parse(v) : v;
+                    if (k === 'school_students') _cachedStudentsWithDefaults = null;
+                } catch (e) {
+                    console.warn('[SeatPlan] Error saving to localStorage:', e);
+                }
+            });
+            if (typeof window.flushPushQueueNow === 'function') {
+                window.flushPushQueueNow();
+            }
+        }
+
+        // Backward compatibility proxy for any callers
+        window.SeatPlanAPI = {
+            saveKey: safeSaveSeatPlanKey,
+            saveBulk: safeSaveSeatPlanBulk,
+            syncNow: async (notify = false) => {
+                if (typeof window.syncDatabaseFromServer === 'function') {
+                    await window.syncDatabaseFromServer();
+                    if (notify) alert('⚡ মূল ডেটাবেজ (SQLite Database) থেকে সকল তথ্য সফলভাবে সিঙ্ক হয়েছে!');
+                }
+            }
+        };
+
+        function loadShiftTimes() {
+            return safeJsonParse('school_shift_times', DEFAULT_SHIFT_TIMES);
+        }
+
+        function loadBuildings() {
+            return safeJsonParse('school_buildings', DEFAULT_BUILDINGS);
+        }
+
+        function loadRooms() {
+            return safeJsonParse('school_rooms', DEFAULT_ROOMS);
+        }
+
+        function loadExamRoutines() {
+            const r1 = safeJsonParse('school_exam_routines', null);
+            if (Array.isArray(r1)) return r1;
+            return [];
+        }
+
+        // In-memory high-speed cache for parsed storage keys
+        const _seatPlanDataCache = {};
+
+        function safeJsonParse(key, defaultValue) {
+            if (_seatPlanDataCache[key] !== undefined) {
+                return _seatPlanDataCache[key];
+            }
+            try {
+                const val = localStorage.getItem(key);
+                if (val !== null && val !== undefined) {
+                    const parsed = JSON.parse(val);
+                    _seatPlanDataCache[key] = parsed;
+                    return parsed;
+                }
+                return defaultValue;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+
+        function clearSeatPlanDataCache(key = null) {
+            if (key) {
+                delete _seatPlanDataCache[key];
+                if (key === 'school_students') _cachedStudentsWithDefaults = null;
+            } else {
+                Object.keys(_seatPlanDataCache).forEach(k => delete _seatPlanDataCache[k]);
+                _cachedStudentsWithDefaults = null;
+            }
+        }
+
+        function loadClasses() {
+            const defaultClasses = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+            const parsed = safeJsonParse('school_classes', null);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            return defaultClasses;
+        }
+
+        function groupClassesByDepartment(classes) {
+            const primary = [];
+            const high = [];
+            const primaryKeywords = ['play', 'nursery', 'kg', 'one', 'two', 'three', 'four', 'five', '1', '2', '3', '4', '5', 'প্রাথমিক'];
+
+            (classes || []).forEach(cls => {
+                const clsStr = String(cls).trim().toLowerCase();
+                const num = clsStr.replace(/\D/g, '');
+                if (num && parseInt(num) >= 1 && parseInt(num) <= 5) {
+                    primary.push(cls);
+                } else if (num && parseInt(num) >= 6 && parseInt(num) <= 12) {
+                    high.push(cls);
+                } else if (primaryKeywords.some(kw => clsStr.includes(kw))) {
+                    primary.push(cls);
+                } else {
+                    high.push(cls);
+                }
+            });
+            return { primary, high };
+        }
+
+
+        function loadClassSections() {
+            const defaultSections = [
+                { class: "Class 6", section: "A", capacity: 50 },
+                { class: "Class 6", section: "B", capacity: 50 },
+                { class: "Class 7", section: "A", capacity: 50 },
+                { class: "Class 7", section: "B", capacity: 50 },
+                { class: "Class 8", section: "A", capacity: 45 },
+                { class: "Class 8", section: "B", capacity: 45 },
+                { class: "Class 9", section: "A", capacity: 45 },
+                { class: "Class 9", section: "B", capacity: 45 },
+                { class: "Class 9", section: "C", capacity: 45 },
+                { class: "Class 10", section: "A", capacity: 40 },
+                { class: "Class 10", section: "B", capacity: 40 }
+            ];
+            const parsed = safeJsonParse('school_class_sections', null);
+            if (Array.isArray(parsed)) {
+                const filtered = parsed.filter(s => s && typeof s === 'object' && s.class && s.section);
+                if (filtered.length > 0) {
+                    return filtered;
+                }
+            }
+            return defaultSections;
+        }
+
+        function getSectionsForClass(cName) {
+            const sections = loadClassSections();
+            const targetNorm = normalizeClassName(cName);
+            const matchedSections = sections.filter(s => normalizeClassName(s.class) === targetNorm);
+            if (matchedSections.length > 0) {
+                return matchedSections.map(s => s.section);
+            }
+            if (cName === 'Nine') return ['A', 'B', 'C'];
+            if (cName === 'Ten') return ['A', 'B'];
+            return [];
+        }
+
+        function getCombinedSubjectForClass(routinesList, date, cName, isMorningShift = null) {
+            const matches = routinesList.filter(i => {
+                const matchesDate = i.date === date;
+                const matchesClass = i.class === cName || i.class.startsWith(cName + ' - ');
+                let matchesShift = true;
+                if (isMorningShift !== null) {
+                    const isMorning = s => !s || /morning|sokal|সকাল|প্রভাতি/i.test(String(s)) || s === 'st1' || s === 'st3';
+                    matchesShift = isMorning(i.shift) === isMorningShift;
+                }
+                return matchesDate && matchesClass && matchesShift;
+            });
+
+            if (matches.length === 0) return '-';
+
+            const subjects = matches.map(m => m.subject ? m.subject.trim() : '').filter(s => s && s !== '-');
+            const uniqueSubs = Array.from(new Set(subjects));
+
+            if (uniqueSubs.length === 0) return '-';
+            return uniqueSubs.join(' / ');
+        }
+
+        function mergeClassSectionColumns(activeClasses, routinesList, dates, isShiftMorning) {
+            const baseClassGroups = {};
+            activeClasses.forEach(c => {
+                const base = c.split(' - ')[0];
+                if (!baseClassGroups[base]) {
+                    baseClassGroups[base] = [];
+                }
+                baseClassGroups[base].push(c);
+            });
+
+            const mergedClasses = [];
+
+            Object.keys(baseClassGroups).forEach(base => {
+                const cols = baseClassGroups[base];
+                if (cols.length <= 1) {
+                    mergedClasses.push(...cols);
+                    return;
+                }
+
+                // Check if subjects are identical on all dates
+                let canMerge = true;
+                for (const d of dates) {
+                    let firstSub = null;
+                    for (const cName of cols) {
+                        let match = routinesList.find(i => i.date === d && i.class === cName && (isShiftMorning ? (!i.shift || /morning|sokal/i.test(String(i.shift))) : (i.shift && /afternoon|bikal/i.test(String(i.shift)))));
+                        if (!match) {
+                            match = routinesList.find(i => i.date === d && i.class === cName);
+                        }
+                        const sub = match ? match.subject : '-';
+                        if (firstSub === null) {
+                            firstSub = sub;
+                        } else if (firstSub !== sub) {
+                            canMerge = false;
+                            break;
+                        }
+                    }
+                    if (!canMerge) break;
+                }
+
+                if (canMerge) {
+                    mergedClasses.push(base);
+                } else {
+                    mergedClasses.push(...cols);
+                }
+            });
+
+            const baseOrder = loadClasses();
+            mergedClasses.sort((a, b) => {
+                const baseA = a.split(' - ')[0];
+                const baseB = b.split(' - ')[0];
+                const idxA = baseOrder.indexOf(baseA);
+                const idxB = baseOrder.indexOf(baseB);
+                if (idxA !== idxB) return idxA - idxB;
+                return a.localeCompare(b);
+            });
+
+            return mergedClasses;
+        }
+
+        function getSubjectNameBangla(sub) {
+            if (!sub) return '';
+            if (typeof sub === 'object') {
+                if (sub.nameBn && sub.nameBn.trim()) return sub.nameBn;
+                sub = sub.name || sub.shortName || '';
+            }
+
+            const nameStr = sub.toString().trim();
+            const cleanLower = nameStr.toLowerCase();
+
+            const dictionary = {
+                'bangla sahitya': 'বাংলা সাহিত্য',
+                'bangla 1st': 'বাংলা ১ম পত্র',
+                'bangla 1st paper': 'বাংলা ১ম পত্র',
+                'bangla bhashar byakaran and nirmiti': 'বাংলা ভাষা ব্যাকরণ ও নির্মিতি',
+                'bangla 2nd': 'বাংলা ২য় পত্র',
+                'bangla 2nd paper': 'বাংলা ২য় পত্র',
+                'english for today': 'ইংরেজি ফর টুডে',
+                'english 1st': 'ইংরেজি ১ম পত্র',
+                'english 1st paper': 'ইংরেজি ১ম পত্র',
+                'english grammar and composition': 'ইংরেজি গ্রামার এন্ড কম্পোজিশন',
+                'english 2nd': 'ইংরেজি ২য় পত্র',
+                'english 2nd paper': 'ইংরেজি ২য় পত্র',
+                'mathematics': 'গণিত',
+                'math': 'গণিত',
+                'general mathematics': 'সাধারণ গণিত',
+                'higher mathematics': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'higher math': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'hmath': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'h.math': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agriculture studies/higher mathematics': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agriculture studies / higher mathematics': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'higher mathematics/agriculture studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'higher mathematics / agriculture studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agri/h.math': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agri/hmath': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agri / h.math': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'science': 'বিজ্ঞান',
+                'general science': 'সাধারণ বিজ্ঞান',
+                'physics': 'পদার্থবিজ্ঞান',
+                'chemistry': 'রসায়ন',
+                'biology': 'জীববিজ্ঞান',
+                'bangladesh and global studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'bangladesh & global studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'bgs': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'information and communication technology': 'তথ্য ও যোগাযোগ প্রযুক্তি',
+                'information & communication technology': 'তথ্য ও যোগাযোগ প্রযুক্তি',
+                'ict': 'তথ্য ও যোগাযোগ প্রযুক্তি',
+                'agriculture studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agricultural studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'agri studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'islamic studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islamic studies/hindu religion studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islamic studies / hindu religion studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islam/hindu': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islam / hindu': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islam and moral education': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islam & moral education': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'islam': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion and moral education': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion & moral education': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'christian religion and moral education': 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা',
+                'buddhist religion and moral education': 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা',
+                'home science': 'গার্হস্থ্য বিজ্ঞান',
+                'physical education': 'শারীরিক শিক্ষা ও স্বাস্থ্য',
+                'physical education and health': 'শারীরিক শিক্ষা ও স্বাস্থ্য',
+                'arts and crafts': 'চারু ও কারুকলা',
+                'fine arts': 'চারু ও কারুকলা',
+                'accounting': 'হিসাববিজ্ঞান',
+                'finance and banking': 'ফিন্যান্স ও ব্যাংকিং',
+                'bangla': 'বাংলা',
+                'english': 'ইংরেজি',
+                'religion': 'ধর্ম ও নৈতিক শিক্ষা'
+            };
+            return dictionary[cleanLower] || nameStr;
+        }
+
+        // --- HIGH-SPEED SPA TAB SWITCHER & SMART IN-MEMORY CACHED RENDERING ---
+        let _syncDebounceTimer = null;
+        function debouncedSyncRender() {
+            if (_syncDebounceTimer) clearTimeout(_syncDebounceTimer);
+            _syncDebounceTimer = setTimeout(() => {
+                clearSeatPlanDataCache();
+                populateExamTitleDropdown();
+                if (typeof populateDistExamNameDropdown === 'function') populateDistExamNameDropdown();
+                if (typeof populateAllShiftDropdowns === 'function') populateAllShiftDropdowns();
+                const activeTab = document.querySelector('.sub-tab-btn.active')?.id?.replace('btn-tab-', '') || 'exam-routine';
+                if (activeTab === 'exam-routine') {
+                    if (typeof renderExamRoutines === 'function') renderExamRoutines();
+                } else if (activeTab === 'seat-distribution') {
+                    if (typeof renderSavedSeatPlansTable === 'function') renderSavedSeatPlansTable();
+                } else if (activeTab === 'building-mgmt') {
+                    if (typeof renderBuildingRoomInventory === 'function') renderBuildingRoomInventory();
+                } else if (activeTab === 'seating-details') {
+                    if (typeof refreshSeatingDetailsData === 'function') refreshSeatingDetailsData();
+                } else if (activeTab === 'room-topshet' || activeTab === 'room-seat-topshet') {
+                    if (typeof refreshRoomTopshetData === 'function') refreshRoomTopshetData();
+                } else if (activeTab === 'student-attendance' || activeTab === 'attendance-sheet' || activeTab === 'student-attendance-sheet' || activeTab === 'attendance') {
+                    if (typeof refreshStudentAttendanceData === 'function') refreshStudentAttendanceData();
+                }
+            }, 300);
+        }
+
+        window.debouncedSyncRender = debouncedSyncRender;
+        window.refreshSeatPlanData = debouncedSyncRender;
+        window.addEventListener('storage', debouncedSyncRender);
+        window.addEventListener('dbSynced', debouncedSyncRender);
+
+        const _renderedTabs = new Set();
+
+        // Global SPA Link Interceptor for Seat Plan In-Page Navigation
+        document.addEventListener('click', (e) => {
+            const targetLink = e.target.closest('a');
+            if (!targetLink) return;
+            const href = targetLink.getAttribute('href') || '';
+            if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+            // Only intercept links strictly targeting seat-plan subviews
+            try {
+                const targetUrl = new URL(targetLink.href, window.location.href);
+                const currentUrl = new URL(window.location.href);
+
+                // If link points to another HTML page or different origin, do NOT intercept
+                const isSeatPlanPage = targetUrl.pathname.endsWith('/seat-plan') ||
+                    targetUrl.pathname.endsWith('/seat-plan.html') ||
+                    targetUrl.pathname.endsWith('seat-plan') ||
+                    targetUrl.pathname.endsWith('seat-plan.html') ||
+                    (targetUrl.pathname === currentUrl.pathname && currentUrl.pathname.includes('seat-plan'));
+
+                if (!isSeatPlanPage) {
+                    return; // Let browser navigate normally to student-portal, advance, fees, etc.
+                }
+
+                if (href.includes('view=') || targetUrl.searchParams.has('view')) {
+                    const viewName = targetUrl.searchParams.get('view');
+                    const validSeatTabs = ['exam-routine', 'building-mgmt', 'seat-distribution', 'seating-details', 'seating-arrangement-details', 'room-topshet', 'room-seat-topshet', 'room_topsheet', 'room-topsheet', 'student-attendance', 'attendance-sheet', 'student-attendance-sheet', 'student_attendance', 'attendance', 'admit-card', 'find-seat', 'exam-document-report', 'report'];
+                    if (viewName && validSeatTabs.includes(viewName)) {
+                        e.preventDefault();
+                        let mappedTab = viewName;
+                        if (viewName === 'report') mappedTab = 'find-seat';
+                        if (viewName === 'seating-arrangement-details') mappedTab = 'seating-details';
+                        if (viewName === 'room-seat-topshet' || viewName === 'room_topsheet' || viewName === 'room-topsheet') mappedTab = 'room-topshet';
+                        if (viewName === 'student-attendance' || viewName === 'attendance-sheet' || viewName === 'student-attendance-sheet' || viewName === 'student_attendance' || viewName === 'attendance') mappedTab = 'student-attendance';
+                        switchSeatTab(mappedTab, true);
+                    }
+                } else if (href === 'seat-plan' || href === 'seat-plan.html' || href === 'seat-plan/' || href === 'seat-plan.html/') {
+                    e.preventDefault();
+                    switchSeatTab('exam-routine', true);
+                }
+            } catch (err) {
+                // Fallback: If URL parsing fails, check simple href prefix
+                if (href.startsWith('seat-plan?view=') || href.startsWith('seat-plan.html?view=') || href.startsWith('?view=')) {
+                    const urlMatch = href.match(/view=([a-zA-Z0-9_-]+)/);
+                    if (urlMatch && urlMatch[1]) {
+                        const viewName = urlMatch[1];
+                        const validSeatTabs = ['exam-routine', 'building-mgmt', 'seat-distribution', 'seating-details', 'seating-arrangement-details', 'room-topshet', 'room-seat-topshet', 'room_topsheet', 'room-topsheet', 'student-attendance', 'attendance-sheet', 'student-attendance-sheet', 'student_attendance', 'attendance', 'admit-card', 'find-seat', 'exam-document-report', 'report'];
+                        if (validSeatTabs.includes(viewName)) {
+                            e.preventDefault();
+                            let mappedTab = viewName;
+                            if (viewName === 'report') mappedTab = 'find-seat';
+                        if (viewName === 'seating-arrangement-details') mappedTab = 'seating-details';
+                        if (viewName === 'room-seat-topshet' || viewName === 'room_topsheet' || viewName === 'room-topsheet') mappedTab = 'room-topshet';
+                            switchSeatTab(mappedTab, true);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Browser Back / Forward History navigation support
+        window.addEventListener('popstate', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view') || 'exam-routine';
+            let targetTab = viewParam;
+            if (viewParam === 'report') targetTab = 'find-seat';
+            if (viewParam === 'seating-arrangement-details') targetTab = 'seating-details';
+            if (viewParam === 'room-seat-topshet' || viewParam === 'room_topsheet' || viewParam === 'room-topsheet') targetTab = 'room-topshet';
+            if (viewParam === 'student-attendance' || viewParam === 'attendance-sheet' || viewParam === 'student-attendance-sheet' || viewParam === 'student_attendance' || viewParam === 'attendance') targetTab = 'student-attendance';
+            switchSeatTab(targetTab, false);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applySeatTokenFontSize();
+            populateExamTitleDropdown();
+            populateSearchClassDropdown();
+
+            // Auto switch tab if URL parameter or hash specifies view
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+            const hashParam = window.location.hash.replace('#', '');
+            let targetTab = 'exam-routine';
+            if (viewParam) {
+                if (viewParam === 'report') {
+                    targetTab = 'find-seat';
+                } else if (viewParam === 'seating-arrangement-details') {
+                    targetTab = 'seating-details';
+                } else if (viewParam === 'room-seat-topshet' || viewParam === 'room_topsheet' || viewParam === 'room-topsheet') {
+                    targetTab = 'room-topshet';
+                } else if (viewParam === 'student-attendance' || viewParam === 'attendance-sheet' || viewParam === 'student-attendance-sheet' || viewParam === 'student_attendance' || viewParam === 'attendance') {
+                    targetTab = 'student-attendance';
+                } else if (viewParam === 'student-data-topsheet' || viewParam === 'student_data_topsheet' || viewParam === 'student-topsheet' || viewParam === 'topsheet') {
+                    targetTab = 'student-data-topsheet';
+                } else {
+                    targetTab = viewParam;
+                }
+            } else if (hashParam) {
+                targetTab = hashParam;
+            }
+
+            switchSeatTab(targetTab, false);
+
+            // Real-time listener for school name changes to sync Seat Token headline
+            const heroTitleEl = document.getElementById('school-name');
+            if (heroTitleEl) {
+                const syncTokens = () => {
+                    const name = heroTitleEl.textContent.trim();
+                    if (name) {
+                        document.querySelectorAll('.token-school-name').forEach(el => el.textContent = name);
+                    }
+                };
+                const observer = new MutationObserver(syncTokens);
+                observer.observe(heroTitleEl, { childList: true, characterData: true, subtree: true });
+            }
+        });
+
+        // --- INSTANTANEOUS (0ms) TAB SWITCHER WITH ASYNC LAZY RENDERING ---
+        function switchSeatTab(tabName, updateHistory = true) {
+            // 1. Instantaneous UI Class updates (0ms execution)
+            document.querySelectorAll('.seat-sub-view').forEach(v => {
+                if (v.id === 'subview-' + tabName) {
+                    v.classList.add('active');
+                } else {
+                    v.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+                if (btn.id === 'btn-tab-' + tabName) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            if (updateHistory) {
+                try {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('view', tabName);
+                    window.history.pushState({ view: tabName }, '', currentUrl.toString());
+                } catch (e) { }
+            }
+
+            const titleEl = document.getElementById('seat-portal-title');
+            const subTitleEl = document.getElementById('seat-portal-subtitle');
+
+            // 2. Non-blocking asynchronous subview initializer
+            requestAnimationFrame(() => {
+                if (tabName === 'exam-routine') {
+                    if (titleEl) titleEl.innerText = "Exam Routine Management";
+                    if (subTitleEl) subTitleEl.innerText = "Set up Primary & High Level routines across Morning & Afternoon shifts";
+                    if (typeof onRoutineDeptChange === 'function') onRoutineDeptChange();
+                    if (typeof renderClassCheckboxes === 'function') renderClassCheckboxes();
+                    if (typeof renderMatrixRoutineTable === 'function') renderMatrixRoutineTable();
+                    if (typeof renderExamRoutines === 'function') renderExamRoutines();
+                } else if (tabName === 'building-mgmt') {
+                    if (titleEl) titleEl.innerText = "Building & Room Management";
+                    if (subTitleEl) subTitleEl.innerText = "Configure buildings, rooms, student capacities, and gender assignments";
+                    if (typeof populateRoomBuildingDropdown === 'function') populateRoomBuildingDropdown();
+                    if (typeof renderBuildingRoomInventory === 'function') renderBuildingRoomInventory();
+                } else if (tabName === 'seat-distribution') {
+                    if (titleEl) titleEl.innerText = "Student Seat Distribution";
+                    if (subTitleEl) subTitleEl.innerText = "Automatic bench seat distribution with 2 students per bench and class separation";
+                    if (typeof populateDistDeptDropdown === 'function') populateDistDeptDropdown();
+                    if (typeof populateDistExamNameDropdown === 'function') populateDistExamNameDropdown();
+                    if (typeof populateAllShiftDropdowns === 'function') populateAllShiftDropdowns();
+                    if (typeof populateDistBuildingDropdown === 'function') populateDistBuildingDropdown();
+                    if (typeof populateDistRoomFilterDropdown === 'function') populateDistRoomFilterDropdown();
+                    if (typeof populateLayoutExamFilterDropdown === 'function') populateLayoutExamFilterDropdown();
+                    if (typeof initSeatGeneratorPanelState === 'function') initSeatGeneratorPanelState();
+                    if (typeof updateRealtimeSeatCounter === 'function') updateRealtimeSeatCounter();
+                    if (typeof loadSavedSeatAllocations === 'function') {
+                        if (!loadSavedSeatAllocations()) {
+                            if (typeof generateSeatDistribution === 'function') generateSeatDistribution();
+                        }
+                    }
+                    if (typeof renderSavedSeatPlansTable === 'function') renderSavedSeatPlansTable();
+                } else if (tabName === 'seating-details') {
+                    if (titleEl) titleEl.innerText = "Seating Arrangement Details (সামারি ও আসন বিন্যাস)";
+                    if (subTitleEl) subTitleEl.innerText = "A4 Preview of Room & Bench summary table with shift, building and class-wise totals";
+                    if (typeof refreshSeatingDetailsData === 'function') refreshSeatingDetailsData();
+                } else if (tabName === 'room-topshet' || tabName === 'room-seat-topshet') {
+                    if (titleEl) titleEl.innerText = "Room Seat Topsheet (কক্ষের আসন টপশীট)";
+                    if (subTitleEl) subTitleEl.innerText = "A4 Preview of Room-wise student seat topsheet separated by class with signatures";
+                    if (typeof refreshRoomTopshetData === 'function') refreshRoomTopshetData();
+                } else if (tabName === 'student-attendance' || tabName === 'attendance-sheet' || tabName === 'student-attendance-sheet' || tabName === 'attendance') {
+                    if (titleEl) titleEl.innerText = "Student Attendance Sheet (পরীক্ষার্থীদের হাজিরা শীট)";
+                    if (subTitleEl) subTitleEl.innerText = "Exam room attendance sheet by class, subjects and date with student signature columns";
+                    if (typeof refreshStudentAttendanceData === 'function') refreshStudentAttendanceData();
+                } else if (tabName === 'student-data-topsheet' || tabName === 'student_data_topsheet' || tabName === 'student-topsheet' || tabName === 'topsheet') {
+                    if (titleEl) titleEl.innerText = "Student Data Topsheet (শিক্ষার্থীর তথ্য টপশীট)";
+                    if (subTitleEl) subTitleEl.innerText = "A4 Landscape preview of building and shift-wise student counts across all examination rooms";
+                    if (typeof populateStudentDataTopsheetDropdowns === 'function') populateStudentDataTopsheetDropdowns();
+                    if (typeof updateStudentDataTopsheetLive === 'function') updateStudentDataTopsheetLive();
+                } else if (tabName === 'admit-card') {
+                    if (titleEl) titleEl.innerText = "Admit Card & Routine Duplex System";
+                    if (subTitleEl) subTitleEl.innerText = "Student Admit Cards with routine & rules on back page for duplex printing";
+                    if (typeof populateClassFilter === 'function') populateClassFilter();
+                    if (typeof populateExamFilter === 'function') populateExamFilter();
+                    if (typeof populateShiftFilter === 'function') populateShiftFilter();
+                    const savedFontSize = localStorage.getItem('admit_card_font_size') || '13';
+                    if (typeof updateAdmitCardFontSize === 'function') updateAdmitCardFontSize(savedFontSize);
+                    if (typeof renderAdmitCards === 'function') renderAdmitCards();
+                } else if (tabName === 'find-seat') {
+                    if (titleEl) titleEl.innerText = "Seat Plan Report & Seat Tokens";
+                    if (subTitleEl) subTitleEl.innerText = "Filter, view and print student exam seat tokens by department, exam, shift, and room";
+                    if (typeof populateTokenReportFilters === 'function') populateTokenReportFilters();
+                } else if (tabName === 'exam-document-report') {
+                    if (titleEl) titleEl.innerText = "Exam Document & Reports";
+                    if (subTitleEl) subTitleEl.innerText = "View and print important exam documents such as Admit Cards, seat cards and other registration reports";
+                    const iframe = document.getElementById('admit-card-iframe');
+                    if (iframe && (iframe.src === 'about:blank' || !iframe.src || iframe.src.endsWith('about:blank'))) {
+                        iframe.src = encodeURI(currentDocFileName || 'Admit Card.html');
+                    }
+                }
+            });
+        }
+
+        function openAdmitCardView() {
+            switchSeatTab('admit-card', true);
+        }
+
+        // --- TIME TOOL MODAL & FILTERED TABLE CONTROLLERS ---
+        function openTimeToolModal() {
+            resetTimeForm();
+            renderShiftTimeTable();
+            const modal = document.getElementById('time-tool-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+            }
+        }
+
+        function closeTimeToolModal() {
+            const modal = document.getElementById('time-tool-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function resetTimeForm() {
+            document.getElementById('shift-time-form').reset();
+            document.getElementById('time-edit-id').value = "";
+            document.getElementById('time-submit-btn').innerText = "Save Shift Time";
+            document.getElementById('time-submit-btn').style.background = "var(--secondary-grad)";
+        }
+
+        function saveShiftTimeEntry(e) {
+            e.preventDefault();
+            const editId = document.getElementById('time-edit-id').value;
+            const dept = document.getElementById('time-dept').value;
+            const shift = document.getElementById('time-shift').value;
+            const startTime = document.getElementById('time-start').value.trim();
+            const endTime = document.getElementById('time-end').value.trim();
+
+            let times = loadShiftTimes();
+            if (!Array.isArray(times)) times = DEFAULT_SHIFT_TIMES;
+
+            if (editId) {
+                const idx = times.findIndex(t => t.id === editId);
+                if (idx !== -1) {
+                    times[idx] = { id: editId, dept, shift, startTime, endTime };
+                }
+            } else {
+                const existingIdx = times.findIndex(t => t.dept === dept && t.shift === shift);
+                if (existingIdx !== -1) {
+                    times[existingIdx] = { id: times[existingIdx].id, dept, shift, startTime, endTime };
+                } else {
+                    times.push({ id: "st_" + Date.now(), dept, shift, startTime, endTime });
+                }
+            }
+
+            localStorage.setItem('school_shift_times', JSON.stringify(times));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_shift_times', times);
+            resetTimeForm();
+            populateAllShiftDropdowns();
+            renderShiftTimeTable();
+            renderExamRoutines();
+            if (typeof renderSavedSeatPlansTable === 'function') renderSavedSeatPlansTable();
+            alert("Shift time schedule saved successfully!");
+        }
+
+        function editShiftTime(id) {
+            const times = loadShiftTimes();
+            const item = times.find(t => t.id === id);
+            if (!item) return;
+
+            document.getElementById('time-edit-id').value = item.id;
+            document.getElementById('time-dept').value = item.dept;
+            document.getElementById('time-shift').value = item.shift;
+            document.getElementById('time-start').value = item.startTime;
+            document.getElementById('time-end').value = item.endTime;
+
+            document.getElementById('time-submit-btn').innerText = "Update Shift Time";
+            document.getElementById('time-submit-btn').style.background = "var(--primary-grad)";
+        }
+
+        function deleteShiftTime(id) {
+            if (!confirm("Are you sure you want to delete this shift time entry?")) return;
+            let times = loadShiftTimes().filter(t => t.id !== id);
+            localStorage.setItem('school_shift_times', JSON.stringify(times));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_shift_times', times);
+            populateAllShiftDropdowns();
+            renderShiftTimeTable();
+            renderExamRoutines();
+            if (typeof renderSavedSeatPlansTable === 'function') renderSavedSeatPlansTable();
+        }
+
+        function timeTo24h(timeStr) {
+            if (!timeStr) return "08:30";
+            if (timeStr.includes(':') && !timeStr.toLowerCase().includes('m')) return timeStr;
+            const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/i);
+            if (match) {
+                let hours = parseInt(match[1], 10);
+                const minutes = match[2];
+                const ampm = (match[3] || 'AM').toUpperCase();
+                if (ampm === 'PM' && hours < 12) hours += 12;
+                if (ampm === 'AM' && hours === 12) hours = 0;
+                return `${String(hours).padStart(2, '0')}:${minutes}`;
+            }
+            return "08:30";
+        }
+
+        function formatTime12h(timeStr) {
+            if (!timeStr) return "";
+            if (timeStr.toLowerCase().includes('m')) return timeStr.toUpperCase();
+            const parts = timeStr.split(':');
+            if (parts.length >= 2) {
+                let hours = parseInt(parts[0], 10);
+                const minutes = parts[1].padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+            }
+            return timeStr;
+        }
+
+        function saveAllShiftTimes() {
+            let times = loadShiftTimes();
+            if (Array.isArray(times)) {
+                times.forEach(t => {
+                    const startEl = document.getElementById('table-start-' + t.id);
+                    const endEl = document.getElementById('table-end-' + t.id);
+                    const shiftEnEl = document.getElementById('table-shift-en-' + t.id);
+                    const shiftBnEl = document.getElementById('table-shift-bn-' + t.id);
+                    if (shiftEnEl && shiftEnEl.value.trim()) {
+                        t.shift = shiftEnEl.value.trim();
+                    }
+                    if (startEl && endEl) {
+                        t.startTime = formatTime12h(startEl.value.trim());
+                        t.endTime = formatTime12h(endEl.value.trim());
+                    }
+                    if (shiftBnEl) {
+                        t.shiftBn = shiftBnEl.value.trim();
+                    }
+                });
+                localStorage.setItem('school_shift_times', JSON.stringify(times));
+                if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_shift_times', times);
+                populateAllShiftDropdowns();
+                renderShiftTimeTable();
+                renderExamRoutines();
+                if (typeof renderSavedSeatPlansTable === 'function') renderSavedSeatPlansTable();
+                if (typeof updatePrintPreviewContent === 'function') updatePrintPreviewContent();
+                closeTimeToolModal();
+                setTimeout(() => {
+                    alert("Shift times saved successfully!");
+                }, 50);
+            }
+        }
+
+        function renderShiftTimeTable() {
+            const container = document.getElementById('shift-time-table-rows');
+            if (!container) return;
+
+            const filterDept = document.getElementById('filter-shift-dept')?.value || 'All';
+            const filterShift = document.getElementById('filter-shift-type')?.value || 'All';
+
+            const times = loadShiftTimes();
+            let html = "";
+            let count = 0;
+
+            if (Array.isArray(times)) {
+                times.forEach(t => {
+                    if (filterDept !== 'All' && t.dept !== filterDept) return;
+                    if (filterShift !== 'All' && t.shift !== filterShift) return;
+                    count++;
+
+                    const defaultBn = t.shiftBn || (t.shift === 'Morning Shift' ? 'প্রভাতি শিফট' : (t.shift === 'Afternoon Shift' ? 'দিবা শিফট' : t.shift));
+
+                    html += `
+                        <tr style="background:#ffffff; color:#000000; font-size:1.35rem;">
+                            <td style="font-weight:800; color:${t.dept === 'High Level' ? '#7c3aed' : '#0284c7'}; padding:14px 16px;">${t.dept}</td>
+                            <td style="padding:12px 14px;">
+                                <input type="text" id="table-shift-en-${t.id}" value="${t.shift || ''}" placeholder="Shift (English)..." class="form-control" style="width:170px; font-size:1.21rem; font-weight:800; text-align:left; display:inline-block; margin:0; color:#000000; background:#f8fafc; border:1.5px solid #cbd5e1; padding:7px 10px;">
+                            </td>
+                            <td style="padding:12px 14px;">
+                                <input type="text" id="table-shift-bn-${t.id}" value="${defaultBn}" placeholder="বাংলায় শিফটের নাম..." class="form-control" style="width:170px; font-size:1.21rem; font-weight:800; text-align:left; display:inline-block; margin:0; color:#000000; background:#f8fafc; border:1.5px solid #cbd5e1; padding:7px 10px;">
+                            </td>
+                            <td style="text-align:center; padding:12px 14px;">
+                                <input type="time" id="table-start-${t.id}" value="${timeTo24h(t.startTime)}" class="form-control" style="width:160px; font-size:1.21rem; font-weight:800; text-align:center; display:inline-block; margin:0; color:#000000; background:#f8fafc; border:1.5px solid #cbd5e1; padding:7px 10px;">
+                            </td>
+                            <td style="text-align:center; padding:12px 14px;">
+                                <input type="time" id="table-end-${t.id}" value="${timeTo24h(t.endTime)}" class="form-control" style="width:160px; font-size:1.21rem; font-weight:800; text-align:center; display:inline-block; margin:0; color:#000000; background:#f8fafc; border:1.5px solid #cbd5e1; padding:7px 10px;">
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            if (count === 0) {
+                container.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted-text); font-style:italic; background:#fff;">No shift times found matching filter.</td></tr>`;
+            } else {
+                container.innerHTML = html;
+            }
+        }
+
+        function getShiftTimeStr(dept, shift) {
+            const times = loadShiftTimes();
+            if (Array.isArray(times)) {
+                const found = times.find(t => t.dept === dept && t.shift === shift);
+                if (found && found.startTime && found.endTime) {
+                    return `${formatTime12h(found.startTime)} - ${formatTime12h(found.endTime)}`;
+                }
+            }
+            if (shift === 'Morning Shift') return '08:00 AM - 11:30 AM';
+            if (shift === 'Afternoon Shift') return '12:00 PM - 03:30 PM';
+            return "TBA";
+        }
+
+        // --- TAB 1: EXAM ROUTINE MATRIX LOGIC ---
+        function getBanglaDayName(dateStr) {
+            if (!dateStr) return '';
+            const dt = new Date(dateStr + 'T00:00:00');
+            if (isNaN(dt.getTime())) return '';
+            const days = [
+                'রবিবার (Sunday)',
+                'সোমবার (Monday)',
+                'মঙ্গলবার (Tuesday)',
+                'বুধবার (Wednesday)',
+                'বৃহস্পতিবার (Thursday)',
+                'শুক্রবার (Friday)',
+                'শনিবার (Saturday)'
+            ];
+            return days[dt.getDay()];
+        }
+
+        function isFridayDate(dateStr) {
+            if (!dateStr) return false;
+            const dt = new Date(dateStr + 'T00:00:00');
+            return dt.getDay() === 5;
+        }
+
+        function getNextWorkingDate(startDateStr, daysToAdd) {
+            let dt = new Date(startDateStr + 'T00:00:00');
+            let added = 0;
+            while (added < daysToAdd) {
+                dt.setDate(dt.getDate() + 1);
+                if (dt.getDay() !== 5) { // Skip Friday
+                    added++;
+                }
+            }
+            const yyyy = dt.getFullYear();
+            const mm = String(dt.getMonth() + 1).padStart(2, '0');
+            const dd = String(dt.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function toggleCreateRoutineSection() {
+            const card = document.getElementById('create-routine-entry-card');
+            if (!card) return;
+            if (card.style.display === 'none' || card.style.display === '') {
+                card.style.display = 'block';
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                card.style.display = 'none';
+            }
+        }
+
+        function renderClassCheckboxes(targetClasses = null) {
+            const container = document.getElementById('routine-class-checkboxes-container');
+            if (!container) return;
+
+            const deptEl = document.getElementById('routine-dept');
+            const dept = deptEl ? deptEl.value : 'High Level';
+
+            const classesAll = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classesAll);
+            const classes = (dept === 'High Level') ? high : primary;
+
+            const prevChecked = Array.from(document.querySelectorAll('.routine-class-chk:checked')).map(cb => cb.value);
+
+            let html = classes.map(cName => {
+                if (cName === 'Nine' || cName === 'Ten') {
+                    const sections = getSectionsForClass(cName);
+                    return sections.map(sec => {
+                        const secName = `${cName} - ${sec}`;
+                        let isChecked = '';
+                        if (targetClasses) {
+                            isChecked = (targetClasses.includes(secName) || targetClasses.includes(cName)) ? 'checked' : '';
+                        } else {
+                            isChecked = (prevChecked.length === 0 || prevChecked.includes(secName)) ? 'checked' : '';
+                        }
+                        return `
+                            <label style="display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 0.95rem; color: #0f172a; cursor: pointer; user-select: none; background: #ffffff; padding: 3px 8px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                <input type="checkbox" class="routine-class-chk" value="${secName}" ${isChecked} onchange="renderMatrixRoutineTable()" style="width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer;">
+                                <span>${secName}</span>
+                            </label>
+                        `;
+                    }).join('');
+                }
+                let isChecked = '';
+                if (targetClasses) {
+                    isChecked = targetClasses.includes(cName) ? 'checked' : '';
+                } else {
+                    isChecked = (prevChecked.length === 0 || prevChecked.includes(cName)) ? 'checked' : '';
+                }
+                return `
+                    <label style="display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 0.95rem; color: #0f172a; cursor: pointer; user-select: none; background: #ffffff; padding: 3px 8px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <input type="checkbox" class="routine-class-chk" value="${cName}" ${isChecked} onchange="renderMatrixRoutineTable()" style="width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer;">
+                        <span>${cName}</span>
+                    </label>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function formatSubjectCombo(s) {
+            if (!s) return '';
+            if (typeof s === 'object') {
+                const name = s.name || s.shortName || '';
+                const bn = s.nameBn || getSubjectNameBangla(name);
+                if (bn && name && bn !== name) {
+                    return `${bn} (${name})`;
+                }
+                return bn || name;
+            }
+            const nameStr = s.toString();
+            const bn = getSubjectNameBangla(nameStr);
+            if (bn && bn !== nameStr) {
+                return `${bn} (${nameStr})`;
+            }
+            return nameStr;
+        }
+
+        function getClassSubjects(cName) {
+            const baseClassName = cName.split(' - ')[0];
+            const sectionName = cName.split(' - ')[1] || '';
+            const subMap = safeJsonParse('school_subjects', {});
+            const classSubsRaw = getSubjectsForClassFromMap(subMap, baseClassName);
+
+            // Filter class subjects by section if section name is present and class is Nine or Ten
+            let filteredSubs = classSubsRaw;
+            if (sectionName && (baseClassName === 'Nine' || baseClassName === 'Ten')) {
+                filteredSubs = classSubsRaw.filter(s => {
+                    if (!s || typeof s !== 'object') return true;
+                    const sSec = s.section ? String(s.section).trim().toLowerCase() : '';
+                    const targetSec = sectionName.trim().toLowerCase();
+                    if (sSec === 'all' || !sSec) return true;
+
+                    // Split the stored section string by comma (e.g. "মানবিক, বিজ্ঞান, ব্যবসায়")
+                    const storedSections = sSec.split(',').map(sec => sec.trim());
+                    return storedSections.includes(targetSec);
+                });
+            }
+
+            let classSubs = filteredSubs.map(s => formatSubjectCombo(s)).filter(Boolean);
+
+            const isNineOrTen = (baseClassName && /nine|ten|9|10/i.test(String(baseClassName)));
+
+            // Merge any Islam / Hindu / Religion individual subjects into a single combined subject option
+            // Also merge Agriculture Studies / Higher Mathematics for Class Nine & Ten
+            let hasReligionOrIslamOrHindu = false;
+            let hasOptSub = false;
+
+            classSubs = classSubs.filter(s => {
+                const lower = (s || '').toLowerCase();
+                if (lower.includes('islam') || lower.includes('hindu') || lower.includes('religion') || lower.includes('ধর্ম') || lower.includes('ইসলাম') || lower.includes('হিন্দু')) {
+                    hasReligionOrIslamOrHindu = true;
+                    return false;
+                }
+                if (isNineOrTen && (lower.includes('agriculture') || lower.includes('agri') || lower.includes('higher') || lower.includes('hmath') || lower.includes('h.math') || lower.includes('কৃষি') || lower.includes('উচ্চতর'))) {
+                    hasOptSub = true;
+                    return false;
+                }
+                return true;
+            });
+
+            const mixedCombo = 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা (Islamic Studies/Hindu Religion Studies)';
+            if (hasReligionOrIslamOrHindu) {
+                if (!classSubs.includes(mixedCombo)) classSubs.push(mixedCombo);
+            } else if (!sectionName) {
+                if (!classSubs.includes(mixedCombo)) classSubs.push(mixedCombo);
+            }
+
+            if (isNineOrTen) {
+                if (hasOptSub) {
+                    const optCombo = 'কৃষি শিক্ষা/উচ্চতর গণিত (Agriculture Studies/Higher Mathematics)';
+                    if (!classSubs.includes(optCombo)) classSubs.push(optCombo);
+                } else if (!sectionName) {
+                    const optCombo = 'কৃষি শিক্ষা/উচ্চতর গণিত (Agriculture Studies/Higher Mathematics)';
+                    if (!classSubs.includes(optCombo)) classSubs.push(optCombo);
+                }
+            }
+
+            return { classSubs, otherSubs: [] };
+        }
+
+        function renderMatrixRoutineTable() {
+            const deptEl = document.getElementById('routine-dept');
+            const shiftEl = document.getElementById('routine-shift');
+
+            const dept = deptEl ? deptEl.value : 'High Level';
+            const shift = shiftEl ? shiftEl.value : 'Morning Shift';
+
+            const classesAll = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classesAll);
+            const classesFull = (dept === 'High Level') ? high : primary;
+
+            // Expand classesFull to include sections for Nine and Ten
+            let classesFullExpanded = [];
+            classesFull.forEach(c => {
+                if (c === 'Nine' || c === 'Ten') {
+                    const sections = getSectionsForClass(c);
+                    sections.forEach(sec => {
+                        classesFullExpanded.push(`${c} - ${sec}`);
+                    });
+                } else {
+                    classesFullExpanded.push(c);
+                }
+            });
+
+            // Build dynamic datalists for each active class from live school_subjects
+            const datalistsContainer = document.getElementById('matrix-datalists-container');
+            if (datalistsContainer) {
+                let datalistsHTML = "";
+                classesFullExpanded.forEach(cName => {
+                    const listId = `subjects-list-${cName.replace(/\s+/g, '_')}`;
+                    const { classSubs } = getClassSubjects(cName);
+
+                    datalistsHTML += `<datalist id="${listId}">`;
+                    classSubs.forEach(s => {
+                        datalistsHTML += `<option value="${s}"> (${cName} Registered Subject)</option>`;
+                    });
+                    datalistsHTML += `</datalist>`;
+                });
+                datalistsContainer.innerHTML = datalistsHTML;
+            }
+
+            // Filter classes based on checked checkboxes
+            const checkedClasses = Array.from(document.querySelectorAll('.routine-class-chk:checked')).map(cb => cb.value);
+            const classes = (checkedClasses.length > 0) ? classesFullExpanded.filter(c => checkedClasses.includes(c)) : classesFullExpanded;
+
+            // Update header colspan & class columns
+            const colspanHeader = document.getElementById('matrix-class-header-colspan');
+            const classRowHeader = document.getElementById('matrix-class-header-row');
+            if (colspanHeader) colspanHeader.colSpan = classes.length;
+
+            if (classRowHeader) {
+                classRowHeader.innerHTML = classes.map(c =>
+                    `<th style="text-align: center; border: 1.5px solid #93c5fd; background: #f0f9ff; color: #0284c7; padding: 7px 10px; font-size: 1.22rem; font-weight: 900;">${c}</th>`
+                ).join('');
+            }
+
+            const tbody = document.getElementById('matrix-routine-tbody');
+            if (!tbody) return;
+
+            // Fetch dynamic subject list from "Exam Portal" > "All Subject" > "Subject Listings" (school_subjects)
+            const subMap = safeJsonParse('school_subjects', {});
+            let dynamicSubjects = [];
+
+            // Gather all subjects listed for the classes of this department
+            classesFull.forEach(cName => {
+                const subsForClass = getSubjectsForClassFromMap(subMap, cName);
+                subsForClass.forEach(s => {
+                    const formatted = formatSubjectCombo(s);
+                    const rawName = (typeof s === 'object') ? (s.shortName || s.name) : s;
+                    if (formatted && !dynamicSubjects.some(item => item.label === formatted || item.raw === rawName)) {
+                        const key = 'sub_' + rawName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                        dynamicSubjects.push({ key: key, label: formatted, raw: rawName });
+                    }
+                });
+            });
+
+            // Filter out individual Islam/Hindu/Religion rows from dynamicSubjects and replace with single combined row
+            let hasRelInDynamic = false;
+            let hasOptInDynamic = false;
+            dynamicSubjects = dynamicSubjects.filter(item => {
+                const l = (item.label || item.raw || '').toLowerCase();
+                if (l.includes('islam') || l.includes('hindu') || l.includes('religion') || l.includes('ধর্ম') || l.includes('ইসলাম') || l.includes('হিন্দু')) {
+                    hasRelInDynamic = true;
+                    return false;
+                }
+                if (l.includes('agriculture') || l.includes('agri') || l.includes('higher') || l.includes('hmath') || l.includes('h.math') || l.includes('কৃষি') || l.includes('উচ্চতর')) {
+                    hasOptInDynamic = true;
+                    return false;
+                }
+                return true;
+            });
+            if (hasRelInDynamic) {
+                dynamicSubjects.push({
+                    key: 'islam_hindu',
+                    label: 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা (Islamic Studies/Hindu Religion Studies)',
+                    raw: 'Islamic Studies/Hindu Religion Studies'
+                });
+            }
+            if (hasOptInDynamic || dept === 'High Level') {
+                dynamicSubjects.push({
+                    key: 'agri_hmath',
+                    label: 'কৃষি শিক্ষা/উচ্চতর গণিত (Agriculture Studies/Higher Mathematics)',
+                    raw: 'Agriculture Studies/Higher Mathematics'
+                });
+            }
+
+            // Fallback default subject rows if school_subjects not yet configured
+            if (dynamicSubjects.length === 0) {
+                if (dept === 'High Level') {
+                    dynamicSubjects = [
+                        { key: 'bangla1', label: 'বাংলা সাহিত্য (Bangla Sahitya)', raw: 'Bangla Sahitya' },
+                        { key: 'bangla2', label: 'বাংলা ভাষা ব্যাকরণ ও নির্মিতি (Bangla Bhashar Byakaran and Nirmiti)', raw: 'Bangla Bhashar Byakaran and Nirmiti' },
+                        { key: 'eng1', label: 'ইংরেজি ফর টুডে (English For Today)', raw: 'English For Today' },
+                        { key: 'eng2', label: 'ইংরেজি গ্রামার এন্ড কম্পোজিশন (English Grammar and Composition)', raw: 'English Grammar and Composition' },
+                        { key: 'math', label: 'গণিত (Mathematics)', raw: 'Mathematics' },
+                        { key: 'sci', label: 'বিজ্ঞান (Science)', raw: 'Science' },
+                        { key: 'bgs', label: 'বাংলাদেশ ও বিশ্বপরিচয় (Bangladesh And Global Studies)', raw: 'Bangladesh And Global Studies' },
+                        { key: 'ict', label: 'তথ্য ও যোগাযোগ প্রযুক্তি (Information And Communication Technology)', raw: 'Information And Communication Technology' },
+                        { key: 'agri_hmath', label: 'কৃষি শিক্ষা/উচ্চতর গণিত (Agriculture Studies/Higher Mathematics)', raw: 'Agriculture Studies/Higher Mathematics' },
+                        { key: 'islam_hindu', label: 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা (Islamic Studies/Hindu Religion Studies)', raw: 'Islamic Studies/Hindu Religion Studies' }
+                    ];
+                } else {
+                    dynamicSubjects = [
+                        { key: 'p_bangla', label: 'বাংলা (Bangla)', raw: 'Bangla' },
+                        { key: 'p_eng', label: 'ইংরেজি (English)', raw: 'English' },
+                        { key: 'p_math', label: 'গণিত (Mathematics)', raw: 'Mathematics' },
+                        { key: 'p_sci', label: 'বিজ্ঞান (Science)', raw: 'Science' },
+                        { key: 'p_bgs', label: 'বাংলাদেশ ও বিশ্বপরিচয় (BGS)', raw: 'BGS' },
+                        { key: 'p_rel', label: 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা (Islamic Studies/Hindu Religion Studies)', raw: 'Islamic Studies/Hindu Religion Studies' }
+                    ];
+                }
+            }
+
+            const subjectRows = dynamicSubjects;
+
+            const examNameEl = document.getElementById('routine-exam-name');
+            const examName = examNameEl ? examNameEl.value : '';
+
+            // Preserve DOM values before redrawing
+            const currentDomValues = {};
+            const tbodyOld = document.getElementById('matrix-routine-tbody');
+            if (tbodyOld) {
+                const oldRows = tbodyOld.querySelectorAll('tr');
+                oldRows.forEach(tr => {
+                    const rowKey = tr.getAttribute('data-row-key');
+                    const selects = tr.querySelectorAll('.matrix-subject-select');
+                    selects.forEach(sel => {
+                        const cName = sel.getAttribute('data-class');
+                        const val = sel.value;
+                        currentDomValues[`${rowKey}___${cName}`] = val;
+                    });
+                    const dateInput = tr.querySelector('.matrix-row-date');
+                    if (dateInput) {
+                        currentDomValues[`${rowKey}___date`] = dateInput.value;
+                    }
+                });
+            }
+
+            const currentDept = dept;
+            const currentShift = shift;
+            const currentExam = examName;
+
+            const lastDept = window.lastMatrixDept;
+            const lastShift = window.lastMatrixShift;
+            const lastExam = window.lastMatrixExam;
+
+            window.lastMatrixDept = currentDept;
+            window.lastMatrixShift = currentShift;
+            window.lastMatrixExam = currentExam;
+
+            const deptOrShiftOrExamChanged = (currentDept !== lastDept || currentShift !== lastShift || currentExam !== lastExam);
+
+            const baseDate = "2026-08-08"; // Initial Saturday
+            const routines = loadExamRoutines();
+
+            let tbodyHTML = "";
+            subjectRows.forEach((subRow, rowIndex) => {
+                let defaultDate = (rowIndex === 0) ? baseDate : getNextWorkingDate(baseDate, rowIndex);
+
+                const existingRoutines = routines.filter(r => r.dept === dept && r.shift === shift && r.examName === examName);
+                let rowDate = defaultDate;
+
+                const dateDomKey = `${subRow.key}___date`;
+                if (!deptOrShiftOrExamChanged && currentDomValues[dateDomKey] !== undefined) {
+                    rowDate = currentDomValues[dateDomKey];
+                } else {
+                    const foundEntry = existingRoutines.find(r => r.rowSubjectKey === subRow.key);
+                    if (foundEntry && foundEntry.date) {
+                        rowDate = foundEntry.date;
+                    }
+                }
+
+                const dayName = getBanglaDayName(rowDate);
+                const isFri = isFridayDate(rowDate);
+
+                tbodyHTML += `<tr style="background: ${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}; color: #000000;" data-row-index="${rowIndex}" data-row-key="${subRow.key}">`;
+
+                // Date Column
+                tbodyHTML += `
+                    <td style="padding: 8px 12px; text-align: center; border: 1px solid #cbd5e1;">
+                        <input type="date" class="form-control matrix-row-date" value="${rowDate}" 
+                            style="margin: 0; padding: 6px 10px; font-size: 0.95rem; font-weight: 700; background: #ffffff; color: #000000; border: 1.5px solid #cbd5e1; text-align: center; border-radius: 6px;"
+                            onchange="onMatrixDateChange(this, ${rowIndex})">
+                    </td>
+                `;
+
+                // Day Column
+                tbodyHTML += `
+                    <td style="padding: 8px 12px; text-align: center; border: 1px solid #cbd5e1; font-weight: 700; color: ${isFri ? '#ef4444' : '#0f172a'};" id="matrix-day-${rowIndex}">
+                        ${dayName} ${isFri ? '<span style="color:#ef4444; font-size:0.8rem; display:block;">(শুক্রবার - ছুটির দিন)</span>' : ''}
+                    </td>
+                `;
+
+                // Class Subject Columns
+                classes.forEach(cName => {
+                    const savedSubject = existingRoutines.find(r => r.dept === dept && r.shift === shift && r.class === cName && r.rowSubjectKey === subRow.key);
+                    const { classSubs } = getClassSubjects(cName);
+
+                    let val = "";
+                    const domKey = `${subRow.key}___${cName}`;
+                    if (!deptOrShiftOrExamChanged && currentDomValues[domKey] !== undefined) {
+                        val = currentDomValues[domKey];
+                    } else if (savedSubject) {
+                        val = savedSubject.subject;
+                    } else if (classSubs[rowIndex]) {
+                        val = classSubs[rowIndex];
+                    } else {
+                        val = "";
+                    }
+
+                    let hasSelectedOption = false;
+
+                    let classOptionsHTML = classSubs.map(s => {
+                        const isSel = Boolean(val && s && (val === s || val.includes(s) || s.includes(val)));
+                        if (isSel) hasSelectedOption = true;
+                        return `<option value="${s}" ${isSel ? 'selected' : ''} style="color: #0f172a; font-weight: 700;">${s}</option>`;
+                    }).join('');
+
+                    const noneSelected = !hasSelectedOption || !val;
+
+                    tbodyHTML += `
+                        <td style="padding: 6px 8px; text-align: center; border: 1px solid #cbd5e1; position: relative;">
+                            <select class="form-control matrix-subject-select" data-class="${cName}"
+                                style="margin: 0; padding: 7px 10px; font-size: 0.9rem; font-weight: 700; background: ${hasSelectedOption ? 'rgba(2, 132, 199, 0.3)' : '#ffffff'}; color: ${hasSelectedOption ? '#000000' : '#94a3b8'}; border: 1.5px solid ${hasSelectedOption ? '#0284c7' : '#cbd5e1'}; text-align: center; border-radius: 6px; cursor: pointer; width: 100%; text-overflow: ellipsis; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.03);"
+                                onchange="onMatrixSubjectSelectChange(this)">
+                                <option value="" ${noneSelected ? 'selected' : ''} style="color: #64748b; font-weight: 700;">🚫 -- বিষয় ফাঁকা রাখুন (None) --</option>
+                                ${classSubs.length > 0 ? `<optgroup label="📌 ${cName} Subject Listings" style="font-weight: 800; color: #0284c7;">${classOptionsHTML}</optgroup>` : ''}
+                            </select>
+                        </td>
+                    `;
+                });
+
+                tbodyHTML += `</tr>`;
+            });
+
+            tbody.innerHTML = tbodyHTML;
+            checkMatrixSubjectDuplicates();
+        }
+
+        function onMatrixSubjectSelectChange(selectEl) {
+            checkMatrixSubjectDuplicates();
+        }
+
+        function checkMatrixSubjectDuplicates() {
+            const tbody = document.getElementById('matrix-routine-tbody');
+            if (!tbody) return;
+
+            const selects = Array.from(tbody.querySelectorAll('.matrix-subject-select'));
+            const classGroups = {};
+            selects.forEach(sel => {
+                const cName = sel.getAttribute('data-class');
+                if (!classGroups[cName]) {
+                    classGroups[cName] = [];
+                }
+                classGroups[cName].push(sel);
+            });
+
+            Object.keys(classGroups).forEach(cName => {
+                const classSelects = classGroups[cName];
+                const valCounts = {};
+                classSelects.forEach(sel => {
+                    const val = sel.value ? sel.value.trim() : '';
+                    if (val) {
+                        valCounts[val] = (valCounts[val] || 0) + 1;
+                    }
+                });
+
+                classSelects.forEach(sel => {
+                    const val = sel.value ? sel.value.trim() : '';
+                    if (val) {
+                        if (valCounts[val] > 1) {
+                            // Duplicate subject selected in this class -> 30% red background, red border, red text
+                            sel.style.background = 'rgba(239, 68, 68, 0.3)';
+                            sel.style.color = '#ef4444';
+                            sel.style.borderColor = '#ef4444';
+                        } else {
+                            // Unique subject selected in this class -> 30% blue background, blue border, 100% black text
+                            sel.style.background = 'rgba(2, 132, 199, 0.3)';
+                            sel.style.color = '#000000';
+                            sel.style.borderColor = '#0284c7';
+                        }
+                    } else {
+                        // Unassigned -> white background
+                        sel.style.background = '#ffffff';
+                        sel.style.color = '#94a3b8';
+                        sel.style.borderColor = '#cbd5e1';
+                    }
+
+                    const options = Array.from(sel.querySelectorAll('option'));
+                    options.forEach(opt => {
+                        const optVal = opt.value ? opt.value.trim() : '';
+                        if (optVal) {
+                            if (valCounts[optVal] > 0) {
+                                // If this option is already selected somewhere in this class
+                                opt.style.background = 'rgba(239, 68, 68, 0.3)';
+                                opt.style.color = '#ef4444';
+                            } else {
+                                opt.style.background = '#ffffff';
+                                opt.style.color = '#0f172a';
+                            }
+                        } else {
+                            opt.style.background = '#ffffff';
+                            opt.style.color = '#64748b';
+                        }
+                    });
+                });
+            });
+        }
+
+        let activeSubjectCellBtn = null;
+
+        function openSubjectPickerModal(btnEl, cName) {
+            activeSubjectCellBtn = btnEl;
+            const hiddenInput = btnEl.parentElement.querySelector('.matrix-subject-input');
+            const currentVal = hiddenInput ? hiddenInput.value : '';
+
+            const titleEl = document.getElementById('subject-picker-title');
+            if (titleEl) titleEl.innerText = `Class ${cName} - বিষয় নির্বাচন করুন`;
+
+            const searchInput = document.getElementById('subject-picker-search');
+            if (searchInput) searchInput.value = '';
+
+            renderSubjectPickerList(cName, currentVal);
+
+            const modal = document.getElementById('subject-picker-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                if (searchInput) searchInput.focus();
+            }
+        }
+
+        function renderSubjectPickerList(cName, currentVal, filterText = '') {
+            const container = document.getElementById('subject-picker-list-container');
+            if (!container) return;
+
+            const { classSubs } = getClassSubjects(cName);
+            const query = filterText.toLowerCase().trim();
+
+            let html = "";
+
+            // None Option
+            if (!query || "-- বিষয় ফাঁকা রাখুন (none) --".toLowerCase().includes(query) || "none".includes(query)) {
+                html += `
+                    <div onclick="onSelectSubjectItem(this)" data-sub-val="" 
+                        style="padding: 11px 16px; background: ${!currentVal ? '#f1f5f9' : '#ffffff'}; border: 1.5px solid ${!currentVal ? '#94a3b8' : '#e2e8f0'}; border-radius: 10px; cursor: pointer; font-weight: 700; color: #64748b; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s;">
+                        <span>🚫 -- বিষয় ফাঁকা রাখুন (None) --</span>
+                        ${!currentVal ? '<span style="font-weight:900; color:#475569;">✓ Selected</span>' : ''}
+                    </div>
+                `;
+            }
+
+            // Group 1: Registered Class Subjects
+            const filteredClassSubs = classSubs.filter(s => s.toLowerCase().includes(query));
+            if (filteredClassSubs.length > 0) {
+                html += `<div style="font-size: 0.82rem; font-weight: 800; color: #0284c7; text-transform: uppercase; margin: 8px 0 4px 4px;">📌 ${cName} Registered Subjects</div>`;
+                filteredClassSubs.forEach(s => {
+                    const isSelected = (currentVal === s);
+                    const encodedVal = encodeURIComponent(s);
+                    html += `
+                        <div onclick="onSelectSubjectItem(this)" data-sub-val="${encodedVal}" 
+                            style="padding: 11px 16px; background: ${isSelected ? '#e0f2fe' : '#ffffff'}; border: 1.5px solid ${isSelected ? '#0284c7' : '#e2e8f0'}; border-radius: 10px; cursor: pointer; font-weight: 700; color: ${isSelected ? '#0369a1' : '#0f172a'}; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s;">
+                            <span>${s}</span>
+                            ${isSelected ? '<span style="color:#0284c7; font-weight:900;">✓ Selected</span>' : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function onSelectSubjectItem(itemEl) {
+            const rawVal = itemEl.getAttribute('data-sub-val');
+            const selectedSub = rawVal ? decodeURIComponent(rawVal) : '';
+            chooseSubjectForCell(selectedSub);
+        }
+
+        function filterSubjectPickerList() {
+            if (!activeSubjectCellBtn) return;
+            const cName = activeSubjectCellBtn.getAttribute('data-class');
+            const hiddenInput = activeSubjectCellBtn.parentElement.querySelector('.matrix-subject-input');
+            const currentVal = hiddenInput ? hiddenInput.value : '';
+            const searchVal = document.getElementById('subject-picker-search').value;
+            renderSubjectPickerList(cName, currentVal, searchVal);
+        }
+
+        function chooseSubjectForCell(selectedSub) {
+            if (activeSubjectCellBtn) {
+                const hiddenInput = activeSubjectCellBtn.parentElement.querySelector('.matrix-subject-input');
+                if (hiddenInput) {
+                    hiddenInput.value = selectedSub;
+                }
+
+                const textSpan = activeSubjectCellBtn.querySelector('.sub-btn-text');
+                if (textSpan) {
+                    textSpan.innerText = selectedSub ? selectedSub : '-- বিষয় নির্বাচন করুন --';
+                }
+
+                activeSubjectCellBtn.style.background = selectedSub ? '#ffffff' : '#f8fafc';
+                activeSubjectCellBtn.style.color = selectedSub ? '#0f172a' : '#94a3b8';
+            }
+            closeSubjectPickerModal();
+        }
+
+        function closeSubjectPickerModal() {
+            const modal = document.getElementById('subject-picker-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function onMatrixDateChange(inputEl, rowIndex) {
+            const selectedDate = inputEl.value;
+            if (!selectedDate) return;
+
+            const dayTd = document.getElementById(`matrix-day-${rowIndex}`);
+
+            if (isFridayDate(selectedDate)) {
+                alert("⚠️ শুক্রবার (Friday) একটি সাপ্তাহিক ছুটির দিন!\nপরীক্ষার তারিখ হিসেবে শুক্রবার নির্বাচন করা যাবে না। তারিখটি পরবর্তী কর্মদিবসে (শনিবার) স্থানান্তর করা হলো।");
+                const nextValidDate = getNextWorkingDate(selectedDate, 1);
+                inputEl.value = nextValidDate;
+                if (dayTd) {
+                    dayTd.innerHTML = getBanglaDayName(nextValidDate);
+                    dayTd.style.color = '#0f172a';
+                }
+                return;
+            }
+
+            if (dayTd) {
+                const dayName = getBanglaDayName(selectedDate);
+                dayTd.innerHTML = dayName;
+                dayTd.style.color = '#0f172a';
+            }
+        }
+
+        function saveAllMatrixRoutines() {
+            const dept = document.getElementById('routine-dept').value;
+            const shift = document.getElementById('routine-shift').value;
+            const examName = document.getElementById('routine-exam-name').value;
+
+            const tbody = document.getElementById('matrix-routine-tbody');
+            if (!tbody) return;
+
+            const rows = tbody.querySelectorAll('tr');
+            let routines = loadExamRoutines();
+
+            routines = routines.filter(r => !(r.dept === dept && r.shift === shift && r.examName === examName));
+
+            let addedCount = 0;
+            rows.forEach((tr) => {
+                const rowKey = tr.getAttribute('data-row-key');
+                const dateInput = tr.querySelector('.matrix-row-date');
+                const date = dateInput ? dateInput.value : '';
+                const subjectInputs = tr.querySelectorAll('.matrix-subject-select, .matrix-subject-input');
+
+                subjectInputs.forEach(input => {
+                    const cName = input.getAttribute('data-class');
+                    const subjectVal = input.value ? input.value.trim() : '';
+                    if (subjectVal) {
+                        routines.push({
+                            id: "rt_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                            dept: dept,
+                            shift: shift,
+                            class: cName,
+                            subject: subjectVal,
+                            rowSubjectKey: rowKey,
+                            examName: examName,
+                            date: date
+                        });
+                        addedCount++;
+                    }
+                });
+            });
+
+            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_exam_routines', routines);
+
+            const filterDeptEl = document.getElementById('routine-filter-dept');
+            const filterShiftEl = document.getElementById('routine-filter-shift');
+            const filterClassEl = document.getElementById('routine-filter-class');
+            if (filterDeptEl) filterDeptEl.value = 'All';
+            if (filterShiftEl) filterShiftEl.value = 'All';
+            if (filterClassEl) filterClassEl.value = 'All';
+
+            renderExamRoutines();
+            alert(`"${dept} - ${shift}" এর মোট ${addedCount} টি বিষয় পরীক্ষা রুটিনে সফলভাবে সংরক্ষণ করা হয়েছে!`);
+        }
+
+        function deleteExamRoutine(id) {
+            if (!confirm("আপনি কি নিশ্চিত যে এই রুটিন তথ্যটি ডিলিট করতে চান?")) return;
+            let routines = loadExamRoutines().filter(r => r.id !== id);
+            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_exam_routines', routines);
+            renderExamRoutines();
+        }
+
+        function closeRoutineViewModal() {
+            const modal = document.getElementById('routine-view-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function closeRoutineEditModal() {
+            const modal = document.getElementById('routine-edit-entry-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function viewRoutinePackageDetails(safeDept, safeShift, safeExamName) {
+            const dept = decodeURIComponent(safeDept);
+            const shift = decodeURIComponent(safeShift);
+            const examName = decodeURIComponent(safeExamName);
+
+            const routines = loadExamRoutines();
+            const pkgItems = routines.filter(r => (r.dept || 'High Level') === dept && (r.shift || 'Morning Shift') === shift && (r.examName || 'Half-Yearly Examination 2026') === examName);
+
+            if (pkgItems.length === 0) return;
+
+            const timeStr = getShiftTimeStr(dept, shift);
+
+            const classesAll = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classesAll);
+            const deptClasses = (dept === 'High Level') ? high : primary;
+
+            const dates = Array.from(new Set(pkgItems.map(i => i.date))).filter(Boolean).sort();
+
+            let matrixHTML = `
+                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; border: 1.5px solid #cbd5e1; margin-bottom: 16px; color: #0f172a;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h3 style="margin: 0; color: #0284c7; font-weight: 800; font-size: 1.3rem;">${examName}</h3>
+                            <div style="font-weight: 700; color: #475569; font-size: 0.95rem; margin-top: 4px;">
+                                🏢 Department: <span style="color: #0369a1;">${dept}</span> | 🕒 Shift: <span style="color: #d97706;">${shift} (${timeStr})</span>
+                            </div>
+                        </div>
+                        <button onclick="closeRoutineViewModal(); openRoutinePrintPreviewModal('${safeDept}', '${safeShift}', '${safeExamName}')" class="btn-primary" style="background: #0284c7; color: #fff; padding: 7px 16px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">🖨️ প্রিন্ট প্রাকদর্শন (Print Preview)</button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #ffffff;">
+                    <table style="width: 100%; border-collapse: collapse; background: #ffffff; color: #000000; font-size: 0.95rem;">
+                        <thead style="background: #0f172a; color: #ffffff;">
+                            <tr>
+                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; width: 130px; font-weight: 800;">তারিখ</th>
+                                <th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; width: 140px; font-weight: 800;">বারের নাম</th>
+                                ${deptClasses.map(c => `<th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 800;">${c}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            dates.forEach((d, idx) => {
+                const dayName = getBanglaDayName(d);
+                matrixHTML += `<tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;">${d}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;">${dayName}</td>
+                `;
+
+                deptClasses.forEach(cName => {
+                    const combinedSub = getCombinedSubjectForClass(pkgItems, d, cName);
+                    matrixHTML += `<td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 800; color: ${combinedSub !== '-' ? '#0f172a' : '#94a3b8'};">${combinedSub}</td>`;
+                });
+
+                matrixHTML += `</tr>`;
+            });
+
+            matrixHTML += `</tbody></table></div>`;
+
+            document.getElementById('routine-view-details-content').innerHTML = matrixHTML;
+            const modal = document.getElementById('routine-view-modal');
+            if (modal) {
+                const container = modal.querySelector('.modal-container');
+                if (container) container.style.maxWidth = '900px';
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+            }
+        }
+
+        function editRoutinePackage(safeDept, safeShift, safeExamName) {
+            const dept = decodeURIComponent(safeDept);
+            const shift = decodeURIComponent(safeShift);
+            const examName = decodeURIComponent(safeExamName);
+
+            const deptEl = document.getElementById('routine-dept');
+            const shiftEl = document.getElementById('routine-shift');
+            const examNameEl = document.getElementById('routine-exam-name');
+
+            if (deptEl) deptEl.value = dept;
+            if (shiftEl) shiftEl.value = shift;
+            if (examNameEl) examNameEl.value = examName;
+
+            const card = document.getElementById('create-routine-entry-card');
+            if (card) {
+                card.style.display = 'block';
+
+                // Extract all classes scheduled in this specific package
+                const routines = loadExamRoutines();
+                const packageRoutines = routines.filter(r => r.dept === dept && r.shift === shift && r.examName === examName);
+                const packageClasses = Array.from(new Set(packageRoutines.map(r => r.class))).filter(Boolean);
+
+                renderClassCheckboxes(packageClasses.length > 0 ? packageClasses : null);
+                renderMatrixRoutineTable();
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function deleteRoutinePackage(safeDept, safeShift, safeExamName) {
+            const dept = decodeURIComponent(safeDept);
+            const shift = decodeURIComponent(safeShift);
+            const examName = decodeURIComponent(safeExamName);
+
+            if (!confirm(`আপনি কি নিশ্চিত যে "${examName} (${dept} - ${shift})"-এর পরীক্ষা রুটিনটি ডাটাবেজ থেকে মুছে ফেলতে চান?`)) {
+                return;
+            }
+
+            let routines = loadExamRoutines();
+            routines = routines.filter(r => !((r.dept || 'High Level') === dept && (r.shift || 'Morning Shift') === shift && (r.examName || 'Half-Yearly Examination 2026') === examName));
+
+            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+            clearSeatPlanDataCache('school_exam_routines');
+            if (typeof window.flushPushQueueNow === 'function') window.flushPushQueueNow();
+
+            renderExamRoutines();
+            renderMatrixRoutineTable();
+            alert("রুটিনটি সফলভাবে মুছে ফেলা হয়েছে!");
+        }
+
+        function deleteAllExamRoutines() {
+            const routines = loadExamRoutines();
+            if (!routines || routines.length === 0) {
+                alert("⚠️ মুছে ফেলার মত কোনো রুটিন সংরক্ষিত পাওয়া যায়নি।");
+                return;
+            }
+
+            if (!confirm("⚠️ আপনি কি নিশ্চিত যে সংরক্ষণ করা সকল পরীক্ষা রুটিন একসাথে ডাটাবেজ থেকে মুছে ফেলতে চান?\n\nএই প্রক্রিয়াটি আর ফেরত আনা যাবে না।")) {
+                return;
+            }
+
+            localStorage.setItem('school_exam_routines', JSON.stringify([]));
+            clearSeatPlanDataCache('school_exam_routines');
+            if (typeof window.flushPushQueueNow === 'function') window.flushPushQueueNow();
+
+            renderExamRoutines();
+            renderMatrixRoutineTable();
+            alert("✅ সংরক্ষণ করা সকল পরীক্ষা রুটিন সফলভাবে মুছে ফেলা হয়েছে!");
+        }
+
+        function renderExamRoutines() {
+            // Auto-refresh seat distribution Exam Name and Shift dropdowns when routines change
+            if (typeof populateDistExamNameDropdown === 'function') populateDistExamNameDropdown();
+            if (typeof populateDistShiftDropdown === 'function') populateDistShiftDropdown();
+
+            const container = document.getElementById('exam-routine-rows');
+            if (!container) return;
+
+            const deptEl = document.getElementById('routine-filter-dept');
+            const shiftEl = document.getElementById('routine-filter-shift');
+
+            const filterDept = deptEl ? deptEl.value : 'All';
+            const filterShift = shiftEl ? shiftEl.value : 'All';
+
+            const routines = loadExamRoutines();
+
+            // Group routines by dept + '___' + shift + '___' + examName
+            const groupsMap = {};
+            routines.forEach(r => {
+                const deptVal = r.dept || 'High Level';
+                const shiftVal = r.shift || 'Morning Shift';
+                const examVal = r.examName || 'Half-Yearly Examination 2026';
+                const groupKey = `${deptVal}___${shiftVal}___${examVal}`;
+
+                if (!groupsMap[groupKey]) {
+                    groupsMap[groupKey] = {
+                        dept: deptVal,
+                        shift: shiftVal,
+                        examName: examVal,
+                        items: []
+                    };
+                }
+                groupsMap[groupKey].items.push(r);
+            });
+
+            const groupsList = Object.values(groupsMap);
+
+            // PERFORMANCE OPTIMIZATION: Cache classes ONCE outside the routine group loop
+            const allKnownClasses = loadClasses();
+            const { primary: defPrimary, high: defHigh } = typeof groupClassesByDepartment === 'function' ? groupClassesByDepartment(allKnownClasses) : { primary: [], high: [] };
+
+            let html = "";
+            let count = 0;
+
+            groupsList.forEach((grp) => {
+                if (filterDept !== 'All' && grp.dept !== filterDept) return;
+                if (filterShift !== 'All' && grp.shift !== filterShift) return;
+                count++;
+
+                const slNo = count;
+                const timeStr = getShiftTimeStr(grp.dept, grp.shift);
+
+                const dates = grp.items.map(i => i.date).filter(Boolean).sort();
+                let dateDisplay = "TBA";
+                if (dates.length > 0) {
+                    const minDate = dates[0];
+                    const maxDate = dates[dates.length - 1];
+                    dateDisplay = (minDate === maxDate) ? minDate : `${minDate}<br>হতে<br>${maxDate}`;
+                }
+
+                const deptColor = (grp.dept === 'High Level') ? '#7c3aed' : '#0284c7';
+                const shiftColor = (grp.shift === 'Morning Shift') ? '#d97706' : '#ec4899';
+
+                const safeExamName = encodeURIComponent(grp.examName);
+                const safeDept = encodeURIComponent(grp.dept);
+                const safeShift = encodeURIComponent(grp.shift);
+
+                // Collect and sort unique classes for this routine & shift
+                const routineClasses = Array.from(new Set(grp.items.map(i => i.class).filter(Boolean)));
+                routineClasses.sort((a, b) => {
+                    const normA = typeof normalizeClassName === 'function' ? normalizeClassName(a) : a;
+                    const normB = typeof normalizeClassName === 'function' ? normalizeClassName(b) : b;
+                    let idxA = allKnownClasses.findIndex(c => (typeof normalizeClassName === 'function' ? normalizeClassName(c) : c) === normA);
+                    let idxB = allKnownClasses.findIndex(c => (typeof normalizeClassName === 'function' ? normalizeClassName(c) : c) === normB);
+                    if (idxA === -1) idxA = 999;
+                    if (idxB === -1) idxB = 999;
+                    return idxA - idxB;
+                });
+
+                let classDisplayList = routineClasses;
+                if (classDisplayList.length === 0) {
+                    classDisplayList = (grp.dept === 'High Level') ? defHigh : defPrimary;
+                }
+                const classText = classDisplayList.length > 0 ? classDisplayList.join(', ') : 'সকল শ্রেণি';
+
+                html += `
+                    <tr style="background: ${count % 2 === 1 ? '#ffffff' : '#f8fafc'}; color: #000000; border-bottom: 1px solid #e2e8f0;">
+                        <td style="font-weight: 800; color: #0f172a; padding: 12px 10px; text-align: center; border: 1px solid #cbd5e1;">${slNo}</td>
+                        <td style="padding: 12px 14px; text-align: left; border: 1px solid #cbd5e1;">
+                            <span style="display: inline-block; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.97rem; background: ${deptColor}15; color: ${deptColor}; border: 1px solid ${deptColor}40;">
+                                ${grp.dept}
+                            </span>
+                        </td>
+                        <td style="font-weight: 800; color: #0f172a; padding: 12px 14px; text-align: left; border: 1px solid #cbd5e1; font-size: 1.12rem;">
+                            <div style="font-size: 1.15rem; font-weight: 900; color: #0f172a; line-height: 1.3;">
+                                ${grp.examName}
+                            </div>
+                            <div style="font-size: 0.94rem; color: #0369a1; font-weight: 800; margin-top: 3px;">
+                                ${classText}
+                            </div>
+                            <div style="font-size: 0.88rem; color: #64748b; font-weight: 600; margin-top: 3px;">
+                                📌 মোট ${grp.items.length} টি বিষয় রুটিনে অন্তর্ভুক্ত
+                            </div>
+                        </td>
+                        <td style="padding: 12px 14px; text-align: left; border: 1px solid #cbd5e1;">
+                            <span style="font-weight: 800; color: ${shiftColor}; font-size: 1.05rem;">${grp.shift}</span>
+                            <div style="font-size: 0.88rem; color: #475569; font-weight: 700; margin-top: 2px;">🕒 ${timeStr}</div>
+                        </td>
+                        <td style="font-weight: 700; color: #0f172a; padding: 12px 14px; text-align: center; border: 1px solid #cbd5e1; font-size: 1.01rem;">
+                            📅 ${dateDisplay}
+                        </td>
+                        <td style="text-align: center; padding: 10px 12px; border: 1px solid #cbd5e1;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                                <!-- First Line: View Button Centered -->
+                                <div style="display: flex; justify-content: center; width: 100%;">
+                                    <button class="action-btn-sm" onclick="viewRoutinePackageDetails('${safeDept}', '${safeShift}', '${safeExamName}')" style="padding: 6px 18px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: none; border-radius: 7px; font-weight: 700; font-size: 0.90rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 2px 6px rgba(2,132,199,0.25);" title="দেখা (View Routine)">
+                                        👁️ দেখা
+                                    </button>
+                                </div>
+                                <!-- Second Line: Edit & Delete Buttons Centered -->
+                                <div style="display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%;">
+                                    <button class="action-btn-sm" onclick="editRoutinePackage('${safeDept}', '${safeShift}', '${safeExamName}')" style="padding: 6px 12px; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; border: none; border-radius: 7px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(124,58,237,0.25);" title="সম্পাদনা (Edit Routine)">
+                                        ✏️ সম্পাদনা
+                                    </button>
+                                    <button class="action-btn-sm" onclick="deleteRoutinePackage('${safeDept}', '${safeShift}', '${safeExamName}')" style="padding: 6px 12px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; border: none; border-radius: 7px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(239,68,68,0.25);" title="মুছে ফেলা (Delete Routine)">
+                                        🗑️ মুছে ফেলা
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (count === 0) {
+                container.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; font-style:italic; padding: 24px; font-weight: 700; font-size: 1.16rem;">কোন পরীক্ষা রুটিন সংরক্ষিত পাওয়া যায়নি। নতুন রুটিন তৈরি করতে "📝 Create Exam Routine Entry" বাটনে ক্লিক করুন।</td></tr>`;
+            } else {
+                container.innerHTML = html;
+            }
+        }
+
+        // --- EXAM ROUTINE PRINT PREVIEW SYSTEM LOGIC ---
+        function populatePrintExamDropdown() {
+            const dept = document.getElementById('print-dept-select').value;
+            const selectEl = document.getElementById('print-exam-select');
+            if (!selectEl) return;
+
+            const routines = loadExamRoutines();
+            const deptRoutines = routines.filter(r => (r.dept || 'High Level') === dept);
+
+            // Get unique exam titles
+            const examNames = Array.from(new Set(deptRoutines.map(r => r.examName || 'Half-Yearly Examination 2026'))).filter(Boolean);
+
+            if (examNames.length === 0) {
+                selectEl.innerHTML = `
+                    <option value="Half-Yearly Examination 2026">Half-Yearly Examination 2026</option>
+                    <option value="Annual Examination 2026">Annual Examination 2026</option>
+                    <option value="First Term Exam 2026">First Term Exam 2026</option>
+                `;
+            } else {
+                selectEl.innerHTML = examNames.map(name => `<option value="${name}">${name}</option>`).join('');
+            }
+        }
+
+        function onPrintExamSelectChange() {
+            const selectEl = document.getElementById('print-exam-select');
+            if (selectEl) {
+                window.printTargetExamName = selectEl.value;
+            }
+            updatePrintPreviewContent();
+        }
+
+        function openRoutinePrintPreviewModal(deptOpt = 'High Level', shiftOpt = 'Both', examNameOpt = '') {
+            const deptEl = document.getElementById('print-dept-select');
+            const shiftEl = document.getElementById('print-shift-select');
+            const langEl = document.getElementById('print-lang-select');
+            const fontEl = document.getElementById('print-font-slider');
+            const fontValEl = document.getElementById('print-font-val');
+            const subjectModeEl = document.getElementById('print-subject-mode-select');
+
+            if (deptEl) deptEl.value = deptOpt;
+            if (shiftEl) shiftEl.value = shiftOpt;
+            if (langEl) langEl.value = 'both';
+            if (fontEl) fontEl.value = '13';
+            if (fontValEl) fontValEl.innerText = '13px';
+            if (subjectModeEl) subjectModeEl.value = 'full';
+
+            const fontFamEl = document.getElementById('print-font-family-select');
+            if (fontFamEl) fontFamEl.value = 'Inherit';
+            onPrintFontFamilyChange('Inherit');
+            loadSystemFonts();
+
+            populatePrintExamDropdown();
+
+            // Select the target exam in the dropdown if available
+            const printExamSelect = document.getElementById('print-exam-select');
+            if (printExamSelect) {
+                const targetExam = examNameOpt ? decodeURIComponent(examNameOpt) : '';
+                if (targetExam) {
+                    const hasOption = Array.from(printExamSelect.options).some(opt => opt.value === targetExam);
+                    if (hasOption) {
+                        printExamSelect.value = targetExam;
+                    }
+                }
+                window.printTargetExamName = printExamSelect.value;
+            } else {
+                window.printTargetExamName = examNameOpt ? decodeURIComponent(examNameOpt) : '';
+            }
+
+            const modal = document.getElementById('routine-print-preview-modal');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                updatePrintPreviewContent();
+            }
+        }
+
+        function closeRoutinePrintPreviewModal() {
+            const modal = document.getElementById('routine-print-preview-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function onPrintFontSizeChange(val) {
+            const fontValEl = document.getElementById('print-font-val');
+            if (fontValEl) fontValEl.innerText = `${val}px`;
+            const area = document.getElementById('printableArea') || document.getElementById('print-document-area');
+            if (area) area.style.fontSize = `${val}px`;
+        }
+
+        function onPrintFontFamilyChange(val) {
+            const area = document.getElementById('printableArea') || document.getElementById('print-document-area');
+            if (area) {
+                if (val === 'Inherit' || !val) {
+                    area.style.fontFamily = 'inherit';
+                } else {
+                    area.style.fontFamily = `"${val}", sans-serif`;
+                }
+            }
+        }
+
+        let localFontsLoaded = false;
+        async function loadSystemFonts() {
+            if (localFontsLoaded) return;
+            const selectEl = document.getElementById('print-font-family-select');
+            if (!selectEl) return;
+
+            const defaultFonts = [
+                "Inherit", "Noto Rashi Hebrew", "Tiro Bangla", "SolaimanLipi", "Kalpurush", "SutonnyMJ", "Nikosh",
+                "Arial", "Times New Roman", "Calibri", "Georgia", "Courier New", "Verdana", "Tahoma", "Trebuchet MS"
+            ];
+
+            if (window.queryLocalFonts) {
+                try {
+                    const localFonts = await window.queryLocalFonts();
+                    if (localFonts && localFonts.length > 0) {
+                        const families = Array.from(new Set(localFonts.map(f => f.family))).sort();
+                        let html = `<option value="Inherit">Default Font</option>`;
+                        const commonDefaults = ["Noto Rashi Hebrew", "Tiro Bangla", "SolaimanLipi", "Kalpurush", "SutonnyMJ", "Nikosh", "Arial", "Times New Roman", "Calibri"];
+                        commonDefaults.forEach(f => {
+                            html += `<option value="${f}">${f}</option>`;
+                        });
+                        families.forEach(family => {
+                            if (!commonDefaults.includes(family) && family !== "Inherit") {
+                                html += `<option value="${family}">${family}</option>`;
+                            }
+                        });
+                        selectEl.innerHTML = html;
+                        localFontsLoaded = true;
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Local Font Access API permission denied or error:", err);
+                }
+            }
+
+            let html = `<option value="Inherit">Default Font</option>`;
+            defaultFonts.forEach(f => {
+                html += `<option value="${f}">${f}</option>`;
+            });
+            selectEl.innerHTML = html;
+        }
+
+        function normalizeClassName(c) {
+            if (!c) return '';
+            const s = String(c).trim().toLowerCase();
+            if (s === 'play' || s === 'class play') return 'Play';
+            if (s === 'nursery' || s === 'class nursery') return 'Nursery';
+            if (s === 'kg' || s === 'class kg') return 'KG';
+            if (s === 'one' || s === '1' || s === 'class 1' || s === 'class one') return 'One';
+            if (s === 'two' || s === '2' || s === 'class 2' || s === 'class two') return 'Two';
+            if (s === 'three' || s === '3' || s === 'class 3' || s === 'class three') return 'Three';
+            if (s === 'four' || s === '4' || s === 'class 4' || s === 'class four') return 'Four';
+            if (s === 'five' || s === '5' || s === 'class 5' || s === 'class five') return 'Five';
+            if (s === 'six' || s === '6' || s === 'class 6' || s === 'class six') return 'Six';
+            if (s === 'seven' || s === '7' || s === 'class 7' || s === 'class seven') return 'Seven';
+            if (s === 'eight' || s === '8' || s === 'class 8' || s === 'class eight') return 'Eight';
+            if (s === 'nine' || s === '9' || s === 'class 9' || s === 'class nine') return 'Nine';
+            if (s === 'ten' || s === '10' || s === 'class 10' || s === 'class ten') return 'Ten';
+            return c;
+        }
+
+        function getSubjectsForClassFromMap(subMap, cName) {
+            if (!subMap || typeof subMap !== 'object') return [];
+            if (!cName) return [];
+            const baseClassName = cName.split(' - ')[0];
+            if (Array.isArray(subMap[baseClassName]) && subMap[baseClassName].length > 0) return subMap[baseClassName];
+            const normTarget = normalizeClassName(baseClassName);
+            for (const key of Object.keys(subMap)) {
+                if (normalizeClassName(key) === normTarget) {
+                    if (Array.isArray(subMap[key])) return subMap[key];
+                }
+            }
+            return [];
+        }
+
+        const SUBJECT_ALIAS_GROUPS = [
+            { group: 'bng1', keywords: ['bangla sahitya', 'bangla 1st', 'bangla 1st paper', 'bng1', 'bng 1', 'বাংলা ১ম', 'বাংলা সাহিত্য', 'বাংলা ১ম পত্র'] },
+            { group: 'bng2', keywords: ['bangla bhashar byakaran and nirmiti', 'bangla 2nd', 'bangla 2nd paper', 'bangla byakaran', 'bng2', 'bng 2', 'বাংলা ২য়', 'বাংলা ২য় পত্র', 'বাংলা ব্যাকরণ ও নির্মিতি', 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি'] },
+            { group: 'eng1', keywords: ['english for today', 'english 1st', 'english 1st paper', 'eng1', 'eng 1', 'ইংরেজি ১ম', 'ইংরেজি ১ম পত্র', 'ইংরেজি ফর টুডে'] },
+            { group: 'eng2', keywords: ['english grammar and composition', 'english 2nd', 'english 2nd paper', 'english grammar', 'eng2', 'eng 2', 'ইংরেজি ২য়', 'ইংরেজি ২য় পত্র', 'ইংরেজি ব্যাকরণ ও রচনা', 'ইংরেজি গ্রামার'] },
+            { group: 'math', keywords: ['mathematics', 'math', 'general math', 'গণিত', 'সাধারণ গণিত'] },
+            { group: 'hmath', keywords: ['higher mathematics', 'higher math', 'hmath', 'h.math', 'উচ্চতর গণিত'] },
+            { group: 'sci', keywords: ['science', 'general science', 'বিজ্ঞান', 'সাধারণ বিজ্ঞান'] },
+            { group: 'bgs', keywords: ['bangladesh and global studies', 'bgs', 'বাংলাদেশ ও বিশ্বপরিচয়', 'বাংলাদেশ ও বিশ্বপরিচয়', 'বাংলাদেশ ও বিশ্ব পরিচয়'] },
+            { group: 'ict', keywords: ['information and communication technology', 'ict', 'তথ্য ও যোগাযোগ প্রযুক্তি'] },
+            { group: 'agri', keywords: ['agriculture studies', 'agri studies', 'agriculture', 'agri', 'কৃষি শিক্ষা', 'কৃষি'] },
+            { group: 'islam', keywords: ['islamic studies', 'islam', 'ইসলাম ও নৈতিক শিক্ষা', 'ইসলাম'] },
+            { group: 'hindu', keywords: ['hindu religion studies', 'hindu', 'হিন্দুধর্ম ও নৈতিক শিক্ষা', 'হিন্দু'] },
+            { group: 'phy', keywords: ['physics', 'phy', 'পদার্থবিজ্ঞান', 'পদার্থ'] },
+            { group: 'che', keywords: ['chemistry', 'che', 'রসায়নবিজ্ঞান', 'রসায়ন'] },
+            { group: 'bio', keywords: ['biology', 'bio', 'জীববিজ্ঞান', 'জীব বিজ্ঞান'] },
+            { group: 'acc', keywords: ['accounting', 'acc', 'হিসাববিজ্ঞান'] },
+            { group: 'bent', keywords: ['business entrepreneurship', 'b.ent', 'ব্যবসায় উদ্যোগ'] },
+            { group: 'fin', keywords: ['finance and banking', 'finance', 'fin', 'ফিন্যান্স ও ব্যাংকিং'] }
+        ];
+
+        function getSubjectShortNameFromPortal(subName, cName = '') {
+            if (!subName || subName === '-' || subName.trim() === '') return '-';
+
+            const cleanStr = (str) => (str || '').toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+            const rawClean = cleanStr(subName);
+
+            // Mandatory Mix for High Level & Primary Level: Islamic Studies & Hindu Religion Studies -> "ISLAM/HINDU"
+            if (rawClean.includes('islam') || rawClean.includes('hindu') || rawClean.includes('religion') ||
+                rawClean.includes('ইসলাম') || rawClean.includes('হিন্দু') || rawClean.includes('ধর্ম')) {
+                return 'ISLAM/HINDU';
+            }
+
+            // Mandatory Mix for Class Nine & Ten Optional Subjects: Agriculture Studies & Higher Mathematics -> "AGRI/H.MATH"
+            if (rawClean.includes('agriculture') || rawClean.includes('agri') || rawClean.includes('highermath') ||
+                rawClean.includes('hmath') || rawClean.includes('h.math') || rawClean.includes('কৃষি') || rawClean.includes('উচ্চতর')) {
+                return 'AGRI/H.MATH';
+            }
+
+            // Re-read latest school_subjects from localStorage (live real-time sync with Exam Portal)
+            let subMap = {};
+            try {
+                subMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+            } catch (e) {
+                subMap = {};
+            }
+
+            // Extract candidate sub-strings if subName has parenthetical format "Bn (En)" or "En (Bn)"
+            const candidates = [subName];
+            if (subName.includes('(')) {
+                const parts = subName.split('(');
+                const before = parts[0].trim();
+                const inside = parts[1].replace(')', '').trim();
+                if (before) candidates.push(before);
+                if (inside) candidates.push(inside);
+            }
+
+            const candidateCleans = candidates.map(c => cleanStr(c)).filter(Boolean);
+
+            const matchSubjectInList = (list) => {
+                if (!Array.isArray(list) || list.length === 0) return null;
+
+                // 1. Direct clean match against candidate strings (name, nameBn, code, shortName)
+                for (const s of list) {
+                    if (!s) continue;
+                    const sName = cleanStr(s.name);
+                    const sNameBn = cleanStr(s.nameBn);
+                    const sCode = cleanStr(s.code);
+                    const sShort = cleanStr(s.shortName);
+
+                    for (const cClean of candidateCleans) {
+                        if ((sName && cClean === sName) ||
+                            (sNameBn && cClean === sNameBn) ||
+                            (sShort && cClean === sShort) ||
+                            (sCode && cClean === sCode)) {
+                            if (s.shortName || s.code) return s.shortName || s.code;
+                        }
+                    }
+                }
+
+                // 2. Alias Group Match
+                const targetGroupObj = SUBJECT_ALIAS_GROUPS.find(g =>
+                    g.keywords.some(kw => {
+                        const kClean = cleanStr(kw);
+                        return candidateCleans.some(cClean => cClean === kClean || cClean.includes(kClean) || kClean.includes(cClean));
+                    })
+                );
+
+                if (targetGroupObj) {
+                    for (const s of list) {
+                        if (!s) continue;
+                        const sCleanName = cleanStr(s.name);
+                        const sCleanBn = cleanStr(s.nameBn);
+                        const sCleanCode = cleanStr(s.code);
+                        const sCleanShort = cleanStr(s.shortName);
+
+                        const isMatch = targetGroupObj.keywords.some(kw => {
+                            const kClean = cleanStr(kw);
+                            return (kClean.length > 2) &&
+                                (sCleanName === kClean || sCleanBn === kClean || sCleanCode === kClean || sCleanShort === kClean ||
+                                    sCleanName.includes(kClean) || sCleanBn.includes(kClean));
+                        });
+
+                        if (isMatch && (s.shortName || s.code)) return s.shortName || s.code;
+                    }
+                }
+
+                // 3. Substring / Inclusion match
+                for (const s of list) {
+                    if (!s) continue;
+                    const n = cleanStr(s.name);
+                    const bn = cleanStr(s.nameBn);
+                    const sn = cleanStr(s.shortName);
+                    const c = cleanStr(s.code);
+
+                    for (const cClean of candidateCleans) {
+                        if ((n && (cClean.includes(n) || n.includes(cClean))) ||
+                            (bn && (cClean.includes(bn) || bn.includes(cClean))) ||
+                            (sn && (cClean.includes(sn) || sn.includes(cClean))) ||
+                            (c && cClean === c)) {
+                            if (s.shortName || s.code) return s.shortName || s.code;
+                        }
+                    }
+                }
+
+                return null;
+            };
+
+            if (subMap && typeof subMap === 'object') {
+                // Try matching in the specific target class first
+                if (cName) {
+                    const classSubs = getSubjectsForClassFromMap(subMap, cName);
+                    if (Array.isArray(classSubs) && classSubs.length > 0) {
+                        const matchedShort = matchSubjectInList(classSubs);
+                        if (matchedShort) return matchedShort;
+                    }
+                }
+
+                // Search in all other classes if not found in target class
+                for (const clsKey of Object.keys(subMap)) {
+                    const list = subMap[clsKey];
+                    const matchedShort = matchSubjectInList(list);
+                    if (matchedShort) return matchedShort;
+                }
+            }
+
+            if (rawClean.includes('islam') || rawClean.includes('hindu') || rawClean.includes('religion') || rawClean.includes('ইসলাম') || rawClean.includes('হিন্দু') || rawClean.includes('ধর্ম')) {
+                return 'ISLAM/HINDU';
+            }
+
+            // Fallback dictionary if not found in school_subjects
+            const fallbackShortDict = {
+                'Bangla Sahitya': 'BNG1',
+                'Bangla 1st': 'BNG1',
+                'Bangla Bhashar Byakaran and Nirmiti': 'BNG2',
+                'Bangla 2nd': 'BNG2',
+                'Bangla': 'BNG',
+                'English For Today': 'ENG1',
+                'English 1st': 'ENG1',
+                'English Grammar and Composition': 'ENG2',
+                'English 2nd': 'ENG2',
+                'English': 'ENG',
+                'Mathematics': 'MATH',
+                'Math': 'MATH',
+                'Science': 'SCI',
+                'General Science': 'SCI',
+                'Information And Communication Technology': 'ICT',
+                'Bangladesh And Global Studies': 'BGS',
+                'Agriculture Studies': 'AGRI',
+                'Agri Studies': 'AGRI',
+                'Islamic Studies/Hindu Religion Studies': 'ISLAM/HINDU',
+                'Islamic Studies / Hindu Religion Studies': 'ISLAM/HINDU',
+                'Islam/Hindu': 'ISLAM/HINDU',
+                'ISLAM/HINDU': 'ISLAM/HINDU',
+                'Islamic Studies': 'ISLAM/HINDU',
+                'Islam': 'ISLAM/HINDU',
+                'Hindu Religion Studies': 'ISLAM/HINDU',
+                'Hindu': 'ISLAM/HINDU',
+                'Religion': 'ISLAM/HINDU',
+                'Higher Mathematics': 'H.MATH',
+                'HMATH': 'H.MATH',
+                'Physics': 'PHY',
+                'Chemistry': 'CHE',
+                'Biology': 'BIO',
+                'Accounting': 'ACC',
+                'Business Entrepreneurship': 'B.ENT',
+                'Finance and Banking': 'FIN'
+            };
+
+            for (const key of Object.keys(fallbackShortDict)) {
+                const kClean = cleanStr(key);
+                if (targetClean.includes(kClean) || kClean.includes(targetClean)) {
+                    return fallbackShortDict[key];
+                }
+            }
+
+            return subName;
+        }
+
+        function getSubjectNameInLang(subName, lang, subjectMode = 'full', cName = '') {
+            if (!subName || subName === '-' || subName.trim() === '') return '-';
+
+            // Support combined/mixed subject strings (separated by slashes)
+            if (subName.includes(' / ')) {
+                return subName.split(' / ').map(part => {
+                    return getSubjectNameInLang(part.trim(), lang, subjectMode, cName);
+                }).join(' / ');
+            }
+
+            if (subjectMode === 'short') {
+                const shortVal = getSubjectShortNameFromPortal(subName, cName);
+                return `<span style="color: #000000; font-weight: 900;">${shortVal}</span>`;
+            }
+
+            const dictBn = {
+                'Bangla Sahitya': 'বাংলা সাহিত্য',
+                'Bangla 1st': 'বাংলা ১ম পত্র',
+                'Bangla Bhashar Byakaran and Nirmiti': 'বাংলা ২য় পত্র',
+                'Bangla 2nd': 'বাংলা ২য় পত্র',
+                'Bangla': 'বাংলা',
+                'English For Today': 'ইংরেজি ১ম পত্র',
+                'English 1st': 'ইংরেজি ১ম পত্র',
+                'English Grammar and Composition': 'ইংরেজি ২য় পত্র',
+                'English 2nd': 'ইংরেজি ২য় পত্র',
+                'English': 'ইংরেজি',
+                'Mathematics': 'গণিত',
+                'Math': 'গণিত',
+                'Science': 'বিজ্ঞান',
+                'General Science': 'সাধারণ বিজ্ঞান',
+                'Information And Communication Technology': 'তথ্য ও যোগাযোগ প্রযুক্তি',
+                'ICT': 'তথ্য ও যোগাযোগ প্রযুক্তি',
+                'Bangladesh And Global Studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'BGS': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'Agriculture Studies/Higher Mathematics': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'Agriculture Studies / Higher Mathematics': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'Agri/H.Math': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'AGRI/H.MATH': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'Agriculture Studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'Agri Studies': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'AGRI': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'Higher Mathematics': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'HMATH': 'কৃষি শিক্ষা/উচ্চতর গণিত',
+                'Islamic Studies/Hindu Religion Studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Islamic Studies / Hindu Religion Studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Islam/Hindu': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'ISLAM/HINDU': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Islamic Studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Islam': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Hindu Religion Studies': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Hindu': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'Religion': 'ইসলাম ও নৈতিক শিক্ষা/হিন্দুধর্ম ও নৈতিক শিক্ষা'
+            };
+
+            const dictEn = {
+                'Bangla Sahitya': 'Bangla 1st (Sahitya)',
+                'Bangla Bhashar Byakaran and Nirmiti': 'Bangla 2nd (Grammar)',
+                'English For Today': 'English 1st',
+                'English Grammar and Composition': 'English 2nd',
+                'Information And Communication Technology': 'ICT',
+                'Bangladesh And Global Studies': 'BGS',
+                'Agriculture Studies/Higher Mathematics': 'Agriculture Studies/Higher Mathematics',
+                'Agriculture Studies / Higher Mathematics': 'Agriculture Studies/Higher Mathematics',
+                'Agri/H.Math': 'Agriculture Studies/Higher Mathematics',
+                'AGRI/H.MATH': 'AGRI/H.MATH',
+                'Agriculture Studies': 'Agriculture Studies/Higher Mathematics',
+                'Higher Mathematics': 'Agriculture Studies/Higher Mathematics',
+                'Islamic Studies/Hindu Religion Studies': 'Islamic Studies/Hindu Religion Studies',
+                'Islamic Studies / Hindu Religion Studies': 'Islamic Studies/Hindu Religion Studies',
+                'Islam/Hindu': 'Islamic Studies/Hindu Religion Studies',
+                'ISLAM/HINDU': 'ISLAM/HINDU',
+                'Islamic Studies': 'Islamic Studies/Hindu Religion Studies',
+                'Hindu Religion Studies': 'Islamic Studies/Hindu Religion Studies',
+                'Islam': 'Islamic Studies/Hindu Religion Studies',
+                'Hindu': 'Islamic Studies/Hindu Religion Studies',
+                'Religion': 'Islamic Studies/Hindu Religion Studies'
+            };
+
+            if (lang === 'both') {
+                const bn = dictBn[subName] || (subName.includes('(') ? subName.split('(')[0].trim() : subName);
+                const en = dictEn[subName] || (subName.includes('(') ? subName.split('(')[1].replace(')', '').trim() : subName);
+                if (bn && en && bn !== en) {
+                    return `<div style="color: #000000; font-weight: 800; margin: 0; padding: 0; line-height: 1.05;">${bn}</div><div style="font-size: 0.88em; font-weight: 800; margin: 0; padding: 0; line-height: 1.05; color: #000000;">${en}</div>`;
+                }
+                return `<span style="color: #000000; font-weight: 800;">${bn || subName}</span>`;
+            } else if (lang === 'bn') {
+                const val = dictBn[subName] || (subName.includes('(') ? subName.split('(')[0].trim() : subName);
+                return `<span style="color: #000000; font-weight: 800;">${val}</span>`;
+            } else {
+                const val = dictEn[subName] || (subName.includes('(') ? subName.split('(')[1].replace(')', '').trim() : subName);
+                return `<span style="color: #000000; font-weight: 800;">${val}</span>`;
+            }
+        }
+
+        function getBanglaDayNameInLang(dateStr, lang) {
+            if (!dateStr) return '';
+            const dt = new Date(dateStr + 'T00:00:00');
+            if (isNaN(dt.getTime())) return '';
+
+            const daysBn = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+            const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+            if (lang === 'both') {
+                return `${daysBn[dt.getDay()]} (${daysEn[dt.getDay()]})`;
+            }
+            return lang === 'bn' ? daysBn[dt.getDay()] : daysEn[dt.getDay()];
+        }
+
+        function formatDateInLang(dateStr, lang) {
+            if (!dateStr) return '';
+            if (lang === 'en') return dateStr;
+            const banglaNums = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
+            return dateStr.replace(/[0-9]/g, w => banglaNums[w]);
+        }
+
+        // Helper to retrieve Head Teacher profile and signature by Department or Class
+        function getHeadmasterByDepartment(deptOrClass) {
+            let staffList = [];
+            try {
+                staffList = JSON.parse(localStorage.getItem('school_staff') || '[]');
+            } catch (e) {
+                staffList = [];
+            }
+
+            if (!Array.isArray(staffList) || staffList.length === 0) {
+                return null;
+            }
+
+            const checkIsHm = (s) => {
+                if (!s) return false;
+                if (typeof isHeadmasterDesignation === 'function') {
+                    return isHeadmasterDesignation(s.designation || s.designationBn || s.post);
+                }
+                const des = String(s.designation || s.designationBn || s.post || '').toLowerCase();
+                if (des.includes('সহকারী') || des.includes('সহ:') || des.includes('উপাধ্যক্ষ') || des.includes('assistant') || des.includes('asst') || des.includes('vice') || des.includes('deputy')) {
+                    return false;
+                }
+                return des.includes('প্রধান শিক্ষক') || des.includes('প্রধান শিক্ষিকা') || des.includes('headmaster') || des.includes('head master') || des.includes('headteacher') || des.includes('head teacher') || des.includes('principal') || des.includes('অধ্যক্ষ') || des.includes('সুপারিনটেনডেন্ট') || des.includes('superintendent');
+            };
+
+            let targetDept = '';
+            if (deptOrClass) {
+                const d = String(deptOrClass).trim().toLowerCase();
+                const primaryKeywords = ['primary', 'primary level', 'প্রাথমিক', 'play', 'nursery', 'kg', 'one', 'two', 'three', 'four', 'five', 'প্লে', 'নার্সারি', 'কেজি', 'প্রথম', 'দ্বিতীয়', 'দ্বিতীয়', 'তৃতীয়', 'তৃতীয়', 'চতুর্থ', 'পঞ্চম', '1', '2', '3', '4', '5'];
+                const highKeywords = ['high', 'high level', 'মাধ্যমিক', 'উচ্চ', 'six', 'seven', 'eight', 'nine', 'ten', 'ষষ্ঠ', 'সপ্তম', 'অষ্টম', 'নবম', 'দশম', '6', '7', '8', '9', '10'];
+
+                if (primaryKeywords.some(k => d === k || d.includes(k))) {
+                    targetDept = 'primary level';
+                } else if (highKeywords.some(k => d === k || d.includes(k))) {
+                    targetDept = 'high level';
+                } else {
+                    targetDept = d;
+                }
+            }
+
+            // 1. Primary priority: Headmaster specifically assigned to targetDept
+            if (targetDept) {
+                const hm = staffList.find(s => {
+                    if (!checkIsHm(s)) return false;
+                    const sDept = String(s.department || s.dept || '').trim().toLowerCase();
+                    return sDept === targetDept || sDept.includes(targetDept) || targetDept.includes(sDept);
+                });
+                if (hm) return hm;
+            }
+
+            // 2. Fallback: Any registered headmaster in the staff list
+            const anyHm = staffList.find(s => checkIsHm(s));
+            return anyHm || null;
+        }
+
+        function updatePrintPreviewContent() {
+            const dept = document.getElementById('print-dept-select').value;
+            const shiftOpt = document.getElementById('print-shift-select').value;
+            const lang = document.getElementById('print-lang-select').value;
+            const fontVal = document.getElementById('print-font-slider').value;
+            const subjectMode = document.getElementById('print-subject-mode-select')?.value || 'full';
+
+            const printArea = document.getElementById('print-document-area');
+            if (!printArea) return;
+
+            let schoolName = 'Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l';
+            try {
+                const storedSettings = localStorage.getItem('school_settings');
+                if (storedSettings) {
+                    const parsed = JSON.parse(storedSettings);
+                    if (parsed.schoolName) {
+                        schoolName = parsed.schoolName;
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing school_settings:", e);
+            }
+
+            const routines = loadExamRoutines();
+            const classesAll = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classesAll);
+            const classesFull = (dept === 'High Level') ? high : primary;
+
+
+
+            let deptRoutines = routines.filter(r => (r.dept || 'High Level') === dept);
+
+            if (window.printTargetExamName && !deptRoutines.some(r => r.examName === window.printTargetExamName)) {
+                window.printTargetExamName = '';
+            }
+
+            const printExamSelect = document.getElementById('print-exam-select');
+            if (printExamSelect && printExamSelect.value) {
+                window.printTargetExamName = printExamSelect.value;
+            }
+
+            if (window.printTargetExamName) {
+                deptRoutines = deptRoutines.filter(r => !r.examName || r.examName === window.printTargetExamName);
+            } else if (deptRoutines.length > 0) {
+                window.printTargetExamName = deptRoutines[0].examName;
+                deptRoutines = deptRoutines.filter(r => !r.examName || r.examName === window.printTargetExamName);
+                if (printExamSelect) {
+                    printExamSelect.value = window.printTargetExamName;
+                }
+            }
+
+            const isMorning = s => !s || /morning|sokal|সকাল|প্রভাতি/i.test(String(s)) || s === 'st1' || s === 'st3';
+            const isAfternoon = s => !!s && (/afternoon|bikal|বিকাল|দিবা/i.test(String(s)) || s === 'st2' || s === 'st4');
+
+            const isOnlyMorning = shiftOpt !== 'Both' && (shiftOpt === 'Morning Shift' || isMorning(shiftOpt));
+            const isOnlyAfternoon = shiftOpt !== 'Both' && (shiftOpt === 'Afternoon Shift' || isAfternoon(shiftOpt));
+
+            const relevantRoutines = deptRoutines.filter(r => {
+                if (shiftOpt === 'Both' || shiftOpt === 'All' || !shiftOpt) return true;
+                if (isOnlyMorning) return isMorning(r.shift);
+                if (isOnlyAfternoon) return isAfternoon(r.shift);
+                return r.shift === shiftOpt || isMorning(r.shift) || isAfternoon(r.shift);
+            });
+
+            const effectiveRoutines = (relevantRoutines.length > 0) ? relevantRoutines : deptRoutines;
+            const dates = Array.from(new Set(effectiveRoutines.map(r => r.date))).filter(Boolean).sort();
+
+            const morningRoutines = deptRoutines.filter(r => isMorning(r.shift));
+            const afternoonRoutines = deptRoutines.filter(r => isAfternoon(r.shift));
+
+            let morningClasses = classesFull.filter(c => morningRoutines.some(r => r.class === c || r.class.startsWith(c + ' - ')));
+            let afternoonClasses = classesFull.filter(c => afternoonRoutines.some(r => r.class === c || r.class.startsWith(c + ' - ')));
+
+            const assignedClasses = new Set([...morningClasses, ...afternoonClasses]);
+            classesFull.forEach(c => {
+                if (deptRoutines.some(r => r.class === c || r.class.startsWith(c + ' - ')) && !assignedClasses.has(c)) {
+                    morningClasses.push(c);
+                }
+            });
+
+            if (morningClasses.length === 0 && afternoonClasses.length === 0) {
+                if (dept === 'High Level') {
+                    morningClasses = classesFull.filter(c => ['Six', 'Seven', 'Eight'].includes(c));
+                    afternoonClasses = classesFull.filter(c => ['Nine', 'Ten'].includes(c));
+                } else {
+                    morningClasses = classesFull.filter(c => ['Play', 'Nursery', 'KG', 'One', 'Two'].includes(c));
+                    afternoonClasses = classesFull.filter(c => ['Three', 'Four', 'Five'].includes(c));
+                }
+            } else if (morningClasses.length === 0) {
+                morningClasses = classesFull.filter(c => !afternoonClasses.includes(c));
+            } else if (afternoonClasses.length === 0) {
+                afternoonClasses = classesFull.filter(c => !morningClasses.includes(c));
+            }
+
+            let activeMorning = [];
+            let activeAfternoon = [];
+
+            if (shiftOpt === 'Both') {
+                activeMorning = morningClasses;
+                activeAfternoon = afternoonClasses;
+            } else if (isOnlyMorning) {
+                activeMorning = morningClasses.length > 0 ? morningClasses : classesFull.filter(c => deptRoutines.some(r => r.class === c || r.class.startsWith(c + ' - ')));
+                if (activeMorning.length === 0) activeMorning = classesFull;
+            } else if (isOnlyAfternoon) {
+                activeAfternoon = afternoonClasses.length > 0 ? afternoonClasses : classesFull.filter(c => deptRoutines.some(r => r.class === c || r.class.startsWith(c + ' - ')));
+                if (activeAfternoon.length === 0) activeAfternoon = classesFull;
+            } else {
+                activeMorning = classesFull.filter(c => deptRoutines.some(r => r.class === c || r.class.startsWith(c + ' - ')));
+                if (activeMorning.length === 0) activeMorning = classesFull;
+            }
+
+            const examTitle = effectiveRoutines.length > 0 && effectiveRoutines[0].examName ? effectiveRoutines[0].examName : 'Half-Yearly Examination 2026';
+
+            const mTimeStr = getShiftTimeStr(dept, 'Morning Shift');
+            const aTimeStr = getShiftTimeStr(dept, 'Afternoon Shift');
+
+            const customLogo = localStorage.getItem('school_logo');
+
+            let docHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2.5px solid #000000; padding-bottom: 10px; position: relative; color: #000000;">
+                    <div style="width: 75px; height: 75px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        ${customLogo ? `<img src="${customLogo}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #000000;">` : `
+                        <div style="width: 70px; height: 70px; border-radius: 50%; background: #000000; display: flex; align-items: center; justify-content: center; border: 2px solid #000000;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                            </svg>
+                        </div>`}
+                    </div>
+
+                    <div style="text-align: center; flex-grow: 1; padding: 0 15px; color: #000000;">
+                        <h2 style="margin: 0; font-size: 1.78em; font-weight: 900; color: #000000; letter-spacing: 0.5px;">
+                            ${schoolName}
+                        </h2>
+                        <div style="font-size: 1.21em; font-weight: 900; color: #000000; margin-top: 4px;">
+                            ${examTitle} - ${lang === 'bn' ? 'পরীক্ষার সময়সূচী ও রুটিন' : (lang === 'both' ? 'পরীক্ষার সময়সূচী ও রুটিন (Exam Routine & Timetable)' : 'Exam Routine & Timetable')}
+                        </div>
+                        <div style="font-size: 1.02em; font-weight: 900; color: #000000; margin-top: 4px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                            ${(shiftOpt === 'Both' || isOnlyMorning) && activeMorning.length > 0 ? `<span>🌅 ${lang === 'bn' ? 'সকাল শিফট' : (lang === 'both' ? 'সকাল শিফট (Morning Shift)' : 'Morning Shift')}: <strong>${mTimeStr}</strong></span>` : ''}
+                            ${(shiftOpt === 'Both' || isOnlyAfternoon) && activeAfternoon.length > 0 ? `<span>🌇 ${lang === 'bn' ? 'বিকাল শিফট' : (lang === 'both' ? 'বিকাল শিফট (Afternoon Shift)' : 'Afternoon Shift')}: <strong>${aTimeStr}</strong></span>` : ''}
+                        </div>
+                    </div>
+                    <div style="width: 75px; flex-shrink: 0;"></div>
+                </div>
+
+                <div style="overflow-x: auto; margin-bottom: 10px;">
+                    <table style="width: 100%; border-collapse: collapse; background: #ffffff; color: #000000; border: 2px solid #000000; text-align: center;">
+                        <thead>
+            `;
+
+            // Row 1 & Row 2 Header Structure
+            let row1HTML = `<tr style="background: #ffffff; color: #000000;">`;
+            row1HTML += `<th rowspan="2" style="border: 1.5px solid #000000; text-align: center; padding: 0px 8px; font-weight: 900; background: #ffffff; color: #000000; width: 130px; font-size: 1.05em;">${lang === 'bn' ? 'তারিখ ও বার' : (lang === 'both' ? 'তারিখ ও বার (Date & Day)' : 'Date & Day')}</th>`;
+
+            if (shiftOpt === 'Both') {
+                if (activeMorning.length > 0) {
+                    row1HTML += `<th colspan="${activeMorning.length}" style="border: 1.5px solid #000000; text-align: center; padding: 0.05in 6px 0px; font-weight: 900; background: #ffffff; color: #000000; font-size: 1.08em; line-height: 1.2;">
+                        <div>${lang === 'bn' ? 'সকাল শিফট' : (lang === 'both' ? 'সকাল শিফট (Morning Shift)' : 'Morning Shift')}</div>
+                        <div style="font-size: 0.9em; font-weight: 700; margin-top: 1px;">(${mTimeStr})</div>
+                    </th>`;
+                }
+                if (activeAfternoon.length > 0) {
+                    row1HTML += `<th colspan="${activeAfternoon.length}" style="border: 1.5px solid #000000; text-align: center; padding: 0.05in 6px 0px; font-weight: 900; background: #ffffff; color: #000000; font-size: 1.08em; line-height: 1.2;">
+                        <div>${lang === 'bn' ? 'বিকাল শিফট' : (lang === 'both' ? 'বিকাল শিফট (Afternoon Shift)' : 'Afternoon Shift')}</div>
+                        <div style="font-size: 0.9em; font-weight: 700; margin-top: 1px;">(${aTimeStr})</div>
+                    </th>`;
+                }
+            } else if (isOnlyMorning) {
+                row1HTML += `<th colspan="${activeMorning.length}" style="border: 1.5px solid #000000; text-align: center; padding: 0.05in 6px 0px; font-weight: 900; background: #ffffff; color: #000000; font-size: 1.08em; line-height: 1.2;">
+                    <div>${lang === 'bn' ? 'সকাল শিফট' : (lang === 'both' ? 'সকাল শিফট (Morning Shift)' : 'Morning Shift')}</div>
+                    <div style="font-size: 0.9em; font-weight: 700; margin-top: 1px;">(${mTimeStr})</div>
+                </th>`;
+            } else {
+                const activeCols = activeAfternoon.length > 0 ? activeAfternoon.length : activeMorning.length;
+                row1HTML += `<th colspan="${activeCols}" style="border: 1.5px solid #000000; text-align: center; padding: 0.05in 6px 0px; font-weight: 900; background: #ffffff; color: #000000; font-size: 1.08em; line-height: 1.2;">
+                    <div>${lang === 'bn' ? 'বিকাল শিফট' : (lang === 'both' ? 'বিকাল শিফট (Afternoon Shift)' : 'Afternoon Shift')}</div>
+                    <div style="font-size: 0.9em; font-weight: 700; margin-top: 1px;">(${aTimeStr})</div>
+                </th>`;
+            }
+            row1HTML += `</tr>`;
+
+            let row2HTML = `<tr style="background: #ffffff; color: #000000;">`;
+            if (shiftOpt === 'Both' || isOnlyMorning) {
+                activeMorning.forEach(c => {
+                    row2HTML += `<th style="border: 1.5px solid #000000; text-align: center; padding: 0px 2px; font-weight: 900; background: #ffffff; color: #000000; font-size: 1.02em;">${c}</th>`;
+                });
+            }
+            if (shiftOpt === 'Both' || isOnlyAfternoon) {
+                activeAfternoon.forEach(c => {
+                    row2HTML += `<th style="border: 1.5px solid #000000; text-align: center; padding: 0px 2px; font-weight: 900; background: #ffffff; color: #000000; font-size: 1.02em;">${c}</th>`;
+                });
+            }
+            row2HTML += `</tr>`;
+
+            docHTML += row1HTML + row2HTML + `</thead><tbody>`;
+
+            // Data Rows
+            if (dates.length === 0) {
+                const totalCols = 1 + (activeMorning.length || activeAfternoon.length);
+                docHTML += `<tr><td colspan="${totalCols}" style="border: 1.5px solid #000000; padding: 20px; text-align: center; font-style: italic; color: #64748b; font-weight: 700;">${lang === 'bn' ? 'কোন পরীক্ষা রুটিন তৈরি বা তথ্য পাওয়া যায়নি।' : 'No exam routines scheduled yet.'}</td></tr>`;
+            } else {
+                dates.forEach((d, idx) => {
+                    const formattedDate = formatDateInLang(d, lang);
+                    const dayName = getBanglaDayNameInLang(d, lang);
+
+                    docHTML += `<tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; color: #000000;">`;
+                    docHTML += `<td style="border: 1.5px solid #000000; padding: 0px; font-weight: 900; text-align: center; white-space: nowrap; line-height: 1.15; font-size: 1.05em; color: #000000;">
+                        <div style="color: #000000; font-weight: 900;">${formattedDate}</div>
+                        <div style="font-size: 0.95em; font-weight: 900; color: #000000; margin-top: 0px;">${dayName}</div>
+                    </td>`;
+
+                    // Morning Class Columns
+                    if (shiftOpt === 'Both' || isOnlyMorning) {
+                        activeMorning.forEach(cName => {
+                            const subRaw = getCombinedSubjectForClass(deptRoutines, d, cName, true);
+                            const subLang = getSubjectNameInLang(subRaw, lang, subjectMode, cName);
+                            docHTML += `<td style="border: 1.5px solid #000000; padding: 0px 5px; font-weight: 900; text-align: center; color: #000000;">${subLang}</td>`;
+                        });
+                    }
+
+                    // Afternoon Class Columns
+                    if (shiftOpt === 'Both' || isOnlyAfternoon) {
+                        activeAfternoon.forEach(cName => {
+                            const subRaw = getCombinedSubjectForClass(deptRoutines, d, cName, false);
+                            const subLang = getSubjectNameInLang(subRaw, lang, subjectMode, cName);
+                            docHTML += `<td style="border: 1.5px solid #000000; padding: 0px 5px; font-weight: 900; text-align: center; color: #000000;">${subLang}</td>`;
+                        });
+                    }
+
+                    docHTML += `</tr>`;
+                });
+            }
+
+            docHTML += `</tbody></table></div>`;
+
+            // Footer Section with Head Teacher Signature based on Department
+            const hm = typeof getHeadmasterByDepartment === 'function' ? getHeadmasterByDepartment(dept) : null;
+            const hmSignature = hm ? (hm.signature || '') : '';
+
+            docHTML += `
+                <div class="routine-print-signatures" style="margin-top: 25px; padding-bottom: 0.3in; display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.9em; font-weight: 800; color: #000000;">
+                    <div style="text-align: center; width: 180px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
+                        <div style="height: 40px;"></div>
+                        <div style="border-top: 1.5px solid #000000; padding-top: 5px; width: 100%; text-align: center;">
+                            ${lang === 'bn' ? 'প্রস্তুতকারকের স্বাক্ষর' : (lang === 'both' ? 'প্রস্তুতকারকের স্বাক্ষর (Prepared By)' : 'Prepared By')}
+                        </div>
+                    </div>
+                    <div style="text-align: center; width: 180px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
+                        <div style="height: 40px;"></div>
+                        <div style="border-top: 1.5px solid #000000; padding-top: 5px; width: 100%; text-align: center;">
+                            ${lang === 'bn' ? 'পরীক্ষা নিয়ন্ত্রক' : (lang === 'both' ? 'পরীক্ষা নিয়ন্ত্রক (Controller of Exam)' : 'Controller of Exam')}
+                        </div>
+                    </div>
+                    <div style="text-align: center; width: 180px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
+                        ${hmSignature ? `<img src="${hmSignature}" style="max-height: 42px; max-width: 140px; object-fit: contain; margin-bottom: 2px; display: block;" alt="প্রধান শিক্ষকের স্বাক্ষর">` : `<div style="height: 40px;"></div>`}
+                        <div style="border-top: 1.5px solid #000000; padding-top: 5px; width: 100%; text-align: center;">
+                            ${lang === 'bn' ? 'প্রধান শিক্ষকের স্বাক্ষর' : (lang === 'both' ? 'প্রধান শিক্ষকের স্বাক্ষর (Headmaster)' : 'Headmaster Signature')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            printArea.innerHTML = docHTML;
+        }
+
+        function triggerLandscapePrint() {
+            const printArea = document.getElementById('print-document-area');
+            if (!printArea) {
+                window.print();
+                return;
+            }
+
+            const fontVal = document.getElementById('print-font-slider')?.value || '13';
+            const fontFamily = document.getElementById('print-font-family-select')?.value || 'inherit';
+            const fontFamilyCss = (fontFamily && fontFamily !== 'Inherit') ? `"${fontFamily}", sans-serif` : 'inherit';
+
+            let iframe = document.getElementById('routine_print_iframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'routine_print_iframe';
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = 'none';
+                document.body.appendChild(iframe);
+            }
+
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Exam Routine Print</title>
+                    <style>
+                        @page {
+                            size: landscape;
+                            margin: 6mm;
+                        }
+                        * {
+                            box-sizing: border-box;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 10px;
+                            background: #ffffff !important;
+                            color: #000000 !important;
+                            font-size: ${fontVal}px;
+                            font-family: ${fontFamilyCss};
+                            line-height: 1.3;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            background: #ffffff;
+                            color: #000000;
+                            border: 2px solid #000000;
+                            text-align: center;
+                        }
+                        th, td {
+                            border: 1.5px solid #000000;
+                            padding: 3px 6px;
+                            color: #000000;
+                            font-weight: 800;
+                        }
+                        .routine-print-signatures {
+                            margin-top: 25px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-end;
+                            font-size: 0.9em;
+                            font-weight: 900;
+                            color: #000000;
+                        }
+                        .routine-print-signatures img {
+                            max-height: 42px;
+                            max-width: 140px;
+                            object-fit: contain;
+                            display: block;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${printArea.innerHTML}
+                </body>
+                </html>
+            `);
+            doc.close();
+
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }, 200);
+        }
+
+        // --- TAB 2: BUILDING MANAGEMENT LOGIC ---
+        function toggleBuildingForm() {
+            const header = document.getElementById('building-collapsible-header');
+            const content = document.getElementById('building-form-collapse');
+            if (header && content) {
+                header.classList.toggle('active');
+                content.classList.toggle('expanded');
+            }
+        }
+
+        function toggleRoomForm() {
+            const header = document.getElementById('room-collapsible-header');
+            const content = document.getElementById('room-form-collapse');
+            if (header && content) {
+                header.classList.toggle('active');
+                content.classList.toggle('expanded');
+            }
+        }
+
+        function populateRoomBuildingDropdown() {
+            const selectEl = document.getElementById('room-building-select');
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            const buildings = loadBuildings();
+            selectEl.innerHTML = buildings.map(b => `<option value="${b.id}">${b.name} (${b.floors} Floors)</option>`).join('');
+            if (currentVal && Array.from(selectEl.options).some(opt => opt.value === currentVal)) {
+                selectEl.value = currentVal;
+            }
+        }
+
+        function saveBuilding(e) {
+            e.preventDefault();
+            const editId = document.getElementById('building-edit-id').value;
+            const name = document.getElementById('building-name').value.trim();
+            const floors = parseInt(document.getElementById('building-floors').value);
+
+            let buildings = loadBuildings();
+
+            if (editId) {
+                // Edit Mode
+                const idx = buildings.findIndex(b => b.id === editId);
+                if (idx !== -1) {
+                    buildings[idx].name = name;
+                    buildings[idx].floors = floors;
+                    localStorage.setItem('school_buildings', JSON.stringify(buildings));
+                    if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_buildings', buildings);
+                    alert("Building updated successfully!");
+                } else {
+                    alert("Error: Building not found.");
+                }
+            } else {
+                // Add Mode
+                buildings.push({ id: "b_" + Date.now(), name, floors });
+                localStorage.setItem('school_buildings', JSON.stringify(buildings));
+                if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_buildings', buildings);
+                alert("Building created successfully!");
+            }
+
+            document.getElementById('building-form').reset();
+            document.getElementById('building-edit-id').value = '';
+            document.getElementById('building-submit-btn').innerText = 'Save Building';
+            populateRoomBuildingDropdown();
+            renderBuildingRoomInventory();
+        }
+
+        function editBuilding(id, name, floors) {
+            document.getElementById('building-edit-id').value = id;
+            document.getElementById('building-name').value = name;
+            document.getElementById('building-floors').value = floors;
+            document.getElementById('building-submit-btn').innerText = 'Update Building';
+
+            // Ensure building form collapsible container is expanded
+            const header = document.getElementById('building-collapsible-header');
+            const content = document.getElementById('building-form-collapse');
+            if (header && content && !content.classList.contains('expanded')) {
+                header.classList.add('active');
+                content.classList.add('expanded');
+            }
+
+            // Scroll form into view
+            document.getElementById('building-collapsible-header').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteBuilding(id) {
+            if (!confirm("Are you sure you want to delete this building? All rooms inside this building will also be deleted!")) {
+                return;
+            }
+
+            let buildings = loadBuildings().filter(b => b.id !== id);
+            localStorage.setItem('school_buildings', JSON.stringify(buildings));
+
+            let rooms = loadRooms().filter(r => r.buildingId !== id);
+            localStorage.setItem('school_rooms', JSON.stringify(rooms));
+
+            if (window.SeatPlanAPI) {
+                SeatPlanAPI.saveBulk({
+                    'school_buildings': buildings,
+                    'school_rooms': rooms
+                });
+            }
+
+            // Reset form if we were editing the deleted building
+            const editId = document.getElementById('building-edit-id').value;
+            if (editId === id) {
+                document.getElementById('building-form').reset();
+                document.getElementById('building-edit-id').value = '';
+                document.getElementById('building-submit-btn').innerText = 'Save Building';
+            }
+
+            populateRoomBuildingDropdown();
+            renderBuildingRoomInventory();
+            if (typeof generateSeatDistribution === 'function') {
+                generateSeatDistribution();
+            }
+        }
+
+        function saveRoom(e) {
+            e.preventDefault();
+            const editId = document.getElementById('room-edit-id').value;
+            const buildingId = document.getElementById('room-building-select').value;
+            const number = document.getElementById('room-number').value.trim();
+            const floor = document.getElementById('room-floor').value.trim();
+            const benches = parseInt(document.getElementById('room-benches').value);
+            const gender = document.getElementById('room-gender').value;
+
+            let rooms = loadRooms();
+
+            if (editId) {
+                // Edit Mode
+                const idx = rooms.findIndex(r => r.id === editId);
+                if (idx !== -1) {
+                    rooms[idx].buildingId = buildingId;
+                    rooms[idx].number = number;
+                    rooms[idx].floor = floor;
+                    rooms[idx].benches = benches;
+                    rooms[idx].gender = gender;
+                    localStorage.setItem('school_rooms', JSON.stringify(rooms));
+                    if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_rooms', rooms);
+                    alert("Room updated successfully!");
+                } else {
+                    alert("Error: Room not found.");
+                }
+            } else {
+                // Add Mode
+                rooms.push({ id: "r_" + Date.now(), buildingId, number, floor, benches, gender });
+                localStorage.setItem('school_rooms', JSON.stringify(rooms));
+                if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_rooms', rooms);
+                alert("Room created successfully!");
+            }
+
+            document.getElementById('room-form').reset();
+            document.getElementById('room-edit-id').value = '';
+            document.getElementById('room-submit-btn').innerText = 'Save Room';
+            renderBuildingRoomInventory();
+            generateSeatDistribution();
+        }
+
+        function editRoom(id, buildingId, number, floor, benches, gender) {
+            document.getElementById('room-edit-id').value = id;
+            document.getElementById('room-building-select').value = buildingId;
+            document.getElementById('room-number').value = number;
+            document.getElementById('room-floor').value = floor;
+            document.getElementById('room-benches').value = benches;
+            document.getElementById('room-gender').value = gender;
+            document.getElementById('room-submit-btn').innerText = 'Update Room';
+
+            // Ensure the room form collapsible container is expanded
+            const header = document.getElementById('room-collapsible-header');
+            const content = document.getElementById('room-form-collapse');
+            if (header && content && !content.classList.contains('expanded')) {
+                header.classList.add('active');
+                content.classList.add('expanded');
+            }
+
+            // Scroll room form header into view
+            document.getElementById('room-collapsible-header').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteRoom(roomId) {
+            if (!confirm("Are you sure you want to delete this room?")) return;
+            let rooms = loadRooms().filter(r => r.id !== roomId);
+            localStorage.setItem('school_rooms', JSON.stringify(rooms));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_rooms', rooms);
+
+            // Reset form if we were editing the deleted room
+            const editId = document.getElementById('room-edit-id').value;
+            if (editId === roomId) {
+                document.getElementById('room-form').reset();
+                document.getElementById('room-edit-id').value = '';
+                document.getElementById('room-submit-btn').innerText = 'Save Room';
+            }
+
+            renderBuildingRoomInventory();
+            generateSeatDistribution();
+        }
+
+        function renderBuildingRoomInventory() {
+            const container = document.getElementById('building-room-summary-container');
+            if (!container) return;
+
+            const buildings = loadBuildings();
+            const rooms = loadRooms();
+
+            let html = "";
+            buildings.forEach(b => {
+                const bRooms = rooms.filter(r => r.buildingId === b.id);
+                let totalSeats = bRooms.reduce((sum, r) => sum + (r.benches * 2), 0);
+
+                html += `
+                    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                            <h4 style="margin:0; color:#0284c7; font-size:1.1rem; font-weight: 800;">🏢 ${b.name}</h4>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:0.8rem; background:#e2e8f0; color:#475569; border: 1px solid #cbd5e1; padding:3px 10px; border-radius:12px; font-weight:700;">${b.floors} Floors &bull; ${bRooms.length} Rooms &bull; ${totalSeats} Total Seats</span>
+                                <button class="action-btn-sm" onclick="editBuilding('${b.id}', '${b.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${b.floors})" style="padding: 4px 10px; background: #0284c7; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: background 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0284c7'">Edit</button>
+                                <button class="action-btn-sm" onclick="deleteBuilding('${b.id}')" style="padding: 4px 10px; background: #ef4444; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Delete</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="fee-list-table" style="font-size:0.95rem; background:#fff; color:#000;">
+                                <thead style="background:#1e1b4b; color:#fff;">
+                                    <tr>
+                                        <th>Room No</th>
+                                        <th>Floor</th>
+                                        <th>Benches</th>
+                                        <th>Capacity</th>
+                                        <th>Gender Mode</th>
+                                        <th style="text-align:center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${bRooms.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#64748b; font-weight:700;">No rooms added yet.</td></tr>` :
+                        bRooms.map(r => `
+                                        <tr>
+                                            <td style="font-weight:700; color:#000;">${r.number}</td>
+                                            <td style="color:#475569;">${r.floor}</td>
+                                            <td style="font-weight:700; color:#000;">${r.benches} Benches</td>
+                                            <td style="font-weight:700; color:#0284c7;">${r.benches * 2} Seats</td>
+                                            <td>
+                                                <span class="gender-badge-${r.gender === 'Male' ? 'boys' : r.gender === 'Female' ? 'girls' : 'both'}">
+                                                    ${r.gender === 'Male' ? 'Boys Only' : r.gender === 'Female' ? 'Girls Only' : 'Both (Co-ed)'}
+                                                </span>
+                                            </td>
+                                            <td style="text-align:center; white-space:nowrap;">
+                                                <button class="action-btn-sm" onclick="editRoom('${r.id}', '${r.buildingId}', '${r.number.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${r.floor.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${r.benches}, '${r.gender}')" style="padding: 4px 8px; margin-right: 4px; background: #0284c7; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: 700;">Edit</button>
+                                                <button class="action-btn-sm btn-delete-student" onclick="deleteRoom('${r.id}')" style="padding:4px 8px;">Delete</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // --- TAB 3: STUDENT SEAT DISTRIBUTION ALGORITHM ---
+        let currentGeneratedAllocations = {};
+
+        // --- STUDENT NAME FORMATTER (Bengali Name (English Name)) ---
+        function formatStudentDisplayName(s) {
+            if (!s) return 'শিক্ষার্থী';
+
+            let bn = s.nameBn || s.nameBangla || s.name_bn || '';
+            let en = s.nameEn || s.nameEnglish || s.name_en || s.englishName || s.name || '';
+
+            if (!bn) {
+                if (s.name && /[\u0980-\u09FF]/.test(s.name)) {
+                    bn = s.name;
+                } else {
+                    bn = 'শিক্ষার্থী';
+                }
+            }
+
+            let cleanBn = String(bn).trim();
+            if (cleanBn.includes('—')) {
+                cleanBn = cleanBn.split('—')[0].trim();
+            } else if (cleanBn.includes('-') && /[\u0980-\u09FF]/.test(cleanBn.split('-')[0])) {
+                const parts = cleanBn.split('-');
+                if (parts[1] && parts[1].trim().length <= 3) {
+                    cleanBn = parts[0].trim();
+                }
+            }
+
+            if (cleanBn.includes('(')) {
+                return cleanBn;
+            }
+
+            if (en && /[\u0980-\u09FF]/.test(en)) {
+                en = s.name && !/[\u0980-\u09FF]/.test(s.name) ? s.name : (s.englishName || s.nameEn || '');
+            }
+
+            const cleanEn = String(en).trim();
+
+            if (cleanEn && cleanEn !== cleanBn && !/[\u0980-\u09FF]/.test(cleanEn)) {
+                return `${cleanBn} (${cleanEn})`;
+            }
+
+            return cleanBn;
+        }
+
+        // --- CLASS-BASED DYNAMIC SEAT CARD COLOR SCHEME (30% OPACITY BACKGROUND) ---
+        function getClassBgColor(className) {
+            if (!className) return 'rgba(0, 0, 0, 0.3)';
+            const baseClass = String(className).split(' - ')[0].trim().toLowerCase();
+            const classBgMap = {
+                'six': 'rgba(0, 191, 255, 0.3)', 'class six': 'rgba(0, 191, 255, 0.3)', 'class 6': 'rgba(0, 191, 255, 0.3)', '6': 'rgba(0, 191, 255, 0.3)',
+                'seven': 'rgba(46, 204, 113, 0.3)', 'class seven': 'rgba(46, 204, 113, 0.3)', 'class 7': 'rgba(46, 204, 113, 0.3)', '7': 'rgba(46, 204, 113, 0.3)',
+                'eight': 'rgba(243, 156, 18, 0.3)', 'class eight': 'rgba(243, 156, 18, 0.3)', 'class 8': 'rgba(243, 156, 18, 0.3)', '8': 'rgba(243, 156, 18, 0.3)',
+                'nine': 'rgba(155, 89, 182, 0.3)', 'class nine': 'rgba(155, 89, 182, 0.3)', 'class 9': 'rgba(155, 89, 182, 0.3)', '9': 'rgba(155, 89, 182, 0.3)',
+                'ten': 'rgba(255, 77, 77, 0.3)', 'class ten': 'rgba(255, 77, 77, 0.3)', 'class 10': 'rgba(255, 77, 77, 0.3)', '10': 'rgba(255, 77, 77, 0.3)',
+                'five': 'rgba(0, 229, 255, 0.3)', 'class five': 'rgba(0, 229, 255, 0.3)', 'class 5': 'rgba(0, 229, 255, 0.3)', '5': 'rgba(0, 229, 255, 0.3)',
+                'four': 'rgba(241, 196, 15, 0.3)', 'class four': 'rgba(241, 196, 15, 0.3)', 'class 4': 'rgba(241, 196, 15, 0.3)', '4': 'rgba(241, 196, 15, 0.3)',
+                'three': 'rgba(236, 72, 153, 0.3)', 'class three': 'rgba(236, 72, 153, 0.3)', 'class 3': 'rgba(236, 72, 153, 0.3)', '3': 'rgba(236, 72, 153, 0.3)',
+                'two': 'rgba(124, 77, 255, 0.3)', 'class two': 'rgba(124, 77, 255, 0.3)', 'class 2': 'rgba(124, 77, 255, 0.3)', '2': 'rgba(124, 77, 255, 0.3)',
+                'one': 'rgba(29, 233, 182, 0.3)', 'class one': 'rgba(29, 233, 182, 0.3)', 'class 1': 'rgba(29, 233, 182, 0.3)', '1': 'rgba(29, 233, 182, 0.3)'
+            };
+            return classBgMap[baseClass] || 'rgba(0, 191, 255, 0.3)';
+        }
+
+        function getClassBorderColor(className) {
+            if (!className) return 'rgba(255, 255, 255, 0.15)';
+            const baseClass = String(className).split(' - ')[0].trim().toLowerCase();
+            const classBorderMap = {
+                'six': 'rgba(0, 191, 255, 0.7)', 'class six': 'rgba(0, 191, 255, 0.7)', 'class 6': 'rgba(0, 191, 255, 0.7)', '6': 'rgba(0, 191, 255, 0.7)',
+                'seven': 'rgba(46, 204, 113, 0.7)', 'class seven': 'rgba(46, 204, 113, 0.7)', 'class 7': 'rgba(46, 204, 113, 0.7)', '7': 'rgba(46, 204, 113, 0.7)',
+                'eight': 'rgba(243, 156, 18, 0.7)', 'class eight': 'rgba(243, 156, 18, 0.7)', 'class 8': 'rgba(243, 156, 18, 0.7)', '8': 'rgba(243, 156, 18, 0.7)',
+                'nine': 'rgba(155, 89, 182, 0.7)', 'class nine': 'rgba(155, 89, 182, 0.7)', 'class 9': 'rgba(155, 89, 182, 0.7)', '9': 'rgba(155, 89, 182, 0.7)',
+                'ten': 'rgba(255, 77, 77, 0.7)', 'class ten': 'rgba(255, 77, 77, 0.7)', 'class 10': 'rgba(255, 77, 77, 0.7)', '10': 'rgba(255, 77, 77, 0.7)',
+                'five': 'rgba(0, 229, 255, 0.7)', 'class five': 'rgba(0, 229, 255, 0.7)', 'class 5': 'rgba(0, 229, 255, 0.7)', '5': 'rgba(0, 229, 255, 0.7)',
+                'four': 'rgba(241, 196, 15, 0.7)', 'class four': 'rgba(241, 196, 15, 0.7)', 'class 4': 'rgba(241, 196, 15, 0.7)', '4': 'rgba(241, 196, 15, 0.7)',
+                'three': 'rgba(236, 72, 153, 0.7)', 'class three': 'rgba(236, 72, 153, 0.7)', 'class 3': 'rgba(236, 72, 153, 0.7)', '3': 'rgba(236, 72, 153, 0.7)',
+                'two': 'rgba(124, 77, 255, 0.7)', 'class two': 'rgba(124, 77, 255, 0.7)', 'class 2': 'rgba(124, 77, 255, 0.7)', '2': 'rgba(124, 77, 255, 0.7)',
+                'one': 'rgba(29, 233, 182, 0.7)', 'class one': 'rgba(29, 233, 182, 0.7)', 'class 1': 'rgba(29, 233, 182, 0.7)', '1': 'rgba(29, 233, 182, 0.7)'
+            };
+            return classBorderMap[baseClass] || 'rgba(0, 191, 255, 0.7)';
+        }
+
+        function getClassColor(className) {
+            if (!className) return '#00bfff';
+            const baseClass = String(className).split(' - ')[0].trim().toLowerCase();
+            const classColorMap = {
+                'six': '#00bfff', 'class six': '#00bfff', 'class 6': '#00bfff', '6': '#00bfff',
+                'seven': '#2ecc71', 'class seven': '#2ecc71', 'class 7': '#2ecc71', '7': '#2ecc71',
+                'eight': '#f39c12', 'class eight': '#f39c12', 'class 8': '#f39c12', '8': '#f39c12',
+                'nine': '#9b59b6', 'class nine': '#9b59b6', 'class 9': '#9b59b6', '9': '#9b59b6',
+                'ten': '#ff4d4d', 'class ten': '#ff4d4d', 'class 10': '#ff4d4d', '10': '#ff4d4d',
+                'five': '#00e5ff', 'class five': '#00e5ff', 'class 5': '#00e5ff', '5': '#00e5ff',
+                'four': '#f1c40f', 'class four': '#f1c40f', 'class 4': '#f1c40f', '4': '#f1c40f',
+                'three': '#ec4899', 'class three': '#ec4899', 'class 3': '#ec4899', '3': '#ec4899',
+                'two': '#7c4dff', 'class two': '#7c4dff', 'class 2': '#7c4dff', '2': '#7c4dff',
+                'one': '#1de9b6', 'class one': '#1de9b6', 'class 1': '#1de9b6', '1': '#1de9b6'
+            };
+            return classColorMap[baseClass] || '#00bfff';
+        }
+
+        // --- COLLAPSIBLE AUTOMATIC SEAT GENERATOR PANEL HANDLER ---
+        function toggleSeatGeneratorPanel() {
+            const bodyEl = document.getElementById('generator-panel-body');
+            const symbolEl = document.getElementById('generator-toggle-symbol');
+            const labelEl = document.getElementById('generator-toggle-label');
+            const iconContainer = document.getElementById('generator-panel-toggle-icon');
+
+            if (!bodyEl) return;
+
+            const isCurrentlyHidden = bodyEl.style.display === 'none';
+
+            if (isCurrentlyHidden) {
+                // Expand panel
+                bodyEl.style.display = 'block';
+                if (symbolEl) symbolEl.innerText = '➖';
+                if (labelEl) labelEl.innerText = 'Hide Panel';
+                if (iconContainer) {
+                    iconContainer.style.background = 'rgba(236,72,153,0.15)';
+                    iconContainer.style.borderColor = 'rgba(236,72,153,0.4)';
+                    iconContainer.style.color = 'var(--neon-pink)';
+                }
+                localStorage.setItem('school_seat_generator_panel_collapsed', 'false');
+            } else {
+                // Collapse panel
+                bodyEl.style.display = 'none';
+                if (symbolEl) symbolEl.innerText = '➕';
+                if (labelEl) labelEl.innerText = 'Show Panel';
+                if (iconContainer) {
+                    iconContainer.style.background = 'rgba(16,185,129,0.15)';
+                    iconContainer.style.borderColor = 'rgba(16,185,129,0.4)';
+                    iconContainer.style.color = '#34d399';
+                }
+                localStorage.setItem('school_seat_generator_panel_collapsed', 'true');
+            }
+        }
+
+        function initSeatGeneratorPanelState() {
+            const isCollapsed = localStorage.getItem('school_seat_generator_panel_collapsed') === 'true';
+            const bodyEl = document.getElementById('generator-panel-body');
+            const symbolEl = document.getElementById('generator-toggle-symbol');
+            const labelEl = document.getElementById('generator-toggle-label');
+            const iconContainer = document.getElementById('generator-panel-toggle-icon');
+
+            if (isCollapsed && bodyEl) {
+                bodyEl.style.display = 'none';
+                if (symbolEl) symbolEl.innerText = '➕';
+                if (labelEl) labelEl.innerText = 'Show Panel';
+                if (iconContainer) {
+                    iconContainer.style.background = 'rgba(16,185,129,0.15)';
+                    iconContainer.style.borderColor = 'rgba(16,185,129,0.4)';
+                    iconContainer.style.color = '#34d399';
+                }
+            }
+        }
+
+        // --- REAL-TIME STUDENT & SEAT COUNTER TEXT LINE ---
+        function updateRealtimeSeatCounter() {
+            const counterBar = document.getElementById('realtime-seat-counter-bar');
+            if (!counterBar) return;
+
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+            const selectedBuilding = document.getElementById('dist-building')?.value || 'All';
+            const selectedRoom = document.getElementById('dist-room-filter')?.value || 'All';
+
+            // 1. CALCULATE TOTAL STUDENTS FOR SELECTED DEPT, EXAM & SHIFT
+            const students = loadStudentsWithDefaults();
+            const classes = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classes);
+            const deptClasses = (dept === 'High Level') ? high : primary;
+
+            const routines = loadExamRoutines();
+            let shiftClasses = new Set();
+
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const matchesDept = !r.dept || r.dept === dept;
+                    const rExamName = r.examName || r.examTitle || r.title || r.name;
+                    const matchesExam = (examName === 'All') || (rExamName === examName);
+                    const matchesShift = r.shift && (r.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+
+                    if (matchesDept && matchesExam && matchesShift) {
+                        if (Array.isArray(r.classes)) {
+                            r.classes.forEach(c => shiftClasses.add(c));
+                        } else if (r.class) {
+                            shiftClasses.add(r.class);
+                        }
+                    }
+                });
+            }
+
+            if (shiftClasses.size === 0) {
+                if (dept === 'High Level') {
+                    if (shift === 'Morning Shift') {
+                        ['Six', 'Seven', 'Eight', 'Class 6', 'Class 7', 'Class 8', '6', '7', '8'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Nine', 'Ten', 'Class 9', 'Class 10', '9', '10'].forEach(c => shiftClasses.add(c));
+                    }
+                } else {
+                    if (shift === 'Morning Shift') {
+                        ['Play', 'Nursery', 'KG', 'One', 'Two', 'Class 1', 'Class 2', '1', '2'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Three', 'Four', 'Five', 'Class 3', 'Class 4', 'Class 5', '3', '4', '5'].forEach(c => shiftClasses.add(c));
+                    }
+                }
+            }
+
+            const deptStudents = students.filter(s => {
+                const belongsToDept = deptClasses.some(cName =>
+                    cName.trim().toLowerCase() === String(s.class || '').trim().toLowerCase()
+                );
+                if (!belongsToDept) return false;
+
+                if (s.shift && s.shift.trim().toLowerCase() !== shift.trim().toLowerCase()) {
+                    return false;
+                }
+
+                const inShiftClasses = Array.from(shiftClasses).some(cName =>
+                    cName.trim().toLowerCase() === String(s.class || '').trim().toLowerCase()
+                );
+
+                if (!inShiftClasses) return false;
+
+                // Check if this student's class and section are included by user
+                if (typeof isDistClassSectionIncluded === 'function') {
+                    return isDistClassSectionIncluded(s.class, s.section);
+                }
+
+                return true;
+            });
+
+            const totalStudents = deptStudents.length;
+            const maleStudentsCount = deptStudents.filter(s => (s.gender || 'Male').toLowerCase() === 'male').length;
+            const femaleStudentsCount = deptStudents.filter(s => (s.gender || 'Female').toLowerCase() === 'female').length;
+
+            // 2. CALCULATE TOTAL SEATS FOR SELECTED BUILDING & ROOM FILTERS
+            let rooms = loadRooms();
+            const excludedBuildings = getExcludedBuildings();
+            const excludedRooms = getExcludedRooms();
+
+            rooms = rooms.filter(r => !excludedBuildings.includes(r.buildingId) && !excludedRooms.includes(r.id));
+
+            rooms = rooms.filter(r => {
+                if (!r.shift || r.shift === 'Both' || r.shift === 'All') return true;
+                return r.shift.trim().toLowerCase() === shift.trim().toLowerCase();
+            });
+
+            if (selectedBuilding !== 'All') {
+                rooms = rooms.filter(r => r.buildingId === selectedBuilding);
+            }
+            if (selectedRoom !== 'All') {
+                rooms = rooms.filter(r => r.id === selectedRoom);
+            }
+
+            const totalBenches = rooms.reduce((sum, r) => sum + (r.benches || 0), 0);
+            const totalSeats = totalBenches * 2;
+            const roomCount = rooms.length;
+
+            const maleRoomsSeats = rooms.filter(r => r.gender === 'Male').reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
+            const femaleRoomsSeats = rooms.filter(r => r.gender === 'Female').reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
+            const bothRoomsSeats = rooms.filter(r => (r.gender === 'Both' || r.gender === 'Co-ed')).reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
+
+            const isShortage = totalSeats < totalStudents;
+            const diff = Math.abs(totalSeats - totalStudents);
+
+            // 3. RENDER COUNTER BAR HTML WITH GENDER BREAKDOWNS
+            if (isShortage) {
+                counterBar.style.borderColor = 'rgba(239, 68, 68, 0.6)';
+                counterBar.style.background = 'rgba(239, 68, 68, 0.08)';
+                counterBar.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.2)';
+            } else {
+                counterBar.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                counterBar.style.background = 'rgba(16, 185, 129, 0.05)';
+                counterBar.style.boxShadow = 'none';
+            }
+
+            counterBar.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                    <!-- Top Summary Bar -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.1rem;">🎓</span>
+                                <span style="font-weight: 700; color: #cbd5e1; font-size: 0.95rem;">মোট পরীক্ষার্থী:</span>
+                                <span style="font-size: 1.05rem; font-weight: 800; color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 10px; border-radius: 8px;">${totalStudents} জন</span>
+                            </div>
+                            <div style="color: rgba(255,255,255,0.2); font-weight: 300;">|</div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.1rem;">🪑</span>
+                                <span style="font-weight: 700; color: #cbd5e1; font-size: 0.95rem;">মোট আসন:</span>
+                                <span style="font-size: 1.05rem; font-weight: 800; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 10px; border-radius: 8px;">${totalSeats}টি <span style="font-size: 0.8rem; opacity: 0.85; font-weight: 700;">(${totalBenches} Bench &bull; ${roomCount} Room)</span></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            ${isShortage ? `
+                                <span style="font-size: 0.88rem; font-weight: 800; color: #fca5a5; background: rgba(239, 68, 68, 0.25); border: 1.5px solid #ef4444; padding: 4px 14px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(239,68,68,0.3);">
+                                    🚨 আসন সংকট! [ঘাটতি: ${diff}টি আসন]
+                                </span>
+                            ` : `
+                                <span style="font-size: 0.88rem; font-weight: 800; color: #6ee7b7; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; padding: 4px 14px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                                    ✅ পর্যাপ্ত আসন (উদ্বৃত্ত: ${diff}টি)
+                                </span>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- Bottom Detailed Gender Breakdown Bar -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 8px; font-size: 0.84rem;">
+                        <!-- Student Gender Breakdown -->
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 4px;">📊 শিক্ষার্থী বিভক্ত:</span>
+                            <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                👦 ছাত্র (Boys): <strong>${maleStudentsCount} জন</strong>
+                            </span>
+                            <span style="background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                👧 ছাত্রী (Girls): <strong>${femaleStudentsCount} জন</strong>
+                            </span>
+                        </div>
+
+                        <!-- Seat Gender Breakdown -->
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 4px;">🛋️ আসন বিভক্ত:</span>
+                            <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                ♂️ ছাত্র আসন (Boys Only): <strong>${maleRoomsSeats}টি</strong>
+                            </span>
+                            <span style="background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                ♀️ ছাত্রী আসন (Girls Only): <strong>${femaleRoomsSeats}টি</strong>
+                            </span>
+                            ${bothRoomsSeats > 0 ? `
+                                <span style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                    🚻 যৌথ (Co-ed): <strong>${bothRoomsSeats}টি</strong>
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- DYNAMIC DROPDOWN POPULATE FUNCTIONS ---
+        function populateDistDeptDropdown() {
+            const selectEl = document.getElementById('dist-dept');
+            if (!selectEl) return;
+
+            const prevVal = selectEl.value;
+            const classes = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classes);
+
+            let html = '';
+            if (primary.length > 0) {
+                html += `<option value="Primary Level">Primary Level (Play - Class 5)</option>`;
+            }
+            if (high.length > 0) {
+                html += `<option value="High Level">High Level (Class 6 - Class 10)</option>`;
+            }
+            // If no classes found, add defaults
+            if (!html) {
+                html = `<option value="Primary Level">Primary Level</option><option value="High Level">High Level</option>`;
+            }
+
+            selectEl.innerHTML = html;
+
+            // Restore previous selection if still valid
+            if (prevVal && Array.from(selectEl.options || []).some(o => o.value === prevVal)) {
+                selectEl.value = prevVal;
+            }
+
+            populateDistExamNameDropdown();
+        }
+
+        function populateDistExamNameDropdown() {
+            const selectEl = document.getElementById('dist-exam-name');
+            if (!selectEl) return;
+
+            const prevVal = selectEl.value;
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const routines = loadExamRoutines();
+
+            // Extract unique exam names strictly from saved routines (Saved Exam Routine List)
+            const examNamesSet = new Set();
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const rDept = (r.dept || '').trim().toLowerCase();
+                    const targetDept = (dept || '').trim().toLowerCase();
+                    if (!r.dept || rDept === targetDept || targetDept === 'all') {
+                        const name = (r.examName || r.examTitle || r.title || r.name || '').trim();
+                        if (name) examNamesSet.add(name);
+                    }
+                });
+            }
+
+            let html = '';
+            if (examNamesSet.size === 0) {
+                html = `<option value="">কোনো সংরক্ষিত পরীক্ষা রুটিন পাওয়া যায়নি (No Saved Routine)</option>`;
+            } else {
+                examNamesSet.forEach(name => {
+                    html += `<option value="${name}">${name}</option>`;
+                });
+            }
+
+            selectEl.innerHTML = html;
+
+            if (prevVal && Array.from(selectEl.options || []).some(o => o.value === prevVal)) {
+                selectEl.value = prevVal;
+            } else if (selectEl.options && selectEl.options.length > 0) {
+                selectEl.value = selectEl.options[0].value;
+            }
+
+            populateDistShiftDropdown();
+        }
+
+        function populateAllShiftDropdowns() {
+            const shiftTimes = loadShiftTimes();
+
+            // Collect unique shift names and their Bangla labels
+            const allShiftNames = new Set();
+            const shiftBnMap = {};
+
+            if (Array.isArray(shiftTimes)) {
+                shiftTimes.forEach(st => {
+                    if (st && st.shift && st.shift.trim()) {
+                        const sName = st.shift.trim();
+                        allShiftNames.add(sName);
+                        if (st.shiftBn && st.shiftBn.trim()) {
+                            shiftBnMap[sName] = st.shiftBn.trim();
+                        }
+                    }
+                });
+            }
+
+            // Fallback defaults
+            if (allShiftNames.size === 0) {
+                allShiftNames.add('Morning Shift');
+                allShiftNames.add('Afternoon Shift');
+                shiftBnMap['Morning Shift'] = 'প্রভাতি শিফট';
+                shiftBnMap['Afternoon Shift'] = 'দিবা শিফট';
+            }
+
+            const uniqueShifts = Array.from(allShiftNames);
+
+            // 1. Filter dropdowns (with 'All' / 'সকল শিফট')
+            const filterDropdowns = [
+                { id: 'saved-plan-filter-shift', labelAll: 'সকল শিফট (All Shifts)' },
+                { id: 'routine-filter-shift', labelAll: 'সকল শিফট (All Shifts)' },
+                { id: 'token-shift-filter', labelAll: 'সকল শিফট (All Shifts)' },
+                { id: 'dist-layout-shift-filter', labelAll: 'সকল শিফট (All Shifts)' },
+                { id: 'filter-shift-type', labelAll: 'All Shifts' }
+            ];
+
+            filterDropdowns.forEach(item => {
+                const el = document.getElementById(item.id);
+                if (!el) return;
+                const prevVal = el.value;
+
+                let optsHtml = `<option value="All">${item.labelAll}</option>`;
+                uniqueShifts.forEach(s => {
+                    const bn = shiftBnMap[s];
+                    const label = bn ? `${s} (${bn})` : s;
+                    optsHtml += `<option value="${s}">${label}</option>`;
+                });
+
+                el.innerHTML = optsHtml;
+                if (prevVal && Array.from(el.options).some(o => o.value === prevVal)) {
+                    el.value = prevVal;
+                }
+            });
+
+            // 2. Single selection dropdowns (Forms & Modals)
+            const formDropdownIds = [
+                'routine-shift',
+                'edit-routine-shift',
+                'modal-transfer-shift',
+                'time-shift'
+            ];
+
+            formDropdownIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const prevVal = el.value;
+
+                let optsHtml = '';
+                uniqueShifts.forEach(s => {
+                    const bn = shiftBnMap[s];
+                    const label = bn ? `${s} (${bn})` : s;
+                    optsHtml += `<option value="${s}">${label}</option>`;
+                });
+
+                el.innerHTML = optsHtml;
+                if (prevVal && Array.from(el.options).some(o => o.value === prevVal)) {
+                    el.value = prevVal;
+                }
+            });
+
+            // 3. Print Shift Select (with 'Both')
+            const printEl = document.getElementById('print-shift-select');
+            if (printEl) {
+                const prevVal = printEl.value;
+                let optsHtml = `<option value="Both">উভয় শিফট (Both Shifts)</option>`;
+                uniqueShifts.forEach(s => {
+                    const bn = shiftBnMap[s];
+                    const label = bn ? `${bn} (${s})` : `${s} Only`;
+                    optsHtml += `<option value="${s}">${label}</option>`;
+                });
+                printEl.innerHTML = optsHtml;
+                if (prevVal && Array.from(printEl.options).some(o => o.value === prevVal)) {
+                    printEl.value = prevVal;
+                }
+            }
+
+            updateRealtimeSeatCounter();
+        }
+
+        function populateDistShiftDropdown() {
+            const selectEl = document.getElementById('dist-shift');
+            if (!selectEl) return;
+
+            const prevVal = selectEl.value;
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const selectedExam = document.getElementById('dist-exam-name')?.value || 'All';
+            const routines = loadExamRoutines();
+            const shiftTimes = loadShiftTimes();
+
+            const shiftsSet = new Set();
+            if (Array.isArray(shiftTimes)) {
+                shiftTimes.forEach(st => {
+                    if (st && st.shift && (!st.dept || st.dept === dept)) {
+                        shiftsSet.add(st.shift.trim());
+                    }
+                });
+            }
+
+            if (shiftsSet.size === 0) {
+                shiftsSet.add('Morning Shift');
+                shiftsSet.add('Afternoon Shift');
+            }
+
+            // ALSO check saved routines & saved seat plans store
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const matchesDept = !r.dept || r.dept === dept;
+                    const rExamName = r.examName || r.examTitle || r.title || r.name;
+                    const matchesExam = selectedExam === 'All' || rExamName === selectedExam;
+                    if (matchesDept && matchesExam && r.shift) {
+                        shiftsSet.add(r.shift.trim());
+                    }
+                });
+            }
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+            Object.values(store).forEach(p => {
+                if (p && p.shift && (!p.dept || p.dept === dept) && (selectedExam === 'All' || p.examName === selectedExam)) {
+                    shiftsSet.add(p.shift.trim());
+                }
+            });
+
+            let html = '';
+            shiftsSet.forEach(s => {
+                const item = Array.isArray(shiftTimes) ? shiftTimes.find(t => t.shift === s) : null;
+                const label = s + (item && item.shiftBn ? ` (${item.shiftBn})` : '');
+                html += `<option value="${s}">${label}</option>`;
+            });
+
+            selectEl.innerHTML = html;
+
+            if (prevVal && Array.from(selectEl.options).some(o => o.value === prevVal)) {
+                selectEl.value = prevVal;
+            }
+
+            if (typeof populateDistClassSectionCheckboxes === 'function') {
+                populateDistClassSectionCheckboxes();
+            }
+            updateRealtimeSeatCounter();
+        }
+
+        // --- CLASS & SECTION EXCLUSION PERSISTENCE HELPERS ---
+        function getDistExcludedClassSections() {
+            return safeJsonParse('school_dist_excluded_class_sections', []);
+        }
+        function setDistExcludedClassSections(arr) {
+            localStorage.setItem('school_dist_excluded_class_sections', JSON.stringify(arr));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_dist_excluded_class_sections', arr);
+        }
+        function isDistClassSectionIncluded(className, sectionName) {
+            const excluded = getDistExcludedClassSections();
+            if (!Array.isArray(excluded) || excluded.length === 0) return true;
+
+            const normClass = typeof normalizeClassName === 'function' ? normalizeClassName(className) : String(className || '').trim();
+            const rawClass = String(className || '').trim();
+            const secUpper = (sectionName || '').trim().toUpperCase();
+
+            // Check if exact "normClass___secUpper" or "rawClass___secUpper" is excluded
+            if (secUpper) {
+                if (excluded.includes(`${normClass}___${secUpper}`) || excluded.includes(`${rawClass}___${secUpper}`)) {
+                    return false;
+                }
+            }
+            // Check if entire class "normClass___ALL" or "rawClass___ALL" is excluded
+            if (excluded.includes(`${normClass}___ALL`) || excluded.includes(`${rawClass}___ALL`)) {
+                return false;
+            }
+            return true;
+        }
+
+        function toggleDistSingleSection(className, sectionName, isChecked) {
+            let excluded = getDistExcludedClassSections();
+            const normClass = typeof normalizeClassName === 'function' ? normalizeClassName(className) : String(className || '').trim();
+            const rawClass = String(className || '').trim();
+            const secUpper = (sectionName || '').trim().toUpperCase();
+            const keyNorm = `${normClass}___${secUpper}`;
+            const keyRaw = `${rawClass}___${secUpper}`;
+            const classAllNorm = `${normClass}___ALL`;
+            const classAllRaw = `${rawClass}___ALL`;
+
+            if (isChecked) {
+                // Remove from excluded
+                excluded = excluded.filter(k => k !== keyNorm && k !== keyRaw && k !== classAllNorm && k !== classAllRaw);
+            } else {
+                // Add to excluded
+                if (!excluded.includes(keyNorm)) {
+                    excluded.push(keyNorm);
+                }
+            }
+            setDistExcludedClassSections(excluded);
+            populateDistClassSectionCheckboxes();
+            updateRealtimeSeatCounter();
+        }
+
+        function toggleDistClassAllSections(className, isChecked) {
+            let excluded = getDistExcludedClassSections();
+            const normClass = typeof normalizeClassName === 'function' ? normalizeClassName(className) : String(className || '').trim();
+            const rawClass = String(className || '').trim();
+            const students = loadStudentsWithDefaults();
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+            const classStudents = students.filter(s => {
+                const sNorm = typeof normalizeClassName === 'function' ? normalizeClassName(s.class) : s.class;
+                return (sNorm === normClass || s.class === rawClass) && (!s.shift || s.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+            });
+
+            let sections = Array.from(new Set(classStudents.map(s => (s.section || '').trim().toUpperCase()).filter(Boolean)));
+            if (sections.length === 0 && typeof getSectionsForClass === 'function') {
+                sections = getSectionsForClass(className).map(s => s.toUpperCase());
+            }
+            if (sections.length === 0) sections = ['A', 'B'];
+
+            if (isChecked) {
+                // Include all sections for this class
+                excluded = excluded.filter(k => !k.startsWith(`${normClass}___`) && !k.startsWith(`${rawClass}___`));
+            } else {
+                // Exclude all sections for this class
+                sections.forEach(sec => {
+                    const key = `${normClass}___${sec}`;
+                    if (!excluded.includes(key)) excluded.push(key);
+                });
+                const allKey = `${normClass}___ALL`;
+                if (!excluded.includes(allKey)) excluded.push(allKey);
+            }
+            setDistExcludedClassSections(excluded);
+            populateDistClassSectionCheckboxes();
+            updateRealtimeSeatCounter();
+        }
+
+        function toggleAllDistClassSections(selectAll) {
+            if (selectAll) {
+                setDistExcludedClassSections([]);
+            } else {
+                // Exclude all classes and sections for current shift & dept
+                const dept = document.getElementById('dist-dept')?.value || 'High Level';
+                const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+                const classes = loadClasses();
+                const { primary, high } = groupClassesByDepartment(classes);
+                const deptClasses = (dept === 'High Level') ? high : primary;
+                const students = loadStudentsWithDefaults();
+
+                let excluded = getDistExcludedClassSections();
+                deptClasses.forEach(c => {
+                    const normC = typeof normalizeClassName === 'function' ? normalizeClassName(c) : c;
+                    const classStudents = students.filter(s => {
+                        const sNorm = typeof normalizeClassName === 'function' ? normalizeClassName(s.class) : s.class;
+                        return (sNorm === normC || s.class === c) && (!s.shift || s.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+                    });
+                    let sections = Array.from(new Set(classStudents.map(s => (s.section || '').trim().toUpperCase()).filter(Boolean)));
+                    if (sections.length === 0 && typeof getSectionsForClass === 'function') {
+                        sections = getSectionsForClass(c).map(s => s.toUpperCase());
+                    }
+                    if (sections.length === 0) sections = ['A', 'B'];
+
+                    sections.forEach(sec => {
+                        const key = `${normC}___${sec}`;
+                        if (!excluded.includes(key)) excluded.push(key);
+                    });
+                    const allKey = `${normC}___ALL`;
+                    if (!excluded.includes(allKey)) excluded.push(allKey);
+                });
+                setDistExcludedClassSections(excluded);
+            }
+            populateDistClassSectionCheckboxes();
+            updateRealtimeSeatCounter();
+        }
+
+        function populateDistClassSectionCheckboxes() {
+            const container = document.getElementById('dist-class-section-grid');
+            const summaryBadge = document.getElementById('class-section-summary-badge');
+            if (!container) return;
+
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+            const students = loadStudentsWithDefaults();
+            const classes = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classes);
+            const deptClasses = (dept === 'High Level') ? high : primary;
+
+            // Determine allowed classes for this shift
+            const routines = loadExamRoutines();
+            let shiftClasses = new Set();
+
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const matchesDept = !r.dept || r.dept === dept;
+                    const rExamName = r.examName || r.examTitle || r.title || r.name;
+                    const matchesExam = (examName === 'All') || (rExamName === examName);
+                    const matchesShift = r.shift && (r.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+
+                    if (matchesDept && matchesExam && matchesShift) {
+                        if (Array.isArray(r.classes)) {
+                            r.classes.forEach(c => shiftClasses.add(c));
+                        } else if (r.class) {
+                            shiftClasses.add(r.class);
+                        }
+                    }
+                });
+            }
+
+            if (shiftClasses.size === 0) {
+                if (dept === 'High Level') {
+                    if (shift === 'Morning Shift') {
+                        ['Six', 'Seven', 'Eight', 'Class 6', 'Class 7', 'Class 8', '6', '7', '8'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Nine', 'Ten', 'Class 9', 'Class 10', '9', '10'].forEach(c => shiftClasses.add(c));
+                    }
+                } else {
+                    if (shift === 'Morning Shift') {
+                        ['Play', 'Nursery', 'KG', 'One', 'Two', 'Class 1', 'Class 2', '1', '2'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Three', 'Four', 'Five', 'Class 3', 'Class 4', 'Class 5', '3', '4', '5'].forEach(c => shiftClasses.add(c));
+                    }
+                }
+            }
+
+            // Filter deptClasses down to those in shiftClasses
+            const activeClassesForShift = deptClasses.filter(c => {
+                const normC = typeof normalizeClassName === 'function' ? normalizeClassName(c) : c;
+                return Array.from(shiftClasses).some(sc => {
+                    const base = sc.split(' - ')[0];
+                    return (typeof normalizeClassName === 'function' ? normalizeClassName(base) : base) === normC;
+                });
+            });
+
+            const finalClasses = activeClassesForShift.length > 0 ? activeClassesForShift : deptClasses;
+
+            let html = '';
+            let totalSectionsCount = 0;
+            let activeSectionsCount = 0;
+            let activeStudentsCount = 0;
+
+            finalClasses.forEach(cName => {
+                const normC = typeof normalizeClassName === 'function' ? normalizeClassName(cName) : cName;
+                // Get students for this class in this shift
+                const classStudents = students.filter(s => {
+                    const sNorm = typeof normalizeClassName === 'function' ? normalizeClassName(s.class) : s.class;
+                    return (sNorm === normC || s.class === cName) &&
+                        (!s.shift || s.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+                });
+
+                let sections = Array.from(new Set(classStudents.map(s => (s.section || '').trim().toUpperCase()).filter(Boolean)));
+                if (sections.length === 0 && typeof getSectionsForClass === 'function') {
+                    sections = getSectionsForClass(cName).map(s => s.toUpperCase());
+                }
+                if (sections.length === 0) {
+                    sections = ['A', 'B'];
+                }
+                sections.sort();
+
+                const classSectionStatus = sections.map(sec => {
+                    const isIncluded = isDistClassSectionIncluded(cName, sec);
+                    const secStudents = classStudents.filter(s => (s.section || '').trim().toUpperCase() === sec).length;
+                    if (isIncluded) {
+                        activeSectionsCount++;
+                        activeStudentsCount += secStudents;
+                    }
+                    totalSectionsCount++;
+                    return { sec, isIncluded, secStudents };
+                });
+
+                const allSecsIncluded = classSectionStatus.every(s => s.isIncluded);
+                const someSecsIncluded = classSectionStatus.some(s => s.isIncluded);
+                const totalClassStudents = classStudents.length;
+
+                html += `
+                    <div class="dist-class-card" style="background: ${someSecsIncluded ? '#ffffff' : '#fef2f2'}; border: 1.5px solid ${someSecsIncluded ? (allSecsIncluded ? '#0284c7' : '#f59e0b') : '#ef4444'}; border-radius: 10px; padding: 10px 14px; min-width: 210px; flex: 1 1 210px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.2s ease;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+                            <label style="display: flex; align-items: center; gap: 7px; font-weight: 900; color: #0f172a; cursor: pointer; margin: 0; font-size: 1.02rem;">
+                                <input type="checkbox" ${allSecsIncluded ? 'checked' : ''} onchange="toggleDistClassAllSections('${cName}', this.checked)" style="width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer;">
+                                <span>${cName}</span>
+                            </label>
+                            <span style="font-size: 0.76rem; font-weight: 800; background: ${allSecsIncluded ? '#e0f2fe' : (someSecsIncluded ? '#fef3c7' : '#fee2e2')}; color: ${allSecsIncluded ? '#0284c7' : (someSecsIncluded ? '#b45309' : '#dc2626')}; padding: 2px 7px; border-radius: 8px; border: 1px solid ${allSecsIncluded ? '#bae6fd' : (someSecsIncluded ? '#fde68a' : '#fecaca')};">
+                                ${totalClassStudents} জন
+                            </span>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${classSectionStatus.map(st => `
+                                <label style="display: inline-flex; align-items: center; gap: 5px; background: ${st.isIncluded ? '#f0fdf4' : '#f8fafc'}; color: ${st.isIncluded ? '#166534' : '#94a3b8'}; border: 1px solid ${st.isIncluded ? '#86efac' : '#cbd5e1'}; padding: 3px 9px; border-radius: 6px; font-size: 0.84rem; font-weight: 700; cursor: pointer; text-decoration: ${st.isIncluded ? 'none' : 'line-through'};">
+                                    <input type="checkbox" ${st.isIncluded ? 'checked' : ''} onchange="toggleDistSingleSection('${cName}', '${st.sec}', this.checked)" style="width: 14px; height: 14px; accent-color: #16a34a; cursor: pointer;">
+                                    <span>Sec ${st.sec} (${st.secStudents})</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            if (summaryBadge) {
+                if (activeSectionsCount === totalSectionsCount) {
+                    summaryBadge.style.background = '#e0f2fe';
+                    summaryBadge.style.color = '#0284c7';
+                    summaryBadge.style.borderColor = '#93c5fd';
+                    summaryBadge.innerHTML = `✅ সকল ${finalClasses.length}টি শ্রেণি (${totalSectionsCount}টি সেকশন) অন্তর্ভুক্ত`;
+                } else if (activeSectionsCount === 0) {
+                    summaryBadge.style.background = '#fee2e2';
+                    summaryBadge.style.color = '#dc2626';
+                    summaryBadge.style.borderColor = '#fca5a5';
+                    summaryBadge.innerHTML = `⚠️ কোনো শ্রেণি অন্তর্ভুক্ত নেই (০টি সেকশন)`;
+                } else {
+                    summaryBadge.style.background = '#fef3c7';
+                    summaryBadge.style.color = '#b45309';
+                    summaryBadge.style.borderColor = '#fcd34d';
+                    summaryBadge.innerHTML = `📌 ${activeSectionsCount}/${totalSectionsCount}টি সেকশন সক্রিয় (${activeStudentsCount} জন শিক্ষার্থী)`;
+                }
+            }
+        }
+
+        // --- EXCLUSION PERSISTENCE HELPERS ---
+        function getExcludedBuildings() {
+            return safeJsonParse('school_excluded_buildings', []);
+        }
+        function setExcludedBuildings(arr) {
+            localStorage.setItem('school_excluded_buildings', JSON.stringify(arr));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_excluded_buildings', arr);
+        }
+        function toggleExcludeBuilding(e, buildingId) {
+            if (e) e.stopPropagation();
+            let excluded = getExcludedBuildings();
+            if (excluded.includes(buildingId)) {
+                excluded = excluded.filter(id => id !== buildingId);
+            } else {
+                excluded.push(buildingId);
+            }
+            setExcludedBuildings(excluded);
+            populateDistBuildingDropdown();
+            updateRealtimeSeatCounter();
+        }
+        function resetExcludedBuildings() {
+            setExcludedBuildings([]);
+            populateDistBuildingDropdown();
+            updateRealtimeSeatCounter();
+        }
+
+        function getExcludedRooms() {
+            return safeJsonParse('school_excluded_rooms', []);
+        }
+        function setExcludedRooms(arr) {
+            localStorage.setItem('school_excluded_rooms', JSON.stringify(arr));
+            if (window.SeatPlanAPI) SeatPlanAPI.saveKey('school_excluded_rooms', arr);
+        }
+        function toggleExcludeRoom(e, roomId) {
+            if (e) e.stopPropagation();
+            let excluded = getExcludedRooms();
+            if (excluded.includes(roomId)) {
+                excluded = excluded.filter(id => id !== roomId);
+            } else {
+                excluded.push(roomId);
+            }
+            setExcludedRooms(excluded);
+            populateDistRoomFilterDropdown();
+            updateRealtimeSeatCounter();
+        }
+        function resetExcludedRooms() {
+            setExcludedRooms([]);
+            populateDistRoomFilterDropdown();
+            updateRealtimeSeatCounter();
+        }
+
+        function populateDistBuildingDropdown() {
+            const selectEl = document.getElementById('dist-building');
+            if (!selectEl) return;
+
+            const prevVal = selectEl.value;
+            const buildings = loadBuildings();
+            const excludedBuildings = getExcludedBuildings();
+
+            // Populate hidden select
+            let selectHtml = `<option value="All">সকল বিল্ডিং (All Buildings)</option>`;
+            if (Array.isArray(buildings)) {
+                buildings.forEach(b => {
+                    const isEx = excludedBuildings.includes(b.id);
+                    selectHtml += `<option value="${b.id}">${b.name} (${b.floors} Floors)${isEx ? ' [বাদ দেওয়া]' : ''}</option>`;
+                });
+            }
+            selectEl.innerHTML = selectHtml;
+
+            if (prevVal && Array.from(selectEl.options).some(o => o.value === prevVal)) {
+                selectEl.value = prevVal;
+            }
+
+            // Render Large Icon Cards
+            const grid = document.getElementById('building-picker-grid');
+            if (grid) {
+                const rooms = loadRooms();
+                let cardsHtml = '';
+
+                if (excludedBuildings.length > 0) {
+                    cardsHtml += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; grid-column: 1 / -1; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; font-size: 0.82rem; color: #fca5a5;">
+                            <span>⚠️ ${excludedBuildings.length}টি বিল্ডিং বাদ দেওয়া আছে</span>
+                            <button onclick="resetExcludedBuildings()" style="background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 800; cursor: pointer;">🔄 সবগুলো সক্রিয় করুন</button>
+                        </div>
+                    `;
+                }
+
+                cardsHtml += `
+                    <div class="icon-card ${selectEl.value === 'All' ? 'selected' : ''}" onclick="selectBuildingCard('All')">
+                        <div class="card-icon">🏠</div>
+                        <div class="card-title">সকল বিল্ডিং</div>
+                        <div class="card-meta">All Buildings</div>
+                        <span class="card-badge all-tag">✓ সবগুলো</span>
+                    </div>
+                `;
+                if (Array.isArray(buildings)) {
+                    buildings.forEach(b => {
+                        const isEx = excludedBuildings.includes(b.id);
+                        const bRooms = rooms.filter(r => r.buildingId === b.id);
+                        const totalSeats = bRooms.reduce((sum, r) => sum + (r.benches * 2), 0);
+                        const boysRooms = bRooms.filter(r => r.gender === 'Male').length;
+                        const girlsRooms = bRooms.filter(r => r.gender === 'Female').length;
+                        const bothRooms = bRooms.filter(r => r.gender === 'Both').length;
+
+                        cardsHtml += `
+                            <div class="icon-card ${isEx ? 'is-excluded' : ''} ${selectEl.value === b.id ? 'selected' : ''}" onclick="selectBuildingCard('${b.id}')">
+                                <div class="card-icon">🏢</div>
+                                <div class="card-title">${b.name}</div>
+                                <div class="card-meta">${b.floors} Floors • ${bRooms.length} Rooms</div>
+                                <div class="card-meta">${totalSeats} Seats Total</div>
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 2px;">
+                                    ${boysRooms > 0 ? `<span class="card-badge boys">♂ ${boysRooms}</span>` : ''}
+                                    ${girlsRooms > 0 ? `<span class="card-badge girls">♀ ${girlsRooms}</span>` : ''}
+                                    ${bothRooms > 0 ? `<span class="card-badge both">⚥ ${bothRooms}</span>` : ''}
+                                    ${isEx ? `<span class="card-badge excluded">🚫 বাদ দেওয়া</span>` : `<span class="card-badge active-tag">✅ সক্রিয়</span>`}
+                                </div>
+                                <button type="button" class="card-action-toggle ${isEx ? 'restore' : 'omit'}" onclick="toggleExcludeBuilding(event, '${b.id}')">
+                                    ${isEx ? '➕ যুক্ত করুন' : '🚫 বাদ দিন'}
+                                </button>
+                            </div>
+                        `;
+                    });
+                }
+                grid.innerHTML = cardsHtml;
+            }
+
+            // Update trigger label
+            updateBuildingTriggerLabel();
+            populateDistRoomFilterDropdown();
+        }
+
+        function selectBuildingCard(val) {
+            const selectEl = document.getElementById('dist-building');
+            if (selectEl) {
+                selectEl.value = val;
+                selectEl.dispatchEvent(new Event('change'));
+            }
+            toggleIconPicker('building'); // Close panel
+            populateDistBuildingDropdown(); // Re-render to update selected state
+        }
+
+        function updateBuildingTriggerLabel() {
+            const selectEl = document.getElementById('dist-building');
+            const label = document.getElementById('building-picker-label');
+            if (!selectEl || !label) return;
+
+            const excludedBuildings = getExcludedBuildings();
+            const exCount = excludedBuildings.length;
+            const exSuffix = exCount > 0 ? ` (${exCount}টি বাদ)` : '';
+
+            if (selectEl.value === 'All') {
+                label.innerHTML = `🏠 সকল বিল্ডিং (All Buildings)${exSuffix}`;
+            } else {
+                const buildings = loadBuildings();
+                const b = buildings.find(x => x.id === selectEl.value);
+                const isEx = excludedBuildings.includes(selectEl.value);
+                label.innerHTML = b ? `🏢 ${b.name}${isEx ? ' [🚫 বাদ]' : ''}` : `🏢 Selected Building`;
+            }
+        }
+
+        function populateDistRoomFilterDropdown() {
+            const selectEl = document.getElementById('dist-room-filter');
+            const container = document.getElementById('room-checkbox-list-container');
+            if (!selectEl) return;
+
+            const selectedBuilding = document.getElementById('dist-building')?.value || 'All';
+            const rooms = loadRooms();
+            const buildings = loadBuildings();
+            const excludedRooms = getExcludedRooms();
+            const excludedBuildings = getExcludedBuildings();
+
+            let filteredRooms = rooms;
+            if (selectedBuilding !== 'All') {
+                filteredRooms = rooms.filter(r => r.buildingId === selectedBuilding);
+            }
+
+            // Populate hidden select for fallback compatibility
+            let selectHtml = `<option value="All">🚪 সকল রুম (All Rooms)</option>`;
+            filteredRooms.forEach(r => {
+                const building = buildings.find(b => b.id === r.buildingId);
+                const bName = building ? building.name : '';
+                const genderTag = r.gender === 'Male' ? '♂ Boys' : r.gender === 'Female' ? '♀ Girls' : '⚥ Co-ed';
+                const isEx = excludedRooms.includes(r.id) || excludedBuildings.includes(r.buildingId);
+                selectHtml += `<option value="${r.id}">Room ${r.number} — ${bName} (${genderTag}, ${r.benches * 2} Seats)${isEx ? ' [🚫 বাদ]' : ''}</option>`;
+            });
+            selectEl.innerHTML = selectHtml;
+
+            // Populate Checkbox List Container
+            if (container) {
+                let chkHtml = '';
+                let checkedCount = 0;
+
+                filteredRooms.forEach(r => {
+                    const building = buildings.find(b => b.id === r.buildingId);
+                    const bName = building ? building.name : '';
+                    const genderClass = r.gender === 'Male' ? 'boys' : r.gender === 'Female' ? 'girls' : 'both';
+                    const genderLabel = r.gender === 'Male' ? '♂ Boys' : r.gender === 'Female' ? '♀ Girls' : '⚥ Co-ed';
+                    const isBldgEx = excludedBuildings.includes(r.buildingId);
+                    const isRoomEx = excludedRooms.includes(r.id);
+                    const isExcluded = isBldgEx || isRoomEx;
+                    const isChecked = !isExcluded;
+
+                    if (isChecked) checkedCount++;
+
+                    chkHtml += `
+                        <div class="room-chk-item ${!isChecked ? 'is-unchecked' : ''}" onclick="toggleRoomCheckboxItem(event, '${r.id}')">
+                            <input type="checkbox" id="chk-room-${r.id}" ${isChecked ? 'checked' : ''} onchange="onRoomCheckboxChange(event, '${r.id}')" onclick="event.stopPropagation()">
+                            <label for="chk-room-${r.id}">
+                                <span>Room <strong style="color:var(--neon-cyan);">${r.number}</strong> (${bName})</span>
+                                <span class="card-badge ${!isChecked ? 'excluded' : genderClass}" style="font-size:0.68rem; margin:0;">
+                                    ${!isChecked ? (isBldgEx ? '🚫 বিল্ডিং বাদ' : '🚫 রুম বাদ') : genderLabel} (${r.benches * 2} S)
+                                </span>
+                            </label>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = chkHtml || `<div style="color:var(--muted-text); font-size:0.85rem; padding:10px; text-align:center;">কোনো রুম পাওয়া যায়নি</div>`;
+
+                // Update Select All checkbox state
+                const allChk = document.getElementById('room-select-all-chk');
+                if (allChk) {
+                    allChk.checked = (filteredRooms.length > 0 && checkedCount === filteredRooms.length);
+                }
+
+                // Update count badge
+                const badge = document.getElementById('room-checked-count-badge');
+                if (badge) {
+                    badge.innerText = `${checkedCount}/${filteredRooms.length}টি রুম যুক্ত`;
+                }
+
+                // Update trigger label
+                const triggerLabel = document.getElementById('room-picker-label');
+                if (triggerLabel) {
+                    triggerLabel.innerHTML = `🚪 ${checkedCount}/${filteredRooms.length}টি রুম সক্রিয়`;
+                }
+            }
+            updateRealtimeSeatCounter();
+        }
+
+        function toggleRoomCheckboxItem(e, roomId) {
+            if (e.target.tagName !== 'INPUT') {
+                const chk = document.getElementById(`chk-room-${roomId}`);
+                if (chk) {
+                    chk.checked = !chk.checked;
+                    onRoomCheckboxChange(e, roomId);
+                }
+            }
+        }
+
+        function onRoomCheckboxChange(e, roomId) {
+            if (e) e.stopPropagation();
+            const chk = document.getElementById(`chk-room-${roomId}`);
+            const isChecked = chk ? chk.checked : false;
+
+            let excluded = getExcludedRooms();
+            if (isChecked) {
+                excluded = excluded.filter(id => id !== roomId);
+            } else {
+                if (!excluded.includes(roomId)) {
+                    excluded.push(roomId);
+                }
+            }
+            setExcludedRooms(excluded);
+            populateDistRoomFilterDropdown();
+        }
+
+        function toggleAllRoomCheckboxes(shouldCheckAll) {
+            const selectedBuilding = document.getElementById('dist-building')?.value || 'All';
+            const rooms = loadRooms();
+            let filteredRooms = rooms;
+            if (selectedBuilding !== 'All') {
+                filteredRooms = rooms.filter(r => r.buildingId === selectedBuilding);
+            }
+
+            let excluded = getExcludedRooms();
+            filteredRooms.forEach(r => {
+                if (shouldCheckAll) {
+                    excluded = excluded.filter(id => id !== r.id);
+                } else {
+                    if (!excluded.includes(r.id)) {
+                        excluded.push(r.id);
+                    }
+                }
+            });
+
+            setExcludedRooms(excluded);
+            populateDistRoomFilterDropdown();
+        }
+
+        function selectRoomCard(val) {
+            const selectEl = document.getElementById('dist-room-filter');
+            if (selectEl) {
+                selectEl.value = val;
+            }
+            toggleIconPicker('room'); // Close panel
+            populateDistRoomFilterDropdown(); // Re-render to update selected state
+        }
+
+        function updateRoomTriggerLabel() {
+            const selectEl = document.getElementById('dist-room-filter');
+            const label = document.getElementById('room-picker-label');
+            if (!selectEl || !label) return;
+
+            if (selectEl.value === 'All') {
+                label.innerHTML = `🚪 সকল রুম (All Rooms)`;
+            } else {
+                const rooms = loadRooms();
+                const r = rooms.find(x => x.id === selectEl.value);
+                if (r) {
+                    const gIcon = r.gender === 'Male' ? '🚹' : r.gender === 'Female' ? '🚺' : '🚻';
+                    label.innerHTML = `${gIcon} ${r.number} (${r.benches * 2} Seats)`;
+                } else {
+                    label.innerHTML = `🚪 Selected Room`;
+                }
+            }
+        }
+
+        function toggleIconPicker(type) {
+            const panelId = type === 'building' ? 'building-picker-panel' : 'room-picker-panel';
+            const triggerId = type === 'building' ? 'building-picker-trigger' : 'room-picker-trigger';
+            const panel = document.getElementById(panelId);
+            const trigger = document.getElementById(triggerId);
+            if (!panel || !trigger) return;
+
+            const isOpen = panel.classList.contains('show');
+
+            // Close all panels first
+            document.querySelectorAll('.icon-picker-panel').forEach(p => p.classList.remove('show'));
+            document.querySelectorAll('.icon-picker-trigger').forEach(t => t.classList.remove('active'));
+
+            if (!isOpen) {
+                panel.classList.add('show');
+                trigger.classList.add('active');
+            }
+        }
+
+        // Close icon pickers when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.icon-picker-trigger') && !e.target.closest('.icon-picker-panel')) {
+                document.querySelectorAll('.icon-picker-panel').forEach(p => p.classList.remove('show'));
+                document.querySelectorAll('.icon-picker-trigger').forEach(t => t.classList.remove('active'));
+            }
+        });
+
+        // --- ENHANCED GENERATE SEAT DISTRIBUTION ---
+        // --- COMPOSITE SEAT PLAN PERSISTENCE HELPERS ---
+        let activeSeatPlanKey = null;
+
+        function getCompositeSeatPlanKey(dept, examName, shift) {
+            const cleanDept = (dept || 'High Level').trim();
+            const cleanExam = (examName || 'All').trim();
+            const cleanShift = (shift || 'Morning Shift').trim();
+            const uid = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+            return `SEAT_PLAN_${cleanDept}__${cleanExam}__${cleanShift}__${uid}`;
+        }
+
+        function saveActiveSeatAllocations(allocations = currentGeneratedAllocations) {
+            currentGeneratedAllocations = allocations;
+            localStorage.setItem('school_saved_seat_allocations', JSON.stringify(currentGeneratedAllocations));
+
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+            if (!activeSeatPlanKey) {
+                activeSeatPlanKey = getCompositeSeatPlanKey(dept, examName, shift);
+            }
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+            store[activeSeatPlanKey] = {
+                dept: dept,
+                examName: examName,
+                shift: shift,
+                timestamp: new Date().toISOString(),
+                allocations: currentGeneratedAllocations
+            };
+            localStorage.setItem('school_seat_plans_store', JSON.stringify(store));
+
+            if (window.SeatPlanAPI) {
+                SeatPlanAPI.saveBulk({
+                    'school_saved_seat_allocations': currentGeneratedAllocations,
+                    'school_seat_plans_store': store
+                });
+            }
+
+            renderSavedSeatPlansTable();
+            refreshAdmitCardIframes();
+            if (typeof refreshSeatingDetailsData === 'function') refreshSeatingDetailsData();
+            if (typeof refreshRoomTopshetData === 'function') refreshRoomTopshetData();
+                    if (typeof refreshStudentAttendanceData === 'function') refreshStudentAttendanceData();
+        }
+
+        // --- SAVED SEAT PLANS LIST TABLE RENDERER & ACTION CONTROLLERS ---
+        function getSavedPlanShiftLabel(shift, dept) {
+            if (!shift) return 'Morning Shift';
+            const times = loadShiftTimes();
+            if (Array.isArray(times)) {
+                let match = times.find(t => t.dept === dept && t.shift === shift);
+                if (!match) {
+                    match = times.find(t => t.shift === shift);
+                }
+                if (!match) {
+                    const isMorning = /morning|sokal|প্রভাতি/i.test(shift);
+                    const isAfternoon = /afternoon|bikal|দিবা/i.test(shift);
+                    if (isMorning) match = times.find(t => /morning|sokal|প্রভাতি/i.test(t.shift) || (t.shiftBn && /প্রভাতি|সকাল/i.test(t.shiftBn)));
+                    if (isAfternoon) match = times.find(t => /afternoon|bikal|দিবা/i.test(t.shift) || (t.shiftBn && /দিবা|বিকাল/i.test(t.shiftBn)));
+                }
+                if (match) {
+                    const bn = match.shiftBn || '';
+                    const en = match.shift || shift;
+                    if (bn && en && bn !== en) {
+                        return `${bn} (${en})`;
+                    }
+                    return bn || en;
+                }
+            }
+            if (shift === 'Morning Shift') return 'প্রভাতি শিফট (Morning Shift)';
+            if (shift === 'Afternoon Shift') return 'দিবা শিফট (Afternoon Shift)';
+            return shift;
+        }
+
+        function renderSavedSeatPlansTable() {
+            const tbody = document.getElementById('saved-seat-plans-rows');
+            if (!tbody) return;
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const filterDept = document.getElementById('saved-plan-filter-dept')?.value || 'All';
+            const filterShift = document.getElementById('saved-plan-filter-shift')?.value || 'All';
+
+            const currDept = document.getElementById('dist-dept')?.value || 'High Level';
+            const currExam = document.getElementById('dist-exam-name')?.value || 'All';
+            const currShift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+            const entries = Object.entries(store).map(([key, data]) => ({ key, ...data }));
+
+            const filtered = entries.filter(item => {
+                if (!item || !item.dept) return false;
+                const matchesDept = filterDept === 'All' || item.dept === filterDept;
+                const matchesShift = filterShift === 'All' || item.shift === filterShift;
+                return matchesDept && matchesShift;
+            });
+
+            filtered.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 25px; color: #64748b; font-size: 0.98rem; font-weight: 700; border: 1.5px solid #e2e8f0;">
+                            🪑 কোনো সংরক্ষিত সিটপ্ল্যান পাওয়া যায়নি। "Generate Auto" বাটনে ক্লিক করে নতুন সিটপ্ল্যান তৈরি করুন।
+                        </td>
+                    </tr>
+                `;
+                if (typeof refreshSeatingDetailsData === 'function') {
+                    refreshSeatingDetailsData();
+            if (typeof refreshRoomTopshetData === 'function') refreshRoomTopshetData();
+                    if (typeof refreshStudentAttendanceData === 'function') refreshStudentAttendanceData();
+                }
+                return;
+            }
+
+            // PERFORMANCE OPTIMIZATION: Cache classes and routines ONCE outside the loop
+            const allKnownClasses = loadClasses();
+            const routines = loadExamRoutines();
+            const { primary: defPrimary, high: defHigh } = typeof groupClassesByDepartment === 'function' ? groupClassesByDepartment(allKnownClasses) : { primary: [], high: [] };
+
+            let html = '';
+            filtered.forEach((item, index) => {
+                let studentCount = 0;
+                if (item.allocations && typeof item.allocations === 'object') {
+                    Object.values(item.allocations).forEach(roomAlloc => {
+                        if (roomAlloc && roomAlloc.benches && Array.isArray(roomAlloc.benches)) {
+                            roomAlloc.benches.forEach(bench => {
+                                if (bench.left && bench.left.id) studentCount++;
+                                if (bench.right && bench.right.id) studentCount++;
+                            });
+                        }
+                    });
+                }
+
+                const isActive = (item.key === activeSeatPlanKey) || (!activeSeatPlanKey && index === 0);
+
+                const deptBadgeBg = item.dept === 'High Level' ? '#dbeafe' : '#fef3c7';
+                const deptBadgeColor = item.dept === 'High Level' ? '#1e40af' : '#92400e';
+                const shiftBadgeBg = item.shift === 'Morning Shift' ? '#e0e7ff' : '#ffedd5';
+                const shiftBadgeColor = item.shift === 'Morning Shift' ? '#3730a3' : '#9a3412';
+
+                // Collect classes for this saved seat plan entry
+                const planClasses = new Set();
+                if (item.allocations && typeof item.allocations === 'object') {
+                    Object.values(item.allocations).forEach(roomAlloc => {
+                        if (roomAlloc && roomAlloc.benches && Array.isArray(roomAlloc.benches)) {
+                            roomAlloc.benches.forEach(bench => {
+                                if (bench.left && (bench.left.class || bench.left.className)) {
+                                    planClasses.add(bench.left.class || bench.left.className);
+                                }
+                                if (bench.right && (bench.right.class || bench.right.className)) {
+                                    planClasses.add(bench.right.class || bench.right.className);
+                                }
+                            });
+                        }
+                    });
+                }
+
+                let classList = Array.from(planClasses);
+                if (classList.length === 0) {
+                    const matchingRoutines = routines.filter(r =>
+                        (!item.dept || (r.dept || 'High Level') === item.dept) &&
+                        (!item.shift || (r.shift || 'Morning Shift') === item.shift) &&
+                        (!item.examName || item.examName === 'All' || (r.examName || 'Half-Yearly Examination 2026') === item.examName)
+                    );
+                    const routineClasses = Array.from(new Set(matchingRoutines.map(r => r.class).filter(Boolean)));
+                    if (routineClasses.length > 0) {
+                        classList = routineClasses;
+                    } else {
+                        classList = (item.dept === 'High Level') ? defHigh : defPrimary;
+                    }
+                }
+
+                classList.sort((a, b) => {
+                    const normA = typeof normalizeClassName === 'function' ? normalizeClassName(a) : a;
+                    const normB = typeof normalizeClassName === 'function' ? normalizeClassName(b) : b;
+                    let idxA = allKnownClasses.findIndex(c => (typeof normalizeClassName === 'function' ? normalizeClassName(c) : c) === normA);
+                    let idxB = allKnownClasses.findIndex(c => (typeof normalizeClassName === 'function' ? normalizeClassName(c) : c) === normB);
+                    if (idxA === -1) idxA = 999;
+                    if (idxB === -1) idxB = 999;
+                    return idxA - idxB;
+                });
+
+                const classText = classList.length > 0 ? classList.join(', ') : 'সকল শ্রেণি';
+
+                html += `
+                    <tr style="border-bottom: 1.5px solid #e2e8f0; background: ${isActive ? 'rgba(34, 197, 94, 0.20)' : (index % 2 === 0 ? '#ffffff' : '#f8fafc')}; transition: background 0.2s;">
+                        <td style="text-align: center; padding: 10px; font-weight: 800; color: #475569; border: 1px solid #cbd5e1; font-size: 1.05rem;">${index + 1}</td>
+                        <td style="padding: 10px 14px; border: 1px solid #cbd5e1;">
+                            <span style="background: ${deptBadgeBg}; color: ${deptBadgeColor}; padding: 4px 11px; border-radius: 12px; font-weight: 800; font-size: 0.94rem;">
+                                ${item.dept || '-'}
+                            </span>
+                        </td>
+                        <td style="padding: 10px 14px; font-weight: 800; color: #0f172a; border: 1px solid #cbd5e1; font-size: 1.05rem;">
+                            <div style="font-size: 1.10rem; font-weight: 900; color: #0f172a; line-height: 1.3;">
+                                ${item.examName || 'All Exams'}
+                            </div>
+                            <div style="font-size: 0.92rem; color: #0369a1; font-weight: 800; margin-top: 3px;">
+                                ${classText}
+                            </div>
+                        </td>
+                        <td style="padding: 10px 14px; border: 1px solid #cbd5e1;">
+                            <span style="background: ${shiftBadgeBg}; color: ${shiftBadgeColor}; padding: 4px 11px; border-radius: 12px; font-weight: 800; font-size: 0.94rem;">
+                                ${getSavedPlanShiftLabel(item.shift, item.dept)}
+                            </span>
+                        </td>
+                        <td style="text-align: center; padding: 10px 14px; font-weight: 900; color: #0284c7; font-size: 1.16rem; border: 1px solid #cbd5e1;">
+                            🎓 ${studentCount} জন
+                        </td>
+                        <td style="text-align: center; padding: 10px 14px; border: 1px solid #cbd5e1;">
+                            <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">
+                                <button type="button" onclick="loadSavedPlanEntry('${item.key}')" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: none; padding: 7px 11px; border-radius: 6px; font-weight: 800; font-size: 0.94rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(2,132,199,0.3);" title="এই সিটপ্ল্যানটি লোড ও প্রদর্শন করুন">
+                                    👁️
+                                </button>
+                                <button type="button" onclick="openSavedSeatPlanTokensModal('${item.key}')" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: #ffffff; border: none; padding: 7px 11px; border-radius: 6px; font-weight: 800; font-size: 0.94rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(139,92,246,0.3);" title="সিট টোকেনসমূহ পপআপ/প্রিন্ট করুন">
+                                    🖨️
+                                </button>
+                                <button type="button" onclick="deleteSavedPlanEntry('${item.key}')" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; border: none; padding: 7px 11px; border-radius: 6px; font-weight: 800; font-size: 0.94rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(239,68,68,0.3);" title="মুছে ফেলুন">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function loadSavedPlanEntry(key) {
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const data = store[key];
+            if (!data) return;
+
+            activeSeatPlanKey = key;
+
+            const deptSelect = document.getElementById('dist-dept');
+            if (deptSelect && data.dept) {
+                deptSelect.value = data.dept;
+                populateDistExamNameDropdown();
+            }
+
+            const examSelect = document.getElementById('dist-exam-name');
+            if (examSelect && data.examName) {
+                if (!Array.from(examSelect.options).some(o => o.value === data.examName)) {
+                    const opt = document.createElement('option');
+                    opt.value = data.examName;
+                    opt.textContent = data.examName;
+                    examSelect.appendChild(opt);
+                }
+                examSelect.value = data.examName;
+                populateDistShiftDropdown();
+            }
+
+            const shiftSelect = document.getElementById('dist-shift');
+            if (shiftSelect && data.shift) {
+                if (!Array.from(shiftSelect.options).some(o => o.value === data.shift)) {
+                    const opt = document.createElement('option');
+                    opt.value = data.shift;
+                    opt.textContent = data.shift;
+                    shiftSelect.appendChild(opt);
+                }
+                shiftSelect.value = data.shift;
+            }
+
+            if (data.allocations && typeof data.allocations === 'object' && Object.keys(data.allocations).length > 0) {
+                currentGeneratedAllocations = data.allocations;
+                localStorage.setItem('school_saved_seat_allocations', JSON.stringify(currentGeneratedAllocations));
+            } else {
+                loadSeatPlanForCurrentCombination();
+            }
+
+            populateDistRoomSelect();
+            renderSelectedRoomBenchLayout();
+            renderSavedSeatPlansTable();
+
+            const targetCard = document.getElementById('seat-distribution-results-card');
+            if (targetCard) {
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function deleteSavedPlanEntry(key) {
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const data = store[key];
+            const nameStr = data ? `${data.dept} - ${data.examName} (${data.shift})` : key;
+
+            if (confirm(`আপনি কি নিশ্চিত যে "${nameStr}" সিটপ্ল্যানটি ডিলিট করতে চান?`)) {
+                delete store[key];
+                localStorage.setItem('school_seat_plans_store', JSON.stringify(store));
+                if (window.SeatPlanAPI) {
+                    SeatPlanAPI.saveKey('school_seat_plans_store', store);
+                }
+                loadSeatPlanForCurrentCombination();
+                renderSavedSeatPlansTable();
+                refreshAdmitCardIframes();
+            if (typeof refreshSeatingDetailsData === 'function') refreshSeatingDetailsData();
+            if (typeof refreshRoomTopshetData === 'function') refreshRoomTopshetData();
+                    if (typeof refreshStudentAttendanceData === 'function') refreshStudentAttendanceData();
+            }
+        }
+
+        function deleteAllSavedSeatPlans() {
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const count = Object.keys(store).length;
+            if (count === 0) {
+                alert("কোনো সংরক্ষিত সিটপ্ল্যান নেই।");
+                return;
+            }
+
+            if (confirm(`⚠️ সতর্কবার্তা: আপনি কি নিশ্চিত যে সংরক্ষিত সকল ${count}টি সিটপ্ল্যান একসাথে স্থায়ীভাবে মুছে ফেলতে চান?`)) {
+                localStorage.setItem('school_seat_plans_store', JSON.stringify({}));
+                localStorage.setItem('school_saved_seat_allocations', JSON.stringify({}));
+                if (window.SeatPlanAPI) {
+                    SeatPlanAPI.saveBulk({
+                        'school_seat_plans_store': {},
+                        'school_saved_seat_allocations': {}
+                    });
+                }
+                currentGeneratedAllocations = {};
+                loadSeatPlanForCurrentCombination();
+                renderSavedSeatPlansTable();
+                refreshAdmitCardIframes();
+            if (typeof refreshSeatingDetailsData === 'function') refreshSeatingDetailsData();
+            if (typeof refreshRoomTopshetData === 'function') refreshRoomTopshetData();
+                    if (typeof refreshStudentAttendanceData === 'function') refreshStudentAttendanceData();
+            }
+        }
+
+        function printSavedPlanEntry(key) {
+            openSavedSeatPlanTokensModal(key);
+        }
+
+        // --- SEAT TOKEN CUSTOMIZATION STATE & CONTROLLER ---
+        let currentTokenLanguage = localStorage.getItem('seat_token_language') || 'both'; // 'both', 'bn', 'en'
+        let currentTokenFontSize = localStorage.getItem('seat_token_fontsize') || 'normal'; // 'small', 'normal', 'medium', 'large', 'xlarge'
+        let currentHeadlineFontSize = localStorage.getItem('seat_token_headline_fontsize') || 'normal';
+        let lastOpenedTokenKey = null;
+
+        const tokenFontScaleMap = {
+            'small': { scale: 0.85, label: '85%' },
+            'normal': { scale: 1.0, label: '100%' },
+            'medium': { scale: 1.15, label: '115%' },
+            'large': { scale: 1.30, label: '130%' },
+            'xlarge': { scale: 1.45, label: '145%' }
+        };
+
+        const headlineFontScaleMap = {
+            'small': { scale: 0.85, label: '85%' },
+            'normal': { scale: 1.0, label: '100%' },
+            'medium': { scale: 1.15, label: '115%' },
+            'large': { scale: 1.30, label: '130%' },
+            'xlarge': { scale: 1.45, label: '145%' }
+        };
+
+        function getStudentNameForToken(s, lang) {
+            if (!s) return lang === 'en' ? 'Student' : 'শিক্ষার্থী';
+
+            let bn = s.nameBn || s.nameBangla || s.name_bn || '';
+            let en = s.nameEn || s.nameEnglish || s.name_en || s.englishName || '';
+
+            if (s.name) {
+                if (/[\u0980-\u09FF]/.test(s.name)) {
+                    if (!bn) bn = s.name;
+                } else {
+                    if (!en) en = s.name;
+                }
+            }
+
+            let cleanBn = String(bn || '').trim();
+            let cleanEn = String(en || '').trim();
+
+            if (cleanBn.includes('—')) cleanBn = cleanBn.split('—')[0].trim();
+            if (cleanEn.includes('—')) cleanEn = cleanEn.split('—')[0].trim();
+
+            if (lang === 'bn') {
+                if (cleanBn) return cleanBn;
+                if (cleanEn) return cleanEn;
+                return s.name || 'শিক্ষার্থী';
+            } else if (lang === 'en') {
+                if (cleanEn && !/[\u0980-\u09FF]/.test(cleanEn)) return cleanEn;
+                if (cleanBn && !/[\u0980-\u09FF]/.test(cleanBn)) return cleanBn;
+                if (s.name && !/[\u0980-\u09FF]/.test(s.name)) return s.name;
+                return cleanEn || cleanBn || s.name || 'Student';
+            } else {
+                return formatStudentDisplayName(s);
+            }
+        }
+
+        function formatShiftDisplayLang(shift, lang) {
+            if (!shift) return lang === 'en' ? 'Morning' : (lang === 'bn' ? 'সকাল' : 'সকাল (Morning)');
+            let s = String(shift).trim();
+            const isMorning = /morning/i.test(s);
+            const isAfternoon = /afternoon|day/i.test(s);
+
+            if (lang === 'bn') {
+                if (isMorning) return 'সকাল';
+                if (isAfternoon) return 'বিকেল';
+                return s.replace(/\s*Shift/gi, '').trim();
+            } else if (lang === 'en') {
+                if (isMorning) return 'Morning';
+                if (isAfternoon) return 'Afternoon';
+                return s.replace(/\s*Shift/gi, '').trim();
+            } else {
+                if (isMorning) return 'সকাল (Morning)';
+                if (isAfternoon) return 'বিকেল (Afternoon)';
+                return s.replace(/\s*Shift/gi, '').trim();
+            }
+        }
+
+        function changeSeatTokenLanguage(lang) {
+            currentTokenLanguage = lang || 'both';
+            localStorage.setItem('seat_token_language', currentTokenLanguage);
+
+            const mSelect = document.getElementById('token-modal-lang-select');
+            if (mSelect) mSelect.value = currentTokenLanguage;
+            const tSelect = document.getElementById('token-tab-lang-select');
+            if (tSelect) tSelect.value = currentTokenLanguage;
+
+            const modal = document.getElementById('saved-seat-tokens-modal');
+            if (modal && modal.style.display === 'block') {
+                openSavedSeatPlanTokensModal(lastOpenedTokenKey);
+            }
+            if (typeof renderStudentSeatTokenReport === 'function') {
+                renderStudentSeatTokenReport();
+            }
+        }
+
+        function changeSeatTokenFontSize(size) {
+            currentTokenFontSize = size || 'normal';
+            localStorage.setItem('seat_token_fontsize', currentTokenFontSize);
+            applySeatTokenFontSize();
+        }
+
+        function adjustTokenFontSizeStep(step) {
+            const order = ['small', 'normal', 'medium', 'large', 'xlarge'];
+            let idx = order.indexOf(currentTokenFontSize);
+            if (idx === -1) idx = 1;
+            let nextIdx = idx + step;
+            if (nextIdx < 0) nextIdx = 0;
+            if (nextIdx >= order.length) nextIdx = order.length - 1;
+            changeSeatTokenFontSize(order[nextIdx]);
+        }
+
+        function applySeatTokenFontSize() {
+            const info = tokenFontScaleMap[currentTokenFontSize] || tokenFontScaleMap['normal'];
+
+            const mSelect = document.getElementById('token-modal-fontsize-select');
+            if (mSelect) mSelect.value = currentTokenFontSize;
+            const tSelect = document.getElementById('token-tab-fontsize-select');
+            if (tSelect) tSelect.value = currentTokenFontSize;
+
+            const mIndicator = document.getElementById('lbl-token-fontsize-indicator');
+            if (mIndicator) mIndicator.innerText = info.label;
+
+            const modal = document.getElementById('saved-seat-tokens-modal');
+            if (modal) {
+                modal.style.setProperty('--token-font-scale', info.scale);
+            }
+
+            const content = document.getElementById('saved-seat-tokens-modal-content');
+            if (content) {
+                content.style.setProperty('--token-font-scale', info.scale);
+            }
+
+            const reportContainer = document.getElementById('token-report-display-container');
+            if (reportContainer) {
+                reportContainer.style.setProperty('--token-font-scale', info.scale);
+            }
+
+            // Apply calculated font size to all active seat token cards directly
+            document.querySelectorAll('.seat-token-card').forEach(card => {
+                card.style.fontSize = `calc(1rem * ${info.scale})`;
+            });
+        }
+
+        function changeSeatTokenHeadlineFontSize(size) {
+            currentHeadlineFontSize = size || 'normal';
+            localStorage.setItem('seat_token_headline_fontsize', currentHeadlineFontSize);
+            applySeatTokenHeadlineFontSize();
+        }
+
+        function adjustTokenHeadlineFontSizeStep(step) {
+            const order = ['small', 'normal', 'medium', 'large', 'xlarge'];
+            let idx = order.indexOf(currentHeadlineFontSize);
+            if (idx === -1) idx = 1;
+            let nextIdx = idx + step;
+            if (nextIdx < 0) nextIdx = 0;
+            if (nextIdx >= order.length) nextIdx = order.length - 1;
+            changeSeatTokenHeadlineFontSize(order[nextIdx]);
+        }
+
+        function applySeatTokenHeadlineFontSize() {
+            const info = headlineFontScaleMap[currentHeadlineFontSize] || headlineFontScaleMap['normal'];
+
+            const hIndicator = document.getElementById('lbl-token-headline-fontsize-indicator');
+            if (hIndicator) hIndicator.innerText = info.label;
+
+            const modal = document.getElementById('saved-seat-tokens-modal');
+            if (modal) {
+                modal.style.setProperty('--token-headline-scale', info.scale);
+            }
+
+            const content = document.getElementById('saved-seat-tokens-modal-content');
+            if (content) {
+                content.style.setProperty('--token-headline-scale', info.scale);
+            }
+
+            const reportContainer = document.getElementById('token-report-display-container');
+            if (reportContainer) {
+                reportContainer.style.setProperty('--token-headline-scale', info.scale);
+            }
+
+            document.querySelectorAll('.token-headline-box').forEach(box => {
+                box.style.fontSize = `calc(1em * ${info.scale})`;
+            });
+            document.querySelectorAll('.token-header-bar').forEach(box => {
+                box.style.fontSize = `calc(1em * ${info.scale})`;
+            });
+        }
+
+        // --- SHIFT FORMATTER HELPER FOR SEAT TOKENS ---
+        function formatShiftDisplay(shift) {
+            if (!shift) return 'Morning';
+            let s = String(shift).trim();
+            if (/^morning(\s*shift)?$/i.test(s)) return 'Morning';
+            if (/^afternoon(\s*shift)?$/i.test(s)) return 'Afternoon';
+            return s.replace(/\s*Shift/gi, '').trim();
+        }
+
+        // --- SAVED SEAT PLAN TOKENS MODAL & PRINT CONTROLLER ---
+        function openSavedSeatPlanTokensModal(key) {
+            if (key !== undefined) {
+                lastOpenedTokenKey = key;
+            }
+            let planData = null;
+            if (key) {
+                const store = safeJsonParse('school_seat_plans_store', {});
+                planData = store[key];
+            } else if (activeSeatPlanKey) {
+                const store = safeJsonParse('school_seat_plans_store', {});
+                planData = store[activeSeatPlanKey];
+            }
+
+            const modal = document.getElementById('saved-seat-tokens-modal');
+            const content = document.getElementById('saved-seat-tokens-modal-content');
+            const subtitle = document.getElementById('saved-token-modal-subtitle');
+            const badge = document.getElementById('saved-token-modal-badge');
+
+            if (!modal || !content) return;
+
+            if (!planData && (!currentGeneratedAllocations || Object.keys(currentGeneratedAllocations).length === 0)) {
+                loadSeatPlanForCurrentCombination();
+            }
+
+            const dept = planData?.dept || document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = planData?.examName || document.getElementById('dist-exam-name')?.value || 'All Exams';
+            const shift = planData?.shift || document.getElementById('dist-shift')?.value || 'Morning Shift';
+            const allocations = planData?.allocations || currentGeneratedAllocations || {};
+
+            if (subtitle) {
+                subtitle.innerText = `ডিপার্টমেন্ট: ${dept} | পরীক্ষা: ${examName} | শিফট: ${formatShiftDisplayLang(shift, currentTokenLanguage)}`;
+            }
+
+            const schoolSettings = safeJsonParse('school_settings', null);
+            const schoolName = schoolSettings?.schoolName || document.getElementById('school-name')?.innerText.trim() || 'Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l';
+
+            const buildingMap = {};
+            let totalTokens = 0;
+
+            Object.values(allocations).forEach(roomAlloc => {
+                if (!roomAlloc || !roomAlloc.benches || !Array.isArray(roomAlloc.benches)) return;
+
+                const bldgObj = roomAlloc.building || { id: 'b_default', name: 'Main Academic Bhaban' };
+                const roomObj = roomAlloc.room || { id: 'r_default', number: '101', floor: '1st Floor' };
+
+                const bldgId = bldgObj.id || bldgObj.name;
+                const roomId = roomObj.id || roomObj.number;
+
+                if (!buildingMap[bldgId]) {
+                    buildingMap[bldgId] = {
+                        bldgName: bldgObj.name || 'Academic Bhaban',
+                        rooms: {}
+                    };
+                }
+
+                if (!buildingMap[bldgId].rooms[roomId]) {
+                    buildingMap[bldgId].rooms[roomId] = {
+                        roomNo: roomObj.number,
+                        floor: roomObj.floor || '1st Floor',
+                        tokens: []
+                    };
+                }
+
+                roomAlloc.benches.forEach(bench => {
+                    const addSeatToken = (student, side) => {
+                        if (!student || (!student.id && !student.studentId && !student.name && !student.nameBn)) return;
+
+                        totalTokens++;
+                        buildingMap[bldgId].rooms[roomId].tokens.push({
+                            student: student,
+                            benchNo: bench.benchNo,
+                            seatSide: side,
+                            roomNo: roomObj.number,
+                            bldgName: bldgObj.name || 'Academic Bhaban',
+                            floor: roomObj.floor || '',
+                            shift: roomAlloc.shift || shift,
+                            dept: roomAlloc.dept || dept,
+                            examName: roomAlloc.examName || examName
+                        });
+                    };
+
+                    addSeatToken(bench.left, 'Left');
+                    addSeatToken(bench.right, 'Right');
+                });
+            });
+
+            if (badge) {
+                badge.innerText = `🎓 মোট সিট টোকেন: ${totalTokens} টি`;
+            }
+
+            if (totalTokens === 0) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #64748b;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🎫</div>
+                        <h4 style="font-size: 1.2rem; font-weight: 800; color: #0f172a;">কোনো সিট টোকেন ডাটা পাওয়া যায়নি</h4>
+                    </div>
+                `;
+                modal.style.display = 'block';
+                modal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+
+            // Labels setup based on language
+            let badgeText = 'EXAM SEAT TOKEN / সিট টোকেন';
+            let labelClass = 'শ্রেণী (Class)';
+            let labelId = 'আইডি (ID)';
+            let labelReg = 'রেজি নং (Reg No)';
+            let labelShift = 'শিফট (Shift)';
+            let labelBldg = 'বিল্ডিং (Building)';
+            let labelRoom = 'রুম নং (Room No)';
+
+            if (currentTokenLanguage === 'bn') {
+                badgeText = 'সিট টোকেন';
+                labelClass = 'শ্রেণী';
+                labelId = 'আইডি';
+                labelReg = 'রেজি নং';
+                labelShift = 'শিফট';
+                labelBldg = 'বিল্ডিং';
+                labelRoom = 'রুম নং';
+            } else if (currentTokenLanguage === 'en') {
+                badgeText = 'EXAM SEAT TOKEN';
+                labelClass = 'Class';
+                labelId = 'ID';
+                labelReg = 'Reg No';
+                labelShift = 'Shift';
+                labelBldg = 'Building';
+                labelRoom = 'Room No';
+            }
+
+            let html = '';
+            let allRoomsList = [];
+            Object.values(buildingMap).forEach(bldg => {
+                Object.values(bldg.rooms).forEach(room => {
+                    if (room.tokens.length > 0) {
+                        allRoomsList.push({
+                            bldgName: bldg.bldgName,
+                            roomNo: room.roomNo,
+                            floor: room.floor,
+                            tokens: room.tokens
+                        });
+                    }
+                });
+            });
+
+            let pageBlocks = [];
+            allRoomsList.forEach(roomItem => {
+                // Sort tokens inside roomItem
+                roomItem.tokens.sort((a, b) => {
+                    const sA = a.student || {};
+                    const sB = b.student || {};
+                    const idA = (sA.studentId || sA.id || sA.roll || '').toString().trim();
+                    const idB = (sB.studentId || sB.id || sB.roll || '').toString().trim();
+                    return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+                });
+
+                const chunkSize = 8;
+                for (let i = 0; i < roomItem.tokens.length; i += chunkSize) {
+                    pageBlocks.push({
+                        bldgName: roomItem.bldgName,
+                        roomNo: roomItem.roomNo,
+                        floor: roomItem.floor,
+                        chunkIndex: i / chunkSize,
+                        tokens: roomItem.tokens.slice(i, i + chunkSize)
+                    });
+                }
+            });
+
+            pageBlocks.forEach((page, pageIdx) => {
+                const isLastPage = (pageIdx === pageBlocks.length - 1);
+                const pageBreakStyle = isLastPage ? 'page-break-after: avoid; break-after: avoid;' : 'page-break-after: always; break-after: page;';
+
+                html += `<div class="pdf-page" style="${pageBreakStyle}">`;
+
+                if (page.chunkIndex === 0) {
+                    const bldgLabelHeader = currentTokenLanguage === 'en' ? 'Building' : (currentTokenLanguage === 'bn' ? 'বিল্ডিং' : 'বিল্ডিং (Building)');
+                    const roomLabelHeader = currentTokenLanguage === 'en' ? 'Room No' : (currentTokenLanguage === 'bn' ? 'রুম নং' : 'রুম নং (Room No)');
+                    const floorLabel = page.floor ? ` (${page.floor})` : '';
+                    html += `
+                        <div class="pdf-page-header">
+                            <span>🏢 ${bldgLabelHeader}: ${page.bldgName}</span>
+                            <span>🚪 ${roomLabelHeader}: ${page.roomNo}${floorLabel}</span>
+                        </div>
+                    `;
+                }
+
+                html += `<div class="seat-tokens-grid">`;
+
+                page.tokens.forEach(tok => {
+                    const s = tok.student;
+                    const studentName = getStudentNameForToken(s, currentTokenLanguage);
+                    const stId = s.studentId || s.id || s.roll || '-';
+                    const regNo = s.regNo || s.registrationNo || s.reg || s.studentReg || '-';
+                    const stClass = s.class || '-';
+                    const stSec = s.section ? ` (${s.section})` : '';
+                    const shiftDisp = formatShiftDisplayLang(tok.shift, currentTokenLanguage);
+
+                    html += `
+                        <div class="seat-token-card" style="font-size: calc(1rem * var(--token-font-scale, 1));">
+                            <div class="token-headline-box" style="text-align: center; border-bottom: 1px solid #000000; padding-bottom: 3px; margin-bottom: 4px; font-size: calc(1em * var(--token-headline-scale, 1));">
+                                <div style="font-size: 0.85em; font-weight: 900; color: #000000; word-break: break-word; white-space: normal; line-height: 1.2; letter-spacing: normal !important;">${schoolName}</div>
+                                <div style="font-size: 0.75em; font-weight: 800; color: #000000; margin-top: 2px; word-break: break-word; white-space: normal; line-height: 1.2; letter-spacing: normal !important;">${tok.examName}</div>
+                                <div style="display: inline-block; background: #ffffff; color: #000000; border: 1px solid #000000; font-size: 0.85em; font-weight: 900; padding: 2px 8px; border-radius: 6px; margin-top: 2px; word-break: break-word; white-space: normal; line-height: 1.2; letter-spacing: normal !important;">
+                                    ${badgeText}
+                                </div>
+                            </div>
+
+                            <div style="font-size: 0.82em; font-weight: 800; color: #000000; line-height: 1.35; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+                                <div style="font-size: 1.14em; font-weight: 900; color: #000000; border-bottom: 1px solid #000000; padding-bottom: 3px; margin-bottom: 5px; text-align: center; word-break: break-word; white-space: normal; line-height: 1.2;">
+                                    👤 ${studentName}
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>${labelClass}: <strong>${stClass}${stSec}</strong></span>
+                                    <span>${labelId}: <strong>${stId}</strong></span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>${labelReg}: <strong>${regNo}</strong></span>
+                                    <span>${labelShift}: <strong>${shiftDisp}</strong></span>
+                                </div>
+
+                                <div style="border-top: 1px dashed #000000; margin-top: 5px; padding-top: 5px; display: flex; justify-content: space-between;">
+                                    <span>${labelBldg}: <strong>${tok.bldgName}</strong></span>
+                                    <span>${labelRoom}: <strong>${tok.roomNo}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    </div>
+                </div>
+                `;
+            });
+
+            content.innerHTML = html;
+            modal.style.display = 'block';
+            applySeatTokenFontSize();
+            applySeatTokenHeadlineFontSize();
+            modal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closeSavedSeatTokensModal() {
+            const modal = document.getElementById('saved-seat-tokens-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function printSavedSeatTokensModal() {
+            document.body.classList.add('print-saved-tokens-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-saved-tokens-mode');
+            }, 1000);
+        }
+
+        async function downloadSavedSeatTokensPDF() {
+            const modalContent = document.getElementById('saved-seat-tokens-modal-content');
+            const modal = document.getElementById('saved-seat-tokens-modal');
+
+            if (modal) {
+                modal.style.display = 'block';
+            }
+
+            if (!modalContent || !modalContent.querySelector('.seat-token-card')) {
+                if (typeof openSavedSeatPlanTokensModal === 'function') {
+                    openSavedSeatPlanTokensModal();
+                }
+            }
+
+            if (!modalContent || !modalContent.querySelector('.seat-token-card')) {
+                if (typeof showToastNotice === 'function') {
+                    showToastNotice('⚠️ ডাউনলোডের জন্য কোনো সিট টোকেন পাওয়া যায়নি!');
+                }
+                return;
+            }
+
+            if (typeof showToastNotice === 'function') {
+                showToastNotice('⚡ সিট টোকেনসমূহ পিডিএফ (PDF) আকারে ফাইল তৈরি করা হচ্ছে...');
+            }
+
+            if (document.fonts && document.fonts.ready) {
+                try {
+                    await document.fonts.ready;
+                } catch (e) { }
+            }
+
+            const dept = document.getElementById('dist-dept')?.value || 'Seat_Tokens';
+            const cleanDept = dept.replace(/[^a-zA-Z0-9_\-\u0980-\u09FF]/g, '_');
+            const filename = `Seat_Tokens_${cleanDept}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+            // Apply pdf export class to modalContent for clean PDF spacing & borders
+            modalContent.classList.add('pdf-download-active');
+
+            const opt = {
+                margin: [0.25, 0.25, 0.25, 0.25],
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    scrollY: 0,
+                    scrollX: 0
+                },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'], avoid: ['.seat-token-card'] }
+            };
+
+            const resetExportState = () => {
+                modalContent.classList.remove('pdf-download-active');
+            };
+
+            if (typeof html2pdf !== 'undefined') {
+                try {
+                    await html2pdf().set(opt).from(modalContent).save();
+                    resetExportState();
+                    if (typeof showToastNotice === 'function') {
+                        showToastNotice('✅ সিট টোকেন পিডিএফ (PDF) সফলভাবে ডাউনলোড করা হয়েছে!');
+                    }
+                } catch (err) {
+                    resetExportState();
+                    console.error('PDF Generation Error:', err);
+                    generatePDFWithPrintFallback();
+                }
+            } else {
+                resetExportState();
+                generatePDFWithPrintFallback();
+            }
+        }
+
+        function generatePDFWithPrintFallback() {
+            const modalContent = document.getElementById('saved-seat-tokens-modal-content');
+            if (!modalContent) {
+                window.print();
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                window.print();
+                return;
+            }
+
+            const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+                .map(s => s.outerHTML).join('\n');
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Student Seat Tokens PDF</title>
+                    ${styles}
+                    <style>
+                        @page { size: A4 portrait; margin: 0.3in 0.22in; }
+                        body { background: #ffffff !important; color: #000000 !important; padding: 15px; margin: 0; }
+                        .pdf-page { page-break-after: always; break-after: page; box-shadow: none !important; border: none !important; }
+                        .seat-tokens-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; row-gap: 40px !important; column-gap: 60px !important; padding: 6px 12px 6px 16px !important; box-sizing: border-box !important; }
+                        .seat-token-card { border: 2px solid #000000 !important; border-left: 2.5px solid #000000 !important; box-sizing: border-box !important; }
+                        .seat-tokens-grid .seat-token-card:nth-child(odd) { position: relative !important; left: -5% !important; width: 105% !important; }
+                        .seat-tokens-grid .seat-token-card:nth-child(even) { position: relative !important; left: 0% !important; width: 105% !important; }
+                        .no-print { display: none !important; }
+                    </style>
+                </head>
+                <body>
+                    <div class="pdf-download-active">
+                        ${modalContent.innerHTML}
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 500);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function loadSeatPlanForCurrentCombination() {
+            updateRealtimeSeatCounter();
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+            const compositeKey = getCompositeSeatPlanKey(dept, examName, shift);
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const savedData = store[compositeKey];
+
+            if (savedData && savedData.allocations && typeof savedData.allocations === 'object' && Object.keys(savedData.allocations).length > 0) {
+                currentGeneratedAllocations = savedData.allocations;
+                localStorage.setItem('school_saved_seat_allocations', JSON.stringify(currentGeneratedAllocations));
+                clearSeatPlanDataCache('school_saved_seat_allocations');
+                if (typeof window.flushPushQueueNow === 'function') window.flushPushQueueNow();
+
+                // Sync layout view department & shift filters if applicable
+                const deptFilter = document.getElementById('dist-layout-dept-filter');
+                if (deptFilter && Array.from(deptFilter.options).some(o => o.value === dept)) {
+                    deptFilter.value = dept;
+                }
+                const shiftFilter = document.getElementById('dist-layout-shift-filter');
+                if (shiftFilter && Array.from(shiftFilter.options).some(o => o.value === shift)) {
+                    shiftFilter.value = shift;
+                }
+
+                populateDistRoomSelect();
+                renderSelectedRoomBenchLayout();
+                return true;
+            } else {
+                // Clear current view if no seat plan exists for this combination
+                currentGeneratedAllocations = {};
+                localStorage.setItem('school_saved_seat_allocations', JSON.stringify({}));
+                clearSeatPlanDataCache('school_saved_seat_allocations');
+                if (typeof window.flushPushQueueNow === 'function') window.flushPushQueueNow();
+                populateDistRoomSelect();
+
+                const layoutDisplay = document.getElementById('bench-layout-display');
+                if (layoutDisplay) {
+                    layoutDisplay.innerHTML = `
+                        <div style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); border-radius: 14px; padding: 35px 20px; text-align: center; color: #fca5a5; margin-top: 20px;">
+                            <div style="font-size: 2.8rem; margin-bottom: 12px;">🪑</div>
+                            <h4 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; color: #f87171;">সংরক্ষিত সিটপ্ল্যান পাওয়া যায়নি</h4>
+                            <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 20px; max-width: 650px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+                                <strong>Department:</strong> <span style="color:var(--neon-cyan);">${dept}</span> &bull; 
+                                <strong>Exam:</strong> <span style="color:var(--neon-cyan);">${examName}</span> &bull; 
+                                <strong>Shift:</strong> <span style="color:var(--neon-pink);">${shift}</span><br>
+                                এই সিলেকশনের জন্য এখনো কোনো সিটপ্ল্যান সংরক্ষিত নেই। নতুন সিটপ্ল্যান জেনারেট করতে বাটনে ক্লিক করুন।
+                            </p>
+                            <button onclick="generateSeatDistribution()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-weight: 800; font-size: 1.02rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                                ⚡ জেনারেট করুন (Generate Auto)
+                            </button>
+                        </div>
+                    `;
+                }
+                return false;
+            }
+        }
+
+        // --- ENHANCED GENERATE SEAT DISTRIBUTION WITH STRICT SHIFT ISOLATION ---
+        function generateSeatDistribution() {
+            activeSeatPlanKey = null; // Always create a brand new unique record when generating
+            updateRealtimeSeatCounter();
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+            const selectedBuilding = document.getElementById('dist-building')?.value || 'All';
+            const selectedRoom = document.getElementById('dist-room-filter')?.value || 'All';
+
+            const students = loadStudentsWithDefaults();
+            let rooms = loadRooms();
+            const buildings = loadBuildings();
+            const classes = loadClasses();
+
+            // 1. FILTER ROOMS BY EXCLUSIONS & STRICT ROOM SHIFT ISOLATION
+            const excludedBuildings = getExcludedBuildings();
+            const excludedRooms = getExcludedRooms();
+            rooms = rooms.filter(r => !excludedBuildings.includes(r.buildingId) && !excludedRooms.includes(r.id));
+
+            // Room Shift Isolation: room must match shift or be marked 'Both'/'All'/empty
+            rooms = rooms.filter(r => {
+                if (!r.shift || r.shift === 'Both' || r.shift === 'All') return true;
+                return r.shift.trim().toLowerCase() === shift.trim().toLowerCase();
+            });
+
+            // Filter rooms by selected Building & Room
+            if (selectedBuilding !== 'All') {
+                rooms = rooms.filter(r => r.buildingId === selectedBuilding);
+            }
+            if (selectedRoom !== 'All') {
+                rooms = rooms.filter(r => r.id === selectedRoom);
+            }
+
+            // 2. STRICT SHIFT & CLASS STUDENT FILTERING
+            const { primary, high } = groupClassesByDepartment(classes);
+            const deptClasses = (dept === 'High Level') ? high : primary;
+
+            // Determine allowed classes for this shift
+            const routines = loadExamRoutines();
+            let shiftClasses = new Set();
+
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const matchesDept = !r.dept || r.dept === dept;
+                    const rExamName = r.examName || r.examTitle || r.title || r.name;
+                    const matchesExam = (examName === 'All') || (rExamName === examName);
+                    const matchesShift = r.shift && (r.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+
+                    if (matchesDept && matchesExam && matchesShift) {
+                        if (Array.isArray(r.classes)) {
+                            r.classes.forEach(c => shiftClasses.add(c));
+                        } else if (r.class) {
+                            shiftClasses.add(r.class);
+                        }
+                    }
+                });
+            }
+
+            // Fallback default shift class division if no routine classes specified
+            if (shiftClasses.size === 0) {
+                if (dept === 'High Level') {
+                    if (shift === 'Morning Shift') {
+                        ['Six', 'Seven', 'Eight', 'Class 6', 'Class 7', 'Class 8', '6', '7', '8'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Nine', 'Ten', 'Class 9', 'Class 10', '9', '10'].forEach(c => shiftClasses.add(c));
+                    }
+                } else {
+                    if (shift === 'Morning Shift') {
+                        ['Play', 'Nursery', 'KG', 'One', 'Two', 'Class 1', 'Class 2', '1', '2'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Three', 'Four', 'Five', 'Class 3', 'Class 4', 'Class 5', '3', '4', '5'].forEach(c => shiftClasses.add(c));
+                    }
+                }
+            }
+
+            // Filter students strictly belonging to this department, shift & shift classes
+            const deptStudents = students.filter(s => {
+                // Must belong to department
+                const belongsToDept = deptClasses.some(cName =>
+                    cName.trim().toLowerCase() === String(s.class || '').trim().toLowerCase()
+                );
+                if (!belongsToDept) return false;
+
+                // Student explicit shift isolation check
+                if (s.shift && s.shift.trim().toLowerCase() !== shift.trim().toLowerCase()) {
+                    return false;
+                }
+
+                // Match against allowed shift classes (handling section specific entries e.g. "Nine - A")
+                const inShiftClasses = Array.from(shiftClasses).some(cName => {
+                    const parts = cName.split(' - ');
+                    const baseClass = parts[0].trim().toLowerCase();
+                    const sectionPart = parts[1] ? parts[1].trim().toLowerCase() : '';
+
+                    const studentClass = String(s.class || '').trim().toLowerCase();
+                    const studentSection = String(s.section || '').trim().toLowerCase();
+
+                    if (sectionPart) {
+                        return baseClass === studentClass && sectionPart === studentSection;
+                    } else {
+                        return baseClass === studentClass;
+                    }
+                });
+
+                if (!inShiftClasses) return false;
+
+                // Check if this student's class and section are included by user
+                if (typeof isDistClassSectionIncluded === 'function') {
+                    return isDistClassSectionIncluded(s.class, s.section);
+                }
+
+                return true;
+            });
+
+            // Split into Boys and Girls
+            const boys = deptStudents.filter(s => (s.gender || 'Male').toLowerCase() === 'male');
+            const girls = deptStudents.filter(s => (s.gender || 'Female').toLowerCase() === 'female');
+
+            // Categorize filtered rooms by gender assignment
+            const maleRooms = rooms.filter(r => r.gender === 'Male');
+            const femaleRooms = rooms.filter(r => r.gender === 'Female');
+            const bothRooms = rooms.filter(r => r.gender === 'Both');
+
+            const allocations = {};
+
+            // Helper to distribute students into rooms with 2 per bench (different classes)
+            function distributeGroupToRooms(studentGroup, targetRooms) {
+                const classBuckets = {};
+                studentGroup.forEach(s => {
+                    if (!classBuckets[s.class]) classBuckets[s.class] = [];
+                    classBuckets[s.class].push(s);
+                });
+
+                // Sort students within each class bucket strictly by Student ID / Roll in ascending order (top-to-bottom ID progression)
+                Object.keys(classBuckets).forEach(cls => {
+                    classBuckets[cls].sort((a, b) => {
+                        const idA = String(a.studentId || a.id || a.roll || '');
+                        const idB = String(b.studentId || b.id || b.roll || '');
+                        return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+                    });
+                });
+
+                // Sort class names naturally (Class 6, Class 7, Class 8...)
+                const sortedClasses = Object.keys(classBuckets).sort((a, b) => {
+                    const numA = parseInt(a.replace(/\D/g, '')) || 0;
+                    const numB = parseInt(b.replace(/\D/g, '')) || 0;
+                    if (numA !== numB) return numA - numB;
+                    return a.localeCompare(b, undefined, { numeric: true });
+                });
+
+                targetRooms.forEach(room => {
+                    allocations[room.id] = {
+                        room: room,
+                        building: buildings.find(b => b.id === room.buildingId),
+                        shift: shift,
+                        dept: dept,
+                        examName: examName,
+                        benches: []
+                    };
+
+                    let totalBenches = room.benches;
+                    for (let b = 1; b <= totalBenches; b++) {
+                        let seatLeft = null;
+                        let seatRight = null;
+
+                        // Pick Left Seat from class A
+                        for (let c = 0; c < sortedClasses.length; c++) {
+                            const cls = sortedClasses[c];
+                            if (classBuckets[cls].length > 0) {
+                                seatLeft = classBuckets[cls].shift();
+                                break;
+                            }
+                        }
+
+                        // Pick Right Seat from a DIFFERENT class B if available
+                        for (let c = 0; c < sortedClasses.length; c++) {
+                            const cls = sortedClasses[c];
+                            if (classBuckets[cls].length > 0 && (!seatLeft || cls !== seatLeft.class)) {
+                                seatRight = classBuckets[cls].shift();
+                                break;
+                            }
+                        }
+
+                        // Fallback if no different class left
+                        if (!seatRight) {
+                            for (let c = 0; c < sortedClasses.length; c++) {
+                                const cls = sortedClasses[c];
+                                if (classBuckets[cls].length > 0) {
+                                    seatRight = classBuckets[cls].shift();
+                                    break;
+                                }
+                            }
+                        }
+
+                        allocations[room.id].benches.push({
+                            benchNo: b,
+                            left: seatLeft,
+                            right: seatRight
+                        });
+                    }
+                });
+            }
+
+            // Gender Separation Rule: Boys → Male+Both rooms, Girls → Female rooms
+            distributeGroupToRooms(boys, [...maleRooms, ...bothRooms]);
+            distributeGroupToRooms(girls, femaleRooms);
+
+            saveActiveSeatAllocations(allocations);
+
+            // Sync layout view department & shift filters to newly generated plan
+            const deptFilter = document.getElementById('dist-layout-dept-filter');
+            if (deptFilter && Array.from(deptFilter.options).some(o => o.value === dept)) {
+                deptFilter.value = dept;
+            }
+            const shiftFilter = document.getElementById('dist-layout-shift-filter');
+            if (shiftFilter && Array.from(shiftFilter.options).some(o => o.value === shift)) {
+                shiftFilter.value = shift;
+            }
+
+            populateDistRoomSelect();
+            renderSelectedRoomBenchLayout();
+        }
+
+        function getMergedSavedAllocations() {
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const merged = {};
+
+            if (currentGeneratedAllocations && typeof currentGeneratedAllocations === 'object' && Object.keys(currentGeneratedAllocations).length > 0) {
+                Object.entries(currentGeneratedAllocations).forEach(([roomId, alloc]) => {
+                    merged[roomId] = alloc;
+                });
+                return merged;
+            }
+
+            Object.values(store).forEach(plan => {
+                if (plan && plan.allocations && typeof plan.allocations === 'object') {
+                    Object.entries(plan.allocations).forEach(([roomId, alloc]) => {
+                        if (!merged[roomId]) {
+                            merged[roomId] = alloc;
+                        }
+                    });
+                }
+            });
+
+            return merged;
+        }
+
+        function loadSavedSeatAllocations() {
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            let allocationsToUse = savedAlloc;
+            if ((!allocationsToUse || Object.keys(allocationsToUse).length === 0) && Object.keys(store).length > 0) {
+                const firstKey = Object.keys(store)[0];
+                allocationsToUse = store[firstKey]?.allocations || {};
+            }
+
+            if (allocationsToUse && typeof allocationsToUse === 'object' && Object.keys(allocationsToUse).length > 0) {
+                currentGeneratedAllocations = allocationsToUse;
+                populateDistRoomSelect();
+                renderSelectedRoomBenchLayout();
+                return true;
+            }
+            return false;
+        }
+
+        function populateDistRoomSelect() {
+            const selectEl = document.getElementById('dist-room-select');
+            if (!selectEl) return;
+
+            const layoutDeptFilter = document.getElementById('dist-layout-dept-filter')?.value || 'All';
+            const layoutShiftFilter = document.getElementById('dist-layout-shift-filter')?.value || 'All';
+            const sourceAllocations = getMergedSavedAllocations();
+            const roomIds = Object.keys(sourceAllocations);
+
+            const filteredRoomIds = roomIds.filter(id => {
+                const item = sourceAllocations[id];
+
+                // 1. Shift filter
+                if (layoutShiftFilter !== 'All' && item.shift && item.shift !== layoutShiftFilter) {
+                    return false;
+                }
+
+                // 2. Department filter
+                if (layoutDeptFilter !== 'All') {
+                    if (item.dept) {
+                        if (item.dept !== layoutDeptFilter) return false;
+                    } else {
+                        // Helper to infer department from student classes if item.dept is missing
+                        const isPrimaryClass = (clsName) => {
+                            if (!clsName) return false;
+                            const num = parseInt(String(clsName).replace(/\D/g, ''));
+                            return (num >= 1 && num <= 5) || /play|nursery|kg|one|two|three|four|five/i.test(clsName);
+                        };
+                        const isHighClass = (clsName) => {
+                            if (!clsName) return false;
+                            const num = parseInt(String(clsName).replace(/\D/g, ''));
+                            return (num >= 6 && num <= 10) || /six|seven|eight|nine|ten/i.test(clsName);
+                        };
+
+                        let match = false;
+                        item.benches.forEach(b => {
+                            if (b.left) {
+                                if (layoutDeptFilter === 'Primary Level' && isPrimaryClass(b.left.class)) match = true;
+                                if (layoutDeptFilter === 'High Level' && isHighClass(b.left.class)) match = true;
+                            }
+                            if (b.right) {
+                                if (layoutDeptFilter === 'Primary Level' && isPrimaryClass(b.right.class)) match = true;
+                                if (layoutDeptFilter === 'High Level' && isHighClass(b.right.class)) match = true;
+                            }
+                        });
+                        if (!match) return false;
+                    }
+                }
+
+                return true;
+            });
+
+            selectEl.innerHTML = filteredRoomIds.map(id => {
+                const item = sourceAllocations[id];
+                const shiftTag = item.shift ? ` [${item.shift}]` : '';
+                const deptTag = item.dept ? ` (${item.dept})` : '';
+                return `<option value="${id}">${item.room.number} (${item.building ? item.building.name : ''} - ${item.room.gender})${shiftTag}${deptTag}</option>`;
+            }).join('');
+
+            if (filteredRoomIds.length === 0) {
+                selectEl.innerHTML = `<option value="">-- ফিল্টারে কোনো রুম পাওয়া যায়নি --</option>`;
+            }
+        }
+
+        function populateLayoutExamFilterDropdown() {
+            const selectEl = document.getElementById('dist-layout-exam-filter');
+            if (!selectEl) return;
+
+            const prevVal = selectEl.value;
+            const routines = loadExamRoutines();
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const examSet = new Set();
+
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const name = r.examName || r.examTitle || r.title || r.name;
+                    if (name) examSet.add(name);
+                });
+            }
+
+            Object.values(store).forEach(p => {
+                if (p && p.examName) examSet.add(p.examName);
+            });
+
+            let html = `<option value="All">সকল পরীক্ষা (All Exams)</option>`;
+            examSet.forEach(name => {
+                html += `<option value="${name}">${name}</option>`;
+            });
+
+            selectEl.innerHTML = html;
+            if (prevVal && Array.from(selectEl.options).some(o => o.value === prevVal)) {
+                selectEl.value = prevVal;
+            }
+        }
+
+        function onLayoutDeptFilterChange() {
+            populateDistRoomSelect();
+            renderSelectedRoomBenchLayout();
+        }
+
+        function onLayoutExamFilterChange() {
+            populateDistRoomSelect();
+            renderSelectedRoomBenchLayout();
+        }
+
+        function onLayoutShiftFilterChange() {
+            populateDistRoomSelect();
+            renderSelectedRoomBenchLayout();
+        }
+
+        // --- INTERACTIVE SEAT EDIT MODE & DRAG-AND-DROP HANDLERS ---
+        let isSeatEditMode = false;
+        let draggedSeatData = null;
+
+        function toggleSeatEditMode(enabled) {
+            isSeatEditMode = enabled;
+            const lbl = document.getElementById('lbl-seat-edit-status');
+            if (lbl) {
+                lbl.innerText = enabled ? 'ON' : 'OFF';
+                lbl.style.color = '#facc15';
+            }
+            renderSelectedRoomBenchLayout();
+            if (enabled) {
+                showToastNotice('✏️ Edit Mode সক্রিয় করা হয়েছে। যেকোনো সিট ড্র্যাগ (Drag & Drop) করে সিট পরিবর্তন বা ফাঁকা সিটে স্থানান্তর করতে পারেন।');
+            }
+        }
+
+        function showToastNotice(msg) {
+            let toast = document.getElementById('seat-toast-notice');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'seat-toast-notice';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<span>${msg}</span>`;
+            toast.style.display = 'flex';
+            if (window.seatToastTimeout) clearTimeout(window.seatToastTimeout);
+            window.seatToastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3200);
+        }
+
+        function onSeatDragStart(e, roomId, benchNo, seatSide) {
+            if (!isSeatEditMode) return;
+            draggedSeatData = { roomId, benchNo: parseInt(benchNo), seatSide };
+            e.dataTransfer.effectAllowed = 'move';
+            try {
+                e.dataTransfer.setData('text/plain', JSON.stringify(draggedSeatData));
+            } catch (err) { }
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.add('dragging');
+        }
+
+        function onSeatDragOver(e) {
+            if (!isSeatEditMode) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function onSeatDragEnter(e) {
+            if (!isSeatEditMode) return;
+            e.preventDefault();
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.add('drag-over');
+        }
+
+        function onSeatDragLeave(e) {
+            if (!isSeatEditMode) return;
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.remove('drag-over');
+        }
+
+        function onSeatDragEnd(e) {
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.remove('dragging');
+            document.querySelectorAll('.seat-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+            draggedSeatData = null;
+        }
+
+        function onSeatDrop(e, targetRoomId, targetBenchNo, targetSeatSide) {
+            if (!isSeatEditMode) return;
+            e.preventDefault();
+            document.querySelectorAll('.seat-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            let source = draggedSeatData;
+            if (!source) {
+                try {
+                    source = JSON.parse(e.dataTransfer.getData('text/plain'));
+                } catch (err) { }
+            }
+            if (!source) return;
+
+            targetBenchNo = parseInt(targetBenchNo);
+
+            if (source.roomId === targetRoomId && source.benchNo === targetBenchNo && source.seatSide === targetSeatSide) {
+                return;
+            }
+
+            const srcRoomData = currentGeneratedAllocations[source.roomId];
+            const targetRoomData = currentGeneratedAllocations[targetRoomId];
+
+            if (!srcRoomData || !targetRoomData) return;
+
+            const srcBench = srcRoomData.benches.find(b => b.benchNo === source.benchNo);
+            const targetBench = targetRoomData.benches.find(b => b.benchNo === targetBenchNo);
+
+            if (!srcBench || !targetBench) return;
+
+            const studentSource = srcBench[source.seatSide];
+            const studentTarget = targetBench[targetSeatSide];
+
+            // Perform Swap / Move
+            targetBench[targetSeatSide] = studentSource;
+            srcBench[source.seatSide] = studentTarget;
+
+            // Permanently save changes
+            saveActiveSeatAllocations();
+            const savedLbl = document.getElementById('lbl-dist-saved-status');
+            if (savedLbl) {
+                savedLbl.style.display = 'inline-flex';
+                savedLbl.innerHTML = '💾 স্থায়ীভাবে সংরক্ষিত (Permanently Saved)';
+            }
+
+            const srcName = studentSource ? (studentSource.nameBn || studentSource.name) : 'সিট';
+            const targetName = studentTarget ? (studentTarget.nameBn || studentTarget.name) : null;
+
+            if (targetName) {
+                showToastNotice(`🔄 <strong>${srcName}</strong> ও <strong>${targetName}</strong>-এর সিট অদল-বদল সম্পন্ন হয়েছে!`);
+            } else {
+                showToastNotice(`✅ <strong>${srcName}</strong> কে Bench #${targetBenchNo} এর নতুন সিটে স্থানান্তর করা হয়েছে!`);
+            }
+
+            renderSelectedRoomBenchLayout();
+        }
+
+        function onRoomSelectDragOver(e) {
+            if (!isSeatEditMode) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function onRoomSelectDrop(e) {
+            if (!isSeatEditMode || !draggedSeatData) return;
+            e.preventDefault();
+            const selectEl = document.getElementById('dist-room-select');
+            if (!selectEl) return;
+            const targetRoomId = selectEl.value;
+
+            if (targetRoomId === draggedSeatData.roomId) return;
+
+            const targetRoomData = currentGeneratedAllocations[targetRoomId];
+            if (!targetRoomData || !targetRoomData.benches) return;
+
+            let targetBenchNo = null;
+            let targetSeatSide = null;
+
+            for (let b of targetRoomData.benches) {
+                if (!b.left) {
+                    targetBenchNo = b.benchNo;
+                    targetSeatSide = 'left';
+                    break;
+                }
+                if (!b.right) {
+                    targetBenchNo = b.benchNo;
+                    targetSeatSide = 'right';
+                    break;
+                }
+            }
+
+            if (!targetBenchNo) {
+                targetBenchNo = 1;
+                targetSeatSide = 'left';
+            }
+
+            onSeatDrop(e, targetRoomId, targetBenchNo, targetSeatSide);
+        }
+
+        // --- INTERACTIVE TRANSFER STUDENTS POPUP MODAL LOGIC ---
+        function getRoomVacantSeatsCount(alloc) {
+            if (!alloc || !alloc.benches) return 0;
+            let count = 0;
+            alloc.benches.forEach(b => {
+                if (!b.left) count++;
+                if (!b.right) count++;
+            });
+            return count;
+        }
+
+        let holdingTrayStudents = []; // Items: { student, origRoomId, origBenchNo, origSeatSide }
+        let modalDragItem = null; // { type: 'modalRoomSeat'|'holdingTray', roomId, benchNo, seatSide, index }
+
+        function openTransferModal() {
+            openInteractiveSeatTransferModal();
+        }
+        window.openTransferModal = openTransferModal;
+
+        function openBulkSeatTransferModal() {
+            openInteractiveSeatTransferModal();
+        }
+        window.openBulkSeatTransferModal = openBulkSeatTransferModal;
+
+        function openInteractiveSeatTransferModal() {
+            try {
+                // First load permanently saved seat allocations if empty in memory
+                if (!currentGeneratedAllocations || Object.keys(currentGeneratedAllocations).length === 0) {
+                    loadSavedSeatAllocations();
+                }
+
+                // Auto-generate allocations if still empty
+                if (!currentGeneratedAllocations || Object.keys(currentGeneratedAllocations).length === 0) {
+                    generateSeatDistribution();
+                }
+
+                // Set default Dept & Shift dropdown values based on main controls
+                const mainDept = document.getElementById('dist-dept')?.value || 'High Level';
+                const mainShift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+                const deptEl = document.getElementById('modal-transfer-dept');
+                const shiftEl = document.getElementById('modal-transfer-shift');
+
+                if (deptEl) deptEl.value = mainDept;
+                if (shiftEl) shiftEl.value = mainShift;
+
+                onModalTransferFilterChange();
+                renderHoldingBox();
+            } catch (err) {
+                console.error("Error opening interactive seat transfer modal:", err);
+            }
+
+            const modal = document.getElementById('interactive-seat-transfer-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.zIndex = '99999';
+                modal.classList.add('active');
+            } else {
+                alert('⚠️ স্থানান্তরের পপ-আপ মোডাল এলিমেন্ট পাওয়া যায়নি।');
+            }
+        }
+        window.openInteractiveSeatTransferModal = openInteractiveSeatTransferModal;
+
+        function closeInteractiveSeatTransferModal() {
+            if (holdingTrayStudents.length > 0) {
+                if (!confirm(`⚠️ Holding Box-এ এখনো ${holdingTrayStudents.length} জন শিক্ষার্থী রয়েছে। আপনি কি নিশ্চিত যে স্থানান্তর বন্ধ করে বের হতে চান?`)) {
+                    return;
+                }
+            }
+            const modal = document.getElementById('interactive-seat-transfer-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.style.opacity = '0';
+            }
+        }
+
+        function onModalTransferFilterChange() {
+            const dept = document.getElementById('modal-transfer-dept')?.value || 'High Level';
+            const shift = document.getElementById('modal-transfer-shift')?.value || 'Morning Shift';
+            const roomSelect = document.getElementById('modal-transfer-room');
+            if (!roomSelect) return;
+
+            const roomIds = Object.keys(currentGeneratedAllocations || {});
+            const filteredRoomIds = roomIds.filter(id => {
+                const item = currentGeneratedAllocations[id];
+                if (item.shift && item.shift !== shift) return false;
+                return true;
+            });
+
+            if (filteredRoomIds.length > 0) {
+                roomSelect.innerHTML = filteredRoomIds.map(id => {
+                    const item = currentGeneratedAllocations[id];
+                    const vacant = getRoomVacantSeatsCount(item);
+                    return `<option value="${id}">${item.room.number} (${item.building ? item.building.name : ''} - ${item.room.gender}) [খালি সিট: ${vacant}]</option>`;
+                }).join('');
+                roomSelect.value = filteredRoomIds[0];
+            } else {
+                roomSelect.innerHTML = roomIds.map(id => {
+                    const item = currentGeneratedAllocations[id];
+                    const vacant = getRoomVacantSeatsCount(item);
+                    return `<option value="${id}">${item.room.number} (${item.building ? item.building.name : ''} - ${item.room.gender}) [খালি সিট: ${vacant}]</option>`;
+                }).join('');
+            }
+
+            renderModalSelectedRoomLayout();
+        }
+
+        function renderModalSelectedRoomLayout() {
+            const roomSelect = document.getElementById('modal-transfer-room');
+            const container = document.getElementById('modal-bench-grid-container');
+            const headerLbl = document.getElementById('lbl-modal-room-header');
+            const capLbl = document.getElementById('lbl-modal-room-capacity');
+
+            if (!roomSelect || !container) return;
+
+            const roomId = roomSelect.value;
+            const data = currentGeneratedAllocations[roomId];
+
+            if (!data) {
+                container.innerHTML = `<div style="text-align:center; color:var(--muted-text); padding:30px;">কোনো অ্যালকেশন পাওয়া যায়নি।</div>`;
+                return;
+            }
+
+            if (headerLbl) headerLbl.innerText = `Room: ${data.room.number} (${data.building ? data.building.name : ''} - ${data.room.gender})`;
+            if (capLbl) {
+                const vacant = getRoomVacantSeatsCount(data);
+                capLbl.innerHTML = `খালি সিট: <strong style="color:var(--neon-pink);">${vacant}</strong> / ${data.room.benches * 2}`;
+            }
+
+            function renderModalBenchCardHTML(b) {
+                const leftBg = b.left ? getClassBgColor(b.left.class) : 'rgba(0, 0, 0, 0.3)';
+                const leftBorder = b.left ? getClassBorderColor(b.left.class) : 'rgba(255, 255, 255, 0.1)';
+
+                const rightBg = b.right ? getClassBgColor(b.right.class) : 'rgba(0, 0, 0, 0.3)';
+                const rightBorder = b.right ? getClassBorderColor(b.right.class) : 'rgba(255, 255, 255, 0.1)';
+
+                return `
+                    <div class="bench-card" style="padding:10px;">
+                        <div class="bench-header" style="font-size:0.78rem; padding-bottom:4px; margin-bottom:8px;">
+                            <span>BENCH #${b.benchNo}</span>
+                            <span>2 SEATS</span>
+                        </div>
+                        <div class="bench-seats" style="gap:8px;">
+                            <!-- LEFT SEAT -->
+                            <div class="seat-slot editable-seat" style="background: ${leftBg}; border: 1px solid ${leftBorder}; padding:8px; text-align:center;"
+                                 draggable="${b.left ? 'true' : 'false'}"
+                                 ondragstart="onModalSeatDragStart(event, '${roomId}', ${b.benchNo}, 'left')"
+                                 ondragover="onModalSeatDragOver(event)"
+                                 ondragenter="onModalSeatDragEnter(event)"
+                                 ondragleave="onModalSeatDragLeave(event)"
+                                 ondrop="onModalSeatDrop(event, '${roomId}', ${b.benchNo}, 'left')"
+                                 ondragend="onModalSeatDragEnd(event)">
+                                ${b.left ? `
+                                    <div style="position:relative; margin-bottom:3px; text-align:center;">
+                                        <div class="seat-slot-name-bn" style="font-weight:800; color:#fff; font-size:0.97rem; line-height:1.3; text-align:center; padding:0 24px;">${formatStudentDisplayName(b.left)}</div>
+                                        <button type="button" onclick="cutModalSeatToHolding('${roomId}', ${b.benchNo}, 'left')" style="position:absolute; top:0; right:0; background:rgba(236,72,153,0.2); border:1px solid var(--neon-pink); color:#fff; font-size:0.72rem; padding:1px 6px; border-radius:4px; font-weight:700; cursor:pointer;" title="Cut to Holding Box">✂️ Cut</button>
+                                    </div>
+                                    <div class="seat-slot-id" style="font-size:0.83rem; color:var(--neon-cyan); font-weight:600; margin-top:2px; text-align:center;">ID: <strong>${b.left.studentId || b.left.id || ('STD-' + b.left.roll)}</strong></div>
+                                    <div class="seat-slot-class-sec" style="font-size:0.82rem; color:#cbd5e1; font-family:sans-serif; text-align:center;">Class: <strong style="color:${getClassColor(b.left.class)};">${b.left.class}</strong> (${b.left.section || 'A'})</div>
+                                ` : `
+                                    <div style="text-align:center; padding:10px 0; color:var(--muted-text); font-size:0.86rem;">
+                                        <span>➕ Vacant (Drop)</span>
+                                    </div>
+                                `}
+                            </div>
+
+                            <!-- RIGHT SEAT -->
+                            <div class="seat-slot editable-seat" style="background: ${rightBg}; border: 1px solid ${rightBorder}; padding:8px; text-align:center;"
+                                 draggable="${b.right ? 'true' : 'false'}"
+                                 ondragstart="onModalSeatDragStart(event, '${roomId}', ${b.benchNo}, 'right')"
+                                 ondragover="onModalSeatDragOver(event)"
+                                 ondragenter="onModalSeatDragEnter(event)"
+                                 ondragleave="onModalSeatDragLeave(event)"
+                                 ondrop="onModalSeatDrop(event, '${roomId}', ${b.benchNo}, 'right')"
+                                 ondragend="onModalSeatDragEnd(event)">
+                                ${b.right ? `
+                                    <div style="position:relative; margin-bottom:3px; text-align:center;">
+                                        <div class="seat-slot-name-bn" style="font-weight:800; color:#fff; font-size:0.97rem; line-height:1.3; text-align:center; padding:0 24px;">${formatStudentDisplayName(b.right)}</div>
+                                        <button type="button" onclick="cutModalSeatToHolding('${roomId}', ${b.benchNo}, 'right')" style="position:absolute; top:0; right:0; background:rgba(236,72,153,0.2); border:1px solid var(--neon-pink); color:#fff; font-size:0.72rem; padding:1px 6px; border-radius:4px; font-weight:700; cursor:pointer;" title="Cut to Holding Box">✂️ Cut</button>
+                                    </div>
+                                    <div class="seat-slot-id" style="font-size:0.83rem; color:var(--neon-cyan); font-weight:600; margin-top:2px; text-align:center;">ID: <strong>${b.right.studentId || b.right.id || ('STD-' + b.right.roll)}</strong></div>
+                                    <div class="seat-slot-class-sec" style="font-size:0.82rem; color:#cbd5e1; font-family:sans-serif; text-align:center;">Class: <strong style="color:${getClassColor(b.right.class)};">${b.right.class}</strong> (${b.right.section || 'A'})</div>
+                                ` : `
+                                    <div style="text-align:center; padding:10px 0; color:var(--muted-text); font-size:0.86rem;">
+                                        <span>➕ Vacant (Drop)</span>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+            }
+
+            // Render in Class-Wise Top-to-Bottom Vertical Column Layout
+            const benchesPerCol = 5;
+            const totalBenches = data.benches.length;
+            const numCols = Math.ceil(totalBenches / benchesPerCol);
+
+            let html = `<div class="bench-vertical-columns-container" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">`;
+            for (let c = 0; c < numCols; c++) {
+                const colBenches = data.benches.slice(c * benchesPerCol, (c + 1) * benchesPerCol);
+                const startNo = colBenches[0] ? colBenches[0].benchNo : (c * benchesPerCol + 1);
+                const endNo = colBenches[colBenches.length - 1] ? colBenches[colBenches.length - 1].benchNo : (c + 1) * benchesPerCol;
+
+                html += `
+                    <div class="bench-column-card" style="padding: 12px; gap: 10px;">
+                        <div class="bench-column-header" style="font-size: 0.82rem; padding-bottom: 8px;">
+                            <span>📌 Column ${c + 1} (Benches ${startNo} – ${endNo})</span>
+                            <span class="bench-column-badge" style="font-size: 0.68rem;">⬇ Top to Bottom ID</span>
+                        </div>
+                        <div class="bench-column-list" style="gap: 10px;">
+                    `;
+
+                colBenches.forEach((b, idx) => {
+                    html += renderModalBenchCardHTML(b);
+                    if (idx < colBenches.length - 1) {
+                        html += `<div class="vertical-flow-arrow">▼</div>`;
+                    }
+                });
+
+                html += `
+                        </div>
+                    </div>
+                    `;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function renderHoldingBox() {
+            const container = document.getElementById('holding-box-cards-container');
+            const countLbl = document.getElementById('lbl-holding-count');
+            if (!container) return;
+
+            if (countLbl) countLbl.innerText = `${holdingTrayStudents.length} Students`;
+
+            if (holdingTrayStudents.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:40px 10px; color:var(--muted-text); font-size:0.85rem; border:2px dashed rgba(255,255,255,0.1); border-radius:8px; margin:auto 0;">
+                        <div style="font-size:2.4rem; margin-bottom:6px; opacity:0.6;">📋</div>
+                        <strong>Holding Box খালি</strong>
+                        <div style="font-size:0.78rem; margin-top:4px;">বামপাশের সিট থেকে কার্ড টেনে এখানে ফেলে রাখুন (Cut)</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            holdingTrayStudents.forEach((item, idx) => {
+                const st = item.student;
+                const nameBn = formatStudentDisplayName(st);
+                const studentId = st.studentId || st.id || ('STD-' + st.roll);
+                const stBg = getClassBgColor(st.class);
+                const stBorder = getClassBorderColor(st.class);
+                html += `
+                    <div class="seat-slot editable-seat" style="background:${stBg}; border:1px solid ${stBorder}; padding:10px; border-radius:8px; cursor:grab; text-align:center;"
+                         draggable="true"
+                         ondragstart="onHoldingTrayDragStart(event, ${idx})">
+                        <div style="position:relative; margin-bottom:3px; text-align:center;">
+                            <div class="seat-slot-name-bn" style="font-weight:800; color:#fff; font-size:0.97rem; text-align:center; padding-right:50px;">${nameBn}</div>
+                            <button type="button" onclick="assignHoldingStudentToVacantSeat(${idx})" style="position:absolute; top:0; right:0; background:linear-gradient(135deg, #10b981, #059669); border:none; color:#fff; font-size:0.76rem; padding:2px 8px; border-radius:4px; font-weight:700; cursor:pointer;" title="Assign to Current Room">📌 Assign</button>
+                        </div>
+                        <div class="seat-slot-id" style="font-size:0.84rem; color:var(--neon-cyan); margin-top:2px; text-align:center;">ID: <strong>${studentId}</strong> &bull; Class: <strong>${st.class}</strong></div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // --- CUT OPERATION (Move Seat to Holding Box) ---
+        function cutModalSeatToHolding(roomId, benchNo, seatSide) {
+            const roomData = currentGeneratedAllocations[roomId];
+            if (!roomData) return;
+            const bench = roomData.benches.find(b => b.benchNo === parseInt(benchNo));
+            if (!bench || !bench[seatSide]) return;
+
+            const student = bench[seatSide];
+            bench[seatSide] = null; // Vacant
+
+            holdingTrayStudents.push({
+                student: student,
+                origRoomId: roomId,
+                origBenchNo: benchNo,
+                origSeatSide: seatSide
+            });
+
+            saveAndSyncTransferState();
+            showToastNotice(`✂️ ${formatStudentDisplayName(student)} কে Holding Box-এ নেওয়া হয়েছে।`);
+            renderModalSelectedRoomLayout();
+            renderHoldingBox();
+        }
+
+        // --- DRAG HANDLERS FOR MODAL ROOM SEATS ---
+        function onModalSeatDragStart(e, roomId, benchNo, seatSide) {
+            modalDragItem = { type: 'modalRoomSeat', roomId, benchNo: parseInt(benchNo), seatSide };
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', JSON.stringify(modalDragItem)); } catch (err) { }
+            e.currentTarget.classList.add('dragging');
+        }
+
+        function onModalSeatDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function onModalSeatDragEnter(e) {
+            e.preventDefault();
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.add('drag-over');
+        }
+
+        function onModalSeatDragLeave(e) {
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.remove('drag-over');
+        }
+
+        function onModalSeatDragEnd(e) {
+            const slot = e.currentTarget.closest('.seat-slot');
+            if (slot) slot.classList.remove('dragging');
+            document.querySelectorAll('.seat-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+            modalDragItem = null;
+        }
+
+        function onModalSeatDrop(e, targetRoomId, targetBenchNo, targetSeatSide) {
+            e.preventDefault();
+            document.querySelectorAll('.seat-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            let source = modalDragItem;
+            if (!source) {
+                try { source = JSON.parse(e.dataTransfer.getData('text/plain')); } catch (err) { }
+            }
+            if (!source) return;
+
+            targetBenchNo = parseInt(targetBenchNo);
+            const targetRoomData = currentGeneratedAllocations[targetRoomId];
+            if (!targetRoomData) return;
+            const targetBench = targetRoomData.benches.find(b => b.benchNo === targetBenchNo);
+            if (!targetBench) return;
+
+            // CASE 1: Dragged from Holding Tray
+            if (source.type === 'holdingTray') {
+                const item = holdingTrayStudents[source.index];
+                if (!item) return;
+
+                const studentSource = item.student;
+                const studentTarget = targetBench[targetSeatSide];
+
+                // Remove from Holding Box
+                holdingTrayStudents.splice(source.index, 1);
+
+                // If target seat had a student, move target student to Holding Box
+                if (studentTarget) {
+                    holdingTrayStudents.push({
+                        student: studentTarget,
+                        origRoomId: targetRoomId,
+                        origBenchNo: targetBenchNo,
+                        origSeatSide: targetSeatSide
+                    });
+                }
+
+                targetBench[targetSeatSide] = studentSource;
+
+                saveAndSyncTransferState();
+                showToastNotice(`📌 ${studentSource.nameBn || studentSource.name} কে ${targetRoomData.room.number} রুমে বসানো হয়েছে।`);
+                renderModalSelectedRoomLayout();
+                renderHoldingBox();
+                return;
+            }
+
+            // CASE 2: Dragged from another Room Seat (Intra/Inter Room Swap or Move)
+            if (source.type === 'modalRoomSeat') {
+                if (source.roomId === targetRoomId && source.benchNo === targetBenchNo && source.seatSide === targetSeatSide) {
+                    return;
+                }
+                const srcRoomData = currentGeneratedAllocations[source.roomId];
+                if (!srcRoomData) return;
+                const srcBench = srcRoomData.benches.find(b => b.benchNo === source.benchNo);
+                if (!srcBench) return;
+
+                const studentSource = srcBench[source.seatSide];
+                const studentTarget = targetBench[targetSeatSide];
+
+                targetBench[targetSeatSide] = studentSource;
+                srcBench[source.seatSide] = studentTarget;
+
+                saveAndSyncTransferState();
+                showToastNotice(`🔄 সিট পরিবর্তন সফল হয়েছে!`);
+                renderModalSelectedRoomLayout();
+                return;
+            }
+        }
+
+        // --- DRAG HANDLERS FOR HOLDING BOX ---
+        function onHoldingTrayDragStart(e, index) {
+            modalDragItem = { type: 'holdingTray', index };
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', JSON.stringify(modalDragItem)); } catch (err) { }
+        }
+
+        function onHoldingBoxDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function onHoldingBoxDragEnter(e) {
+            e.preventDefault();
+            const panel = document.getElementById('holding-box-panel');
+            if (panel) panel.style.background = 'rgba(236,72,153,0.12)';
+        }
+
+        function onHoldingBoxDragLeave(e) {
+            const panel = document.getElementById('holding-box-panel');
+            if (panel) panel.style.background = 'rgba(236,72,153,0.04)';
+        }
+
+        function onHoldingBoxDrop(e) {
+            e.preventDefault();
+            const panel = document.getElementById('holding-box-panel');
+            if (panel) panel.style.background = 'rgba(236,72,153,0.04)';
+
+            let source = modalDragItem;
+            if (!source) {
+                try { source = JSON.parse(e.dataTransfer.getData('text/plain')); } catch (err) { }
+            }
+            if (!source || source.type !== 'modalRoomSeat') return;
+
+            cutModalSeatToHolding(source.roomId, source.benchNo, source.seatSide);
+        }
+
+        // --- QUICK BUTTON ACTIONS FOR HOLDING BOX ---
+        function assignHoldingStudentToVacantSeat(index) {
+            const item = holdingTrayStudents[index];
+            if (!item) return;
+
+            const roomSelect = document.getElementById('modal-transfer-room');
+            if (!roomSelect) return;
+            const roomId = roomSelect.value;
+            const roomData = currentGeneratedAllocations[roomId];
+
+            if (!roomData) return;
+
+            let targetBenchNo = null;
+            let targetSeatSide = null;
+
+            for (let b of roomData.benches) {
+                if (!b.left) { targetBenchNo = b.benchNo; targetSeatSide = 'left'; break; }
+                if (!b.right) { targetBenchNo = b.benchNo; targetSeatSide = 'right'; break; }
+            }
+
+            if (!targetBenchNo) {
+                alert('⚠️ এই রুমে কোনো খালি (Vacant) সিট নেই!');
+                return;
+            }
+
+            const bench = roomData.benches.find(b => b.benchNo === targetBenchNo);
+            bench[targetSeatSide] = item.student;
+            holdingTrayStudents.splice(index, 1);
+
+            saveAndSyncTransferState();
+            showToastNotice(`📌 ${item.student.nameBn || item.student.name} কে ${roomData.room.number} রুমে বসানো হয়েছে!`);
+            renderModalSelectedRoomLayout();
+            renderHoldingBox();
+        }
+
+        function autoAssignHoldingStudentsToCurrentRoom() {
+            if (holdingTrayStudents.length === 0) return;
+
+            const roomSelect = document.getElementById('modal-transfer-room');
+            if (!roomSelect) return;
+            const roomId = roomSelect.value;
+            const roomData = currentGeneratedAllocations[roomId];
+
+            if (!roomData) return;
+
+            let assignedCount = 0;
+            for (let b of roomData.benches) {
+                if (holdingTrayStudents.length === 0) break;
+                if (!b.left) {
+                    b.left = holdingTrayStudents.shift().student;
+                    assignedCount++;
+                }
+                if (holdingTrayStudents.length > 0 && !b.right) {
+                    b.right = holdingTrayStudents.shift().student;
+                    assignedCount++;
+                }
+            }
+
+            if (assignedCount > 0) {
+                saveAndSyncTransferState();
+                showToastNotice(`📌 ${assignedCount} জন শিক্ষার্থীকে ${roomData.room.number} রুমের খালি সিটে বসানো হয়েছে!`);
+                renderModalSelectedRoomLayout();
+                renderHoldingBox();
+            } else {
+                alert('⚠️ এই রুমে কোনো খালি সিট পাওয়া যায়নি।');
+            }
+        }
+
+        function returnHoldingStudentsToOriginalSeats() {
+            if (holdingTrayStudents.length === 0) return;
+
+            let returned = 0;
+            holdingTrayStudents.forEach(item => {
+                const roomData = currentGeneratedAllocations[item.origRoomId];
+                if (roomData) {
+                    const bench = roomData.benches.find(b => b.benchNo === item.origBenchNo);
+                    if (bench && !bench[item.origSeatSide]) {
+                        bench[item.origSeatSide] = item.student;
+                        returned++;
+                    }
+                }
+            });
+
+            holdingTrayStudents = [];
+            saveAndSyncTransferState();
+            showToastNotice(`↩️ শিক্ষার্থীদের পূর্বের সিটে ফেরত পাঠানো হয়েছে।`);
+            renderModalSelectedRoomLayout();
+            renderHoldingBox();
+        }
+
+        // --- AUTO SYNC & PERMANENT SAVE ---
+        function saveAndSyncTransferState() {
+            saveActiveSeatAllocations();
+            const savedLbl = document.getElementById('lbl-dist-saved-status');
+            if (savedLbl) {
+                savedLbl.style.display = 'inline-flex';
+                savedLbl.innerHTML = '💾 স্থায়ীভাবে সংরক্ষিত (Permanently Saved)';
+            }
+            renderSelectedRoomBenchLayout();
+        }
+
+        function closeBulkSeatTransferModal() {
+            const modal = document.getElementById('bulk-seat-transfer-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function getRoomVacantSeatsCount(roomData) {
+            if (!roomData || !roomData.benches) return 0;
+            let vacant = 0;
+            roomData.benches.forEach(b => {
+                if (!b.left) vacant++;
+                if (!b.right) vacant++;
+            });
+            return vacant;
+        }
+
+        function getRoomOccupiedStudents(roomData) {
+            if (!roomData || !roomData.benches) return [];
+            const list = [];
+            roomData.benches.forEach(b => {
+                if (b.left) {
+                    list.push({ student: b.left, benchNo: b.benchNo, seatSide: 'left' });
+                }
+                if (b.right) {
+                    list.push({ student: b.right, benchNo: b.benchNo, seatSide: 'right' });
+                }
+            });
+            return list;
+        }
+
+        function onBulkSourceRoomChange() {
+            const srcId = document.getElementById('bulk-source-room-select').value;
+            const srcData = currentGeneratedAllocations[srcId];
+            const destSelect = document.getElementById('bulk-dest-room-select');
+            const roomIds = Object.keys(currentGeneratedAllocations);
+
+            if (!srcData || !destSelect) return;
+
+            const occupiedList = getRoomOccupiedStudents(srcData);
+            const infoEl = document.getElementById('bulk-source-info');
+            if (infoEl) {
+                infoEl.innerText = `বর্তমান শিক্ষার্থী: ${occupiedList.length} জন (মোট বেঞ্চ: ${srcData.room.benches})`;
+            }
+
+            // Populate Dest Dropdown (excluding source room)
+            const destRoomIds = roomIds.filter(id => id !== srcId);
+            destSelect.innerHTML = destRoomIds.map(id => {
+                const item = currentGeneratedAllocations[id];
+                const shiftTag = item.shift ? ` [${item.shift}]` : '';
+                const vacant = getRoomVacantSeatsCount(item);
+                return `<option value="${id}">${item.room.number} (${item.building ? item.building.name : ''} - ${item.room.gender}) [খালি সিট: ${vacant}]${shiftTag}</option>`;
+            }).join('');
+
+            onBulkDestRoomChange();
+            renderBulkStudentCheckboxList(occupiedList);
+        }
+
+        function onBulkDestRoomChange() {
+            const destId = document.getElementById('bulk-dest-room-select')?.value;
+            const destData = currentGeneratedAllocations[destId];
+            const infoEl = document.getElementById('bulk-dest-info');
+
+            if (destData && infoEl) {
+                const vacant = getRoomVacantSeatsCount(destData);
+                const genderLabel = destData.room.gender === 'Male' ? 'Boys Only' : destData.room.gender === 'Female' ? 'Girls Only' : 'Co-ed (Both)';
+                infoEl.innerHTML = `খালি সিট: <strong style="color:var(--neon-pink);">${vacant}</strong> টি | জেন্ডার মোড: <strong>${genderLabel}</strong>`;
+            }
+
+            validateBulkTransfer();
+        }
+
+        function renderBulkStudentCheckboxList(occupiedList) {
+            const container = document.getElementById('bulk-student-list-container');
+            if (!container) return;
+
+            if (occupiedList.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:var(--muted-text); padding:20px;">এই রুমে কোনো শিক্ষার্থী নির্ধারিত নেই।</div>`;
+                updateBulkSummary(0);
+                return;
+            }
+
+            let html = `
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;">
+            `;
+
+            occupiedList.forEach((item, idx) => {
+                const st = item.student;
+                const nameBn = formatStudentDisplayName(st);
+                const studentId = st.studentId || st.id || ('STD-' + st.roll);
+                html += `
+                    <label style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:8px; padding:8px 12px; cursor:pointer; user-select:none;">
+                        <input type="checkbox" class="bulk-student-checkbox" data-bench="${item.benchNo}" data-seat="${item.seatSide}" data-gender="${st.gender || 'Male'}" checked onchange="validateBulkTransfer()">
+                        <div style="flex:1; font-size:0.85rem;">
+                            <div style="font-weight:700; color:#fff;">${nameBn}</div>
+                            <div style="font-size:0.75rem; color:var(--neon-cyan);">ID: ${studentId} &bull; Bench #${item.benchNo} (${item.seatSide.toUpperCase()})</div>
+                            <div style="font-size:0.75rem; color:#cbd5e1;">Class: ${st.class} (Sec: ${st.section || 'A'})</div>
+                        </div>
+                    </label>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+            validateBulkTransfer();
+        }
+
+        function toggleBulkTransferMethod() {
+            const method = document.querySelector('input[name="bulk-method"]:checked')?.value || 'checkbox';
+            const countContainer = document.getElementById('bulk-count-container');
+            const checkboxTools = document.getElementById('bulk-checkbox-tools');
+
+            if (method === 'count') {
+                if (countContainer) countContainer.style.display = 'flex';
+                if (checkboxTools) checkboxTools.style.display = 'none';
+                updateBulkCountSelection();
+            } else {
+                if (countContainer) countContainer.style.display = 'none';
+                if (checkboxTools) checkboxTools.style.display = 'flex';
+            }
+            validateBulkTransfer();
+        }
+
+        function updateBulkCountSelection() {
+            const countInput = document.getElementById('bulk-transfer-count');
+            const checkboxes = document.querySelectorAll('.bulk-student-checkbox');
+            let count = parseInt(countInput.value) || 1;
+            if (count > checkboxes.length) {
+                count = checkboxes.length;
+                countInput.value = count;
+            }
+
+            checkboxes.forEach((cb, idx) => {
+                cb.checked = idx < count;
+            });
+
+            validateBulkTransfer();
+        }
+
+        function selectAllBulkStudents(select) {
+            const checkboxes = document.querySelectorAll('.bulk-student-checkbox');
+            checkboxes.forEach(cb => cb.checked = select);
+            validateBulkTransfer();
+        }
+
+        function validateBulkTransfer() {
+            const destId = document.getElementById('bulk-dest-room-select')?.value;
+            const destData = currentGeneratedAllocations[destId];
+            const alertEl = document.getElementById('bulk-validation-alert');
+            const btnExecute = document.getElementById('btn-execute-bulk-transfer');
+            const checkedBoxes = Array.from(document.querySelectorAll('.bulk-student-checkbox:checked'));
+
+            updateBulkSummary(checkedBoxes.length);
+
+            if (!destData || !alertEl || !btnExecute) return;
+
+            const vacant = getRoomVacantSeatsCount(destData);
+            const genderMode = destData.room.gender; // 'Male', 'Female', 'Both'
+
+            alertEl.style.display = 'none';
+            btnExecute.disabled = false;
+            btnExecute.style.opacity = '1';
+
+            if (checkedBoxes.length === 0) {
+                alertEl.style.display = 'block';
+                alertEl.innerHTML = '⚠️ স্থানান্তরের জন্য অন্তত ১ জন শিক্ষার্থী সিলেক্ট করুন।';
+                btnExecute.disabled = true;
+                btnExecute.style.opacity = '0.5';
+                return;
+            }
+
+            // 1. Capacity Check
+            if (checkedBoxes.length > vacant) {
+                alertEl.style.display = 'block';
+                alertEl.innerHTML = `⚠️ গন্তব্য রুমে মোট <strong>${vacant}</strong> টি ফাঁকা সিট রয়েছে, কিন্তু আপনি <strong>${checkedBoxes.length}</strong> জন শিক্ষার্থী সিলেক্ট করেছেন! সিট সংখ্যা অপ্রতুল।`;
+                btnExecute.disabled = true;
+                btnExecute.style.opacity = '0.5';
+                return;
+            }
+
+            // 2. Gender Mode Check
+            if (genderMode === 'Male') {
+                const femaleStudentSelected = checkedBoxes.some(cb => (cb.dataset.gender || 'Male').toLowerCase() === 'female');
+                if (femaleStudentSelected) {
+                    alertEl.style.display = 'block';
+                    alertEl.innerHTML = `⚠️ গন্তব্য রুমটি <strong>Boys Only</strong>! কিন্তু সিলেক্টকৃত শিক্ষার্থীদের মধ্যে ছাত্রী রয়েছে। স্থানান্তর করা সম্ভব নয়।`;
+                    btnExecute.disabled = true;
+                    btnExecute.style.opacity = '0.5';
+                    return;
+                }
+            } else if (genderMode === 'Female') {
+                const maleStudentSelected = checkedBoxes.some(cb => (cb.dataset.gender || 'Female').toLowerCase() === 'male');
+                if (maleStudentSelected) {
+                    alertEl.style.display = 'block';
+                    alertEl.innerHTML = `⚠️ গন্তব্য রুমটি <strong>Girls Only</strong>! কিন্তু সিলেক্টকৃত শিক্ষার্থীদের মধ্যে ছাত্র রয়েছে। স্থানান্তর করা সম্ভব নয়।`;
+                    btnExecute.disabled = true;
+                    btnExecute.style.opacity = '0.5';
+                    return;
+                }
+            }
+        }
+
+        function updateBulkSummary(count) {
+            if (count === undefined) {
+                count = document.querySelectorAll('.bulk-student-checkbox:checked').length;
+            }
+            const lbl = document.getElementById('bulk-transfer-summary-lbl');
+            if (lbl) {
+                lbl.innerHTML = `নির্বাচিত: <strong>${count}</strong> জন শিক্ষার্থী`;
+            }
+        }
+
+        function executeBulkSeatTransfer() {
+            const srcId = document.getElementById('bulk-source-room-select').value;
+            const destId = document.getElementById('bulk-dest-room-select').value;
+
+            const srcData = currentGeneratedAllocations[srcId];
+            const destData = currentGeneratedAllocations[destId];
+
+            if (!srcData || !destData) return;
+
+            const checkedBoxes = Array.from(document.querySelectorAll('.bulk-student-checkbox:checked'));
+            if (checkedBoxes.length === 0) return;
+
+            // Collect selected student items from Source Room
+            const studentsToTransfer = [];
+            checkedBoxes.forEach(cb => {
+                const benchNo = parseInt(cb.dataset.bench);
+                const seatSide = cb.dataset.seat;
+                const bench = srcData.benches.find(b => b.benchNo === benchNo);
+                if (bench && bench[seatSide]) {
+                    studentsToTransfer.push(bench[seatSide]);
+                    bench[seatSide] = null; // Clear seat in Source Room
+                }
+            });
+
+            // Sequentially place transferred students into Destination Room's vacant seats
+            let studentIdx = 0;
+            for (let b of destData.benches) {
+                if (studentIdx >= studentsToTransfer.length) break;
+
+                if (!b.left) {
+                    b.left = studentsToTransfer[studentIdx++];
+                }
+                if (studentIdx < studentsToTransfer.length && !b.right) {
+                    b.right = studentsToTransfer[studentIdx++];
+                }
+            }
+
+            // Permanently save updated allocations
+            saveActiveSeatAllocations();
+            const savedLbl = document.getElementById('lbl-dist-saved-status');
+            if (savedLbl) {
+                savedLbl.style.display = 'inline-flex';
+                savedLbl.innerHTML = '💾 স্থায়ীভাবে সংরক্ষিত (Permanently Saved)';
+            }
+
+            closeBulkSeatTransferModal();
+
+            showToastNotice(`✅ ${studentsToTransfer.length} জন শিক্ষার্থী ${srcData.room.number} থেকে ${destData.room.number} রুমে সফলভাবে স্থানান্তর করা হয়েছে!`);
+
+            // Re-render bench layout
+            renderSelectedRoomBenchLayout();
+        }
+
+        function onLayoutViewModeChange() {
+            const mode = document.getElementById('dist-layout-view-mode')?.value || 'vertical';
+            localStorage.setItem('school_seat_layout_view_mode', mode);
+            renderSelectedRoomBenchLayout();
+        }
+
+        function renderSelectedRoomBenchLayout() {
+            const selectEl = document.getElementById('dist-room-select');
+            const container = document.getElementById('bench-layout-display');
+            if (!selectEl || !container) return;
+
+            const roomId = selectEl.value;
+            const data = (currentGeneratedAllocations && currentGeneratedAllocations[roomId]) || (getMergedSavedAllocations())[roomId];
+
+            if (!data) {
+                const dept = document.getElementById('dist-dept')?.value || 'High Level';
+                const examName = document.getElementById('dist-exam-name')?.value || 'All';
+                const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+                container.innerHTML = `
+                    <div style="background: rgba(239, 68, 68, 0.08); border: 1.5px dashed rgba(239, 68, 68, 0.4); border-radius: 14px; padding: 35px 20px; text-align: center; color: #fca5a5; margin-top: 20px;">
+                        <div style="font-size: 2.8rem; margin-bottom: 12px;">🪑</div>
+                        <h4 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; color: #f87171;">সংরক্ষিত সিটপ্ল্যান পাওয়া যায়নি</h4>
+                        <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 20px; max-width: 650px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+                            <strong>Department:</strong> <span style="color:var(--neon-cyan);">${dept}</span> &bull; 
+                            <strong>Exam:</strong> <span style="color:var(--neon-cyan);">${examName}</span> &bull; 
+                            <strong>Shift:</strong> <span style="color:var(--neon-pink);">${shift}</span><br>
+                            এই সিলেকশনের জন্য এখনো কোনো সিটপ্ল্যান সংরক্ষিত নেই। নতুন সিটপ্ল্যান জেনারেট করতে বাটনে ক্লিক করুন।
+                        </p>
+                        <button onclick="generateSeatDistribution()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-weight: 800; font-size: 1.02rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                            ⚡ জেনারেট করুন (Generate Auto)
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('lbl-dist-room-name').innerText = data.room.number + " (" + data.room.floor + ")";
+            document.getElementById('lbl-dist-building-name').innerText = data.building ? data.building.name : 'Main Building';
+            const lblShift = document.getElementById('lbl-dist-shift-name');
+            if (lblShift) lblShift.innerText = data.shift || 'Morning Shift';
+            document.getElementById('lbl-dist-gender-mode').innerHTML = `
+                <span class="gender-badge-${data.room.gender === 'Male' ? 'boys' : data.room.gender === 'Female' ? 'girls' : 'both'}">
+                    ${data.room.gender === 'Male' ? 'Boys Only' : data.room.gender === 'Female' ? 'Girls Only' : 'Both (Co-ed)'}
+                </span>
+            `;
+            document.getElementById('lbl-dist-capacity').innerText = `${data.room.benches} Benches (${data.room.benches * 2} Seats)`;
+
+            const isEdit = isSeatEditMode;
+            const viewModeSelect = document.getElementById('dist-layout-view-mode');
+            const savedMode = localStorage.getItem('school_seat_layout_view_mode');
+            if (savedMode && viewModeSelect && viewModeSelect.value !== savedMode) {
+                viewModeSelect.value = savedMode;
+            }
+            const viewMode = viewModeSelect?.value || 'vertical';
+
+            function renderBenchCardHTML(b) {
+                const leftBg = b.left ? getClassBgColor(b.left.class) : 'rgba(0, 0, 0, 0.3)';
+                const leftBorder = b.left ? getClassBorderColor(b.left.class) : 'rgba(255, 255, 255, 0.1)';
+
+                const rightBg = b.right ? getClassBgColor(b.right.class) : 'rgba(0, 0, 0, 0.3)';
+                const rightBorder = b.right ? getClassBorderColor(b.right.class) : 'rgba(255, 255, 255, 0.1)';
+
+                const leftDragAttr = isEdit ? `
+                    draggable="${b.left ? 'true' : 'false'}"
+                    ondragstart="onSeatDragStart(event, '${roomId}', ${b.benchNo}, 'left')"
+                    ondragover="onSeatDragOver(event)"
+                    ondragenter="onSeatDragEnter(event)"
+                    ondragleave="onSeatDragLeave(event)"
+                    ondrop="onSeatDrop(event, '${roomId}', ${b.benchNo}, 'left')"
+                    ondragend="onSeatDragEnd(event)"
+                ` : '';
+
+                const rightDragAttr = isEdit ? `
+                    draggable="${b.right ? 'true' : 'false'}"
+                    ondragstart="onSeatDragStart(event, '${roomId}', ${b.benchNo}, 'right')"
+                    ondragover="onSeatDragOver(event)"
+                    ondragenter="onSeatDragEnter(event)"
+                    ondragleave="onSeatDragLeave(event)"
+                    ondrop="onSeatDrop(event, '${roomId}', ${b.benchNo}, 'right')"
+                    ondragend="onSeatDragEnd(event)"
+                ` : '';
+
+                return `
+                    <div class="bench-card">
+                        <div class="bench-header">
+                            <span style="color: #1d4ed8; font-weight: 900;">BENCH #${b.benchNo}</span>
+                            <span style="color: #047857; font-weight: 900;">2 SEATS</span>
+                        </div>
+                        <div class="bench-seats">
+                            <div class="seat-slot ${isEdit ? 'editable-seat' : ''}" ${leftDragAttr} style="background: ${leftBg}; border: 1.5px solid ${leftBorder}; text-align:center;">
+                                ${b.left ? `
+                                    <div style="position:relative; margin-bottom:3px; text-align:center;">
+                                        <div class="seat-slot-name-bn" style="font-weight:900; color: #1e40af; font-size:1.05rem; line-height:1.35; text-align:center; ${isEdit ? 'padding-right:32px;' : ''}">${formatStudentDisplayName(b.left)}</div>
+                                        ${isEdit ? '<span style="position:absolute; top:0; right:0; font-size:0.74rem; color:#be185d; background:rgba(236,72,153,0.15); padding:1px 5px; border-radius:4px; font-weight:700;">⋮⋮ Drag</span>' : ''}
+                                    </div>
+                                    <div class="seat-slot-id" style="font-size:0.88rem; color: #0284c7; font-weight:800; line-height:1.3; margin-bottom:2px; text-align:center;"><span style="color:#0284c7;">ID:</span> <strong style="color: #0284c7;">${b.left.studentId || b.left.id || ('STD-' + b.left.roll)}</strong></div>
+                                    <div class="seat-slot-class-sec" style="font-size:0.86rem; font-weight:800; line-height:1.3; text-align:center;"><span style="color:#be185d;">Class:</span> <strong style="color:${getClassColor(b.left.class)}; font-weight:900;">${b.left.class}</strong> &bull; <span style="color:#b45309;">Sec:</span> <strong style="color: #b45309; font-weight:900;">${b.left.section || 'A'}</strong></div>
+                                ` : `<span style="font-size:0.88rem; color: #475569; font-weight:800;">${isEdit ? '➕ Drop here' : 'Vacant'}</span>`}
+                            </div>
+                            <div class="seat-slot ${isEdit ? 'editable-seat' : ''}" ${rightDragAttr} style="background: ${rightBg}; border: 1.5px solid ${rightBorder}; text-align:center;">
+                                ${b.right ? `
+                                    <div style="position:relative; margin-bottom:3px; text-align:center;">
+                                        <div class="seat-slot-name-bn" style="font-weight:900; color: #15803d; font-size:1.05rem; line-height:1.35; text-align:center; ${isEdit ? 'padding-right:32px;' : ''}">${formatStudentDisplayName(b.right)}</div>
+                                        ${isEdit ? '<span style="position:absolute; top:0; right:0; font-size:0.74rem; color:#be185d; background:rgba(236,72,153,0.15); padding:1px 5px; border-radius:4px; font-weight:700;">⋮⋮ Drag</span>' : ''}
+                                    </div>
+                                    <div class="seat-slot-id" style="font-size:0.88rem; color: #7e22ce; font-weight:800; line-height:1.3; margin-bottom:2px; text-align:center;"><span style="color:#7e22ce;">ID:</span> <strong style="color: #7e22ce;">${b.right.studentId || b.right.id || ('STD-' + b.right.roll)}</strong></div>
+                                    <div class="seat-slot-class-sec" style="font-size:0.86rem; font-weight:800; line-height:1.3; text-align:center;"><span style="color:#c2410c;">Class:</span> <strong style="color:${getClassColor(b.right.class)}; font-weight:900;">${b.right.class}</strong> &bull; <span style="color:#4338ca;">Sec:</span> <strong style="color: #4338ca; font-weight:900;">${b.right.section || 'A'}</strong></div>
+                                ` : `<span style="font-size:0.88rem; color: #475569; font-weight:800;">${isEdit ? '➕ Drop here' : 'Vacant'}</span>`}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+            }
+
+            if (viewMode === 'vertical') {
+                // Class-Wise Top to Bottom Vertical Columns Layout
+                const benchesPerCol = 5;
+                const totalBenches = data.benches.length;
+                const numCols = Math.ceil(totalBenches / benchesPerCol);
+
+                let html = `<div class="bench-vertical-columns-container">`;
+                for (let c = 0; c < numCols; c++) {
+                    const colBenches = data.benches.slice(c * benchesPerCol, (c + 1) * benchesPerCol);
+                    const startNo = colBenches[0] ? colBenches[0].benchNo : (c * benchesPerCol + 1);
+                    const endNo = colBenches[colBenches.length - 1] ? colBenches[colBenches.length - 1].benchNo : (c + 1) * benchesPerCol;
+
+                    html += `
+                        <div class="bench-column-card">
+                            <div class="bench-column-header">
+                                <span>📌 Column ${c + 1} (Benches ${startNo} – ${endNo})</span>
+                                <span class="bench-column-badge">⬇ Top to Bottom ID Order</span>
+                            </div>
+                            <div class="bench-column-list">
+                        `;
+
+                    colBenches.forEach((b, idx) => {
+                        html += renderBenchCardHTML(b);
+                        if (idx < colBenches.length - 1) {
+                            html += `<div class="vertical-flow-arrow">▼</div>`;
+                        }
+                    });
+
+                    html += `
+                            </div>
+                        </div>
+                        `;
+                }
+                html += `</div>`;
+                container.innerHTML = html;
+            } else {
+                // Standard Grid View
+                let html = `<div class="bench-grid-container">`;
+                data.benches.forEach(b => {
+                    html += renderBenchCardHTML(b);
+                });
+                html += `</div>`;
+                container.innerHTML = html;
+            }
+
+            // Auto-update seat tokens preview window if open
+            const tokensModal = document.getElementById('saved-seat-tokens-modal');
+            if (tokensModal && tokensModal.style.display === 'block') {
+                openSavedSeatPlanTokensModal();
+            }
+        }
+
+        // --- MANUAL SEAT MATRIX EDITOR ---
+        function openManualSeatEditor() {
+            activeSeatPlanKey = null;
+            const modal = document.getElementById('manual-seat-editor-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+            }
+            renderManualSeatMatrixTable();
+        }
+        window.openManualSeatEditor = openManualSeatEditor;
+
+        function closeManualSeatEditor() {
+            const modal = document.getElementById('manual-seat-editor-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function toggleManualMatrixFullscreen() {
+            const modal = document.getElementById('manual-seat-editor-modal');
+            const btn = document.getElementById('btn-toggle-manual-fullscreen');
+            const icon = document.getElementById('fullscreen-icon');
+            const text = document.getElementById('fullscreen-text');
+            if (!modal) return;
+
+            modal.classList.toggle('fullscreen-mode');
+            const isFull = modal.classList.contains('fullscreen-mode');
+
+            if (isFull) {
+                if (icon) icon.innerText = '🗗';
+                if (text) text.innerText = 'ছোট পর্দা (Exit Fullscreen)';
+                if (btn) {
+                    btn.style.background = '#0284c7';
+                    btn.style.color = '#ffffff';
+                    btn.style.borderColor = '#38bdf8';
+                }
+            } else {
+                if (icon) icon.innerText = '⛶';
+                if (text) text.innerText = 'পুরো পর্দা (Fullscreen)';
+                if (btn) {
+                    btn.style.background = '#0f172a';
+                    btn.style.color = '#38bdf8';
+                    btn.style.borderColor = '#334155';
+                }
+            }
+        }
+        window.toggleManualMatrixFullscreen = toggleManualMatrixFullscreen;
+
+
+        function renderManualSeatMatrixTable() {
+            const container = document.getElementById('manual-matrix-table-container');
+            if (!container) return;
+
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+            const selectedBuilding = document.getElementById('dist-building')?.value || 'All';
+            const selectedRoom = document.getElementById('dist-room-filter')?.value || 'All';
+
+            // Update Header Labels
+            const deptLbl = document.getElementById('manual-matrix-dept-lbl');
+            const shiftLbl = document.getElementById('manual-matrix-shift-lbl');
+            const examLbl = document.getElementById('manual-matrix-exam-lbl');
+            if (deptLbl) deptLbl.innerText = dept;
+            if (shiftLbl) shiftLbl.innerText = shift;
+            if (examLbl) examLbl.innerText = examName;
+
+            // 1. Filter Buildings and Rooms for this shift & exclusions
+            const allBuildings = loadBuildings();
+            let allRooms = loadRooms();
+            const excludedBuildings = getExcludedBuildings();
+            const excludedRooms = getExcludedRooms();
+
+            allRooms = allRooms.filter(r => !excludedBuildings.includes(r.buildingId) && !excludedRooms.includes(r.id));
+            allRooms = allRooms.filter(r => {
+                if (!r.shift || r.shift === 'Both' || r.shift === 'All') return true;
+                return r.shift.trim().toLowerCase() === shift.trim().toLowerCase();
+            });
+
+            if (selectedBuilding !== 'All') {
+                allRooms = allRooms.filter(r => r.buildingId === selectedBuilding);
+            }
+            if (selectedRoom !== 'All') {
+                allRooms = allRooms.filter(r => r.id === selectedRoom);
+            }
+
+            // Group Rooms by Building
+            const buildingGroups = [];
+            allBuildings.forEach(bldg => {
+                const bldgRooms = allRooms.filter(r => r.buildingId === bldg.id);
+                if (bldgRooms.length > 0) {
+                    buildingGroups.push({
+                        building: bldg,
+                        rooms: bldgRooms
+                    });
+                }
+            });
+
+            const assignedRoomIds = buildingGroups.flatMap(bg => bg.rooms.map(r => r.id));
+            const orphanRooms = allRooms.filter(r => !assignedRoomIds.includes(r.id));
+            if (orphanRooms.length > 0) {
+                buildingGroups.push({
+                    building: { id: 'other', name: 'অন্যান্য কক্ষ (Main Building)' },
+                    rooms: orphanRooms
+                });
+            }
+
+            const totalActiveRooms = buildingGroups.flatMap(bg => bg.rooms);
+
+            if (totalActiveRooms.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ef4444; font-weight: 800; font-size: 1.05rem;">
+                        ⚠️ নির্বাচিত শিফট বা ফিল্টারে কোনো সক্রিয় রুম পাওয়া যায়নি। দয়া করে Building Management থেকে রুম কনফিগারেশন চেক করুন।
+                    </div>
+                `;
+                return;
+            }
+
+            // 2. Filter Students & Classes for this Department, Shift & Section Inclusion Checkboxes
+            const students = loadStudentsWithDefaults();
+            const classes = loadClasses();
+            const { primary, high } = groupClassesByDepartment(classes);
+            const deptClasses = (dept === 'High Level') ? high : primary;
+
+            // Determine allowed classes for this shift from routines or fallback
+            const routines = loadExamRoutines();
+            let shiftClasses = new Set();
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    const matchesDept = !r.dept || r.dept === dept;
+                    const matchesExam = (examName === 'All') || (r.examName === examName || r.examTitle === examName);
+                    const matchesShift = r.shift && (r.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+                    if (matchesDept && matchesExam && matchesShift) {
+                        if (Array.isArray(r.classes)) {
+                            r.classes.forEach(c => shiftClasses.add(c));
+                        } else if (r.class) {
+                            shiftClasses.add(r.class);
+                        }
+                    }
+                });
+            }
+
+            if (shiftClasses.size === 0) {
+                if (dept === 'High Level') {
+                    if (shift === 'Morning Shift') {
+                        ['Six', 'Seven', 'Eight', 'Class 6', 'Class 7', 'Class 8', '6', '7', '8'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Nine', 'Ten', 'Class 9', 'Class 10', '9', '10'].forEach(c => shiftClasses.add(c));
+                    }
+                } else {
+                    if (shift === 'Morning Shift') {
+                        ['Play', 'Nursery', 'KG', 'One', 'Two', 'Class 1', 'Class 2', '1', '2'].forEach(c => shiftClasses.add(c));
+                    } else {
+                        ['Three', 'Four', 'Five', 'Class 3', 'Class 4', 'Class 5', '3', '4', '5'].forEach(c => shiftClasses.add(c));
+                    }
+                }
+            }
+
+            const activeClassesForShift = deptClasses.filter(c => {
+                const normC = typeof normalizeClassName === 'function' ? normalizeClassName(c) : c;
+                return Array.from(shiftClasses).some(sc => {
+                    const base = sc.split(' - ')[0];
+                    return (typeof normalizeClassName === 'function' ? normalizeClassName(base) : base) === normC;
+                });
+            });
+
+            const finalClasses = activeClassesForShift.length > 0 ? activeClassesForShift : deptClasses;
+
+            // Structure rows: Class -> list of included sections with Male & Female breakdown
+            const classRowData = [];
+            finalClasses.forEach(cName => {
+                const normC = typeof normalizeClassName === 'function' ? normalizeClassName(cName) : cName;
+                const classStudents = students.filter(s => {
+                    const sNorm = typeof normalizeClassName === 'function' ? normalizeClassName(s.class) : s.class;
+                    return (sNorm === normC || s.class === cName) &&
+                        (!s.shift || s.shift.trim().toLowerCase() === shift.trim().toLowerCase());
+                });
+
+                let sections = Array.from(new Set(classStudents.map(s => (s.section || '').trim().toUpperCase()).filter(Boolean)));
+                if (sections.length === 0 && typeof getSectionsForClass === 'function') {
+                    sections = getSectionsForClass(cName).map(s => s.toUpperCase());
+                }
+                if (sections.length === 0) {
+                    sections = ['A', 'B'];
+                }
+                sections.sort();
+
+                // Keep only sections included by user in dist-class-section-panel
+                const includedSections = sections.filter(sec => {
+                    if (typeof isDistClassSectionIncluded === 'function') {
+                        return isDistClassSectionIncluded(cName, sec);
+                    }
+                    return true;
+                });
+
+                if (includedSections.length > 0) {
+                    classRowData.push({
+                        cName: cName,
+                        sections: includedSections.map(sec => {
+                            let secStudents = classStudents.filter(s => (s.section || '').trim().toUpperCase() === sec);
+                            let maleList = secStudents.filter(s => (s.gender || 'Male').toLowerCase() === 'male');
+                            let femaleList = secStudents.filter(s => (s.gender || 'Male').toLowerCase() === 'female');
+
+                            // Fallback default distribution if empty in database
+                            if (secStudents.length === 0) {
+                                maleList = Array.from({ length: 25 }, (_, i) => ({
+                                    id: `gen_${cName}_${sec}_M_${i + 1}`,
+                                    studentId: `2026${i + 1}`,
+                                    roll: i + 1,
+                                    name: `Male Student ${i + 1}`,
+                                    class: cName,
+                                    section: sec,
+                                    gender: 'Male'
+                                }));
+                                femaleList = Array.from({ length: 25 }, (_, i) => ({
+                                    id: `gen_${cName}_${sec}_F_${i + 1}`,
+                                    studentId: `2026${i + 26}`,
+                                    roll: i + 26,
+                                    name: `Female Student ${i + 1}`,
+                                    class: cName,
+                                    section: sec,
+                                    gender: 'Female'
+                                }));
+                                secStudents = [...maleList, ...femaleList];
+                            }
+
+                            return {
+                                secName: sec,
+                                totalStudents: secStudents.length,
+                                maleCount: maleList.length,
+                                femaleCount: femaleList.length,
+                                maleList: maleList,
+                                femaleList: femaleList
+                            };
+                        })
+                    });
+                }
+            });
+
+            if (classRowData.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ef4444; font-weight: 800; font-size: 1.05rem;">
+                        ⚠️ নির্বাচিত ডিপার্টমেন্ট ও শিফটে অন্তর্ভুক্ত কোনো শ্রেণি বা সেকশন পাওয়া যায়নি। দয়া করে চেকবক্স থেকে শ্রেণি অন্তর্ভুক্ত করুন।
+                    </div>
+                `;
+                return;
+            }
+
+            // 3. Check existing saved allocations to prefill numbers
+            const existingPlanCounts = {}; // existingPlanCounts[cName___secName___gender___roomId] = count
+            let existingAlloc = null;
+            if (currentGeneratedAllocations && Object.keys(currentGeneratedAllocations).length > 0) {
+                const first = Object.values(currentGeneratedAllocations)[0];
+                if (first && (!first.dept || first.dept === dept) && (!first.shift || first.shift === shift)) {
+                    existingAlloc = currentGeneratedAllocations;
+                }
+            }
+            if (!existingAlloc) {
+                const compositeKey = getCompositeSeatPlanKey(dept, examName, shift);
+                const store = safeJsonParse('school_seat_plans_store', {});
+                if (store[compositeKey] && store[compositeKey].allocations) {
+                    existingAlloc = store[compositeKey].allocations;
+                }
+            }
+
+            if (existingAlloc) {
+                Object.entries(existingAlloc).forEach(([rId, rData]) => {
+                    if (rData && rData.benches && Array.isArray(rData.benches)) {
+                        rData.benches.forEach(b => {
+                            ['left', 'right'].forEach(side => {
+                                const st = b[side];
+                                if (st && st.class) {
+                                    const sec = (st.section || 'A').trim().toUpperCase();
+                                    const g = (st.gender && st.gender.toLowerCase().startsWith('f')) ? 'Female' : 'Male';
+                                    const key = `${st.class}___${sec}___${g}___${rId}`;
+                                    existingPlanCounts[key] = (existingPlanCounts[key] || 0) + 1;
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+
+            // 4. Build Table HTML with Male and Female columns
+            let html = `
+                <table id="manual-seat-matrix-table" style="width: 100%; border-collapse: separate; border-spacing: 0; font-family: 'Hind Siliguri', sans-serif;">
+                    <thead>
+                        <!-- Header Row 1: Class, Section, Building Names, Total Column -->
+                        <tr>
+                            <th rowspan="3" style="position: sticky; top: 0; left: 0; z-index: 40; min-width: 100px; width: 110px; background: #0f172a; color: #ffffff; text-align: center; vertical-align: middle; border: 1.5px solid #334155; font-size: 1.02rem; font-weight: 900; padding: 10px 8px;">
+                                শ্রেণি<br><small style="font-size:0.75rem; color:#94a3b8;">(Class)</small>
+                            </th>
+                            <th rowspan="3" style="position: sticky; top: 0; left: 110px; z-index: 40; min-width: 135px; width: 145px; background: #0f172a; color: #ffffff; text-align: center; vertical-align: middle; border: 1.5px solid #334155; font-size: 1.02rem; font-weight: 900; padding: 10px 8px;">
+                                শাখা<br><small style="font-size:0.75rem; color:#94a3b8;">(Section)</small>
+                            </th>
+            `;
+
+            // Building Headers (Header Row 1) - Colspan = rooms * 2
+            buildingGroups.forEach(bg => {
+                const bldgColspan = bg.rooms.length * 2;
+                html += `
+                    <th colspan="${bldgColspan}" style="position: sticky; top: 0; z-index: 30; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; text-align: center; border: 1.5px solid #38bdf8; font-size: 1.05rem; font-weight: 900; padding: 8px 12px; letter-spacing: 0.5px;">
+                        🏢 ${bg.building.name || 'Building'}
+                    </th>
+                `;
+            });
+
+            // Total Column (Header Row 1)
+            html += `
+                            <th rowspan="3" style="position: sticky; top: 0; right: 0; z-index: 40; min-width: 155px; width: 160px; background: #0f766e; color: #ffffff; text-align: center; vertical-align: middle; border: 1.5px solid #14b8a6; font-size: 1.02rem; font-weight: 900; padding: 10px 8px;">
+                                মোট বরাদ্দ<br><small style="font-size:0.75rem; color:#99f6e4;">(Assigned / Total)</small>
+                            </th>
+                        </tr>
+                        <!-- Header Row 2: Room Numbers & Gender Designation (Colspan=2 per room) -->
+                        <tr>
+            `;
+
+            // Room Headers (Header Row 2)
+            buildingGroups.forEach(bg => {
+                bg.rooms.forEach(room => {
+                    const cap = (room.benches || 10) * 2;
+                    const genderBadge = room.gender === 'Male' ? '👦 ছাত্র (Boys)' : room.gender === 'Female' ? '👧 ছাত্রী (Girls)' : '👥 উভয়ে (Both)';
+                    html += `
+                        <th colspan="2" style="position: sticky; top: 38px; z-index: 30; background: #0369a1; color: #ffffff; text-align: center; border: 1.5px solid #0284c7; padding: 6px 4px;">
+                            <div style="font-size: 0.96rem; font-weight: 900; color: #ffffff;">রুম ${room.number}</div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: #bae6fd; margin-top: 2px;">
+                                সিট: <span id="hdr-cap-${room.id}">${cap}</span> &bull; <span style="color:#fef08a;">${genderBadge}</span>
+                            </div>
+                        </th>
+                    `;
+                });
+            });
+
+            html += `
+                        </tr>
+                        <!-- Header Row 3: Male & Female Subheaders under each room -->
+                        <tr>
+            `;
+
+            // Male & Female Sub-headers (Header Row 3)
+            buildingGroups.forEach(bg => {
+                bg.rooms.forEach(room => {
+                    html += `
+                        <th style="position: sticky; top: 78px; z-index: 30; min-width: 58px; background: #0284c7; color: #ffffff; text-align: center; border: 1.5px solid #38bdf8; padding: 4px 2px; font-size: 0.82rem; font-weight: 900;">
+                            👦 Male
+                        </th>
+                        <th style="position: sticky; top: 78px; z-index: 30; min-width: 58px; background: #be185d; color: #ffffff; text-align: center; border: 1.5px solid #f472b6; padding: 4px 2px; font-size: 0.82rem; font-weight: 900;">
+                            👧 Female
+                        </th>
+                    `;
+                });
+            });
+
+            html += `
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Rows Generation with Male and Female breakdown
+            classRowData.forEach(cData => {
+                const totalSecs = cData.sections.length;
+                cData.sections.forEach((sec, idx) => {
+                    html += `<tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">`;
+
+                    // First Column: Class Name (with rowspan)
+                    if (idx === 0) {
+                        html += `
+                            <td rowspan="${totalSecs}" style="position: sticky; left: 0; z-index: 20; background: #f1f5f9; font-weight: 900; color: #0f172a; text-align: center; vertical-align: middle; border: 1.5px solid #cbd5e1; font-size: 1.08rem; padding: 8px;">
+                                🎓 ${cData.cName}
+                            </td>
+                        `;
+                    }
+
+                    // Second Column: Section Name & Total Students with Male/Female breakdown
+                    html += `
+                        <td style="position: sticky; left: 110px; z-index: 20; background: #f8fafc; text-align: center; vertical-align: middle; border: 1.5px solid #cbd5e1; padding: 6px 8px;">
+                            <span style="font-weight: 900; color: #0284c7; font-size: 0.98rem;">শাখা: ${sec.secName}</span>
+                            <div style="font-size: 0.76rem; font-weight: 800; display: flex; justify-content: center; gap: 4px; margin-top: 3px; flex-wrap: wrap;">
+                                <span style="background: #e0f2fe; color: #0369a1; padding: 1px 6px; border-radius: 4px; border: 1px solid #bae6fd;">👦 M: ${sec.maleCount}</span>
+                                <span style="background: #fce7f3; color: #be185d; padding: 1px 6px; border-radius: 4px; border: 1px solid #fbcfe8;">👧 F: ${sec.femaleCount}</span>
+                            </div>
+                            <div style="font-size: 0.72rem; color: #64748b; font-weight: 700; margin-top: 2px;">(মোট: ${sec.totalStudents} জন)</div>
+                        </td>
+                    `;
+
+                    // Room Input Cells: 1 for Male, 1 for Female
+                    totalActiveRooms.forEach(room => {
+                        const prefillKeyMale = `${cData.cName}___${sec.secName}___Male___${room.id}`;
+                        const prefillKeyFemale = `${cData.cName}___${sec.secName}___Female___${room.id}`;
+                        const prefillValMale = existingPlanCounts[prefillKeyMale] !== undefined ? existingPlanCounts[prefillKeyMale] : '';
+                        const prefillValFemale = existingPlanCounts[prefillKeyFemale] !== undefined ? existingPlanCounts[prefillKeyFemale] : '';
+
+                        const isMaleDisabled = room.gender === 'Female';
+                        const isFemaleDisabled = room.gender === 'Male';
+
+                        // Male input
+                        html += `
+                            <td style="text-align: center; vertical-align: middle; border: 1.5px solid #cbd5e1; background: ${isMaleDisabled ? '#f1f5f9' : '#ffffff'}; padding: 4px 2px;">
+                                <input type="number" min="0" max="${sec.maleCount}" value="${isMaleDisabled ? '' : prefillValMale}"
+                                    class="form-control manual-matrix-cell"
+                                    data-class="${cData.cName}"
+                                    data-section="${sec.secName}"
+                                    data-gender="Male"
+                                    data-room-id="${room.id}"
+                                    data-room-number="${room.number}"
+                                    data-max-avail="${sec.maleCount}"
+                                    ${isMaleDisabled ? 'disabled placeholder="-" style="background:#e2e8f0; cursor:not-allowed; opacity:0.6;"' : 'placeholder="0"'}
+                                    style="width: 52px; text-align: center; margin: 0 auto; font-weight: 800; font-size: 0.95rem; padding: 4px 2px; border: 1.5px solid #93c5fd; border-radius: 5px; color: #0369a1; background: #ffffff;"
+                                    oninput="onManualMatrixInputChange()">
+                            </td>
+                        `;
+
+                        // Female input
+                        html += `
+                            <td style="text-align: center; vertical-align: middle; border: 1.5px solid #cbd5e1; background: ${isFemaleDisabled ? '#f1f5f9' : '#ffffff'}; padding: 4px 2px;">
+                                <input type="number" min="0" max="${sec.femaleCount}" value="${isFemaleDisabled ? '' : prefillValFemale}"
+                                    class="form-control manual-matrix-cell"
+                                    data-class="${cData.cName}"
+                                    data-section="${sec.secName}"
+                                    data-gender="Female"
+                                    data-room-id="${room.id}"
+                                    data-room-number="${room.number}"
+                                    data-max-avail="${sec.femaleCount}"
+                                    ${isFemaleDisabled ? 'disabled placeholder="-" style="background:#e2e8f0; cursor:not-allowed; opacity:0.6;"' : 'placeholder="0"'}
+                                    style="width: 52px; text-align: center; margin: 0 auto; font-weight: 800; font-size: 0.95rem; padding: 4px 2px; border: 1.5px solid #f9a8d4; border-radius: 5px; color: #be185d; background: #ffffff;"
+                                    oninput="onManualMatrixInputChange()">
+                            </td>
+                        `;
+                    });
+
+                    // Row Total Column
+                    html += `
+                        <td id="row-total-${cData.cName}-${sec.secName}" data-male-avail="${sec.maleCount}" data-female-avail="${sec.femaleCount}" data-total-avail="${sec.totalStudents}" style="position: sticky; right: 0; z-index: 20; text-align: center; vertical-align: middle; font-weight: 900; border: 1.5px solid #cbd5e1; background: #f0fdf4; color: #166534; padding: 6px 8px; font-size: 0.88rem;">
+                            <div style="color: #0369a1;">👦 M: <span class="row-sum-male">0</span> / ${sec.maleCount}</div>
+                            <div style="color: #be185d; margin-top: 1px;">👧 F: <span class="row-sum-female">0</span> / ${sec.femaleCount}</div>
+                            <div style="font-size: 0.78rem; color: #047857; margin-top: 3px; border-top: 1px solid #bbf7d0; padding-top: 2px;">
+                                মোট: <span class="row-sum-total">0</span> / ${sec.totalStudents}
+                            </div>
+                        </td>
+                    `;
+
+                    html += `</tr>`;
+                });
+            });
+
+            html += `
+                    </tbody>
+                    <tfoot style="position: sticky; bottom: 0; z-index: 35;">
+                        <!-- Footer Row 1: Gender Subtotals per Room (Male & Female) -->
+                        <tr style="background: #0f172a; color: #ffffff;">
+                            <td colspan="2" style="position: sticky; left: 0; z-index: 40; background: #0f172a; color: #ffffff; font-weight: 900; text-align: right; padding: 8px 12px; border: 1.5px solid #334155; font-size: 0.90rem;">
+                                রুমভিত্তিক জেন্ডার মোট:
+                            </td>
+            `;
+
+            // Male and Female counts per room
+            totalActiveRooms.forEach(room => {
+                html += `
+                    <td id="col-male-${room.id}" style="text-align: center; font-weight: 900; font-size: 0.88rem; border: 1.5px solid #334155; padding: 6px 2px; color: #38bdf8;">
+                        0
+                    </td>
+                    <td id="col-female-${room.id}" style="text-align: center; font-weight: 900; font-size: 0.88rem; border: 1.5px solid #334155; padding: 6px 2px; color: #f472b6;">
+                        0
+                    </td>
+                `;
+            });
+
+            // Grand Gender Total
+            html += `
+                            <td id="matrix-grand-gender" style="position: sticky; right: 0; z-index: 40; text-align: center; font-weight: 900; font-size: 0.88rem; background: #065f46; color: #34d399; border: 1.5px solid #059669; padding: 6px 4px;">
+                                👦 <span id="grand-male-assigned">0</span> | 👧 <span id="grand-female-assigned">0</span>
+                            </td>
+                        </tr>
+                        <!-- Footer Row 2: Room Total Allocated vs Capacity -->
+                        <tr style="background: #1e293b; color: #ffffff;">
+                            <td colspan="2" style="position: sticky; left: 0; z-index: 40; background: #1e293b; color: #ffffff; font-weight: 900; text-align: right; padding: 8px 12px; border: 1.5px solid #334155; font-size: 0.90rem;">
+                                রুমের মোট শিক্ষার্থী (Total):
+                            </td>
+            `;
+
+            // Room Column Totals (Colspan = 2)
+            totalActiveRooms.forEach(room => {
+                const cap = (room.benches || 10) * 2;
+                html += `
+                    <td colspan="2" id="col-total-${room.id}" data-capacity="${cap}" style="text-align: center; font-weight: 900; font-size: 0.95rem; border: 1.5px solid #334155; padding: 8px 4px; color: #38bdf8;">
+                        <span class="col-sum-num">0</span> / ${cap}
+                    </td>
+                `;
+            });
+
+            // Grand Total
+            html += `
+                            <td id="matrix-grand-total" style="position: sticky; right: 0; z-index: 40; text-align: center; font-weight: 900; font-size: 1.10rem; background: #065f46; color: #34d399; border: 1.5px solid #059669; padding: 8px 6px;">
+                                0
+                            </td>
+                        </tr>
+                        <!-- Footer Row 3: Room Seat Status -->
+                        <tr style="background: #0f172a; color: #cbd5e1;">
+                            <td colspan="2" style="position: sticky; left: 0; z-index: 40; background: #0f172a; color: #94a3b8; font-weight: 800; text-align: right; padding: 6px 12px; border: 1.5px solid #334155; font-size: 0.82rem;">
+                                সিটের অবস্থা (Status):
+                            </td>
+            `;
+
+            // Room Status Cells (Colspan = 2)
+            totalActiveRooms.forEach(room => {
+                html += `
+                    <td colspan="2" id="room-status-${room.id}" style="text-align: center; font-size: 0.78rem; font-weight: 800; border: 1.5px solid #334155; padding: 4px; color: #38bdf8;">
+                        খালি
+                    </td>
+                `;
+            });
+
+            // Total Available Capacity
+            const grandCapacity = totalActiveRooms.reduce((sum, r) => sum + (r.benches || 10) * 2, 0);
+            html += `
+                            <td style="position: sticky; right: 0; z-index: 40; text-align: center; font-size: 0.82rem; font-weight: 800; color: #99f6e4; background: #115e59; border: 1.5px solid #0f766e; padding: 6px 4px;">
+                                আসন: ${grandCapacity}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+
+            container.innerHTML = html;
+
+            // Recalculate totals immediately
+            onManualMatrixInputChange();
+        }
+
+        function onManualMatrixInputChange() {
+            const table = document.getElementById('manual-seat-matrix-table');
+            if (!table) return;
+
+            const inputs = Array.from(table.querySelectorAll('.manual-matrix-cell'));
+            let grandTotalAssigned = 0;
+            let grandMaleAssigned = 0;
+            let grandFemaleAssigned = 0;
+
+            // 1. Group inputs by Row (Class + Section) and Column (Room + Gender)
+            const rowMap = {};
+            const colMap = {};
+            const colGenderMap = {};
+
+            inputs.forEach(input => {
+                const cName = input.dataset.class;
+                const secName = input.dataset.section;
+                const gender = input.dataset.gender || 'Male';
+                const roomId = input.dataset.roomId;
+                const maxAvail = parseInt(input.dataset.maxAvail) || 0;
+                const rowKey = `${cName}___${secName}`;
+                const val = parseInt(input.value) || 0;
+
+                if (!rowMap[rowKey]) {
+                    rowMap[rowKey] = {
+                        cName,
+                        secName,
+                        maleSum: 0,
+                        femaleSum: 0,
+                        totalSum: 0
+                    };
+                }
+                if (gender === 'Male') {
+                    rowMap[rowKey].maleSum += val;
+                    grandMaleAssigned += val;
+                } else {
+                    rowMap[rowKey].femaleSum += val;
+                    grandFemaleAssigned += val;
+                }
+                rowMap[rowKey].totalSum += val;
+
+                if (!colMap[roomId]) {
+                    colMap[roomId] = 0;
+                }
+                colMap[roomId] += val;
+
+                const colGenKey = `${roomId}___${gender}`;
+                colGenderMap[colGenKey] = (colGenderMap[colGenKey] || 0) + val;
+
+                grandTotalAssigned += val;
+            });
+
+            // Update Row Totals & Warnings
+            let hasRowOverflow = false;
+            let totalStudentsAvail = 0;
+            let totalMaleAvail = 0;
+            let totalFemaleAvail = 0;
+
+            Object.values(rowMap).forEach(row => {
+                const rowTotalEl = document.getElementById(`row-total-${row.cName}-${row.secName}`);
+                if (rowTotalEl) {
+                    const mAvail = parseInt(rowTotalEl.dataset.maleAvail) || 0;
+                    const fAvail = parseInt(rowTotalEl.dataset.femaleAvail) || 0;
+                    const tAvail = parseInt(rowTotalEl.dataset.totalAvail) || (mAvail + fAvail);
+
+                    totalMaleAvail += mAvail;
+                    totalFemaleAvail += fAvail;
+                    totalStudentsAvail += tAvail;
+
+                    const sumMaleSpan = rowTotalEl.querySelector('.row-sum-male');
+                    const sumFemaleSpan = rowTotalEl.querySelector('.row-sum-female');
+                    const sumTotalSpan = rowTotalEl.querySelector('.row-sum-total');
+
+                    if (sumMaleSpan) sumMaleSpan.innerText = row.maleSum;
+                    if (sumFemaleSpan) sumFemaleSpan.innerText = row.femaleSum;
+                    if (sumTotalSpan) sumTotalSpan.innerText = row.totalSum;
+
+                    if (row.maleSum > mAvail || row.femaleSum > fAvail || row.totalSum > tAvail) {
+                        hasRowOverflow = true;
+                        rowTotalEl.style.background = '#fee2e2';
+                        rowTotalEl.style.color = '#dc2626';
+                    } else if (row.totalSum === tAvail && tAvail > 0) {
+                        rowTotalEl.style.background = '#dcfce7';
+                        rowTotalEl.style.color = '#15803d';
+                    } else {
+                        rowTotalEl.style.background = '#f0fdf4';
+                        rowTotalEl.style.color = '#166534';
+                    }
+                }
+            });
+
+            // Update Column (Room) Totals, Gender counts & Capacities
+            let hasColOverflow = false;
+            let grandCapacity = 0;
+
+            Object.entries(colMap).forEach(([roomId, colSum]) => {
+                const colTotalEl = document.getElementById(`col-total-${roomId}`);
+                const statusEl = document.getElementById(`room-status-${roomId}`);
+                const maleColEl = document.getElementById(`col-male-${roomId}`);
+                const femaleColEl = document.getElementById(`col-female-${roomId}`);
+
+                const rMale = colGenderMap[`${roomId}___Male`] || 0;
+                const rFemale = colGenderMap[`${roomId}___Female`] || 0;
+
+                if (maleColEl) maleColEl.innerText = rMale;
+                if (femaleColEl) femaleColEl.innerText = rFemale;
+
+                if (colTotalEl) {
+                    const cap = parseInt(colTotalEl.dataset.capacity) || 0;
+                    grandCapacity += cap;
+                    const colSpan = colTotalEl.querySelector('.col-sum-num');
+                    if (colSpan) colSpan.innerText = colSum;
+
+                    if (colSum > cap) {
+                        hasColOverflow = true;
+                        colTotalEl.style.color = '#f87171';
+                        if (statusEl) {
+                            statusEl.innerHTML = `<span style="color:#ef4444; font-weight:900;">⚠️ অতিরিক্ত (${colSum - cap})</span>`;
+                        }
+                    } else if (colSum === cap) {
+                        colTotalEl.style.color = '#34d399';
+                        if (statusEl) {
+                            statusEl.innerHTML = `<span style="color:#10b981; font-weight:900;">✅ পূর্ণ (${rMale}M+${rFemale}F)</span>`;
+                        }
+                    } else if (colSum > 0) {
+                        colTotalEl.style.color = '#38bdf8';
+                        if (statusEl) {
+                            statusEl.innerHTML = `<span style="color:#38bdf8;">খালি: ${cap - colSum}</span>`;
+                        }
+                    } else {
+                        colTotalEl.style.color = '#94a3b8';
+                        if (statusEl) {
+                            statusEl.innerHTML = `<span style="color:#94a3b8;">খালি</span>`;
+                        }
+                    }
+                }
+            });
+
+            // Update Grand Totals
+            const grandTotalEl = document.getElementById('matrix-grand-total');
+            if (grandTotalEl) grandTotalEl.innerText = grandTotalAssigned;
+
+            const grandMaleEl = document.getElementById('grand-male-assigned');
+            const grandFemaleEl = document.getElementById('grand-female-assigned');
+            if (grandMaleEl) grandMaleEl.innerText = grandMaleAssigned;
+            if (grandFemaleEl) grandFemaleEl.innerText = grandFemaleAssigned;
+
+            // Update Summary Bar Badges
+            const availBadge = document.getElementById('matrix-total-students-avail');
+            const capBadge = document.getElementById('matrix-total-room-capacity');
+            const assignedBadge = document.getElementById('matrix-total-students-assigned');
+            const remainingBadge = document.getElementById('matrix-total-students-remaining');
+
+            if (availBadge) {
+                availBadge.innerHTML = `${totalStudentsAvail} <small style="font-size:0.82rem; font-weight:800; color:#0369a1;">(👦 ${totalMaleAvail} | 👧 ${totalFemaleAvail})</small>`;
+            }
+            if (capBadge) capBadge.innerText = grandCapacity;
+            if (assignedBadge) {
+                assignedBadge.innerHTML = `${grandTotalAssigned} <small style="font-size:0.82rem; font-weight:800; color:#15803d;">(👦 ${grandMaleAssigned} | 👧 ${grandFemaleAssigned})</small>`;
+            }
+            if (remainingBadge) {
+                const rem = totalStudentsAvail - grandTotalAssigned;
+                const remMale = totalMaleAvail - grandMaleAssigned;
+                const remFemale = totalFemaleAvail - grandFemaleAssigned;
+                remainingBadge.innerHTML = `${rem >= 0 ? rem : 0} <small style="font-size:0.82rem; font-weight:800;">(👦 ${remMale >= 0 ? remMale : 0} | 👧 ${remFemale >= 0 ? remFemale : 0})</small>`;
+                remainingBadge.style.color = rem === 0 ? '#16a34a' : (rem < 0 ? '#ef4444' : '#ea580c');
+            }
+
+            // Update Validation message
+            const valMsg = document.getElementById('manual-matrix-validation-msg');
+            if (valMsg) {
+                if (hasColOverflow && hasRowOverflow) {
+                    valMsg.innerHTML = `<span style="color:#ef4444;">⚠️ রুমের ক্যাপাসিটি এবং মোট শিক্ষার্থীর চেয়ে অতিরিক্ত এন্ট্রি রয়েছে!</span>`;
+                } else if (hasColOverflow) {
+                    valMsg.innerHTML = `<span style="color:#ef4444;">⚠️ কিছু রুমে ধারণক্ষমতার চেয়ে অতিরিক্ত সিট বরাদ্দ করা হয়েছে!</span>`;
+                } else if (hasRowOverflow) {
+                    valMsg.innerHTML = `<span style="color:#ef4444;">⚠️ কিছু শাখা/জেন্ডারে মোট শিক্ষার্থীর চেয়ে বেশি বরাদ্দ করা হয়েছে!</span>`;
+                } else if (grandTotalAssigned === totalStudentsAvail && grandTotalAssigned > 0) {
+                    valMsg.innerHTML = `<span style="color:#16a34a;">✅ সকল (${totalStudentsAvail} জন) শিক্ষার্থীর শতভাগ সিট বণ্টন সম্পন্ন হয়েছে! (👦 ${grandMaleAssigned} | 👧 ${grandFemaleAssigned})</span>`;
+                } else if (grandTotalAssigned > 0) {
+                    valMsg.innerHTML = `<span style="color:#0284c7;">ℹ️ মোট ${grandTotalAssigned} জন শিক্ষার্থী বরাদ্দ করা হয়েছে (বাকি: ${totalStudentsAvail - grandTotalAssigned} জন)</span>`;
+                } else {
+                    valMsg.innerHTML = `<span style="color:#64748b;">কক্ষে Male ও Female শিক্ষার্থী সংখ্যা লিখুন অথবা "অটো-ফিল করুন" বাটনে ক্লিক করুন।</span>`;
+                }
+            }
+        }
+
+        function clearManualMatrixInputs() {
+            const table = document.getElementById('manual-seat-matrix-table');
+            if (!table) return;
+            const inputs = table.querySelectorAll('.manual-matrix-cell');
+            inputs.forEach(input => {
+                if (!input.disabled) input.value = '';
+            });
+            onManualMatrixInputChange();
+        }
+
+        function autoDistributeManualMatrix() {
+            const table = document.getElementById('manual-seat-matrix-table');
+            if (!table) return;
+
+            const inputs = Array.from(table.querySelectorAll('.manual-matrix-cell:not([disabled])'));
+            if (inputs.length === 0) return;
+
+            // Clear inputs first
+            inputs.forEach(inp => inp.value = '');
+
+            // Get list of rooms with capacities & genders
+            const rooms = loadRooms();
+            const roomIds = Array.from(new Set(inputs.map(inp => inp.dataset.roomId)));
+            const roomCapacities = {};
+            const roomGenders = {};
+            roomIds.forEach(rId => {
+                const colTotalEl = document.getElementById(`col-total-${rId}`);
+                roomCapacities[rId] = colTotalEl ? (parseInt(colTotalEl.dataset.capacity) || 20) : 20;
+                const rObj = rooms.find(r => r.id === rId);
+                roomGenders[rId] = rObj ? (rObj.gender || 'Both') : 'Both';
+            });
+
+            // Get list of rows (class + section + gender) and unassigned students
+            const keys = Array.from(new Set(inputs.map(inp => `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}`)));
+            const keyTotals = {};
+            keys.forEach(k => {
+                const matchInp = inputs.find(inp => `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}` === k);
+                keyTotals[k] = matchInp ? (parseInt(matchInp.dataset.maxAvail) || 0) : 0;
+            });
+
+            const roomAssigned = {};
+            roomIds.forEach(rId => roomAssigned[rId] = 0);
+
+            // 1. First distribute to gender-specific rooms (Male-only / Female-only)
+            keys.forEach(k => {
+                const [cName, secName, gender] = k.split('___');
+                let remaining = keyTotals[k];
+                if (remaining <= 0) return;
+
+                // Check rooms matching this exact gender
+                const matchingRooms = roomIds.filter(rId => roomGenders[rId] === gender);
+                for (const rId of matchingRooms) {
+                    const freeSpace = roomCapacities[rId] - roomAssigned[rId];
+                    if (freeSpace <= 0 || remaining <= 0) continue;
+
+                    const canTake = Math.min(remaining, freeSpace);
+                    if (canTake > 0) {
+                        const targetInp = inputs.find(inp => `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}` === k && inp.dataset.roomId === rId);
+                        if (targetInp) {
+                            const cur = parseInt(targetInp.value) || 0;
+                            targetInp.value = cur + canTake;
+                            roomAssigned[rId] += canTake;
+                            remaining -= canTake;
+                        }
+                    }
+                }
+                keyTotals[k] = remaining;
+            });
+
+            // 2. Then distribute remaining into Co-ed / Both rooms (Pass 1: balanced half capacity)
+            keys.forEach(k => {
+                let remaining = keyTotals[k];
+                if (remaining <= 0) return;
+
+                const coedRooms = roomIds.filter(rId => roomGenders[rId] === 'Both' || !roomGenders[rId]);
+                for (const rId of coedRooms) {
+                    const freeSpace = roomCapacities[rId] - roomAssigned[rId];
+                    if (freeSpace <= 0 || remaining <= 0) continue;
+
+                    const halfRoom = Math.ceil(roomCapacities[rId] / 4); // allow multiple classes/genders
+                    const canTake = Math.min(remaining, Math.min(freeSpace, Math.max(halfRoom, 5)));
+                    if (canTake > 0) {
+                        const targetInp = inputs.find(inp => `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}` === k && inp.dataset.roomId === rId);
+                        if (targetInp) {
+                            const cur = parseInt(targetInp.value) || 0;
+                            targetInp.value = cur + canTake;
+                            roomAssigned[rId] += canTake;
+                            remaining -= canTake;
+                        }
+                    }
+                }
+                keyTotals[k] = remaining;
+            });
+
+            // 3. Fill remaining space in any available room
+            keys.forEach(k => {
+                let remaining = keyTotals[k];
+                if (remaining <= 0) return;
+
+                const [cName, secName, gender] = k.split('___');
+                const validRooms = roomIds.filter(rId => roomGenders[rId] === 'Both' || roomGenders[rId] === gender);
+                for (const rId of validRooms) {
+                    const freeSpace = roomCapacities[rId] - roomAssigned[rId];
+                    if (freeSpace <= 0 || remaining <= 0) continue;
+
+                    const canTake = Math.min(remaining, freeSpace);
+                    if (canTake > 0) {
+                        const targetInp = inputs.find(inp => `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}` === k && inp.dataset.roomId === rId);
+                        if (targetInp) {
+                            const cur = parseInt(targetInp.value) || 0;
+                            targetInp.value = cur + canTake;
+                            roomAssigned[rId] += canTake;
+                            remaining -= canTake;
+                        }
+                    }
+                }
+            });
+
+            onManualMatrixInputChange();
+        }
+
+        function saveManualSeatPlanFromMatrix() {
+            const table = document.getElementById('manual-seat-matrix-table');
+            if (!table) return;
+
+            const inputs = Array.from(table.querySelectorAll('.manual-matrix-cell:not([disabled])'));
+            const dept = document.getElementById('dist-dept')?.value || 'High Level';
+            const examName = document.getElementById('dist-exam-name')?.value || 'All';
+            const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
+
+            const students = loadStudentsWithDefaults();
+            const buildings = loadBuildings();
+            let rooms = loadRooms();
+
+            // 1. Validate inputs and calculate totals
+            let totalAssigned = 0;
+            inputs.forEach(inp => {
+                totalAssigned += parseInt(inp.value) || 0;
+            });
+
+            if (totalAssigned === 0) {
+                alert('⚠️ সিটপ্ল্যান সংরক্ষণ করতে অন্তত কিছু শিক্ষার্থীর সংখ্যা টেবিলে প্রবেশ করান বা "অটো-ফিল করুন" বাটনে ক্লিক করুন।');
+                return;
+            }
+
+            // Check if any room exceeds capacity
+            const roomOverflows = [];
+            const roomIds = Array.from(new Set(inputs.map(inp => inp.dataset.roomId)));
+
+            roomIds.forEach(rId => {
+                const roomInputs = inputs.filter(inp => inp.dataset.roomId === rId);
+                const sum = roomInputs.reduce((acc, inp) => acc + (parseInt(inp.value) || 0), 0);
+                const rObj = rooms.find(r => r.id === rId);
+                const cap = rObj ? (rObj.benches || 10) * 2 : 20;
+                if (sum > cap) {
+                    roomOverflows.push(`রুম ${rObj ? rObj.number : rId}: ধারণক্ষমতা ${cap}, এন্ট্রি করা হয়েছে ${sum}`);
+                }
+            });
+
+            if (roomOverflows.length > 0) {
+                const msg = `⚠️ নিম্নলিখিত রুমে ধারণক্ষমতার চেয়ে বেশি শিক্ষার্থী বরাদ্দ করা হয়েছে:\n\n${roomOverflows.join('\n')}\n\nতাও কি সিটপ্ল্যান তৈরি ও সংরক্ষণ করতে চান?`;
+                if (!confirm(msg)) return;
+            }
+
+            // 2. Fetch actual student records for each class, section & gender
+            const classSecGenderPools = {};
+            const uniqueKeys = Array.from(new Set(inputs.map(inp => `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}`)));
+
+            uniqueKeys.forEach(csKey => {
+                const parts = csKey.split('___');
+                const cName = parts[0];
+                const secName = parts[1];
+                const gender = parts[2] || 'Male';
+                const normC = typeof normalizeClassName === 'function' ? normalizeClassName(cName) : cName;
+
+                const pool = students.filter(s => {
+                    const sNorm = typeof normalizeClassName === 'function' ? normalizeClassName(s.class) : s.class;
+                    const matchesClass = (sNorm === normC || s.class === cName);
+                    const matchesSec = (s.section || '').trim().toUpperCase() === secName.toUpperCase();
+                    const sGender = (s.gender && s.gender.toLowerCase().startsWith('f')) ? 'Female' : 'Male';
+                    const matchesGender = sGender === gender;
+                    const matchesShift = !s.shift || s.shift.trim().toLowerCase() === shift.trim().toLowerCase();
+                    return matchesClass && matchesSec && matchesGender && matchesShift;
+                });
+
+                // Sort ascending by roll / student ID
+                pool.sort((a, b) => {
+                    const idA = String(a.studentId || a.id || a.roll || '');
+                    const idB = String(b.studentId || b.id || b.roll || '');
+                    return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+                });
+
+                classSecGenderPools[csKey] = {
+                    students: pool,
+                    pointer: 0
+                };
+            });
+
+            // 3. For each room, pull the specified number of Male & Female students and pair into benches
+            const allocations = {};
+
+            roomIds.forEach(rId => {
+                const room = rooms.find(r => r.id === rId) || { id: rId, number: rId, benches: 10, gender: 'Both' };
+                const bldg = buildings.find(b => b.id === room.buildingId) || { name: 'Main Building' };
+                const roomInputs = inputs.filter(inp => inp.dataset.roomId === rId);
+
+                // Gather all students assigned to this room
+                const roomStudents = [];
+                roomInputs.forEach(inp => {
+                    const count = parseInt(inp.value) || 0;
+                    if (count > 0) {
+                        const csKey = `${inp.dataset.class}___${inp.dataset.section}___${inp.dataset.gender}`;
+                        const poolData = classSecGenderPools[csKey];
+                        if (poolData) {
+                            for (let i = 0; i < count; i++) {
+                                if (poolData.pointer < poolData.students.length) {
+                                    roomStudents.push(poolData.students[poolData.pointer]);
+                                    poolData.pointer++;
+                                } else {
+                                    const mockRoll = poolData.pointer + 1;
+                                    const gPrefix = inp.dataset.gender === 'Female' ? 'F' : 'M';
+                                    roomStudents.push({
+                                        id: `${inp.dataset.class}_${inp.dataset.section}_${gPrefix}_${mockRoll}`,
+                                        studentId: `${mockRoll}`,
+                                        roll: mockRoll,
+                                        name: `${inp.dataset.gender} Student ${mockRoll}`,
+                                        nameBn: `${inp.dataset.gender === 'Female' ? 'ছাত্রী' : 'ছাত্র'} ${mockRoll}`,
+                                        class: inp.dataset.class,
+                                        section: inp.dataset.section,
+                                        gender: inp.dataset.gender,
+                                        shift: shift
+                                    });
+                                    poolData.pointer++;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Pair students into benches with 2 per bench (different classes)
+                const benches = [];
+                const totalBenches = room.benches || Math.ceil(roomStudents.length / 2) || 10;
+
+                // Group room students by class
+                const classGroups = {};
+                roomStudents.forEach(st => {
+                    const cls = st.class || 'Unknown';
+                    if (!classGroups[cls]) classGroups[cls] = [];
+                    classGroups[cls].push(st);
+                });
+
+                for (let b = 1; b <= totalBenches; b++) {
+                    const availableClasses = Object.keys(classGroups).filter(cls => classGroups[cls].length > 0);
+                    availableClasses.sort((a, bCls) => classGroups[bCls].length - classGroups[a].length);
+
+                    let seatLeft = null;
+                    let seatRight = null;
+
+                    if (availableClasses.length > 0) {
+                        const classA = availableClasses[0];
+                        seatLeft = classGroups[classA].shift();
+
+                        const classB = availableClasses.find(cls => cls !== classA && classGroups[cls].length > 0);
+                        if (classB) {
+                            seatRight = classGroups[classB].shift();
+                        } else if (classGroups[classA] && classGroups[classA].length > 0 && availableClasses.length === 1) {
+                            seatRight = classGroups[classA].shift();
+                        }
+                    }
+
+                    benches.push({
+                        benchNo: b,
+                        left: seatLeft,
+                        right: seatRight
+                    });
+                }
+
+                allocations[room.id] = {
+                    room: room,
+                    building: bldg,
+                    shift: shift,
+                    dept: dept,
+                    examName: examName,
+                    benches: benches
+                };
+            });
+
+            // 4. Save and commit to active and permanent storage
+            currentGeneratedAllocations = allocations;
+            saveActiveSeatAllocations(allocations);
+
+            // 5. Update layout views and saved table
+            populateDistRoomSelect();
+            renderSelectedRoomBenchLayout();
+            renderSavedSeatPlansTable();
+
+            // 6. Close modal & alert success
+            closeManualSeatEditor();
+            alert('✅ ম্যানুয়াল সিটপ্ল্যান সফলভাবে তৈরি ও "সংরক্ষিত সিটপ্ল্যান তালিকা"-য় সংরক্ষণ করা হয়েছে!');
+        }
+
+        let _cachedStudentsWithDefaults = null;
+
+        function loadStudentsWithDefaults() {
+            if (_cachedStudentsWithDefaults && Array.isArray(_cachedStudentsWithDefaults) && _cachedStudentsWithDefaults.length > 0) {
+                return _cachedStudentsWithDefaults;
+            }
+
+            let st = safeJsonParse('school_students', []);
+            if (st.length > 0) {
+                _cachedStudentsWithDefaults = st.map((s, idx) => ({
+                    ...s,
+                    nameBn: s.nameBn || s.name || 'শিক্ষার্থী',
+                    studentId: s.studentId || s.id || `2026${String(s.roll || idx + 1).padStart(4, '0')}`,
+                    section: s.section || (s.roll % 2 === 0 ? 'B' : 'A')
+                }));
+                return _cachedStudentsWithDefaults;
+            }
+
+            // Seed mock dataset across classes for demonstration
+            const mock = [];
+            const classes = loadClasses();
+            const namesEn = ["Rahim Ahmed", "Karim Uddin", "Fatema Khatun", "Sumaiya Akter", "Tanvir Hossain", "Nusrat Jahan", "Arif Chowdhury", "Mim Sultana", "Shakib Al Hasan", "Lamia Rahman"];
+            const namesBn = ["রহিম আহমেদ", "করিম উদ্দিন", "ফাতেমা খাতুন", "সুমাইয়া আক্তার", "তানভীর হোসেন", "নুসরাত জাহান", "আরিফ চৌধুরী", "মীম সুলতানা", "সাকিব আল হাসান", "লামিয়া রহমান"];
+
+            classes.forEach(cls => {
+                for (let r = 1; r <= 8; r++) {
+                    const gender = (r % 2 === 0) ? "Female" : "Male";
+                    const idx = (r + cls.length) % namesEn.length;
+                    const name = namesEn[idx];
+                    const nameBn = namesBn[idx];
+                    const sec = (r % 2 === 0) ? "B" : "A";
+                    const classNum = cls.replace(/\D/g, '') || '6';
+                    const studentId = `2026${classNum}${String(r).padStart(3, '0')}`;
+                    mock.push({
+                        id: `st_${cls}_${r}`,
+                        studentId: studentId,
+                        roll: r,
+                        name: name,
+                        nameBn: nameBn,
+                        class: cls,
+                        section: sec,
+                        gender: gender
+                    });
+                }
+            });
+            _cachedStudentsWithDefaults = mock;
+            return _cachedStudentsWithDefaults;
+        }
+
+        // --- TAB 4: FIND SEAT LOGIC ---
+        function populateSearchClassDropdown() {
+            const classes = loadClasses();
+            const selectEl = document.getElementById('seat-search-class');
+            if (selectEl) {
+                const { primary, high } = groupClassesByDepartment(classes);
+                let html = '';
+                if (primary.length > 0) {
+                    html += `<optgroup label="Primary Level">${primary.map(c => `<option value="${c}">${c}</option>`).join('')}</optgroup>`;
+                }
+                if (high.length > 0) {
+                    html += `<optgroup label="High Level">${high.map(c => `<option value="${c}">${c}</option>`).join('')}</optgroup>`;
+                }
+                selectEl.innerHTML = html;
+            }
+        }
+
+        function searchSeatPlan() {
+            const className = document.getElementById('seat-search-class').value;
+            const roll = parseInt(document.getElementById('seat-search-roll').value);
+            const errorElement = document.getElementById('seat-search-error');
+            const resultElement = document.getElementById('seat-plan-result');
+
+            if (!roll || roll < 1 || roll > 100) {
+                errorElement.innerText = "Please enter a valid roll number.";
+                errorElement.style.display = "block";
+                resultElement.style.display = "none";
+                return;
+            }
+
+            errorElement.style.display = "none";
+            resultElement.style.display = "grid";
+
+            let roomNo = "Room 101";
+            let building = "Academic Bhaban A";
+            if (className === "Class 6" || className === "Six" || className === "Seven") {
+                roomNo = "Room 101 (1st Floor)";
+                building = "Academic Bhaban A";
+            } else if (className === "Class 10" || className === "Ten" || className === "Nine") {
+                roomNo = "Room 201 (2nd Floor)";
+                building = "Science Bhaban B";
+            }
+
+            document.getElementById('seat-room-no').innerText = roomNo;
+            document.getElementById('seat-building-name').innerText = building;
+            document.getElementById('seat-class-lbl').innerText = className;
+            document.getElementById('seat-roll-lbl').innerText = roll;
+
+            // Render single student seat grid
+            const container = document.getElementById('single-student-bench-grid');
+            let gridHtml = "";
+            const targetSeat = ((roll - 1) % 20) + 1;
+
+            for (let b = 1; b <= 10; b++) {
+                const s1 = (b - 1) * 2 + 1;
+                const s2 = (b - 1) * 2 + 2;
+
+                gridHtml += `
+                    <div class="bench-row">
+                        <div class="seat-box ${s1 === targetSeat ? 'found' : ''}" id="seat-${s1}">${s1}</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box ${s2 === targetSeat ? 'found' : ''}" id="seat-${s2}">${s2}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = gridHtml;
+        }
+
+        // --- STUDENT SEAT TOKEN REPORT & PRINT LOGIC ---
+        function populateTokenReportFilters() {
+            const examSelect = document.getElementById('token-exam-filter');
+            const roomSelect = document.getElementById('token-room-filter');
+
+            if (examSelect) {
+                const routines = loadExamRoutines();
+                const examNamesSet = new Set();
+                if (Array.isArray(routines)) {
+                    routines.forEach(r => {
+                        const name = r.examName || r.examTitle || r.title || r.name;
+                        if (name) examNamesSet.add(name);
+                    });
+                }
+                const examTypes = safeJsonParse('school_exam_types', []);
+                if (Array.isArray(examTypes)) {
+                    examTypes.forEach(t => {
+                        if (t.name) examNamesSet.add(t.name);
+                    });
+                }
+                if (examNamesSet.size === 0) {
+                    examNamesSet.add('First Terminal Examination 2026');
+                    examNamesSet.add('Half Yearly Examination 2026');
+                    examNamesSet.add('Final Examination 2026');
+                }
+
+                let html = `<option value="All">সকল পরীক্ষা (All Exams)</option>`;
+                examNamesSet.forEach(name => {
+                    html += `<option value="${name}">${name}</option>`;
+                });
+                examSelect.innerHTML = html;
+            }
+
+            if (roomSelect) {
+                const rooms = loadRooms();
+                const buildings = loadBuildings();
+                let html = `<option value="All">সকল রুম (All Rooms)</option>`;
+                rooms.forEach(r => {
+                    const b = buildings.find(x => x.id === r.buildingId);
+                    const bName = b ? b.name : '';
+                    html += `<option value="${r.id}">Room ${r.number} (${bName} - ${r.gender})</option>`;
+                });
+                roomSelect.innerHTML = html;
+            }
+
+            populateSearchClassDropdown();
+            renderStudentSeatTokenReport();
+        }
+
+        function onTokenFilterChange() {
+            renderStudentSeatTokenReport();
+        }
+
+        function loadTokenReportData() {
+            renderStudentSeatTokenReport();
+            if (typeof showToastNotice === 'function') {
+                showToastNotice('⚡ নির্বাচনকৃত ফিল্টারের আসন টোকেন ডাটা সফলভাবে লোড করা হয়েছে!');
+            }
+        }
+
+        function formatShiftDisplay(shift) {
+            if (!shift) return 'Morning Shift';
+            if (String(shift).includes('Morning') || String(shift).includes('মর্নিং')) return 'Morning Shift';
+            if (String(shift).includes('Afternoon') || String(shift).includes('আফটারনুন')) return 'Afternoon Shift';
+            return shift;
+        }
+
+        function renderStudentSeatTokenReport() {
+            const container = document.getElementById('token-report-display-container');
+            const countSummary = document.getElementById('token-count-summary');
+            if (!container) return;
+
+            const deptFilter = document.getElementById('token-dept-filter')?.value || 'All';
+            const examFilter = document.getElementById('token-exam-filter')?.value || 'All';
+            const shiftFilter = document.getElementById('token-shift-filter')?.value || 'All';
+            const roomFilter = document.getElementById('token-room-filter')?.value || 'All';
+
+            const allocations = currentGeneratedAllocations || {};
+            const roomIds = Object.keys(allocations);
+
+            let tokens = [];
+
+            roomIds.forEach(roomId => {
+                const data = allocations[roomId];
+                if (!data || !data.benches) return;
+
+                // 1. Room Filter
+                if (roomFilter !== 'All' && roomId !== roomFilter && data.room.id !== roomFilter) return;
+
+                // 2. Department Filter
+                if (deptFilter !== 'All' && data.dept && data.dept !== deptFilter) return;
+
+                // 3. Shift Filter
+                if (shiftFilter !== 'All' && data.shift && formatShiftDisplay(data.shift) !== formatShiftDisplay(shiftFilter)) return;
+
+                // Extract details
+                const roomNo = data.room ? data.room.number : '101';
+                const bldgName = data.building ? data.building.name : 'Academic Bhaban';
+                const roomFloor = data.room ? data.room.floor : '1st Floor';
+                const roomShift = data.shift || 'Morning Shift';
+                const roomExam = data.examName || (examFilter !== 'All' ? examFilter : 'Annual Examination 2026');
+
+                data.benches.forEach(b => {
+                    const processSeat = (student, side) => {
+                        if (!student) return;
+
+                        // Check class department if data.dept was not set
+                        const isPrimaryClass = (c) => /play|nursery|kg|one|two|three|four|five|1|2|3|4|5/i.test(c);
+                        const isHighClass = (c) => /six|seven|eight|nine|ten|6|7|8|9|10/i.test(c);
+
+                        if (deptFilter === 'Primary Level' && !isPrimaryClass(student.class)) return;
+                        if (deptFilter === 'High Level' && !isHighClass(student.class)) return;
+
+                        tokens.push({
+                            student: student,
+                            benchNo: b.benchNo,
+                            seatSide: side,
+                            roomNo: roomNo,
+                            bldgName: bldgName,
+                            floor: roomFloor,
+                            shift: roomShift,
+                            examName: roomExam
+                        });
+                    };
+
+                    processSeat(b.left, 'Left');
+                    processSeat(b.right, 'Right');
+                });
+            });
+
+            // Sort tokens by Student ID
+            tokens.sort((a, b) => {
+                const sA = a.student || {};
+                const sB = b.student || {};
+                const idA = (sA.studentId || sA.id || sA.roll || '').toString().trim();
+                const idB = (sB.studentId || sB.id || sB.roll || '').toString().trim();
+                return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            // Update Summary Count
+            if (countSummary) {
+                countSummary.innerHTML = `🎯 মোট ফিল্টারকৃত সিট টোকেন: <strong style="color:#0284c7; font-size:1.15rem;">${tokens.length}</strong> টি`;
+            }
+
+            if (tokens.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 45px 20px; text-align: center; color: #64748b;">
+                        <div style="font-size: 2.8rem; margin-bottom: 10px;">🎫</div>
+                        <h4 style="font-size: 1.2rem; font-weight: 800; color: #0284c7; margin-bottom: 6px;">কোনো সিট টোকেন পাওয়া যায়নি</h4>
+                        <p style="font-size: 0.92rem; color: #64748b; margin: 0;">সিলেকশন ফিল্টার পরিবর্তন করুন অথবা 'Student Seat Distribution' ট্যাব থেকে নতুন সিটপ্ল্যান জেনারেট করুন।</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            const currentSchoolSettings = safeJsonParse('school_settings', null);
+            const currentSchoolName = currentSchoolSettings?.schoolName || document.getElementById('school-name')?.innerText.trim() || 'Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l';
+
+            let badgeText = 'EXAM SEAT TOKEN / সিট টোকেন';
+            let labelClass = 'Class';
+            let labelSec = 'Section';
+            let labelRoll = 'Roll';
+            let labelId = 'ID';
+            let labelShift = 'Shift';
+            let labelBldg = 'Building';
+            let labelRoom = 'Room No';
+
+            if (currentTokenLanguage === 'bn') {
+                badgeText = 'সিট টোকেন';
+                labelClass = 'শ্রেণী';
+                labelSec = 'সেকশন';
+                labelRoll = 'রোল';
+                labelId = 'আইডি';
+                labelShift = 'শিফট';
+                labelBldg = 'বিল্ডিং';
+                labelRoom = 'রুম নং';
+            } else if (currentTokenLanguage === 'both') {
+                badgeText = 'EXAM SEAT TOKEN / সিট টোকেন';
+                labelClass = 'শ্রেণী (Class)';
+                labelSec = 'সেকশন (Section)';
+                labelRoll = 'রোল (Roll)';
+                labelId = 'আইডি (ID)';
+                labelShift = 'শিফট (Shift)';
+                labelBldg = 'বিল্ডিং (Building)';
+                labelRoom = 'রুম নং (Room No)';
+            }
+
+            tokens.forEach(t => {
+                const s = t.student;
+                const studentName = getStudentNameForToken(s, currentTokenLanguage);
+                const stId = s.studentId || s.id || `2026${String(s.roll).padStart(4, '0')}`;
+                const stClass = s.class || 'Class 6';
+                const stSec = s.section || 'A';
+                const stRoll = s.roll || 1;
+                const shiftDisp = formatShiftDisplayLang(t.shift, currentTokenLanguage);
+
+                html += `
+                    <div class="seat-token-card" style="font-size: calc(0.97rem * var(--token-font-scale, 1));">
+                        <div class="token-header-bar">
+                            <div class="token-school-name">${currentSchoolName}</div>
+                            <div class="token-exam-title">${t.examName}</div>
+                            <div class="token-badge-title">${badgeText}</div>
+                        </div>
+
+                        <div class="token-details-grid">
+                            <div class="token-student-name">👤 ${studentName}</div>
+
+                            <div class="token-data-row">
+                                <span>${labelClass}: <strong>${stClass}</strong></span>
+                                <span>${labelSec}: <strong>${stSec}</strong></span>
+                                <span>${labelRoll}: <strong>${stRoll}</strong></span>
+                            </div>
+
+                            <div class="token-data-row">
+                                <span>${labelId}: <strong>${stId}</strong></span>
+                                <span>${labelShift}: <strong>${shiftDisp}</strong></span>
+                            </div>
+
+                            <div class="token-divider-line"></div>
+
+                            <div class="token-data-row">
+                                <span>${labelBldg}: <strong>${t.bldgName}</strong></span>
+                                <span>${labelRoom}: <strong style="color: #000000 !important;">${t.roomNo}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            applySeatTokenFontSize();
+            applySeatTokenHeadlineFontSize();
+        }
+
+        function printStudentSeatTokens() {
+            window.print();
+        }
+
+        let currentDocFileName = 'Admit Card.html';
+        let currentDocTitle = 'Admit Card';
+
+        function switchExamDocument(fileName, title, subtitle, el) {
+            if (fileName === 'Admit Card.html' || fileName === 'Admit Card') {
+                switchSeatTab('admit-card', true);
+                return;
+            }
+            if (fileName === 'Seating arrangement details.html' || fileName === 'Seating arrangement details' || (fileName && fileName.includes('Seating arrangement details'))) {
+                switchSeatTab('seating-details', true);
+                return;
+            }
+            if (fileName === 'Room Seat Topshet.html' || fileName === 'Room Seat Topshet' || (fileName && fileName.includes('Room Seat Topshet'))) {
+                switchSeatTab('room-topshet', true);
+                return;
+            }
+            if (fileName === 'Student attendance sheet.html' || fileName === 'Student attendance sheet' || (fileName && (fileName.includes('attendance sheet') || fileName.includes('Student attendance')))) {
+                switchSeatTab('student-attendance', true);
+                return;
+            }
+
+            currentDocFileName = fileName;
+            currentDocTitle = title;
+
+            // Update active styling on cards with 100% opacity
+            const allCards = document.querySelectorAll('.doc-icard');
+            allCards.forEach(c => {
+                c.classList.remove('active-doc-card');
+                c.style.opacity = '1';
+            });
+
+            if (el) {
+                el.classList.add('active-doc-card');
+                el.style.opacity = '1';
+            }
+
+            // Update title and subtitle in inline preview window
+            const titleEl = document.getElementById('admit-card-preview-title');
+            const subEl = document.getElementById('admit-card-preview-subtitle');
+            if (titleEl) titleEl.innerText = title + ' Preview Window';
+            if (subEl) subEl.innerText = subtitle;
+
+            // Update modal title
+            const modalTitleEl = document.getElementById('admit-card-modal-title-text');
+            if (modalTitleEl) modalTitleEl.innerText = title + ' Window';
+
+            // Update inline iframe
+            const iframe = document.getElementById('admit-card-iframe');
+            if (iframe) {
+                iframe.src = encodeURI(fileName);
+            }
+
+            // Update New Tab link
+            const newTabLink = document.getElementById('admit-card-newtab-link');
+            if (newTabLink) {
+                newTabLink.href = encodeURI(fileName);
+            }
+
+            // Scroll to preview window
+            const displaySec = document.getElementById('inline-admit-card-display-section');
+            if (displaySec) {
+                displaySec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function refreshAdmitCardIframes() {
+            const iframe = document.getElementById('admit-card-iframe');
+            if (iframe) {
+                try {
+                    if (iframe.contentWindow && typeof iframe.contentWindow.updateAttendanceSheetLive === 'function') {
+                        iframe.contentWindow.updateAttendanceSheetLive();
+                    }
+                } catch (e) {
+                    // Prevent forced automatic reload of iframe src
+                }
+            }
+        }
+
+        function openAdmitCardView() {
+            switchSeatTab('admit-card', true);
+        }
+
+        function openAdmitCardFullscreenModal() {
+            const modal = document.getElementById('admit-card-fullscreen-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+                const iframe = document.getElementById('admit-card-modal-iframe');
+                if (iframe) {
+                    iframe.src = 'about:blank';
+                    setTimeout(() => {
+                        iframe.src = encodeURI(currentDocFileName || 'Admit Card.html');
+                    }, 50);
+                }
+            }
+        }
+
+        function closeAdmitCardFullscreenModal() {
+            const modal = document.getElementById('admit-card-fullscreen-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function printAdmitCardIframe(iframeId = 'admit-card-iframe') {
+            const iframe = document.getElementById(iframeId);
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } else {
+                window.open(encodeURI(currentDocFileName || 'Admit Card.html'), '_blank');
+            }
+        }
+
+        function downloadAdmitCardPDFFromIframe(iframeId = 'admit-card-iframe') {
+            const iframe = document.getElementById(iframeId);
+            try {
+                if (iframe && iframe.contentWindow && typeof iframe.contentWindow.downloadAdmitCardPDF === 'function') {
+                    iframe.contentWindow.downloadAdmitCardPDF();
+                    return;
+                }
+            } catch (e) { }
+            window.open(encodeURI(currentDocFileName || 'Admit Card.html'), '_blank');
+        }
+
+        // ==========================================================================
+        // SEATING ARRANGEMENT DETAILS ENGINE (MERGED FROM Seating arrangement details.html)
+        // Dynamically synchronized with "Saved Seat Plans List" (school_seat_plans_store)
+        // ==========================================================================
+
+        function formatSeatingClassLabel(cls) {
+            if (!cls) return '';
+            const c = String(cls).trim();
+            const map = {
+                'play': 'প্লে (PLAY)',
+                'nursery': 'নার্সারি (NURSERY)',
+                'kg': 'কেজি (KG)',
+                'one': 'প্রথম (ONE)',
+                'two': 'দ্বিতীয় (TWO)',
+                'three': 'তৃতীয় (THREE)',
+                'four': 'চতুর্থ (FOUR)',
+                'five': 'পঞ্চম (FIVE)',
+                'six': 'ষষ্ঠ (SIX)',
+                'seven': 'সপ্তম (SEVEN)',
+                'eight': 'অষ্টম (EIGHT)',
+                'nine': 'নবম (NINE)',
+                'ten': 'দশম (TEN)'
+            };
+            return map[c.toLowerCase()] || c;
+        }
+
+        function formatSeatingShiftLabel(shift) {
+            if (!shift) return '';
+            const s = String(shift).trim();
+            if (/morning|sokal|সকাল|প্রভাতি/i.test(s)) {
+                return 'সকাল (Morning Shift)';
+            }
+            if (/afternoon|bikal|বিকাল|দিবা/i.test(s)) {
+                return 'বিকাল (Afternoon Shift)';
+            }
+            return s;
+        }
+
+        function populateSeatingExamFilter() {
+            const examSelect = document.getElementById('seating-filter-exam');
+            if (!examSelect) return;
+            const currentSelected = examSelect.value || 'all';
+            examSelect.innerHTML = '<option value="all">সকল পরীক্ষা (All Exams / Routine Title)</option>';
+
+            const examSet = new Set();
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            // 1. Gather exam names directly from Saved Seat Plans Store (school_seat_plans_store)
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.values(store).forEach(plan => {
+                    if (plan && plan.examName && plan.examName.trim() && plan.examName.trim().toLowerCase() !== 'all') {
+                        examSet.add(plan.examName.trim());
+                    }
+                });
+            }
+
+            // 2. Fallback to active routines/types if store has no named exams yet
+            if (examSet.size === 0) {
+                try {
+                    const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                    if (Array.isArray(routines)) {
+                        routines.forEach(r => { if (r && r.examName && r.examName.trim()) examSet.add(r.examName.trim()); });
+                    }
+                    const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+                    if (Array.isArray(examTypes)) {
+                        examTypes.forEach(t => { if (t && t.name && t.name.trim()) examSet.add(t.name.trim()); });
+                    }
+                } catch (e) {}
+            }
+
+            // 3. Fallback to default active exam name if any
+            if (examSet.size === 0) {
+                const settings = safeJsonParse('school_settings', null);
+                if (settings?.examName && settings.examName.trim()) {
+                    examSet.add(settings.examName.trim());
+                } else {
+                    examSet.add('বার্ষিক পরীক্ষা - ২০২৬');
+                }
+            }
+
+            examSet.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam;
+                opt.innerText = exam;
+                examSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...examSelect.options].some(o => o.value === currentSelected)) {
+                examSelect.value = currentSelected;
+            } else {
+                examSelect.value = 'all';
+            }
+        }
+
+        function populateSeatingClassFilter() {
+            const classSelect = document.getElementById('seating-filter-class');
+            if (!classSelect) return;
+            const currentSelected = classSelect.value || 'all';
+            classSelect.innerHTML = '<option value="all">সকল শ্রেণি (All Classes)</option>';
+
+            const examVal = document.getElementById('seating-filter-exam')?.value || 'all';
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+            const discoveredClasses = new Set();
+
+            // 1. Discover classes from Saved Seat Plans Store matching the selected exam (or all saved plans)
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.keys(store).forEach(planKey => {
+                    const plan = store[planKey];
+                    if (!plan || !plan.allocations) return;
+
+                    let matchesExam = false;
+                    if (examVal === 'all') {
+                        matchesExam = true;
+                    } else {
+                        const cleanExam = examVal.toLowerCase().trim();
+                        const cleanPlanKey = planKey.toLowerCase().trim();
+                        const cleanPlanExam = (plan.examName || '').toLowerCase().trim();
+                        matchesExam = (cleanPlanKey === cleanExam) || 
+                                      (cleanPlanExam === cleanExam) || 
+                                      (cleanPlanKey.includes(cleanExam) && cleanExam.length > 3) ||
+                                      (cleanPlanExam.includes(cleanExam) && cleanExam.length > 3);
+                    }
+
+                    if (matchesExam && typeof plan.allocations === 'object') {
+                        Object.values(plan.allocations).forEach(roomAlloc => {
+                            if (roomAlloc && roomAlloc.benches && Array.isArray(roomAlloc.benches)) {
+                                roomAlloc.benches.forEach(bench => {
+                                    if (bench.left && (bench.left.class || bench.left.className)) {
+                                        discoveredClasses.add(bench.left.class || bench.left.className);
+                                    }
+                                    if (bench.right && (bench.right.class || bench.right.className)) {
+                                        discoveredClasses.add(bench.right.class || bench.right.className);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 2. If no classes found in store, check active saved allocations
+            if (discoveredClasses.size === 0 && savedAlloc && typeof savedAlloc === 'object') {
+                Object.values(savedAlloc).forEach(roomAlloc => {
+                    if (roomAlloc && roomAlloc.benches && Array.isArray(roomAlloc.benches)) {
+                        roomAlloc.benches.forEach(bench => {
+                            if (bench.left && (bench.left.class || bench.left.className)) {
+                                discoveredClasses.add(bench.left.class || bench.left.className);
+                            }
+                            if (bench.right && (bench.right.class || bench.right.className)) {
+                                discoveredClasses.add(bench.right.class || bench.right.className);
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 3. Fallback to registered classes if no seat allocations exist
+            if (discoveredClasses.size === 0) {
+                let classesList = [];
+                try {
+                    classesList = JSON.parse(localStorage.getItem('school_classes') || '[]');
+                } catch (e) { }
+
+                if (!Array.isArray(classesList) || classesList.length === 0) {
+                    classesList = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+                }
+                classesList.forEach(cls => discoveredClasses.add(cls));
+            }
+
+            // Educational natural order
+            const classOrderMap = {
+                'play': 1, 'প্লে': 1,
+                'nursery': 2, 'নার্সারি': 2,
+                'kg': 3, 'কেজি': 3,
+                'one': 4, 'প্রথম': 4, '1': 4,
+                'two': 5, 'দ্বিতীয়': 5, '2': 5,
+                'three': 6, 'তৃতীয়': 6, '3': 6,
+                'four': 7, 'চতুর্থ': 7, '4': 7,
+                'five': 8, 'পঞ্চম': 8, '5': 8,
+                'six': 9, 'ষষ্ঠ': 9, '6': 9,
+                'seven': 10, 'সপ্তম': 10, '7': 10,
+                'eight': 11, 'অষ্টম': 11, '8': 11,
+                'nine': 12, 'নবম': 12, '9': 12,
+                'ten': 13, 'দশম': 13, '10': 13
+            };
+
+            const sortedClasses = Array.from(discoveredClasses).sort((a, b) => {
+                const keyA = String(a).toLowerCase().trim();
+                const keyB = String(b).toLowerCase().trim();
+                const orderA = classOrderMap[keyA] || 99;
+                const orderB = classOrderMap[keyB] || 99;
+                if (orderA !== orderB) return orderA - orderB;
+                return String(a).localeCompare(String(b), 'bn', { numeric: true });
+            });
+
+            sortedClasses.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.innerText = formatSeatingClassLabel(cls);
+                classSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...classSelect.options].some(o => o.value === currentSelected)) {
+                classSelect.value = currentSelected;
+            } else {
+                classSelect.value = 'all';
+            }
+        }
+
+        function populateSeatingShiftFilter() {
+            const shiftSelect = document.getElementById('seating-filter-shift');
+            if (!shiftSelect) return;
+            const currentSelected = shiftSelect.value || 'all';
+            shiftSelect.innerHTML = '<option value="all">সকল শিফট (All Shifts)</option>';
+
+            const shiftsSet = new Set();
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+            // 1. Discover shifts from Saved Seat Plans Store
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.values(store).forEach(plan => {
+                    if (plan && plan.shift && plan.shift.trim()) {
+                        shiftsSet.add(plan.shift.trim());
+                    }
+                    if (plan && plan.allocations && typeof plan.allocations === 'object') {
+                        Object.values(plan.allocations).forEach(item => {
+                            if (item && item.shift && item.shift.trim()) {
+                                shiftsSet.add(item.shift.trim());
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 2. Discover from active saved allocations
+            if (savedAlloc && typeof savedAlloc === 'object') {
+                Object.values(savedAlloc).forEach(item => {
+                    if (item && item.shift && item.shift.trim()) {
+                        shiftsSet.add(item.shift.trim());
+                    }
+                });
+            }
+
+            // 3. Fallback to shift times or defaults
+            if (shiftsSet.size === 0) {
+                try {
+                    const shiftTimes = JSON.parse(localStorage.getItem('school_shift_times') || '[]');
+                    if (Array.isArray(shiftTimes)) {
+                        shiftTimes.forEach(st => {
+                            if (st && st.shift && st.shift.trim()) shiftsSet.add(st.shift.trim());
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            if (shiftsSet.size === 0) {
+                shiftsSet.add('Morning Shift');
+                shiftsSet.add('Afternoon Shift');
+            }
+
+            shiftsSet.forEach(shift => {
+                const opt = document.createElement('option');
+                opt.value = shift;
+                opt.innerText = formatSeatingShiftLabel(shift);
+                shiftSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...shiftSelect.options].some(o => o.value === currentSelected)) {
+                shiftSelect.value = currentSelected;
+            } else {
+                shiftSelect.value = 'all';
+            }
+        }
+
+        function onSeatingExamFilterChange() {
+            populateSeatingClassFilter();
+            updateSeatingDetailsLive();
+        }
+
+        function updateSeatingDetailsFontSize(val) {
+            const valSpan = document.getElementById('seating-font-size-val');
+            if (valSpan) valSpan.innerText = val + 'px';
+
+            const numVal = parseFloat(val) || 14;
+            const scaleRatio = numVal / 14;
+
+            const tableElements = document.querySelectorAll('#subview-seating-details .summary-table th, #subview-seating-details .summary-table td');
+            tableElements.forEach(el => {
+                el.style.fontSize = (11 * scaleRatio).toFixed(1) + 'pt';
+            });
+
+            const sideHeaders = document.querySelectorAll('#subview-seating-details .header-col-left, #subview-seating-details .header-col-right');
+            sideHeaders.forEach(el => {
+                el.style.fontSize = (10.35 * scaleRatio).toFixed(1) + 'pt';
+            });
+
+            const centerHeaders = document.querySelectorAll('#subview-seating-details .header-col-center');
+            centerHeaders.forEach(el => {
+                el.style.fontSize = (21.56 * scaleRatio).toFixed(1) + 'pt';
+                el.style.fontWeight = '900';
+            });
+        }
+
+        function isSeatingClassMatch(studentClass, selectedClass) {
+            if (!selectedClass || selectedClass === 'all') return true;
+            if (!studentClass) return false;
+            const stC = String(studentClass).toLowerCase().trim();
+            const selC = String(selectedClass).toLowerCase().trim();
+            if (stC === selC || stC.includes(selC) || selC.includes(stC)) return true;
+
+            const map = {
+                'six': ['six', 'ষষ্ঠ', '6'],
+                'seven': ['seven', 'সপ্তম', '7'],
+                'eight': ['eight', 'অষ্টম', '8'],
+                'nine': ['nine', 'নবম', '9'],
+                'ten': ['ten', 'দশম', '10'],
+                'play': ['play', 'প্লে'],
+                'nursery': ['nursery', 'নার্সারি'],
+                'kg': ['kg', 'কেজি'],
+                'one': ['one', 'প্রথম', '1'],
+                'two': ['two', 'দ্বিতীয়', '2'],
+                'three': ['three', 'তৃতীয়', '3'],
+                'four': ['four', 'চতুর্থ', '4'],
+                'five': ['five', 'পঞ্চম', '5']
+            };
+
+            if (map[selC]) {
+                return map[selC].some(keyword => stC.includes(keyword));
+            }
+            return false;
+        }
+
+        function isSeatingShiftMatch(studentShift, selectedShift) {
+            if (!selectedShift || selectedShift === 'all') return true;
+            if (!studentShift) return false;
+            const stS = String(studentShift).toLowerCase().trim();
+            const selS = String(selectedShift).toLowerCase().trim();
+            if (stS === selS || stS.includes(selS) || selS.includes(stS)) return true;
+
+            if (selS.includes('morning') || selS.includes('sokal') || selS.includes('সকাল')) {
+                return /morning|sokal|সকাল|প্রভাতি/i.test(stS);
+            }
+            if (selS.includes('afternoon') || selS.includes('bikal') || selS.includes('বিকাল')) {
+                return /afternoon|bikal|বিকাল|দিবা/i.test(stS);
+            }
+            return false;
+        }
+
+        function updateSeatingDetailsLive() {
+            const settings = safeJsonParse('school_settings', null);
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            const classVal = document.getElementById('seating-filter-class')?.value || 'all';
+            const examVal = document.getElementById('seating-filter-exam')?.value || 'all';
+            const shiftVal = document.getElementById('seating-filter-shift')?.value || 'all';
+            const langVal = document.getElementById('seating-filter-lang')?.value || 'bn';
+            const searchVal = (document.getElementById('seating-search-student')?.value || '').trim().toLowerCase();
+
+            // Build student section lookup map for robust section resolution
+            const studentSectionMap = {};
+            try {
+                const allStudents = JSON.parse(localStorage.getItem('school_students') || '[]');
+                if (Array.isArray(allStudents)) {
+                    allStudents.forEach(s => {
+                        const sec = s.section || s.sec || s.sectionName || '';
+                        if (sec) {
+                            if (s.studentId) studentSectionMap[String(s.studentId).trim()] = sec.trim();
+                            if (s.id) studentSectionMap[String(s.id).trim()] = sec.trim();
+                            if (s.class && s.roll) {
+                                studentSectionMap[`${String(s.class).trim().toLowerCase()}___${String(s.roll).trim()}`] = sec.trim();
+                            }
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            let allocList = [];
+            let planFoundForExam = false;
+
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.keys(store).forEach(planKey => {
+                    const plan = store[planKey];
+                    if (!plan || !plan.allocations) return;
+
+                    let matchesExam = false;
+                    if (examVal === 'all') {
+                        matchesExam = true;
+                    } else {
+                        const cleanExam = examVal.toLowerCase().trim();
+                        const cleanPlanKey = planKey.toLowerCase().trim();
+                        const cleanPlanExam = (plan.examName || '').toLowerCase().trim();
+                        matchesExam = (cleanPlanKey === cleanExam) || 
+                                      (cleanPlanExam === cleanExam) || 
+                                      (cleanPlanKey.includes(cleanExam) && cleanExam.length > 3) ||
+                                      (cleanPlanExam.includes(cleanExam) && cleanExam.length > 3);
+                    }
+
+                    if (matchesExam) {
+                        planFoundForExam = true;
+                        Object.keys(plan.allocations).forEach(rId => {
+                            const item = plan.allocations[rId];
+                            if (item) {
+                                const itemCopy = JSON.parse(JSON.stringify(item));
+                                if (!itemCopy.shift && plan.shift) itemCopy.shift = plan.shift;
+                                allocList.push({ rId, item: itemCopy });
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (allocList.length === 0 && savedAlloc && typeof savedAlloc === 'object' && Object.keys(savedAlloc).length > 0) {
+                if (examVal === 'all') {
+                    Object.keys(savedAlloc).forEach(rId => {
+                        const item = savedAlloc[rId];
+                        if (item) allocList.push({ rId, item });
+                    });
+                }
+            }
+
+            // Show sample mock template ONLY when examVal is 'all' and no data exists anywhere in localStorage
+            if (allocList.length === 0 && examVal === 'all' && !planFoundForExam && (!savedAlloc || Object.keys(savedAlloc).length === 0)) {
+                allocList = [
+                    {
+                        rId: '201',
+                        item: {
+                            room: { number: '201' },
+                            building: { name: 'একাডেমিক ভবন-ক' },
+                            shift: 'Morning Shift',
+                            benches: [
+                                ...Array(9).fill(0).map((_, i) => ({ left: { class: 'অষ্টম (EIGHT)', section: 'A', roll: String(i + 1).padStart(2, '0'), studentId: '2026080' + (i + 1) } })),
+                                ...Array(8).fill(0).map((_, i) => ({ left: { class: 'অষ্টম (EIGHT)', section: 'B', roll: String(i + 10).padStart(2, '0'), studentId: '202608' + (i + 10) } })),
+                                ...Array(9).fill(0).map((_, i) => ({ right: { class: 'ষষ্ঠ (SIX)', section: 'ক', roll: String(i + 1).padStart(2, '0'), studentId: '2026060' + (i + 1) } })),
+                                ...Array(8).fill(0).map((_, i) => ({ right: { class: 'ষষ্ঠ (SIX)', section: 'খ', roll: String(i + 10).padStart(2, '0'), studentId: '202606' + (i + 10) } }))
+                            ]
+                        }
+                    },
+                    {
+                        rId: '401',
+                        item: {
+                            room: { number: '401' },
+                            building: { name: 'একাডেমিক ভবন-ক' },
+                            shift: 'Morning Shift',
+                            benches: [
+                                ...Array(13).fill(0).map((_, i) => ({ left: { class: 'অষ্টম (EIGHT)', section: 'A', roll: String(109 + i), studentId: '202608' + (109 + i) } })),
+                                ...Array(4).fill(0).map((_, i) => ({ right: { class: 'ষষ্ঠ (SIX)', section: 'ক', roll: String(66 + i), studentId: '202606' + (66 + i) } })),
+                                ...Array(17).fill(0).map((_, i) => ({ left: { class: 'দশম (TEN)', section: 'বিজ্ঞান', roll: String(44 + i), studentId: '202610' + (44 + i) } }))
+                            ]
+                        }
+                    },
+                    {
+                        rId: '501',
+                        item: {
+                            room: { number: '501' },
+                            building: { name: 'গোলাপী ভবন' },
+                            shift: 'Afternoon Shift',
+                            benches: [
+                                ...Array(8).fill(0).map((_, i) => ({ left: { class: 'সপ্তম (SEVEN)', section: 'A', roll: String(i + 1).padStart(2, '0'), studentId: '2026070' + (i + 1) } })),
+                                ...Array(7).fill(0).map((_, i) => ({ left: { class: 'সপ্তম (SEVEN)', section: 'B', roll: String(i + 9).padStart(2, '0'), studentId: '2026070' + (i + 9) } })),
+                                ...Array(15).fill(0).map((_, i) => ({ right: { class: 'নবম (NINE)', section: 'মানবিক', roll: String(i + 1).padStart(2, '0'), studentId: '2026090' + (i + 1) } }))
+                            ]
+                        }
+                    }
+                ];
+            }
+
+            const schoolName = settings?.schoolName || (document.getElementById('school-name')?.textContent?.trim()) || 'আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়';
+            const activeExamName = (examVal !== 'all') ? examVal : (settings?.examName || 'বার্ষিক পরীক্ষা - ২০২৬');
+
+            const customLogo = localStorage.getItem('school_logo');
+            const logoUrl = customLogo || settings?.schoolLogo;
+            const logoHtml = logoUrl 
+                ? `<img src="${logoUrl}" alt="Logo" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
+                : `<span id="seating-site-logo-icon">🎓</span>`;
+
+            // Group rooms by shift and building for selected exam
+            const pageGroupMap = {};
+            let itemsToProcess = allocList;
+
+            if (searchVal) {
+                itemsToProcess = itemsToProcess.filter(({ rId, item }) => {
+                    const rNo = String(item.room?.number || rId).toLowerCase();
+                    return rNo.includes(searchVal);
+                });
+            }
+
+            itemsToProcess.forEach(({ rId, item }) => {
+                if (!item || !item.benches) return;
+                let sName = item.shift || 'Morning Shift';
+                if (!isSeatingShiftMatch(sName, shiftVal)) return;
+                let bName = (item.building && item.building.name && item.building.name.trim()) ? item.building.name.trim() : 'একাডেমিক ভবন-ক';
+
+                const groupKey = sName + '___' + bName;
+                if (!pageGroupMap[groupKey]) {
+                    pageGroupMap[groupKey] = {
+                        shiftName: sName,
+                        buildingName: bName,
+                        roomList: []
+                    };
+                }
+                pageGroupMap[groupKey].roomList.push({ rId, item });
+            });
+
+            const pagesContainer = document.getElementById('seating-pages-container');
+            if (!pagesContainer) return;
+
+            const groupKeys = Object.keys(pageGroupMap);
+            if (groupKeys.length === 0) {
+                const noDataMsg = (examVal !== 'all' && !planFoundForExam)
+                    ? `উক্ত পরীক্ষা (${examVal}) এর জন্য কোন সংরক্ষিত সিটপ্ল্যান পাওয়া যায়নি (No saved seat plan data found).`
+                    : `কোন তথ্য পাওয়া যায়নি (No matching data found for selected filters).`;
+
+                pagesContainer.innerHTML = `<div style="background:#fff; padding:35px 20px; margin-top:25px; border-radius:10px; text-align:center; font-weight:700; color:#ef4444; font-size:1.1rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); border: 1.5px solid #fca5a5;">⚠️ ${noDataMsg}</div>`;
+                return;
+            }
+
+            // Ensure Morning Shift comes first, then Afternoon Shift, and within each shift sort by building name
+            groupKeys.sort((aKey, bKey) => {
+                const groupA = pageGroupMap[aKey];
+                const groupB = pageGroupMap[bKey];
+
+                const isAMorning = /morning|sokal|সকাল|প্রভাতি/i.test(groupA.shiftName);
+                const isBMorning = /morning|sokal|সকাল|প্রভাতি/i.test(groupB.shiftName);
+                if (isAMorning && !isBMorning) return -1;
+                if (!isAMorning && isBMorning) return 1;
+
+                if (groupA.shiftName !== groupB.shiftName) {
+                    return groupA.shiftName.localeCompare(groupB.shiftName);
+                }
+
+                return groupA.buildingName.localeCompare(groupB.buildingName, 'bn', { numeric: true });
+            });
+
+            let pagesHtml = '';
+            let pageIdx = 1;
+
+            groupKeys.forEach(gKey => {
+                const { shiftName, buildingName, roomList } = pageGroupMap[gKey];
+                let tbodyHtml = '';
+                let sl = 1;
+                let grandTotal = 0;
+
+                roomList.forEach(({ rId, item }) => {
+                    const roomNo = item.room ? item.room.number : rId;
+
+                    // Group students in this room by Class and then by Section: { [class]: { [section]: [students] } }
+                    const classGroup = {};
+                    item.benches.forEach(b => {
+                        [b.left, b.right].forEach(st => {
+                            if (st) {
+                                const c = st.class || st.className || 'Unassigned';
+                                if (!isSeatingClassMatch(c, classVal)) return;
+
+                                let sec = (st.section || st.sec || st.sectionName || '').trim();
+                                if (!sec) {
+                                    const idKey = String(st.studentId || st.id || '').trim();
+                                    if (idKey && studentSectionMap[idKey]) {
+                                        sec = studentSectionMap[idKey];
+                                    } else {
+                                        const crKey = `${String(c).trim().toLowerCase()}___${String(st.roll || '').trim()}`;
+                                        if (studentSectionMap[crKey]) {
+                                            sec = studentSectionMap[crKey];
+                                        }
+                                    }
+                                }
+                                if (!sec) sec = 'A';
+
+                                if (!classGroup[c]) classGroup[c] = {};
+                                if (!classGroup[c][sec]) classGroup[c][sec] = [];
+                                classGroup[c][sec].push(st);
+                            }
+                        });
+                    });
+
+                    const classes = Object.keys(classGroup);
+                    if (classes.length === 0) return;
+
+                    // Calculate total table rows for this room across all classes and their sections
+                    let totalRoomRows = 0;
+                    classes.forEach(c => {
+                        totalRoomRows += Object.keys(classGroup[c]).length;
+                    });
+
+                    let isFirstRowInRoom = true;
+
+                    classes.forEach(cls => {
+                        const secMap = classGroup[cls];
+                        const sections = Object.keys(secMap);
+                        const classRowCount = sections.length;
+
+                        sections.forEach((sec, sIdx) => {
+                            const stList = secMap[sec];
+                            stList.sort((a, b) => {
+                                const idA = String(a.studentId || a.id || a.roll || '');
+                                const idB = String(b.studentId || b.id || b.roll || '');
+                                return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+                            });
+
+                            const studentIds = stList.map(st => st.studentId || st.id || st.roll).filter(Boolean);
+                            const idDisplay = studentIds.length > 0 ? studentIds.join(', ') : '-';
+                            const total = stList.length;
+                            grandTotal += total;
+
+                            // Formatted Section Label
+                            let secLabel = '';
+                            if (langVal === 'en') secLabel = `Section: ${sec}`;
+                            else if (langVal === 'both') secLabel = `শাখা (Section): ${sec}`;
+                            else secLabel = `শাখা: ${sec}`;
+
+                            tbodyHtml += '<tr>';
+
+                            if (isFirstRowInRoom) {
+                                tbodyHtml += `<td rowspan="${totalRoomRows}" style="vertical-align: middle; text-align: center; font-weight: 700;">${String(sl).padStart(2, '0')}</td>`;
+                                tbodyHtml += `<td rowspan="${totalRoomRows}" style="vertical-align: middle; text-align: center; font-weight: 800;">${roomNo}</td>`;
+                                isFirstRowInRoom = false;
+                            }
+
+                            if (sIdx === 0) {
+                                tbodyHtml += `<td rowspan="${classRowCount}" style="vertical-align: middle; text-align: center; font-weight: 700;">${formatSeatingClassLabel(cls)}</td>`;
+                            }
+
+                            tbodyHtml += `<td style="text-align: left; padding: 6px 12px; line-height: 1.6;">
+                                <div style="display: inline-block; background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; font-weight: 800; font-size: 0.88em; padding: 1px 8px; border-radius: 4px; margin-right: 6px; box-shadow: 0 1px 3px rgba(2, 132, 199, 0.1);">
+                                    ${secLabel}
+                                </div>
+                                <span style="font-weight: 600; color: #1e293b;">${idDisplay}</span>
+                            </td>`;
+
+                            tbodyHtml += `<td style="vertical-align: middle; text-align: center; font-weight: 700;">${total}</td>`;
+
+                            tbodyHtml += '</tr>';
+                        });
+                    });
+
+                    sl++;
+                });
+
+                if (sl === 1 || grandTotal === 0) return;
+
+                const sText = shiftName === 'Morning Shift' ? 'সকাল' : (shiftName === 'Afternoon Shift' ? 'বিকাল' : shiftName);
+                let shiftDisplay = '';
+                if (langVal === 'en') shiftDisplay = 'Shift: ' + shiftName;
+                else if (langVal === 'both') shiftDisplay = 'শিফট: ' + sText + ' (' + shiftName + ')';
+                else shiftDisplay = 'শিফট: ' + sText;
+
+                let bldgDisplay = '';
+                if (langVal === 'en') bldgDisplay = 'Building : ' + buildingName;
+                else if (langVal === 'both') bldgDisplay = 'বিল্ডিং / Building : ' + buildingName;
+                else bldgDisplay = 'বিল্ডিং : ' + buildingName;
+
+                let centerTitle = '<b>আসন বিন্যাস বিবরণী</b>';
+                if (langVal === 'en') centerTitle = '<b>Seating Arrangement Details</b>';
+                else if (langVal === 'both') centerTitle = '<b>আসন বিন্যাস বিবরণী / Details</b>';
+
+                let grandTotalLabel = 'সর্বমোট পরীক্ষার্থী =';
+                if (langVal === 'en') grandTotalLabel = 'Total Candidates =';
+                else if (langVal === 'both') grandTotalLabel = 'সর্বমোট পরীক্ষার্থী / Total =';
+
+                tbodyHtml += `
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right; padding-right: 15px; font-weight: bold;">${grandTotalLabel}</td>
+                        <td style="font-weight: bold;">${grandTotal}</td>
+                    </tr>
+                `;
+
+                pagesHtml += `
+                    <!-- Page Indicator Pill (Screen Preview Only) -->
+                    <div class="no-print" style="margin-top: 30px; margin-bottom: 12px; font-weight: 800; font-size: 0.95rem; color: #0284c7; background: #e0f2fe; padding: 6px 20px; border-radius: 20px; border: 1.5px solid #7dd3fc; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15); display: inline-flex; align-items: center; gap: 8px;">
+                        <span>📄 পৃষ্ঠা ${pageIdx} (${buildingName} - ${sText} শিফট)</span>
+                    </div>
+
+                    <div class="a4-page" style="margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #cbd5e1;">
+                        <div class="details-container" style="position: relative;">
+                            <!-- Website Logo Badge -->
+                            <div class="header-logo-badge" style="position: absolute; left: 15px; top: calc(12px - 0.1in); width: 62px; height: 62px; background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%); color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 33px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25); border: 2.5px solid #0284c7; z-index: 5;">
+                                ${logoHtml}
+                            </div>
+
+                            <!-- School Header Title (Centered to the right of logo) -->
+                            <div class="header-titles-wrapper" style="padding-left: 72px; text-align: center; margin-bottom: 4px;">
+                                <div class="school-name">${schoolName}</div>
+                                <div class="exam-name">${activeExamName}</div>
+                            </div>
+
+                            <!-- Full Page Margin Dashed Line Divider -->
+                            <div class="header-dashed-divider" style="width: 100%; border-bottom: 2px dashed #000000; margin-top: 4px; margin-bottom: 12px;"></div>
+
+                            <!-- Header Info Line (Full Page Margin Centered) -->
+                            <div class="header-line-3">
+                                <div class="header-col-left">${shiftDisplay}</div>
+                                <div class="header-col-center">${centerTitle}</div>
+                                <div class="header-col-right">${bldgDisplay}</div>
+                            </div>
+
+                            <!-- Summary Table for Shift & Building -->
+                            <table class="summary-table">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2" class="col-head-sl">${langVal === 'en' ? 'SL' : 'SL'}</th>
+                                        <th rowspan="2" class="col-head-room">${langVal === 'en' ? 'Room No' : (langVal === 'both' ? 'রুম নং / Room' : 'রুম নং')}</th>
+                                        <th rowspan="2" class="col-head-class">${langVal === 'en' ? 'Class' : (langVal === 'both' ? 'শ্রেণি / Class' : 'শ্রেণি')}</th>
+                                        <th rowspan="2" class="col-head-rollrange">${langVal === 'en' ? 'Student ID' : (langVal === 'both' ? 'শিক্ষার্থীর আইডি / Student ID' : 'শিক্ষার্থীর আইডি')}</th>
+                                        <th rowspan="2" class="col-head-total">${langVal === 'en' ? 'Total' : (langVal === 'both' ? 'মোট / Total' : 'মোট')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tbodyHtml}
+                                </tbody>
+                            </table>
+
+                            <!-- Signatures Section -->
+                            <div class="footer-signatures" style="display: none;">
+                                <div class="sig-col">
+                                    <div class="sig-line"></div>
+                                    <span class="sig-title-1">কক্ষ পরিদর্শক</span>
+                                </div>
+                                <div class="sig-col">
+                                    <div class="sig-line"></div>
+                                    <span class="sig-title-2">প্রস্তুতকারী</span>
+                                </div>
+                                <div class="sig-col">
+                                    <div class="sig-line"></div>
+                                    <span class="sig-title-3">প্রধান শিক্ষক / পরীক্ষা নিয়ন্ত্রক</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                pageIdx++;
+            });
+
+            pagesContainer.innerHTML = pagesHtml;
+
+            const currentFontSize = document.getElementById('seating-font-size-slider')?.value;
+            if (currentFontSize) {
+                updateSeatingDetailsFontSize(currentFontSize);
+            }
+        }
+
+        function refreshSeatingDetailsData() {
+            populateSeatingExamFilter();
+            populateSeatingClassFilter();
+            populateSeatingShiftFilter();
+            updateSeatingDetailsLive();
+        }
+
+        function printSeatingDetails() {
+            document.body.classList.add('print-seating-details-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-seating-details-mode');
+            }, 1000);
+        }
+
+        async function downloadSeatingDetailsPDF() {
+            const container = document.getElementById('seating-pages-container');
+            const pages = container ? container.querySelectorAll('.a4-page') : [];
+            if (!container || pages.length === 0) {
+                alert('ডাউনলোড করার মতো কোনো তথ্য পাওয়া যায়নি!');
+                return;
+            }
+
+            if (document.fonts && document.fonts.ready) {
+                try {
+                    await document.fonts.ready;
+                } catch (e) { }
+            }
+
+            const examVal = document.getElementById('seating-filter-exam')?.value || 'all';
+            const classVal = document.getElementById('seating-filter-class')?.value || 'all';
+            const safeExamName = (examVal === 'all' ? 'Seating_Details' : examVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const safeClassName = (classVal === 'all' ? 'All_Classes' : classVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const fileName = `Seating_Details_${safeClassName}_${safeExamName}.pdf`;
+
+            const btn = document.getElementById('seating-btn-download-pdf');
+            const originalBtnText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '⏳ পিডিএফ প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+
+            try {
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+                    const pdf = new JsPDFConstructor({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    for (let i = 0; i < pages.length; i++) {
+                        if (btn) {
+                            btn.innerHTML = `⏳ পাতা ${i + 1}/${pages.length} তৈরি হচ্ছে...`;
+                        }
+                        const pageEl = pages[i];
+
+                        const originalBoxShadow = pageEl.style.boxShadow;
+                        const originalBorder = pageEl.style.border;
+                        const originalMargin = pageEl.style.marginBottom;
+
+                        pageEl.style.boxShadow = 'none';
+                        pageEl.style.border = 'none';
+                        pageEl.style.marginBottom = '0';
+
+                        const canvas = await html2canvas(pageEl, {
+                            scale: 2,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            backgroundColor: '#ffffff',
+                            scrollX: 0,
+                            scrollY: 0
+                        });
+
+                        pageEl.style.boxShadow = originalBoxShadow;
+                        pageEl.style.border = originalBorder;
+                        pageEl.style.marginBottom = originalMargin;
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        if (i > 0) {
+                            pdf.addPage('a4', 'portrait');
+                        }
+                        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                    }
+
+                    pdf.save(fileName);
+                    if (btn) {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }
+                    return;
+                }
+
+                if (typeof html2pdf !== 'undefined') {
+                    const opt = {
+                        margin: 0,
+                        filename: fileName,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: {
+                            scale: 2,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            backgroundColor: '#ffffff'
+                        },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['css', 'legacy'] }
+                    };
+
+                    await html2pdf().set(opt).from(container).save();
+                    if (btn) {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }
+                    return;
+                }
+
+                throw new Error('PDF Engine not loaded');
+            } catch (err) {
+                console.error('PDF Generation Error:', err);
+                if (btn) {
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                }
+                alert('সরাসরি ব্রাউজার প্রিন্ট ডায়ালগ থেকে "Destination: Save as PDF" সিলেক্ট করে সংরক্ষণ করতে পারেন।');
+                printSeatingDetails();
+            }
+        }
+
+        window.downloadSeatingDetailsPDF = downloadSeatingDetailsPDF;
+        window.updateSeatingDetailsLive = updateSeatingDetailsLive;
+        window.refreshSeatingDetailsData = refreshSeatingDetailsData;
+
+        // ==========================================================================
+        // ROOM SEAT TOPSHET ENGINE (MERGED FROM Room Seat Topshet.html)
+        // Dynamically synchronized with "Saved Seat Plans List" (school_seat_plans_store)
+        // ==========================================================================
+
+        function formatRoomTopshetClassName(cls) {
+            if (!cls) return '';
+            const c = String(cls).trim();
+            const map = {
+                'play': 'প্লে (PLAY)',
+                'nursery': 'নার্সারি (NURSERY)',
+                'kg': 'কেজি (KG)',
+                'one': 'প্রথম (ONE)',
+                '1': 'প্রথম (ONE)',
+                'two': 'দ্বিতীয় (TWO)',
+                '2': 'দ্বিতীয় (TWO)',
+                'three': 'তৃতীয় (THREE)',
+                '3': 'তৃতীয় (THREE)',
+                'four': 'চতুর্থ (FOUR)',
+                '4': 'চতুর্থ (FOUR)',
+                'five': 'পঞ্চম (FIVE)',
+                '5': 'পঞ্চম (FIVE)',
+                'six': 'ষষ্ঠ (SIX)',
+                '6': 'ষষ্ঠ (SIX)',
+                'seven': 'সপ্তম (SEVEN)',
+                '7': 'সপ্তম (SEVEN)',
+                'eight': 'অষ্টম (EIGHT)',
+                '8': 'অষ্টম (EIGHT)',
+                'nine': 'নবম (NINE)',
+                '9': 'নবম (NINE)',
+                'ten': 'দশম (TEN)',
+                '10': 'দশম (TEN)'
+            };
+            const key = c.toLowerCase().replace(/^class\s*/i, '');
+            return map[key] || c;
+        }
+
+        function formatRoomTopshetClassShort(cls) {
+            if (!cls) return '';
+            const c = String(cls).trim();
+            const map = {
+                'play': 'প্লে',
+                'nursery': 'নার্সারি',
+                'kg': 'কেজি',
+                'one': 'প্রথম',
+                '1': 'প্রথম',
+                'two': 'দ্বিতীয়',
+                '2': 'দ্বিতীয়',
+                'three': 'তৃতীয়',
+                '3': 'তৃতীয়',
+                'four': 'চতুর্থ',
+                '4': 'চতুর্থ',
+                'five': 'পঞ্চম',
+                '5': 'পঞ্চম',
+                'six': 'ষষ্ঠ',
+                '6': 'ষষ্ঠ',
+                'seven': 'সপ্তম',
+                '7': 'সপ্তম',
+                'eight': 'অষ্টম',
+                '8': 'অষ্টম',
+                'nine': 'নবম',
+                '9': 'নবম',
+                'ten': 'দশম',
+                '10': 'দশম'
+            };
+            const key = c.toLowerCase().replace(/^class\s*/i, '');
+            return map[key] || c;
+        }
+
+                function formatRoomTopshetSectionBn(sec) {
+            if (!sec) return 'ক';
+            const s = String(sec).trim();
+            if (!s) return 'ক';
+
+            const lower = s.toLowerCase();
+            const letterMap = {
+                'a': 'ক', 'b': 'খ', 'c': 'গ', 'd': 'ঘ', 'e': 'ঙ',
+                'f': 'চ', 'g': 'ছ', 'h': 'জ', 'i': 'ঝ', 'j': 'ঞ'
+            };
+            if (letterMap[lower]) return letterMap[lower];
+
+            const nameMap = {
+                'sec-a': 'ক', 'sec a': 'ক', 'section a': 'ক',
+                'sec-b': 'খ', 'sec b': 'খ', 'section b': 'খ',
+                'sec-c': 'গ', 'sec c': 'গ', 'section c': 'গ',
+                'sec-d': 'ঘ', 'sec d': 'ঘ', 'section d': 'ঘ',
+                'science': 'বিজ্ঞান', 'humanities': 'মানবিক', 'arts': 'মানবিক',
+                'commerce': 'ব্যবসায় শিক্ষা', 'business': 'ব্যবসায় শিক্ষা', 'business studies': 'ব্যবসায় শিক্ষা',
+                'general': 'সাধারণ', 'vocational': 'ভোকেশনাল',
+                'padma': 'পদ্মা', 'meghna': 'মেঘনা', 'jamuna': 'যমুনা', 'surma': 'সুরমা',
+                'karnafuli': 'কর্ণফুলী', 'karnaphuli': 'কর্ণফুলী', 'tista': 'তিস্তা', 'teesta': 'তিস্তা',
+                'rupsha': 'রূপসা', 'rupson': 'রূপসা',
+                'rose': 'গোলাপ', 'golap': 'গোলাপ', 'beli': 'বেলী', 'belly': 'বেলী',
+                'jaba': 'জবা', 'shapla': 'শাপলা', 'chameli': 'চামেলী', 'tagar': 'টগর',
+                'hasnahena': 'হাসনাহেনা', 'bakul': 'বকুল', 'kadam': 'কদম',
+                'sunflower': 'সূর্যমুখী', 'surjamukhi': 'সূর্যমুখী',
+                'morning': 'প্রভাতি', 'prabhati': 'প্রভাতি', 'day': 'দিবা', 'diba': 'দিবা',
+                'boys': 'বালক', 'girls': 'বালিকা'
+            };
+            if (nameMap[lower]) return nameMap[lower];
+
+            if (/[\u0980-\u09FF]/.test(s)) {
+                return s;
+            }
+
+            const cleanSec = lower.replace(/^(section|sec|শাখা)\s*[-:]?\s*/i, '').trim();
+            if (letterMap[cleanSec]) return letterMap[cleanSec];
+            if (nameMap[cleanSec]) return nameMap[cleanSec];
+
+            return s;
+        }
+
+        function formatRoomTopshetShiftLabel(shift) {
+            if (!shift) return 'সকাল (ছাত্র শাখা)';
+            const s = String(shift).trim();
+            if (/morning|sokal|সকাল|প্রভাতি/i.test(s)) {
+                return 'সকাল (ছাত্র শাখা)';
+            }
+            if (/afternoon|bikal|বিকাল|দিবা/i.test(s)) {
+                return 'বিকাল (ছাত্রী শাখা)';
+            }
+            return s;
+        }
+
+        function isRoomTopshetClassMatch(studentClass, selectedClass) {
+            if (!selectedClass || selectedClass === 'all') return true;
+            if (!studentClass) return false;
+            const stC = String(studentClass).toLowerCase().trim();
+            const selC = String(selectedClass).toLowerCase().trim();
+            if (stC === selC || stC.includes(selC) || selC.includes(stC)) return true;
+
+            const map = {
+                'six': ['six', 'ষষ্ঠ', '6'],
+                'seven': ['seven', 'সপ্তম', '7'],
+                'eight': ['eight', 'অষ্টম', '8'],
+                'nine': ['nine', 'নবম', '9'],
+                'ten': ['ten', 'দশম', '10'],
+                'play': ['play', 'প্লে'],
+                'nursery': ['nursery', 'নার্সারি'],
+                'kg': ['kg', 'কেজি'],
+                'one': ['one', 'প্রথম', '1'],
+                'two': ['two', 'দ্বিতীয়', '2'],
+                'three': ['three', 'তৃতীয়', '3'],
+                'four': ['four', 'চতুর্থ', '4'],
+                'five': ['five', 'পঞ্চম', '5']
+            };
+
+            const targetVariants = map[selC] || [selC];
+            return targetVariants.some(v => stC.includes(v));
+        }
+
+        function isRoomTopshetShiftMatch(shiftName, selectedShift) {
+            if (!selectedShift || selectedShift === 'all') return true;
+            if (!shiftName) return false;
+            const s1 = String(shiftName).toLowerCase().trim();
+            const s2 = String(selectedShift).toLowerCase().trim();
+
+            if (s1 === s2 || s1.includes(s2) || s2.includes(s1)) return true;
+
+            const isMorning1 = /morning|sokal|সকাল|প্রভাতি/i.test(s1);
+            const isMorning2 = /morning|sokal|সকাল|প্রভাতি/i.test(s2);
+            if (isMorning1 && isMorning2) return true;
+
+            const isAfternoon1 = /afternoon|bikal|বিকাল|দিবা/i.test(s1);
+            const isAfternoon2 = /afternoon|bikal|বিকাল|দিবা/i.test(s2);
+            if (isAfternoon1 && isAfternoon2) return true;
+
+            return false;
+        }
+
+        function populateRoomTopshetClassFilter() {
+            const classSelect = document.getElementById('room-topshet-filter-class');
+            if (!classSelect) return;
+            const currentSelected = classSelect.value || 'all';
+            classSelect.innerHTML = '<option value="all">All Classes</option>';
+
+            let classesList = [];
+            try {
+                classesList = JSON.parse(localStorage.getItem('school_classes') || '[]');
+            } catch (e) {}
+
+            if (classesList.length === 0) {
+                classesList = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+            }
+
+            classesList.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.innerText = formatRoomTopshetClassName(cls);
+                classSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...classSelect.options].some(o => o.value === currentSelected)) {
+                classSelect.value = currentSelected;
+            }
+        }
+
+        function populateRoomTopshetExamFilter() {
+            const examSelect = document.getElementById('room-topshet-filter-exam');
+            if (!examSelect) return;
+            const currentSelected = examSelect.value || 'all';
+            examSelect.innerHTML = '<option value="all">সকল পরীক্ষা (All Exams / Routine Title)</option>';
+
+            const examSet = new Set();
+            examSet.add('বার্ষিক পরীক্ষা - ২০২৬');
+            examSet.add('অর্ধ-বার্ষিক পরীক্ষা - ২০২৬');
+            examSet.add('প্রাক-নির্বাচনী পরীক্ষা - ২০২৬');
+            examSet.add('নির্বাচনী পরীক্ষা - ২০২৬');
+
+            try {
+                const store = safeJsonParse('school_seat_plans_store', {});
+                const routines = safeJsonParse('school_exam_routines', []);
+                const examTypes = safeJsonParse('school_exam_types', []);
+
+                if (store && typeof store === 'object') {
+                    Object.values(store).forEach(plan => {
+                        if (plan && plan.examName && plan.examName.trim() && plan.examName !== 'All') {
+                            examSet.add(plan.examName.trim());
+                        }
+                    });
+                }
+
+                if (Array.isArray(routines)) {
+                    routines.forEach(r => {
+                        if (r && r.examName && r.examName.trim()) {
+                            examSet.add(r.examName.trim());
+                        }
+                    });
+                }
+
+                if (Array.isArray(examTypes)) {
+                    examTypes.forEach(t => {
+                        if (t && t.name && t.name.trim()) {
+                            examSet.add(t.name.trim());
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            examSet.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam;
+                opt.innerText = exam;
+                examSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...examSelect.options].some(o => o.value === currentSelected)) {
+                examSelect.value = currentSelected;
+            }
+        }
+
+        function populateRoomTopshetShiftFilter() {
+            const shiftSelect = document.getElementById('room-topshet-filter-shift');
+            if (!shiftSelect) return;
+            const currentSelected = shiftSelect.value || 'all';
+            shiftSelect.innerHTML = '<option value="all">All Shifts</option>';
+
+            const shiftsSet = new Set();
+            shiftsSet.add('Morning Shift');
+            shiftsSet.add('Afternoon Shift');
+
+            try {
+                const shiftTimes = safeJsonParse('school_shift_times', []);
+                if (Array.isArray(shiftTimes)) {
+                    shiftTimes.forEach(st => {
+                        if (st && st.shift && st.shift.trim()) shiftsSet.add(st.shift.trim());
+                    });
+                }
+
+                const store = safeJsonParse('school_seat_plans_store', {});
+                if (store && typeof store === 'object') {
+                    Object.values(store).forEach(plan => {
+                        if (plan && plan.shift && plan.shift.trim()) shiftsSet.add(plan.shift.trim());
+                    });
+                }
+            } catch (e) {}
+
+            shiftsSet.forEach(shift => {
+                const opt = document.createElement('option');
+                opt.value = shift;
+                opt.innerText = formatRoomTopshetShiftLabel(shift);
+                shiftSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...shiftSelect.options].some(o => o.value === currentSelected)) {
+                shiftSelect.value = currentSelected;
+            }
+        }
+
+        function updateRoomTopshetFontSize(val) {
+            const valSpan = document.getElementById('room-topshet-font-size-val');
+            if (valSpan) valSpan.innerText = val + 'px';
+
+            const numVal = parseFloat(val) || 14;
+            const scaleRatio = numVal / 14;
+
+            const tableTd = document.querySelectorAll('#subview-room-topshet .class-table td');
+            tableTd.forEach(el => {
+                el.style.fontSize = (11.5 * scaleRatio).toFixed(1) + 'pt';
+            });
+
+            const tableTh = document.querySelectorAll('#subview-room-topshet .class-table th');
+            tableTh.forEach(el => {
+                el.style.fontSize = (12.1 * scaleRatio).toFixed(1) + 'pt';
+            });
+
+            const schoolName = document.querySelectorAll('#subview-room-topshet .school-name');
+            schoolName.forEach(el => {
+                el.style.fontSize = (22 * scaleRatio).toFixed(1) + 'pt';
+            });
+        }
+
+
+        function getRoomTopshetStaffList() {
+            try {
+                return JSON.parse(localStorage.getItem('school_staff') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getRoomTopshetHeadmasterSignature(deptOrClass) {
+            if (typeof getHeadmasterByDepartment === 'function') {
+                const hm = getHeadmasterByDepartment(deptOrClass);
+                if (hm) {
+                    const sig = hm.signature || hm.signatureUrl || hm.signatureData || hm.sign || hm.signatureImage;
+                    if (sig) return sig;
+                }
+            }
+
+            const staffList = getRoomTopshetStaffList();
+            const checkIsHm = (s) => {
+                if (!s) return false;
+                const des = String(s.designation || s.designationBn || s.post || '').toLowerCase();
+                if (des.includes('সহকারী') || des.includes('সহ:') || des.includes('উপাধ্যক্ষ') || des.includes('assistant') || des.includes('asst') || des.includes('vice') || des.includes('deputy')) {
+                    return false;
+                }
+                return des.includes('প্রধান শিক্ষক') || des.includes('প্রধান শিক্ষিকা') || des.includes('headmaster') || des.includes('head master') || des.includes('headteacher') || des.includes('head teacher') || des.includes('principal') || des.includes('অধ্যক্ষ') || des.includes('সুপারিনটেনডেন্ট') || des.includes('superintendent');
+            };
+
+            const hm = staffList.find(checkIsHm);
+            if (hm) {
+                const sig = hm.signature || hm.signatureUrl || hm.signatureData || hm.sign || hm.signatureImage;
+                if (sig) return sig;
+            }
+
+            const settings = safeJsonParse('school_settings', {});
+            return settings?.headmasterSignature || '';
+        }
+
+        function getRoomTopshetPreparerSignature() {
+            const staffList = getRoomTopshetStaffList();
+
+            const checkIsPreparer = (s) => {
+                if (!s) return false;
+                const des = String(s.designation || s.designationBn || s.post || '').toLowerCase();
+                return des.includes('কম্পিউটার অপারেটর') || des.includes('অপারেটর') || des.includes('প্রস্তুতকারী') || des.includes('অফিস সহকারী') || des.includes('ডাটা এন্ট্রি') || des.includes('হিসাব রক্ষক') || des.includes('সহকারী শিক্ষক') || des.includes('সহ: শিক্ষক') || des.includes('operator') || des.includes('clerk') || des.includes('accountant') || des.includes('assistant teacher');
+            };
+
+            // 1. Check logged-in user if they match a staff member
+            const currentUserId = localStorage.getItem('school_user_id') || localStorage.getItem('school_user_name') || '';
+            if (currentUserId) {
+                const loggedStaff = staffList.find(s => s && (s.id === currentUserId || s.name === currentUserId || s.nameBn === currentUserId || s.mobile === currentUserId || s.phone === currentUserId));
+                if (loggedStaff) {
+                    const sig = loggedStaff.signature || loggedStaff.signatureUrl || loggedStaff.signatureData || loggedStaff.sign || loggedStaff.signatureImage;
+                    if (sig) return sig;
+                }
+            }
+
+            // 2. Find staff with preparer/operator designation having signature
+            const prepWithSig = staffList.find(s => checkIsPreparer(s) && (s.signature || s.signatureUrl || s.signatureData || s.sign || s.signatureImage));
+            if (prepWithSig) {
+                return prepWithSig.signature || prepWithSig.signatureUrl || prepWithSig.signatureData || prepWithSig.sign || prepWithSig.signatureImage;
+            }
+
+            // 3. Fallback: Any non-headmaster staff member with signature
+            const checkIsHm = (s) => {
+                if (!s) return false;
+                const des = String(s.designation || s.designationBn || s.post || '').toLowerCase();
+                return des.includes('প্রধান শিক্ষক') || des.includes('প্রধান শিক্ষিকা') || des.includes('headmaster') || des.includes('head master') || des.includes('principal') || des.includes('অধ্যক্ষ');
+            };
+
+            const anyOtherWithSig = staffList.find(s => !checkIsHm(s) && (s.signature || s.signatureUrl || s.signatureData || s.sign || s.signatureImage));
+            if (anyOtherWithSig) {
+                return anyOtherWithSig.signature || anyOtherWithSig.signatureUrl || anyOtherWithSig.signatureData || anyOtherWithSig.sign || anyOtherWithSig.signatureImage;
+            }
+
+            const settings = safeJsonParse('school_settings', {});
+            return settings?.preparerSignature || settings?.operatorSignature || '';
+        }
+
+        function updateRoomTopshetLive() {
+            const settings = safeJsonParse('school_settings', null);
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            const classVal = document.getElementById('room-topshet-filter-class')?.value || 'all';
+            const examVal = document.getElementById('room-topshet-filter-exam')?.value || 'all';
+            const shiftVal = document.getElementById('room-topshet-filter-shift')?.value || 'all';
+            const searchVal = (document.getElementById('room-topshet-search-student')?.value || '').trim().toLowerCase();
+
+            // Build student section lookup map for robust section resolution
+            const studentSectionMap = {};
+            try {
+                const allStudents = JSON.parse(localStorage.getItem('school_students') || '[]');
+                if (Array.isArray(allStudents)) {
+                    allStudents.forEach(s => {
+                        const sec = s.section || s.sec || s.sectionName || '';
+                        if (sec) {
+                            if (s.studentId) studentSectionMap[String(s.studentId).trim()] = sec.trim();
+                            if (s.id) studentSectionMap[String(s.id).trim()] = sec.trim();
+                            if (s.class && s.roll) {
+                                studentSectionMap[`${String(s.class).trim().toLowerCase()}___${String(s.roll).trim()}`] = sec.trim();
+                            }
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            let allocList = [];
+            let planFoundForExam = false;
+
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.keys(store).forEach(planKey => {
+                    const plan = store[planKey];
+                    if (!plan || !plan.allocations) return;
+
+                    let matchesExam = false;
+                    if (examVal === 'all') {
+                        matchesExam = true;
+                    } else {
+                        const cleanExam = examVal.toLowerCase().trim();
+                        const cleanPlanKey = planKey.toLowerCase().trim();
+                        const cleanPlanExam = (plan.examName || '').toLowerCase().trim();
+                        matchesExam = (cleanPlanKey === cleanExam) || 
+                                      (cleanPlanExam === cleanExam) || 
+                                      (cleanPlanKey.includes(cleanExam) && cleanExam.length > 3) ||
+                                      (cleanPlanExam.includes(cleanExam) && cleanExam.length > 3);
+                    }
+
+                    if (matchesExam) {
+                        planFoundForExam = true;
+                        Object.keys(plan.allocations).forEach(rId => {
+                            const item = plan.allocations[rId];
+                            if (item) {
+                                const itemCopy = JSON.parse(JSON.stringify(item));
+                                if (!itemCopy.shift && plan.shift) itemCopy.shift = plan.shift;
+                                if (!itemCopy.examName && plan.examName) itemCopy.examName = plan.examName;
+                                allocList.push({ rId, item: itemCopy });
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (allocList.length === 0 && savedAlloc && typeof savedAlloc === 'object' && Object.keys(savedAlloc).length > 0) {
+                if (examVal === 'all') {
+                    Object.keys(savedAlloc).forEach(rId => {
+                        const item = savedAlloc[rId];
+                        if (item) allocList.push({ rId, item });
+                    });
+                }
+            }
+
+            // Fallback Sample Data if no stored seat plans exist anywhere
+            if (allocList.length === 0 && examVal === 'all' && !planFoundForExam && (!savedAlloc || Object.keys(savedAlloc).length === 0)) {
+                allocList = [
+                    {
+                        rId: '401',
+                        item: {
+                            room: { number: '৪০১' },
+                            building: { name: 'একাডেমিক ভবন-ক' },
+                            shift: 'Morning Shift',
+                            examName: 'বার্ষিক পরীক্ষা - ২০২৬',
+                            benches: [
+                                ...Array(13).fill(0).map((_, i) => ({ left: { class: 'অষ্টম (EIGHT)', section: 'ক', studentId: '26070' + String(i + 1).padStart(2, '0') } })),
+                                ...Array(4).fill(0).map((_, i) => ({ right: { class: 'ষষ্ঠ (SIX)', section: 'ক', studentId: '26060' + String(i + 1).padStart(2, '0') } })),
+                                ...Array(17).fill(0).map((_, i) => ({ left: { class: 'দশম (TEN)', section: 'বিজ্ঞান', studentId: '26080' + String(i + 1).padStart(2, '0') } }))
+                            ]
+                        }
+                    },
+                    {
+                        rId: '201',
+                        item: {
+                            room: { number: '২০১' },
+                            building: { name: 'একাডেমিক ভবন-ক' },
+                            shift: 'Morning Shift',
+                            examName: 'বার্ষিক পরীক্ষা - ২০২৬',
+                            benches: [
+                                ...Array(15).fill(0).map((_, i) => ({ left: { class: 'অষ্টম (EIGHT)', section: 'খ', studentId: '26071' + String(i + 1).padStart(2, '0') } })),
+                                ...Array(15).fill(0).map((_, i) => ({ right: { class: 'ষষ্ঠ (SIX)', section: 'খ', studentId: '26061' + String(i + 1).padStart(2, '0') } }))
+                            ]
+                        }
+                    }
+                ];
+            }
+
+            const pagesContainer = document.getElementById('room-topshet-pages-container');
+            if (!pagesContainer) return;
+
+            if (allocList.length === 0) {
+                const noDataMsg = (examVal !== 'all' && !planFoundForExam)
+                    ? `উক্ত পরীক্ষা (${examVal}) এর জন্য কোন সংরক্ষিত সিটপ্ল্যান পাওয়া যায়নি (No saved seat plan data found).`
+                    : `কোন তথ্য পাওয়া যায়নি (No matching room seat plan data found).`;
+
+                pagesContainer.innerHTML = `
+                    <div style="background:#fff; padding:35px 20px; margin-top:25px; border-radius:10px; text-align:center; font-weight:700; color:#ef4444; font-size:1.1rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); border: 1.5px solid #fca5a5; max-width:600px;">
+                        ⚠️ ${noDataMsg}
+                    </div>`;
+                return;
+            }
+
+            const schoolName = settings?.schoolName || 'আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়';
+            const defaultExamName = settings?.examName || 'বার্ষিক পরীক্ষা - ২০২৬';
+
+            let filteredAllocList = allocList.filter(({ rId, item }) => {
+                if (!item || !item.benches) return false;
+
+                const sName = item.shift || 'Morning Shift';
+                if (!isRoomTopshetShiftMatch(sName, shiftVal)) return false;
+
+                const roomNo = String(item.room?.number || item.room?.name || rId).toLowerCase();
+                const bldgName = String(item.building?.name || '').toLowerCase();
+
+                if (searchVal) {
+                    const matchRoom = roomNo.includes(searchVal);
+                    const matchBldg = bldgName.includes(searchVal);
+                    const matchShift = sName.toLowerCase().includes(searchVal);
+
+                    let matchStudent = false;
+                    item.benches.forEach(b => {
+                        [b.left, b.right].forEach(st => {
+                            if (st) {
+                                const idStr = String(st.studentId || st.id || st.roll || '').toLowerCase();
+                                const clsStr = String(st.class || '').toLowerCase();
+                                if (idStr.includes(searchVal) || clsStr.includes(searchVal)) matchStudent = true;
+                            }
+                        });
+                    });
+
+                    if (!matchRoom && !matchBldg && !matchShift && !matchStudent) return false;
+                }
+
+                return true;
+            });
+
+            if (filteredAllocList.length === 0) {
+                pagesContainer.innerHTML = `
+                    <div style="background:#fff; padding:35px 20px; margin-top:25px; border-radius:10px; text-align:center; font-weight:700; color:#ef4444; font-size:1.1rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); border: 1.5px solid #fca5a5; max-width:600px;">
+                        ⚠️ ফিল্টারকৃত শর্তে কোনো রুমের সিটপ্ল্যান পাওয়া যায়নি।
+                    </div>`;
+                return;
+            }
+
+            let pagesHtml = '';
+            let roomIdx = 1;
+
+            const hmSig = getRoomTopshetHeadmasterSignature();
+            const prepSig = getRoomTopshetPreparerSignature();
+
+            const prepSigImg = prepSig ? `<img src="${prepSig}" alt="স্বাক্ষর" style="height: 0.86in; max-height: 0.86in; max-width: 245px; object-fit: contain; pointer-events: none; filter: contrast(115%); display: block; margin: 0 auto;" />` : `<div style="height: 0.86in;"></div>`;
+
+            const hmSigImg = hmSig ? `<img src="${hmSig}" alt="স্বাক্ষর" style="height: 0.86in; max-height: 0.86in; max-width: 245px; object-fit: contain; pointer-events: none; filter: contrast(115%); display: block; margin: 0 auto;" />` : `<div style="height: 0.86in;"></div>`;
+
+            filteredAllocList.forEach(({ rId, item }) => {
+                const roomNo = item.room ? (item.room.number || item.room.name || rId) : rId;
+                const buildingName = (item.building && item.building.name && item.building.name.trim()) ? item.building.name.trim() : 'একাডেমিক ভবন-ক';
+                const activeExamName = (examVal !== 'all') ? examVal : (item.examName || defaultExamName);
+                const shiftName = item.shift || 'Morning Shift';
+
+                // Group students by Class
+                const classGroup = {};
+                item.benches.forEach(b => {
+                    [b.left, b.right].forEach(st => {
+                        if (st) {
+                            const c = st.class || 'Unassigned';
+                            if (!isRoomTopshetClassMatch(c, classVal)) return;
+                            if (!classGroup[c]) classGroup[c] = [];
+                            classGroup[c].push(st);
+                        }
+                    });
+                });
+
+                const classes = Object.keys(classGroup);
+                if (classes.length === 0) return;
+
+                // Sort classes nicely
+                classes.sort((a, b) => {
+                    const order = ['play', 'nursery', 'kg', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+                    const getRank = c => {
+                        const lc = String(c).toLowerCase();
+                        const idx = order.findIndex(o => lc.includes(o));
+                        return idx !== -1 ? idx : 99;
+                    };
+                    return getRank(a) - getRank(b);
+                });
+
+                // Generate Header Classes text e.g. "শ্রেণি: ষষ্ঠ, অষ্টম ও দশম"
+                const classShortNames = classes.map(c => formatRoomTopshetClassShort(c));
+                let classHeaderStr = '';
+                if (classShortNames.length === 1) {
+                    classHeaderStr = classShortNames[0];
+                } else if (classShortNames.length === 2) {
+                    classHeaderStr = classShortNames.join(' ও ');
+                } else if (classShortNames.length > 2) {
+                    const last = classShortNames.pop();
+                    classHeaderStr = classShortNames.join(', ') + ' ও ' + last;
+                }
+
+                // Calculate counts & summary
+                let roomTotalCandidates = 0;
+                let summaryParts = [];
+                summaryParts.push(`শিফট: ${formatRoomTopshetShiftLabel(shiftName)}`);
+
+                classes.forEach(cls => {
+                    const count = classGroup[cls].length;
+                    roomTotalCandidates += count;
+                    summaryParts.push(`${formatRoomTopshetClassShort(cls)} শ্রেণি: ${count} জন`);
+                });
+                summaryParts.push(`মোট পরীক্ষার্থী: ${roomTotalCandidates} জন`);
+
+                const summaryText = summaryParts.join(' &nbsp;|&nbsp; ');
+
+                // Sort students inside each class group
+                classes.forEach(cls => {
+                    classGroup[cls].sort((a, b) => {
+                        const idA = String(a.studentId || a.id || a.roll || '');
+                        const idB = String(b.studentId || b.id || b.roll || '');
+                        return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+                    });
+                });
+
+                // Paginate if student count exceeds single page height
+                const maxRowsInRoom = Math.max(...classes.map(cls => classGroup[cls].length));
+                const ROWS_PER_PAGE = 15;
+                const totalRoomPages = Math.ceil(maxRowsInRoom / ROWS_PER_PAGE) || 1;
+
+                for (let pageNum = 1; pageNum <= totalRoomPages; pageNum++) {
+                    const startRow = (pageNum - 1) * ROWS_PER_PAGE;
+                    const endRow = startRow + ROWS_PER_PAGE;
+
+                    // Build Class Tables HTML for this page
+                    let tablesHtml = '';
+                    classes.forEach((cls, idx) => {
+                        const fullList = classGroup[cls];
+                        const pageSlice = fullList.slice(startRow, endRow);
+                        if (pageSlice.length === 0 && fullList.length > 0 && pageNum > 1) {
+                            return;
+                        }
+
+                        const borderClass = `class-border-${idx % 6}`;
+
+                        let rowsHtml = '';
+                        pageSlice.forEach(st => {
+                            const liveResolved = resolveAttendanceLiveStudent(st);
+                            const studentId = liveResolved.studentId || "-";
+                            let secName = (st.section || st.sec || st.sectionName || '').trim();
+                            if (!secName) {
+                                const idKey = String(st.studentId || st.id || '').trim();
+                                if (idKey && studentSectionMap[idKey]) {
+                                    secName = studentSectionMap[idKey];
+                                } else if (st.class && st.roll) {
+                                    const comboKey = `${String(st.class).trim().toLowerCase()}___${String(st.roll).trim()}`;
+                                    if (studentSectionMap[comboKey]) {
+                                        secName = studentSectionMap[comboKey];
+                                    }
+                                }
+                            }
+                            const secDisplay = formatRoomTopshetSectionBn(secName);
+
+                            rowsHtml += `<tr><td>${studentId}</td><td>${secDisplay}</td></tr>`;
+                        });
+
+                        tablesHtml += `
+                            <div class="class-table-container">
+                                <table class="class-table ${borderClass}">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">${formatRoomTopshetClassName(cls)}</th>
+                                        </tr>
+                                        <tr class="sub-header-row">
+                                            <th style="font-size: 10.5pt; font-weight: bold; background-color: #f8fafc; border: 1px solid #cbd5e0; padding: 4px 4px;">শিক্ষার্থীর আইডি</th>
+                                            <th style="font-size: 10.5pt; font-weight: bold; background-color: #f8fafc; border: 1px solid #cbd5e0; padding: 4px 4px;">শাখা</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    });
+
+                    const pageIndicatorText = (totalRoomPages > 1)
+                        ? `📋 রুম টপশীট #${roomIdx} (পৃষ্ঠা ${pageNum}/${totalRoomPages}): রুম নং ${roomNo} (${buildingName})`
+                        : `📋 রুম টপশীট #${roomIdx}: রুম নং ${roomNo} (${buildingName})`;
+
+                    const pageHeaderRoomStr = (totalRoomPages > 1)
+                        ? `রুম নং: ${roomNo} (পৃষ্ঠা ${pageNum}/${totalRoomPages})`
+                        : `রুম নং: ${roomNo}`;
+
+                    pagesHtml += `
+                        <!-- Page Indicator Pill (Screen Preview Only) -->
+                        <div class="no-print" style="margin-top: 15px; margin-bottom: 8px; font-weight: 800; font-size: 0.92rem; color: #6d28d9; background: #f3e8ff; padding: 5px 18px; border-radius: 20px; border: 1.5px solid #d8b4fe; box-shadow: 0 2px 6px rgba(109, 40, 217, 0.12); display: inline-flex; align-items: center; gap: 8px;">
+                            <span>${pageIndicatorText}</span>
+                        </div>
+
+                        <!-- A4 Paper Preview Sheet for Room -->
+                        <div class="a4-page">
+                            <div class="container">
+                                <div>
+                                    <!-- Line 1: School Name -->
+                                    <div class="school-name">${schoolName}</div>
+
+                                    <!-- Line 2: Exam Name -->
+                                    <div class="exam-name">${activeExamName}</div>
+
+                                    <!-- Building Name -->
+                                    <div class="building-name">বিল্ডিং : ${buildingName}</div>
+
+                                    <!-- Line 3: Header Line -->
+                                    <div class="header-line-3">
+                                        <div class="header-col-left">${pageHeaderRoomStr}</div>
+                                        <div class="header-col-center">আসন বিন্যাস</div>
+                                        <div class="header-col-right">শ্রেণি: ${classHeaderStr}</div>
+                                    </div>
+
+                                    <!-- Room Summary Info -->
+                                    <div class="summary-info">
+                                        ${summaryText}
+                                    </div>
+
+                                    <!-- Separate Tables for Each Class -->
+                                    <div class="tables-wrapper" style="margin-bottom: 3.50in;">
+                                        ${tablesHtml}
+                                    </div>
+                                </div>
+
+                                <!-- Footer Signatures Section -->
+                                <div class="footer-signatures" style="margin-top: 0.5in; margin-bottom: 0.5in;">
+                                    <div class="sig-col" style="display: none !important;">
+                                        <div style="height: 0.86in;"></div>
+                                        <div class="sig-line"></div>
+                                        কক্ষ পরিদর্শক
+                                    </div>
+                                    <div class="sig-col" style="vertical-align: bottom; text-align: center; position: relative;">
+                                        <div class="sig-img-box" style="height: 0.86in; display: flex; align-items: flex-end; justify-content: center; margin-bottom: -28px; position: relative; z-index: 2;">
+                                            ${prepSigImg}
+                                        </div>
+                                        <div class="sig-line" style="display: none !important;"></div>
+                                        <div class="sig-label" style="font-size: 11.55pt; font-weight: bold; margin-top: 0; padding-top: 0; line-height: 1.1;">প্রস্তুতকারী</div>
+                                    </div>
+                                    <div class="sig-col" style="vertical-align: bottom; text-align: center; position: relative;">
+                                        <div class="sig-img-box" style="height: 0.86in; display: flex; align-items: flex-end; justify-content: center; margin-bottom: -28px; position: relative; z-index: 2;">
+                                            ${hmSigImg}
+                                        </div>
+                                        <div class="sig-line" style="display: none !important;"></div>
+                                        <div class="sig-label" style="font-size: 11.55pt; font-weight: bold; margin-top: 0; padding-top: 0; line-height: 1.1;">প্রধান শিক্ষক</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                roomIdx++;
+            });
+
+            pagesContainer.innerHTML = pagesHtml;
+
+            const currentFontSize = document.getElementById('room-topshet-font-size-slider')?.value;
+            if (currentFontSize) {
+                updateRoomTopshetFontSize(currentFontSize);
+            }
+        }
+
+        function refreshRoomTopshetData() {
+            populateRoomTopshetClassFilter();
+            populateRoomTopshetExamFilter();
+            populateRoomTopshetShiftFilter();
+            updateRoomTopshetLive();
+        }
+
+        function printRoomTopshet() {
+            document.body.classList.add('print-room-topshet-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-room-topshet-mode');
+            }, 1000);
+        }
+
+        async function downloadRoomTopshetPDF() {
+            const container = document.getElementById('room-topshet-pages-container');
+            const pages = container ? container.querySelectorAll('.a4-page') : [];
+            if (!container || pages.length === 0) {
+                alert('ডাউনলোড করার মতো কোনো তথ্য পাওয়া যায়নি!');
+                return;
+            }
+
+            if (document.fonts && document.fonts.ready) {
+                try { await document.fonts.ready; } catch (e) { }
+            }
+
+            const examVal = document.getElementById('room-topshet-filter-exam')?.value || 'all';
+            const classVal = document.getElementById('room-topshet-filter-class')?.value || 'all';
+            const safeExamName = (examVal === 'all' ? 'Room_Seat_Topshet' : examVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const safeClassName = (classVal === 'all' ? 'All_Classes' : classVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const fileName = `Room_Seat_Topshet_${safeClassName}_${safeExamName}.pdf`;
+
+            const btn = document.getElementById('room-topshet-btn-download-pdf');
+            const originalBtnText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '⏳ পিডিএফ প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+
+            try {
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+                    const pdf = new JsPDFConstructor({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    for (let i = 0; i < pages.length; i++) {
+                        if (btn) {
+                            btn.innerHTML = `⏳ পাতা ${i + 1}/${pages.length} তৈরি হচ্ছে...`;
+                        }
+                        const pageEl = pages[i];
+
+                        const originalBoxShadow = pageEl.style.boxShadow;
+                        const originalMargin = pageEl.style.marginBottom;
+
+                        pageEl.style.boxShadow = 'none';
+                        pageEl.style.marginBottom = '0';
+
+                        const canvas = await html2canvas(pageEl, {
+                            scale: 2,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            backgroundColor: '#ffffff',
+                            scrollX: 0,
+                            scrollY: 0
+                        });
+
+                        pageEl.style.boxShadow = originalBoxShadow;
+                        pageEl.style.marginBottom = originalMargin;
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        if (i > 0) {
+                            pdf.addPage('a4', 'portrait');
+                        }
+                        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                    }
+
+                    pdf.save(fileName);
+                    if (btn) {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }
+                    return;
+                }
+
+                if (typeof html2pdf !== 'undefined') {
+                    const opt = {
+                        margin: 0,
+                        filename: fileName,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: {
+                            scale: 2,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            backgroundColor: '#ffffff'
+                        },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['css', 'legacy'] }
+                    };
+
+                    await html2pdf().set(opt).from(container).save();
+                    if (btn) {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }
+                    return;
+                }
+
+                throw new Error('PDF Engine not loaded');
+            } catch (err) {
+                console.error('PDF Generation Error:', err);
+                if (btn) {
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                }
+                alert('সরাসরি ব্রাউজার প্রিন্ট ডায়ালগ থেকে "Destination: Save as PDF" সিলেক্ট করে সংরক্ষণ করতে পারেন।');
+                printRoomTopshet();
+            }
+        }
+
+        window.downloadRoomTopshetPDF = downloadRoomTopshetPDF;
+        window.printRoomTopshet = printRoomTopshet;
+        window.refreshRoomTopshetData = refreshRoomTopshetData;
+        window.updateRoomTopshetLive = updateRoomTopshetLive;
+
+
+        // ==========================================================================
+        // ADMIT CARD & ROUTINE DUPLEX SYSTEM ENGINE (MERGED FROM Admit Card.html)
+        // ==========================================================================
+
+        function isHeadmasterDesignation(designation) {
+            if (!designation) return false;
+            const des = String(designation).trim().toLowerCase();
+            if (des.includes('সহকারী') || des.includes('সহ:') || des.includes('উপাধ্যক্ষ') || des.includes('assistant') || des.includes('asst') || des.includes('vice') || des.includes('deputy')) {
+                return false;
+            }
+            return des.includes('প্রধান শিক্ষক') ||
+                des.includes('প্রধান শিক্ষিকা') ||
+                des.includes('headmaster') ||
+                des.includes('head master') ||
+                des.includes('headteacher') ||
+                des.includes('head teacher') ||
+                des.includes('principal') ||
+                des.includes('অধ্যক্ষ') ||
+                des.includes('সুপারিনটেনডেন্ট') ||
+                des.includes('superintendent');
+        }
+
+        function getHeadmasterByDepartment(deptOrClass) {
+            let staffList = [];
+            try {
+                staffList = JSON.parse(localStorage.getItem('school_staff') || '[]');
+            } catch (e) {
+                staffList = [];
+            }
+
+            if (!Array.isArray(staffList) || staffList.length === 0) {
+                return null;
+            }
+
+            const checkIsHm = (s) => {
+                if (!s) return false;
+                if (typeof isHeadmasterDesignation === 'function') {
+                    return isHeadmasterDesignation(s.designation || s.designationBn || s.post);
+                }
+                const des = String(s.designation || s.designationBn || s.post || '').toLowerCase();
+                if (des.includes('সহকারী') || des.includes('সহ:') || des.includes('উপাধ্যক্ষ') || des.includes('assistant') || des.includes('asst') || des.includes('vice') || des.includes('deputy')) {
+                    return false;
+                }
+                return des.includes('প্রধান শিক্ষক') || des.includes('প্রধান শিক্ষিকা') || des.includes('headmaster') || des.includes('head master') || des.includes('headteacher') || des.includes('head teacher') || des.includes('principal') || des.includes('অধ্যক্ষ') || des.includes('সুপারিনটেনডেন্ট') || des.includes('superintendent');
+            };
+
+            let targetDept = '';
+            if (deptOrClass) {
+                const d = String(deptOrClass).trim().toLowerCase();
+                const primaryKeywords = ['primary', 'primary level', 'প্রাথমিক', 'play', 'nursery', 'kg', 'one', 'two', 'three', 'four', 'five', 'প্লে', 'নার্সারি', 'কেজি', 'প্রথম', 'দ্বিতীয়', 'দ্বিতীয়', 'তৃতীয়', 'তৃতীয়', 'চতুর্থ', 'পঞ্চম', '1', '2', '3', '4', '5'];
+                const highKeywords = ['high', 'high level', 'মাধ্যমিক', 'উচ্চ', 'six', 'seven', 'eight', 'nine', 'ten', 'ষষ্ঠ', 'সপ্তম', 'অষ্টম', 'নবম', 'দশম', '6', '7', '8', '9', '10'];
+
+                if (primaryKeywords.some(k => d === k || d.includes(k))) {
+                    targetDept = 'primary level';
+                } else if (highKeywords.some(k => d === k || d.includes(k))) {
+                    targetDept = 'high level';
+                } else {
+                    targetDept = d;
+                }
+            }
+
+            // 1. Primary priority: Headmaster specifically assigned to targetDept
+            if (targetDept) {
+                const hm = staffList.find(s => {
+                    if (!checkIsHm(s)) return false;
+                    const sDept = String(s.department || s.dept || '').trim().toLowerCase();
+                    return sDept === targetDept || sDept.includes(targetDept) || targetDept.includes(sDept);
+                });
+                if (hm) return hm;
+            }
+
+            // 2. Fallback: Any registered headmaster in the staff list
+            const anyHm = staffList.find(s => checkIsHm(s));
+            return anyHm || null;
+        }
+
+        const classTranslations = {
+            "Play": "প্লে",
+            "Nursery": "নার্সারি",
+            "KG": "কেজি",
+            "One": "প্রথম",
+            "Two": "দ্বিতীয়",
+            "Three": "তৃতীয়",
+            "Four": "চতুর্থ",
+            "Five": "পঞ্চম",
+            "Six": "ষষ্ঠ",
+            "Seven": "সপ্তম",
+            "Eight": "অষ্টম",
+            "Nine": "নবম",
+            "Ten": "দশম"
+        };
+
+        const sectionTranslations = {
+            "A": "ক",
+            "B": "খ",
+            "C": "গ",
+            "D": "ঘ",
+            "E": "ঙ"
+        };
+
+        const shiftTranslations = {
+            "Morning Shift": "সকাল",
+            "Afternoon Shift": "বিকাল",
+            "Morning": "সকাল",
+            "Afternoon": "বিকাল"
+        };
+
+        function getShiftFormattedName(studentShift, studentClass) {
+            const storedTimes = localStorage.getItem('school_shift_times');
+            let shiftTimes = [];
+            try {
+                if (storedTimes) shiftTimes = JSON.parse(storedTimes);
+            } catch (e) { }
+
+            let dept = 'High Level';
+            if (studentClass) {
+                const cLower = String(studentClass).toLowerCase();
+                if (['play', 'nursery', 'kg', 'one', 'two', 'three', 'four', 'five', '1', '2', '3', '4', '5'].includes(cLower)) {
+                    dept = 'Primary Level';
+                }
+            }
+
+            if (Array.isArray(shiftTimes) && shiftTimes.length > 0) {
+                let match = null;
+                if (studentShift) {
+                    match = shiftTimes.find(t => t.shift === studentShift || t.id === studentShift);
+                }
+                if (!match && studentShift) {
+                    const isMorning = /morning|sokal|প্রভাতি/i.test(studentShift);
+                    const isAfternoon = /afternoon|bikal|দিবা|বিকাল/i.test(studentShift);
+                    if (isMorning) match = shiftTimes.find(t => t.dept === dept && (/morning|sokal|প্রভাতি/i.test(t.shift) || (t.shiftBn && /প্রভাতি|সকাল/i.test(t.shiftBn))));
+                    if (isAfternoon) match = shiftTimes.find(t => t.dept === dept && (/afternoon|bikal|দিবা|বিকাল/i.test(t.shift) || (t.shiftBn && /দিবা|বিকাল/i.test(t.shiftBn))));
+                    if (!match && isMorning) match = shiftTimes.find(t => /morning|sokal|প্রভাতি/i.test(t.shift) || (t.shiftBn && /প্রভাতি|সকাল/i.test(t.shiftBn)));
+                    if (!match && isAfternoon) match = shiftTimes.find(t => /afternoon|bikal|দিবা|বিকাল/i.test(t.shift) || (t.shiftBn && /দিবা|বিকাল/i.test(t.shiftBn)));
+                }
+                if (!match) {
+                    match = shiftTimes.find(t => t.dept === dept);
+                    if (!match) match = shiftTimes[0];
+                }
+
+                if (match) {
+                    if (match.shiftBn && match.shiftBn.trim()) {
+                        return match.shiftBn.trim();
+                    }
+                    if (match.shift && match.shift.trim()) {
+                        if (/afternoon/i.test(match.shift)) return "বিকাল";
+                        if (/morning/i.test(match.shift)) return "সকাল";
+                        return match.shift.trim();
+                    }
+                }
+            }
+
+            if (studentShift) {
+                if (shiftTranslations[studentShift]) return shiftTranslations[studentShift];
+                if (/afternoon|bikal|দিবা|বিকাল/i.test(studentShift)) return "বিকাল";
+                if (/morning|sokal|প্রভাতি/i.test(studentShift)) return "সকাল";
+                return studentShift;
+            }
+
+            return "সকাল";
+        }
+
+        function getShiftTimeRange(entryShift) {
+            if (!entryShift) return "১০:০০ - ১:০০";
+            try {
+                const storedTimes = localStorage.getItem('school_shift_times');
+                if (storedTimes) {
+                    const shiftTimes = JSON.parse(storedTimes);
+                    if (Array.isArray(shiftTimes)) {
+                        let match = shiftTimes.find(t => t.shift === entryShift);
+                        if (!match) {
+                            const isMorning = /morning|sokal|প্রভাতি/i.test(entryShift);
+                            const isAfternoon = /afternoon|bikal|দিবা/i.test(entryShift);
+                            if (isMorning) match = shiftTimes.find(t => /morning|sokal|প্রভাতি/i.test(t.shift) || (t.shiftBn && /প্রভাতি|সকাল/i.test(t.shiftBn)));
+                            if (isAfternoon) match = shiftTimes.find(t => /afternoon|bikal|দিবা/i.test(t.shift) || (t.shiftBn && /দিবা|বিকাল/i.test(t.shiftBn)));
+                        }
+                        if (match && match.startTime && match.endTime) {
+                            return `${match.startTime} - ${match.endTime}`;
+                        }
+                    }
+                }
+            } catch (e) { }
+
+            if (/morning|sokal|প্রভাতি/i.test(entryShift)) return "১০:০০ - ১:০০";
+            if (/afternoon|bikal|দিবা/i.test(entryShift)) return "১:৩০ - ৪:৩০";
+            return "১০:০০ - ১:০০";
+        }
+
+        const subjectTranslations = {
+            "Bangla Bhashar Byakaran and Nirmiti": "বাংলা ব্যাকরণ ও নির্মিতি",
+            "Bangla 2nd": "বাংলা ২য় পত্র",
+            "Bangla 1st": "বাংলা ১ম পত্র",
+            "Bangla Sahitya": "বাংলা সাহিত্য",
+            "English For Today": "ইংরেজি ১ম পত্র",
+            "English 1st": "ইংরেজি ১ম পত্র",
+            "English Grammar and Composition": "ইংরেজি ২য় পত্র",
+            "English 2nd": "ইংরেজি ২য় পত্র",
+            "Mathematics": "গণিত",
+            "Math": "গণিত",
+            "Information And Communication Technology": "তথ্য ও যোগাযোগ প্রযুক্তি",
+            "ICT": "তথ্য ও যোগাযোগ প্রযুক্তি",
+            "Science": "বিজ্ঞান",
+            "Physics": "পদার্থবিজ্ঞান",
+            "Chemistry": "রসায়ন",
+            "Biology": "জীববিজ্ঞান",
+            "Higher Mathematics": "উচ্চতর গণিত",
+            "Bangladesh And Global Studies": "বাংলাদেশ ও বিশ্বপরিচয়",
+            "BGS": "বাংলাদেশ ও বিশ্বপরিচয়",
+            "Islam And Moral Education": "ইসলাম ও নৈতিক শিক্ষা",
+            "Islam & Moral Education": "ইসলাম ও নৈতিক শিক্ষা",
+            "Islam": "ইসলাম ও নৈতিক শিক্ষা",
+            "Islamic Studies": "ইসলাম ও নৈতিক শিক্ষা",
+            "Hinduism And Moral Education": "হিন্দুধর্ম ও নৈতিক শিক্ষা",
+            "Hinduism & Moral Education": "হিন্দুধর্ম ও নৈতিক শিক্ষা",
+            "Hindu Religion Studies": "হিন্দুধর্ম ও নৈতিক শিক্ষা",
+            "Hindu Religion": "হিন্দুধর্ম ও নৈতিক শিক্ষা",
+            "Hindu": "হিন্দুধর্ম ও নৈতিক শিক্ষা",
+            "Christianity And Moral Education": "খ্রিস্টধর্ম ও নৈতিক শিক্ষা",
+            "Christian Religion and Moral Education": "খ্রিস্টধর্ম ও নৈতিক শিক্ষা",
+            "Buddhism And Moral Education": "বৌদ্ধধর্ম ও নৈতিক শিক্ষা",
+            "Buddhist Religion and Moral Education": "বৌদ্ধধর্ম ও নৈতিক শিক্ষা",
+            "Arts And Crafts": "চারু ও কারুকলা",
+            "Physical Education and Health": "শারীরিক শিক্ষা ও স্বাস্থ্য",
+            "Work And Life Oriented Education": "কর্ম ও জীবনমুখী শিক্ষা",
+            "Agriculture Studies/Higher Mathematics": "কৃষি শিক্ষা/উচ্চতর গণিত",
+            "Agriculture Studies / Higher Mathematics": "কৃষি শিক্ষা/উচ্চতর গণিত",
+            "Agri/H.Math": "কৃষি শিক্ষা/উচ্চতর গণিত",
+            "AGRI/H.MATH": "কৃষি শিক্ষা/উচ্চতর গণিত",
+            "Higher Mathematics": "উচ্চতর গণিত",
+            "HMATH": "উচ্চতর গণিত",
+            "Agriculture Studies": "কৃষি শিক্ষা",
+            "AGRI": "কৃষি শিক্ষা",
+            "Home Science": "গার্হস্থ্য বিজ্ঞান",
+            "Accounting": "হিসাববিজ্ঞান",
+            "Finance And Banking": "ফিন্যান্স ও ব্যাংকিং",
+            "Business Entrepreneurship": "ব্যবসায় উদ্যোগ",
+            "History": "ইতিহাস",
+            "Geography": "ভূগোল",
+            "Civics": "পৌরনীতি",
+            "Economics": "অর্থনীতি"
+        };
+
+        function translateSubject(subject) {
+            if (!subject) return "";
+            const cleaned = subject.trim().replace(/\s+/g, ' ');
+            const lower = cleaned.toLowerCase();
+
+            for (const key in subjectTranslations) {
+                if (key.toLowerCase() === lower) {
+                    return subjectTranslations[key];
+                }
+            }
+
+            if (lower.includes("bangla 1st") || lower.includes("bangla sahitya") || lower.includes("বাংলা ১ম")) {
+                return "বাংলা ১ম পত্র";
+            }
+            if (lower.includes("bangla 2nd") || lower.includes("grammar") && lower.includes("bangla") || lower.includes("byakaran") || lower.includes("বাংলা ২য়")) {
+                return "বাংলা ২য় পত্র";
+            }
+            if (lower.includes("english 1st") || lower.includes("today") || lower.includes("ইংরেজি ১ম")) {
+                return "ইংরেজি ১ম পত্র";
+            }
+            if (lower.includes("english 2nd") || lower.includes("grammar") && lower.includes("english") || lower.includes("ইংরেজি ২য়")) {
+                return "ইংরেজি ২য় পত্র";
+            }
+            if (lower.includes("math") || lower.includes("গণিত")) {
+                if (lower.includes("higher") || lower.includes("উচ্চতর")) {
+                    return "উচ্চতর গণিত";
+                }
+                return "গণিত";
+            }
+            if (lower.includes("ict") || lower.includes("information") || lower.includes("তথ্য")) {
+                return "তথ্য ও যোগাযোগ প্রযুক্তি";
+            }
+            if (lower.includes("physics") || lower.includes("পদার্থ")) {
+                return "পদার্থবিজ্ঞান";
+            }
+            if (lower.includes("chemistry") || lower.includes("রসায়ন") || lower.includes("রসায়ন")) {
+                return "রসায়ন";
+            }
+            if (lower.includes("biology") || lower.includes("জীব")) {
+                return "জীববিজ্ঞান";
+            }
+            if (lower.includes("agriculture") || lower.includes("কৃষি")) {
+                return "কৃষি শিক্ষা";
+            }
+            if (lower.includes("home science") || lower.includes("গার্হস্থ্য")) {
+                return "গার্হস্থ্য বিজ্ঞান";
+            }
+            if (lower.includes("bgs") || lower.includes("global") || lower.includes("বিশ্বপরিচয়") || lower.includes("বিশ্বপরিচয়")) {
+                return "বাংলাদেশ ও বিশ্বপরিচয়";
+            }
+            if (lower.includes("islam") || lower.includes("ইসলাম")) {
+                return "ইসলাম ও নৈতিক শিক্ষা";
+            }
+            if (lower.includes("hindu") || lower.includes("हिंदू") || lower.includes("হিন্দু")) {
+                return "হিন্দুধর্ম ও নৈতিক শিক্ষা";
+            }
+            if (lower.includes("religion") || lower.includes("ধর্ম")) {
+                return "ধর্ম ও নৈতিক শিক্ষা";
+            }
+            if (lower.includes("accounting") || lower.includes("হিসাব")) {
+                return "হিসাববিজ্ঞান";
+            }
+            if (lower.includes("finance") || lower.includes("ফিন্যান্স")) {
+                return "ফিন্যান্স ও ব্যাংকিং";
+            }
+            if (lower.includes("business") || lower.includes("ব্যবসায়") || lower.includes("ব্যবসায়")) {
+                return "ব্যবসায় উদ্যোগ";
+            }
+            if (lower.includes("history") || lower.includes("ইতিহাস")) {
+                return "ইতিহাস";
+            }
+            if (lower.includes("geography") || lower.includes("ভূগোল")) {
+                return "ভূগোল";
+            }
+            if (lower.includes("civics") || lower.includes("পৌরনীতি")) {
+                return "পৌরনীতি";
+            }
+            if (lower.includes("economics") || lower.includes("অর্থনীতি")) {
+                return "অর্থনীতি";
+            }
+            if (lower.includes("science") || lower.includes("বিজ্ঞান")) {
+                return "বিজ্ঞান";
+            }
+            return cleaned;
+        }
+
+        function saveCustomInstructionHeader(element, lang) {
+            if (!element) return;
+            const text = element.innerText.trim();
+            try {
+                localStorage.setItem('school_admit_instruction_header_' + lang, text);
+            } catch (e) { }
+        }
+
+        function saveCustomInstructionsHTML(element, lang) {
+            if (!element) return;
+            const html = element.innerHTML.trim();
+            try {
+                localStorage.setItem('school_admit_instructions_html_' + lang, html);
+            } catch (e) { }
+        }
+
+        function toggleRulesEditorModal() {
+            const panel = document.getElementById('rules-editor-panel');
+            if (!panel) return;
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+                loadRulesEditorValues();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function loadRulesEditorValues() {
+            const lang = document.getElementById('filter-lang')?.value || 'bn';
+            const defaultHeader = lang === 'en' ? 'Rules & Instructions for Candidates:' : (lang === 'both' ? 'পরীক্ষার্থীদের জন্য নিয়মাবলী (Rules & Instructions):' : 'পরীক্ষার্থীদের জন্য নিয়মাবলী:');
+            const defaultRules = lang === 'en' ?
+                "1. No candidate will be allowed without an Admit Card.\n2. Mobile phones or digital watches are strictly prohibited.\n3. Write Subject Code and Roll Number correctly on the answer sheet.\n4. Any attempt at unfair means will lead to cancellation of exam." :
+                "১. প্রবেশপত্র ব্যতিত কোনো পরীক্ষার্থীকে পরীক্ষা কক্ষে প্রবেশ করতে দেয়া হবে না।\n২. পরীক্ষা কক্ষে কোনো প্রকার মোবাইল ফোন বা ডিজিটাল ঘড়ি আনা সম্পূর্ণ নিষিদ্ধ।\n৩. উত্তরপত্রের কভার পৃষ্ঠায় বিষয় কোড ও রোল নম্বর সঠিকভাবে লিখতে হবে।\n৪. অসদুপায় অবলম্বনের চেষ্টা করলে পরীক্ষা বাতিল করা হবে।";
+
+            let customHeader = '';
+            let customHTML = '';
+            try {
+                customHeader = localStorage.getItem('school_admit_instruction_header_' + lang) || '';
+                customHTML = localStorage.getItem('school_admit_instructions_html_' + lang) || '';
+            } catch (e) { }
+
+            const headInput = document.getElementById('rules-heading-input');
+            const bodyInput = document.getElementById('rules-body-input');
+            if (headInput) headInput.value = customHeader || defaultHeader;
+
+            if (bodyInput) {
+                if (customHTML) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = customHTML;
+                    const lis = tempDiv.querySelectorAll('li');
+                    if (lis.length > 0) {
+                        bodyInput.value = Array.from(lis).map(li => li.innerText.trim()).join('\n');
+                    } else {
+                        bodyInput.value = tempDiv.innerText.trim();
+                    }
+                } else {
+                    bodyInput.value = defaultRules;
+                }
+            }
+        }
+
+        function saveCustomRulesFromModal() {
+            const lang = document.getElementById('filter-lang')?.value || 'bn';
+            const headVal = document.getElementById('rules-heading-input')?.value.trim();
+            const bodyVal = document.getElementById('rules-body-input')?.value.trim();
+
+            if (headVal) {
+                localStorage.setItem('school_admit_instruction_header_' + lang, headVal);
+            }
+
+            if (bodyVal) {
+                const lines = bodyVal.split('\n').filter(l => l.trim() !== '');
+                const html = lines.map(l => `<li>${l.trim()}</li>`).join('');
+                localStorage.setItem('school_admit_instructions_html_' + lang, html);
+            }
+
+            renderAdmitCards();
+            alert('পরীক্ষার্থীদের নিয়মাবলী সফলভাবে আপডেট করা হয়েছে!');
+        }
+
+        function resetCustomRules() {
+            const lang = document.getElementById('filter-lang')?.value || 'bn';
+            localStorage.removeItem('school_admit_instruction_header_' + lang);
+            localStorage.removeItem('school_admit_instructions_html_' + lang);
+            loadRulesEditorValues();
+            renderAdmitCards();
+            alert('ডিফল্ট নিয়মাবলী পুনঃস্থাপন করা হয়েছে!');
+        }
+
+        // --- PAGE VIEW & SHEET NAVIGATION STATE ---
+        let currentSheetIndex = 0;
+        let currentViewMode = 'page'; // 'page' or 'all'
+        let currentZoomScale = 1.0;
+        let totalSheetsCount = 0;
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const btnPage = document.getElementById('btn-mode-page');
+            const btnAll = document.getElementById('btn-mode-all');
+
+            if (mode === 'page') {
+                if (btnPage) {
+                    btnPage.classList.add('btn-mode-active');
+                    btnPage.style.background = '#059669';
+                }
+                if (btnAll) {
+                    btnAll.classList.remove('btn-mode-active');
+                    btnAll.style.background = '#64748b';
+                }
+            } else {
+                if (btnPage) {
+                    btnPage.classList.remove('btn-mode-active');
+                    btnPage.style.background = '#64748b';
+                }
+                if (btnAll) {
+                    btnAll.classList.add('btn-mode-active');
+                    btnAll.style.background = '#059669';
+                }
+            }
+            updateSheetDisplayVisibility();
+        }
+
+        function updateSheetDisplayVisibility() {
+            const sheets = document.querySelectorAll('.sheet-duplex-set');
+            sheets.forEach((sheet, idx) => {
+                if (currentViewMode === 'all') {
+                    sheet.style.display = 'flex';
+                } else {
+                    sheet.style.display = (idx === currentSheetIndex) ? 'flex' : 'none';
+                }
+                if (idx === currentSheetIndex) {
+                    sheet.classList.add('active-sheet');
+                } else {
+                    sheet.classList.remove('active-sheet');
+                }
+            });
+
+            updatePaginationButtons();
+        }
+
+        function updatePaginationButtons() {
+            const btnFirst = document.getElementById('btn-first-sheet');
+            const btnPrev = document.getElementById('btn-prev-sheet');
+            const btnNext = document.getElementById('btn-next-sheet');
+            const btnLast = document.getElementById('btn-last-sheet');
+            const select = document.getElementById('sheet-jump-select');
+
+            if (btnFirst) btnFirst.disabled = (currentSheetIndex === 0 || totalSheetsCount <= 1);
+            if (btnPrev) btnPrev.disabled = (currentSheetIndex === 0 || totalSheetsCount <= 1);
+            if (btnNext) btnNext.disabled = (currentSheetIndex >= totalSheetsCount - 1 || totalSheetsCount <= 1);
+            if (btnLast) btnLast.disabled = (currentSheetIndex >= totalSheetsCount - 1 || totalSheetsCount <= 1);
+
+            if (select && select.value !== String(currentSheetIndex)) {
+                select.value = currentSheetIndex;
+            }
+        }
+
+        function goToSheet(index) {
+            if (totalSheetsCount === 0) return;
+            currentSheetIndex = Math.max(0, Math.min(index, totalSheetsCount - 1));
+            updateSheetDisplayVisibility();
+
+            const activeSheet = document.getElementById('sheet-set-' + currentSheetIndex);
+            if (activeSheet && currentViewMode === 'all') {
+                activeSheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function changeSheet(delta) {
+            goToSheet(currentSheetIndex + delta);
+        }
+
+        function goToLastSheet() {
+            goToSheet(totalSheetsCount - 1);
+        }
+
+        function setZoomLevel(scale) {
+            const zoomContainer = document.getElementById('cards-zoom-container');
+            const zoomLabel = document.getElementById('zoom-level-label');
+            const btnFit = document.getElementById('btn-zoom-fit');
+            const btn100 = document.getElementById('btn-zoom-100');
+
+            if (scale === 'fit') {
+                const availableWidth = window.innerWidth - 60;
+                const targetWidth = (currentViewMode === 'page' && window.innerWidth >= 900) ? 1680 : 820;
+                const fitScale = Math.min(1.0, Math.max(0.42, (availableWidth / targetWidth)));
+                currentZoomScale = Math.round(fitScale * 100) / 100;
+                if (btnFit) btnFit.classList.add('active-zoom');
+                if (btn100) btn100.classList.remove('active-zoom');
+            } else {
+                currentZoomScale = Math.max(0.35, Math.min(1.5, parseFloat(scale)));
+                if (btnFit) btnFit.classList.remove('active-zoom');
+                if (btn100) {
+                    if (currentZoomScale === 1.0) btn100.classList.add('active-zoom');
+                    else btn100.classList.remove('active-zoom');
+                }
+            }
+
+            if (zoomContainer) {
+                zoomContainer.style.transform = `scale(${currentZoomScale})`;
+            }
+            if (zoomLabel) {
+                zoomLabel.innerText = `${Math.round(currentZoomScale * 100)}%`;
+            }
+        }
+
+        function adjustZoom(delta) {
+            setZoomLevel(Math.round((currentZoomScale + delta) * 10) / 10);
+        }
+
+        function printAllSheets() {
+            const container = document.getElementById('dynamic-cards-container');
+            const sheets = container ? container.querySelectorAll('.sheet-duplex-set') : [];
+
+            if (!container || sheets.length === 0) {
+                alert('প্রিন্ট বা সেভ করার মতো কোনো প্রবেশপত্র পাওয়া যায়নি!');
+                return;
+            }
+
+            const printWin = window.open('', '_blank');
+            if (!printWin) {
+                alert('পপ-আপ ব্লক করা হয়েছে! দয়া করে আপনার ব্রাউজারে পপ-আপ অনুমোদন (Allow Pop-ups) করুন।');
+                return;
+            }
+
+            let stylesHtml = '';
+            document.querySelectorAll('link[rel="stylesheet"], style').forEach(el => {
+                if (el.id === 'routine-print-style') return;
+                stylesHtml += el.outerHTML;
+            });
+
+            let cardsContentHtml = '';
+            sheets.forEach(sheet => {
+                const clone = sheet.cloneNode(true);
+                clone.style.display = 'flex';
+                cardsContentHtml += clone.outerHTML;
+            });
+
+            const examVal = document.getElementById('filter-exam')?.value || 'admit_cards';
+            const classVal = document.getElementById('filter-class')?.value || 'all';
+            const pageTitle = `Admit_Cards_${classVal}_${examVal}`;
+
+            const docHtml = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>${pageTitle}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Poppins:wght@400;600;700;800;900&family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@400;500;600;700;800;900&family=Noto+Rashi+Hebrew:wght@600;700;800;900&display=swap" rel="stylesheet">
+    ${stylesHtml}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'Noto Sans Bengali', sans-serif;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-sticky-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 99999;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1.5px solid #334155;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            color: #ffffff;
+        }
+
+        .toolbar-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .toolbar-badge {
+            background: #0284c7;
+            color: #ffffff;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tb-btn {
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            text-decoration: none;
+        }
+
+        .tb-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .tb-btn-save {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .tb-btn-print {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+        }
+
+        .tb-btn-close {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .tb-btn-close:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .preview-pages-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0 60px 0;
+            gap: 24px;
+            box-sizing: border-box;
+        }
+
+        .preview-pages-wrapper .sheet-duplex-set {
+            display: flex !important;
+            margin-bottom: 25px !important;
+        }
+
+        .preview-pages-wrapper .sheet-badge,
+        .preview-pages-wrapper .sheet-summary-banner {
+            display: none !important;
+        }
+
+        /* Floating Print Button (Screen Only) */
+        .floating-print-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            padding: 12px 22px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(2, 132, 199, 0.48), 0 2px 6px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            z-index: 999999;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            outline: none;
+            font-size: 0.95rem;
+            font-weight: 800;
+            font-family: inherit;
+        }
+
+        .floating-print-btn:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.65), 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .floating-print-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        .floating-print-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #ffffff;
+            stroke-width: 2.2;
+            fill: none;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-print-btn:hover svg {
+            transform: scale(1.12);
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0mm !important;
+            }
+
+            html, body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 auto !important;
+                width: 210mm !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-sizing: border-box !important;
+            }
+
+            .floating-print-btn,
+            .preview-sticky-toolbar,
+            .no-print {
+                display: none !important;
+            }
+
+            .preview-pages-wrapper {
+                padding: 0 !important;
+                margin: 0 auto !important;
+                gap: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+            }
+
+            .preview-pages-wrapper .sheet-duplex-set {
+                margin: 0 auto !important;
+                padding: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .preview-pages-wrapper .sheet-duplex-grid,
+            .preview-pages-wrapper .sheet-column {
+                display: block !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+            }
+
+            .a4-page {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 6mm 8mm !important;
+                width: 210mm !important;
+                max-width: 210mm !important;
+                height: 297mm !important;
+                max-height: 297mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
+            }
+
+            .preview-pages-wrapper > .sheet-duplex-set:last-child .sheet-column:last-child .a4-page,
+            .a4-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .card {
+                width: 100% !important;
+                height: 137mm !important;
+                max-height: 137mm !important;
+                box-sizing: border-box !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
+            }
+        }
+
+        /* ==========================================================================
+           SEATING ARRANGEMENT DETAILS STYLES (MERGED FROM Seating arrangement details.html)
+           ========================================================================== */
+        #subview-seating-details {
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'SolaimanLipi', 'Kalpurush', serif;
+        }
+
+        #subview-seating-details .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: #ffffff;
+            padding: 0.3in;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            margin: 0 auto 40px auto;
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #subview-seating-details .details-container {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 4px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        #subview-seating-details .school-name {
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 2px;
+        }
+
+        #subview-seating-details .exam-name {
+            text-align: center;
+            font-size: 13.5pt;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 6px;
+            padding-bottom: 2px;
+        }
+
+        #subview-seating-details .header-line-3 {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+            background-color: #ffffff;
+            border: 1.00px solid #000000;
+            border-radius: 4px;
+            padding: 6px 10px;
+            box-sizing: border-box;
+        }
+
+        #subview-seating-details .header-col-left {
+            display: table-cell;
+            text-align: left;
+            width: 30%;
+            font-weight: bold;
+            font-size: 10.35pt;
+            color: #000000;
+            vertical-align: middle;
+        }
+
+        #subview-seating-details .header-col-center {
+            display: table-cell;
+            text-align: center;
+            width: 40%;
+            font-weight: 900 !important;
+            font-size: 21.56pt;
+            color: #000000;
+            vertical-align: middle;
+        }
+
+        #subview-seating-details .header-col-right {
+            display: table-cell;
+            text-align: right;
+            width: 30%;
+            font-weight: bold;
+            font-size: 10.35pt;
+            color: #000000;
+            vertical-align: middle;
+        }
+
+        #subview-seating-details .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            border: 1.00px solid #000000;
+        }
+
+        #subview-seating-details .summary-table th, 
+        #subview-seating-details .summary-table td {
+            border: 1.00px solid #000000;
+            padding: 4px 8px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+
+        #subview-seating-details .summary-table th {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        #subview-seating-details .summary-table td {
+            color: #000000;
+            font-weight: 600;
+        }
+
+        #subview-seating-details .summary-table tr:nth-child(even) td {
+            background-color: #ffffff;
+        }
+
+        #subview-seating-details .total-row td {
+            background-color: #ffffff !important;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        #subview-seating-details .footer-signatures {
+            display: table;
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        #subview-seating-details .sig-col {
+            display: table-cell;
+            width: 33.33%;
+            text-align: center;
+            vertical-align: bottom;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        #subview-seating-details .sig-line {
+            border-top: 1px dashed #000000;
+            width: 80%;
+            margin: 0 auto 5px auto;
+        }
+
+        @media print {
+            body.print-seating-details-mode .main-nav,
+            body.print-seating-details-mode .nav-wrapper,
+            body.print-seating-details-mode .hero-slider-container,
+            body.print-seating-details-mode .notice-bar,
+            body.print-seating-details-mode .school-header,
+            body.print-seating-details-mode .sub-nav-tabs,
+            body.print-seating-details-mode .no-print,
+            body.print-seating-details-mode .modal-overlay,
+            body.print-seating-details-mode footer,
+            body.print-seating-details-mode .bg-grid-overlay,
+            body.print-seating-details-mode .blob,
+            body.print-seating-details-mode .seat-sub-view:not(#subview-seating-details) {
+                display: none !important;
+            }
+
+            body.print-seating-details-mode #subview-seating-details {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            body.print-seating-details-mode #subview-seating-details .a4-page {
+                box-shadow: none !important;
+                padding: 0.3in !important;
+                width: 100% !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                border: none !important;
+                margin-bottom: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Print Button (Screen Only) -->
+    <button type="button" class="floating-print-btn no-print" onclick="triggerHardcopyPrint()" title="প্রবেশপত্র ও রুটিন প্রিন্ট করুন (Ctrl + P)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>প্রিন্ট করুন (Print)</span>
+    </button>
+
+    <div class="preview-sticky-toolbar no-print">
+        <div class="toolbar-info">
+            <span>🪪 প্রবেশপত্র ও রুটিন প্রিন্ট প্রিভিউ</span>
+            <span class="toolbar-badge">মোট শিট: ${sheets.length} টি (${sheets.length * 2} পৃষ্ঠা)</span>
+        </div>
+        <div class="toolbar-actions">
+            <button id="btn-win-save" class="tb-btn tb-btn-save" onclick="saveAsPDF()" title="সরাসরি PDF ফাইল আকারে সেভ / ডাউনলোড করুন">
+                💾 Save (PDF সেভ করুন)
+            </button>
+            <button id="btn-win-print" class="tb-btn tb-btn-print" onclick="triggerHardcopyPrint()" title="প্রিন্টারে সরাসরি প্রিন্ট দিন">
+                🖨️ প্রিন্ট করুন (Print)
+            </button>
+            <button class="tb-btn tb-btn-close" onclick="window.close()" title="উইন্ডো বন্ধ করুন">
+                ✖ বন্ধ করুন
+            </button>
+        </div>
+    </div>
+
+    <div class="preview-pages-wrapper">
+        ${cardsContentHtml}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+    <script>
+        async function saveAsPDF() {
+            const btn = document.getElementById('btn-win-save');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '⚡ PDF প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+
+            try {
+                const pages = document.querySelectorAll('.a4-page');
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+                    const pdf = new JsPDFConstructor({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    const batchSize = 3;
+                    for (let i = 0; i < pages.length; i += batchSize) {
+                        if (btn) {
+                            btn.innerHTML = '⚡ প্রস্তুত হচ্ছে (' + Math.min(i + batchSize, pages.length) + '/' + pages.length + ')...';
+                        }
+
+                        const batchPromises = [];
+                        for (let j = i; j < Math.min(i + batchSize, pages.length); j++) {
+                            batchPromises.push((async (pageIndex) => {
+                                const pageEl = pages[pageIndex];
+                                const canvas = await html2canvas(pageEl, {
+                                    scale: 1.25,
+                                    useCORS: true,
+                                    allowTaint: true,
+                                    logging: false,
+                                    backgroundColor: '#ffffff',
+                                    removeContainer: true,
+                                    imageTimeout: 0
+                                });
+                                return { index: pageIndex, dataUrl: canvas.toDataURL('image/jpeg', 0.78) };
+                            })(j));
+                        }
+
+                        const batchResults = await Promise.all(batchPromises);
+                        batchResults.sort((a, b) => a.index - b.index);
+
+                        batchResults.forEach(res => {
+                            if (res.index > 0) {
+                                pdf.addPage('a4', 'portrait');
+                            }
+                            pdf.addImage(res.dataUrl, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                        });
+                    }
+
+                    pdf.save('${pageTitle}.pdf');
+
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                    return;
+                }
+
+                triggerHardcopyPrint();
+            } catch (err) {
+                console.error('PDF save error:', err);
+                triggerHardcopyPrint();
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function triggerHardcopyPrint() {
+            const btn = document.getElementById('btn-win-print');
+            const floatingBtn = document.querySelector('.floating-print-btn');
+            const originalText = btn ? btn.innerHTML : '';
+            const originalFloatingHtml = floatingBtn ? floatingBtn.innerHTML : '';
+
+            if (btn) {
+                btn.innerHTML = '⏳ প্রিন্ট প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+            if (floatingBtn) {
+                floatingBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation: printSpin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg><span>প্রস্তুত হচ্ছে...</span>';
+                floatingBtn.style.pointerEvents = 'none';
+            }
+
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+            } catch (e) { }
+
+            // Ensure all images (logo, signature, photo) are fully loaded
+            const imgs = Array.from(document.images);
+            await Promise.all(imgs.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
+
+            // Short paint settling delay
+            await new Promise(r => setTimeout(r, 200));
+
+            window.focus();
+            window.print();
+
+            setTimeout(() => {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+                if (floatingBtn) {
+                    floatingBtn.innerHTML = originalFloatingHtml;
+                    floatingBtn.style.pointerEvents = 'auto';
+                }
+            }, 1000);
+        }
+
+        // Add Ctrl+P / Cmd+P listener
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+                e.preventDefault();
+                triggerHardcopyPrint();
+            }
+        });
+    <\/script>
+</body>
+</html>`;
+
+            printWin.document.open();
+            printWin.document.write(docHtml);
+            printWin.document.close();
+        }
+
+        function printCurrentSheet() {
+            const activeSheet = document.querySelector('.sheet-duplex-set.active-sheet') || document.querySelector('.sheet-duplex-set');
+
+            if (!activeSheet) {
+                alert('প্রিন্ট করার মতো কোনো প্রবেশপত্র পাওয়া যায়নি!');
+                return;
+            }
+
+            const printWin = window.open('', '_blank');
+            if (!printWin) {
+                alert('পপ-আপ ব্লক করা হয়েছে! দয়া করে আপনার ব্রাউজারে পপ-আপ অনুমোদন (Allow Pop-ups) করুন।');
+                return;
+            }
+
+            let stylesHtml = '';
+            document.querySelectorAll('link[rel="stylesheet"], style').forEach(el => {
+                if (el.id === 'routine-print-style') return;
+                stylesHtml += el.outerHTML;
+            });
+
+            const examVal = document.getElementById('filter-exam')?.value || 'admit_cards';
+            const classVal = document.getElementById('filter-class')?.value || 'all';
+            const pageTitle = `Admit_Card_${classVal}_${examVal}_Current`;
+
+            const docHtml = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>${pageTitle}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Poppins:wght@400;600;700;800;900&family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@400;500;600;700;800;900&family=Noto+Rashi+Hebrew:wght@600;700;800;900&display=swap" rel="stylesheet">
+    ${stylesHtml}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'Noto Sans Bengali', sans-serif;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-sticky-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 99999;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1.5px solid #334155;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            color: #ffffff;
+        }
+
+        .toolbar-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tb-btn {
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            text-decoration: none;
+        }
+
+        .tb-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .tb-btn-save {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .tb-btn-print {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+        }
+
+        .tb-btn-close {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .tb-btn-close:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .preview-pages-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0 60px 0;
+            gap: 24px;
+            box-sizing: border-box;
+        }
+
+        .preview-pages-wrapper .sheet-duplex-set {
+            display: flex !important;
+            margin-bottom: 25px !important;
+        }
+
+        .preview-pages-wrapper .sheet-badge,
+        .preview-pages-wrapper .sheet-summary-banner {
+            display: none !important;
+        }
+
+        /* Floating Print Button (Screen Only) */
+        .floating-print-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            padding: 12px 22px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(2, 132, 199, 0.48), 0 2px 6px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            z-index: 999999;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            outline: none;
+            font-size: 0.95rem;
+            font-weight: 800;
+            font-family: inherit;
+        }
+
+        .floating-print-btn:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.65), 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .floating-print-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        .floating-print-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #ffffff;
+            stroke-width: 2.2;
+            fill: none;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-print-btn:hover svg {
+            transform: scale(1.12);
+        }
+
+        @keyframes printSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0mm !important;
+            }
+
+            html, body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 auto !important;
+                width: 210mm !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-sizing: border-box !important;
+                visibility: visible !important;
+            }
+
+            .floating-print-btn,
+            .preview-sticky-toolbar,
+            .sheet-badge,
+            .sheet-summary-banner,
+            .no-print {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            .preview-pages-wrapper {
+                padding: 0 !important;
+                margin: 0 auto !important;
+                gap: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+                visibility: visible !important;
+            }
+
+            .preview-pages-wrapper .sheet-duplex-set {
+                margin: 0 auto !important;
+                padding: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+                page-break-after: auto !important;
+                break-after: auto !important;
+                visibility: visible !important;
+            }
+
+            .preview-pages-wrapper .sheet-duplex-grid,
+            .preview-pages-wrapper .sheet-column {
+                display: block !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 210mm !important;
+                visibility: visible !important;
+            }
+
+            .a4-page {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                padding: 6mm 8mm !important;
+                width: 210mm !important;
+                max-width: 210mm !important;
+                height: 297mm !important;
+                max-height: 297mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
+                visibility: visible !important;
+            }
+
+            .preview-pages-wrapper > .sheet-duplex-set:last-child .sheet-column:last-child .a4-page,
+            .a4-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .card {
+                width: 100% !important;
+                height: 137mm !important;
+                max-height: 137mm !important;
+                box-sizing: border-box !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
+                visibility: visible !important;
+            }
+        }
+
+        /* ==========================================================================
+           SEATING ARRANGEMENT DETAILS STYLES (MERGED FROM Seating arrangement details.html)
+           ========================================================================== */
+        #subview-seating-details {
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'SolaimanLipi', 'Kalpurush', serif;
+        }
+
+        #subview-seating-details .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: #ffffff;
+            padding: 0.3in;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            margin: 0 auto 40px auto;
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #subview-seating-details .details-container {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 4px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        #subview-seating-details .school-name {
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 2px;
+        }
+
+        #subview-seating-details .exam-name {
+            text-align: center;
+            font-size: 13.5pt;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 6px;
+            padding-bottom: 2px;
+        }
+
+        #subview-seating-details .header-line-3 {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+            background-color: #ffffff;
+            border: 1.00px solid #000000;
+            border-radius: 4px;
+            padding: 6px 10px;
+            box-sizing: border-box;
+        }
+
+        #subview-seating-details .header-col-left {
+            display: table-cell;
+            text-align: left;
+            width: 30%;
+            font-weight: bold;
+            font-size: 10.35pt;
+            color: #000000;
+            vertical-align: middle;
+        }
+
+        #subview-seating-details .header-col-center {
+            display: table-cell;
+            text-align: center;
+            width: 40%;
+            font-weight: 900 !important;
+            font-size: 21.56pt;
+            color: #000000;
+            vertical-align: middle;
+        }
+
+        #subview-seating-details .header-col-right {
+            display: table-cell;
+            text-align: right;
+            width: 30%;
+            font-weight: bold;
+            font-size: 10.35pt;
+            color: #000000;
+            vertical-align: middle;
+        }
+
+        #subview-seating-details .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            border: 1.00px solid #000000;
+        }
+
+        #subview-seating-details .summary-table th, 
+        #subview-seating-details .summary-table td {
+            border: 1.00px solid #000000;
+            padding: 4px 8px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+
+        #subview-seating-details .summary-table th {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        #subview-seating-details .summary-table td {
+            color: #000000;
+            font-weight: 600;
+        }
+
+        #subview-seating-details .summary-table tr:nth-child(even) td {
+            background-color: #ffffff;
+        }
+
+        #subview-seating-details .total-row td {
+            background-color: #ffffff !important;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        #subview-seating-details .footer-signatures {
+            display: table;
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        #subview-seating-details .sig-col {
+            display: table-cell;
+            width: 33.33%;
+            text-align: center;
+            vertical-align: bottom;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        #subview-seating-details .sig-line {
+            border-top: 1px dashed #000000;
+            width: 80%;
+            margin: 0 auto 5px auto;
+        }
+
+        @media print {
+            body.print-seating-details-mode .main-nav,
+            body.print-seating-details-mode .nav-wrapper,
+            body.print-seating-details-mode .hero-slider-container,
+            body.print-seating-details-mode .notice-bar,
+            body.print-seating-details-mode .school-header,
+            body.print-seating-details-mode .sub-nav-tabs,
+            body.print-seating-details-mode .no-print,
+            body.print-seating-details-mode .modal-overlay,
+            body.print-seating-details-mode footer,
+            body.print-seating-details-mode .bg-grid-overlay,
+            body.print-seating-details-mode .blob,
+            body.print-seating-details-mode .seat-sub-view:not(#subview-seating-details) {
+                display: none !important;
+            }
+
+            body.print-seating-details-mode #subview-seating-details {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            body.print-seating-details-mode #subview-seating-details .a4-page {
+                box-shadow: none !important;
+                padding: 0.3in !important;
+                width: 100% !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                border: none !important;
+                margin-bottom: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Print Button (Screen Only) -->
+    <button type="button" class="floating-print-btn no-print" onclick="triggerHardcopyPrint()" title="প্রবেশপত্র ও রুটিন প্রিন্ট করুন (Ctrl + P)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>প্রিন্ট করুন (Print)</span>
+    </button>
+
+    <div class="preview-sticky-toolbar no-print">
+        <div class="toolbar-info">
+            <span>🪪 বর্তমান প্রবেশপত্র পাতা প্রিভিউ (১টি শিট - ২ পৃষ্ঠা)</span>
+        </div>
+        <div class="toolbar-actions">
+            <button id="btn-win-save-curr" class="tb-btn tb-btn-save" onclick="saveAsPDF()" title="সরাসরি PDF ফাইল আকারে সেভ / ডাউনলোড করুন">
+                💾 Save (PDF সেভ করুন)
+            </button>
+            <button id="btn-win-print-curr" class="tb-btn tb-btn-print" onclick="triggerHardcopyPrint()" title="প্রিন্টারে সরাসরি প্রিন্ট দিন (Ctrl + P)">
+                🖨️ প্রিন্ট করুন (Print)
+            </button>
+            <button class="tb-btn tb-btn-close" onclick="window.close()" title="উইন্ডো বন্ধ করুন">
+                ✖ বন্ধ করুন
+            </button>
+        </div>
+    </div>
+
+    <div class="preview-pages-wrapper">
+        ${activeSheet.outerHTML}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+    <script>
+        async function saveAsPDF() {
+            const btn = document.getElementById('btn-win-save-curr');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '⚡ PDF প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+
+            try {
+                const pages = document.querySelectorAll('.a4-page');
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+                    const pdf = new JsPDFConstructor({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    for (let i = 0; i < pages.length; i++) {
+                        const pageEl = pages[i];
+                        const canvas = await html2canvas(pageEl, {
+                            scale: 1.25,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            backgroundColor: '#ffffff',
+                            removeContainer: true,
+                            imageTimeout: 0
+                        });
+                        const imgData = canvas.toDataURL('image/jpeg', 0.78);
+                        if (i > 0) {
+                            pdf.addPage('a4', 'portrait');
+                        }
+                        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                    }
+
+                    pdf.save('${pageTitle}.pdf');
+
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                    return;
+                }
+
+                triggerHardcopyPrint();
+            } catch (err) {
+                console.error('PDF save error:', err);
+                triggerHardcopyPrint();
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function triggerHardcopyPrint() {
+            const btn = document.getElementById('btn-win-print-curr');
+            const floatingBtn = document.querySelector('.floating-print-btn');
+            const originalText = btn ? btn.innerHTML : '';
+            const originalFloatingHtml = floatingBtn ? floatingBtn.innerHTML : '';
+
+            if (btn) {
+                btn.innerHTML = '⏳ প্রিন্ট লোড হচ্ছে...';
+                btn.disabled = true;
+            }
+            if (floatingBtn) {
+                floatingBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation: printSpin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg><span>প্রস্তুত হচ্ছে...</span>';
+                floatingBtn.style.pointerEvents = 'none';
+            }
+
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+            } catch (e) { }
+
+            // Ensure all images (logo, signature, photo) are fully loaded
+            const imgs = Array.from(document.images);
+            await Promise.all(imgs.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
+
+            // Short paint settling delay
+            await new Promise(r => setTimeout(r, 200));
+
+            window.focus();
+            window.print();
+
+            setTimeout(() => {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+                if (floatingBtn) {
+                    floatingBtn.innerHTML = originalFloatingHtml;
+                    floatingBtn.style.pointerEvents = 'auto';
+                }
+            }, 1000);
+        }
+
+        // Add Ctrl+P / Cmd+P listener
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+                e.preventDefault();
+                triggerHardcopyPrint();
+            }
+        });
+    <\/script>
+</body>
+</html>`;
+
+            printWin.document.open();
+            printWin.document.write(docHtml);
+            printWin.document.close();
+        }
+
+        window.printAllSheets = printAllSheets;
+        window.printCurrentSheet = printCurrentSheet;
+
+        async function downloadAdmitCardPDF() {
+            const container = document.getElementById('dynamic-cards-container');
+            const sheets = container ? container.querySelectorAll('.sheet-duplex-set') : [];
+            const pages = container ? container.querySelectorAll('.a4-page') : [];
+
+            if (!container || pages.length === 0) {
+                alert('ডাউনলোড করার মতো কোনো প্রবেশপত্র পাওয়া যায়নি!');
+                return;
+            }
+
+            if (document.fonts && document.fonts.ready) {
+                try {
+                    await document.fonts.ready;
+                } catch (e) { }
+            }
+
+            const examVal = document.getElementById('filter-exam')?.value || 'admit_cards';
+            const classVal = document.getElementById('filter-class')?.value || 'all';
+            const safeExamName = (examVal === 'all' ? 'Admit_Cards' : examVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const safeClassName = (classVal === 'all' ? 'All_Classes' : classVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const fileName = `Admit_Card_${safeClassName}_${safeExamName}.pdf`;
+
+            const btn = document.getElementById('btn-download-pdf');
+            const originalBtnText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '⚡ দ্রুত প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+
+            const originalDisplayStyles = [];
+            sheets.forEach(s => {
+                originalDisplayStyles.push(s.style.display);
+                s.style.display = 'flex';
+            });
+
+            const zoomContainer = document.getElementById('cards-zoom-container');
+            const originalZoomTransform = zoomContainer ? zoomContainer.style.transform : '';
+            if (zoomContainer) zoomContainer.style.transform = 'none';
+
+            try {
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+                    const pdf = new JsPDFConstructor({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4',
+                        compress: true
+                    });
+
+                    const batchSize = 3;
+                    for (let i = 0; i < pages.length; i += batchSize) {
+                        if (btn) {
+                            btn.innerHTML = `⚡ সুপার-ফাস্ট প্রস্তুত হচ্ছে (${Math.min(i + batchSize, pages.length)}/${pages.length})...`;
+                        }
+
+                        const batchPromises = [];
+                        for (let j = i; j < Math.min(i + batchSize, pages.length); j++) {
+                            batchPromises.push((async (pageIndex) => {
+                                const pageEl = pages[pageIndex];
+                                const canvas = await html2canvas(pageEl, {
+                                    scale: 1.25,
+                                    useCORS: true,
+                                    allowTaint: true,
+                                    logging: false,
+                                    backgroundColor: '#ffffff',
+                                    removeContainer: true,
+                                    imageTimeout: 0
+                                });
+                                return { index: pageIndex, dataUrl: canvas.toDataURL('image/jpeg', 0.78) };
+                            })(j));
+                        }
+
+                        const batchResults = await Promise.all(batchPromises);
+                        batchResults.sort((a, b) => a.index - b.index);
+
+                        batchResults.forEach(res => {
+                            if (res.index > 0) {
+                                pdf.addPage('a4', 'portrait');
+                            }
+                            pdf.addImage(res.dataUrl, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                        });
+                    }
+
+                    pdf.save(fileName);
+
+                    if (btn) {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }
+
+                    sheets.forEach((s, idx) => {
+                        s.style.display = originalDisplayStyles[idx];
+                    });
+                    if (zoomContainer) zoomContainer.style.transform = originalZoomTransform;
+                    return;
+                }
+
+                if (typeof html2pdf !== 'undefined') {
+                    const opt = {
+                        margin: 0,
+                        filename: fileName,
+                        image: { type: 'jpeg', quality: 0.85 },
+                        html2canvas: {
+                            scale: 1.25,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            backgroundColor: '#ffffff'
+                        },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['css', 'legacy'] }
+                    };
+
+                    await html2pdf().set(opt).from(container).save();
+
+                    if (btn) {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                    }
+                    sheets.forEach((s, idx) => {
+                        s.style.display = originalDisplayStyles[idx];
+                    });
+                    if (zoomContainer) zoomContainer.style.transform = originalZoomTransform;
+                    return;
+                }
+
+                throw new Error('PDF Engine not loaded');
+            } catch (err) {
+                console.error('PDF Generation Error:', err);
+                if (btn) {
+                    btn.innerHTML = originalBtnText;
+                    btn.disabled = false;
+                }
+                sheets.forEach((s, idx) => {
+                    s.style.display = originalDisplayStyles[idx];
+                });
+                if (zoomContainer) zoomContainer.style.transform = originalZoomTransform;
+                printAllSheets();
+            }
+        }
+
+        function translateExamName(name) {
+            if (!name) return "পরীক্ষা ২০২৬";
+            let translated = name;
+            translated = translated.replace(/Half-Yearly Examination/gi, "অর্ধ-বার্ষিক পরীক্ষা");
+            translated = translated.replace(/Yearly Examination/gi, "বার্ষিক পরীক্ষা");
+            translated = translated.replace(/Annual Examination/gi, "বার্ষিক পরীক্ষা");
+            translated = translated.replace(/First Term Exam/gi, "প্রথম সাময়িক পরীক্ষা");
+            return translated;
+        }
+
+        function updateAdmitCardFontSize(val) {
+            const fontVal = parseFloat(val) || 13;
+            const sizeValSpan = document.getElementById('font-size-val');
+            if (sizeValSpan) sizeValSpan.innerText = `${fontVal}px`;
+
+            const sliderEl = document.getElementById('font-size-slider');
+            if (sliderEl) sliderEl.value = fontVal;
+
+            const scale = fontVal / 13;
+
+            let styleEl = document.getElementById('dynamic-admit-font-style');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-admit-font-style';
+                document.head.appendChild(styleEl);
+            }
+
+            styleEl.innerHTML = `
+                .a4-page .card {
+                    font-size: ${fontVal}px !important;
+                }
+                .a4-page .info-table td {
+                    font-size: calc(13.39px * ${scale}) !important;
+                    padding: 0px 2px !important;
+                    vertical-align: middle !important;
+                }
+                .a4-page .info-table tr.name-row td {
+                    vertical-align: middle !important;
+                }
+                .a4-page .info-table tr.name-row td:last-child {
+                    font-size: calc(18.5px * ${scale}) !important;
+                    font-weight: 700 !important;
+                    vertical-align: middle !important;
+                }
+                .a4-page .info-table tr.name-bn td:last-child {
+                    font-size: calc(21.25px * ${scale}) !important;
+                    font-weight: 800 !important;
+                    vertical-align: middle !important;
+                }
+                .a4-page .info-table tr.name-row td.label,
+                .a4-page .info-table tr.name-row td.colon {
+                    font-size: calc(13.15px * ${scale}) !important;
+                    font-weight: 600 !important;
+                    vertical-align: middle !important;
+                }
+                .a4-page .shift-box {
+                    font-size: calc(19.8px * ${scale}) !important;
+                    font-family: 'Galada', cursive, sans-serif !important;
+                }
+                .a4-page .info-table td.label {
+                    font-size: calc(12.88px * ${scale}) !important;
+                }
+                .a4-page .header-text h1 {
+                    font-size: calc(18.95px * ${scale}) !important;
+                    white-space: normal !important;
+                    word-wrap: break-word !important;
+                    line-height: 1.25 !important;
+                    width: 100% !important;
+                    text-align: center !important;
+                }
+                .a4-page .header-text p {
+                    font-size: calc(13.34px * ${scale}) !important;
+                }
+                .a4-page .exam-subtitle {
+                    font-size: calc(19.65px * ${scale}) !important;
+                }
+                .a4-page .exam-title {
+                    font-size: calc(21.03px * ${scale}) !important;
+                }
+                .a4-page .instructions-box {
+                    font-size: calc(10.5px * ${scale}) !important;
+                }
+                .a4-page .instructions-box h4 {
+                    font-size: calc(14.72px * ${scale}) !important;
+                }
+                .a4-page .routine-header h2 {
+                    font-size: calc(18px * ${scale}) !important;
+                }
+                .a4-page .routine-table th, .a4-page .routine-table td {
+                    font-size: calc(12.5px * ${scale}) !important;
+                    padding: calc(3px * ${scale}) calc(5px * ${scale}) !important;
+                }
+                .a4-page .sig-line {
+                    font-size: calc(14.02px * ${scale}) !important;
+                }
+            `;
+
+            try {
+                localStorage.setItem('admit_card_font_size', fontVal);
+            } catch (e) { }
+        }
+
+        function populateClassFilter() {
+            const classSelect = document.getElementById('filter-class');
+            if (!classSelect) return;
+            const currentSelected = classSelect.value;
+            classSelect.innerHTML = '<option value="all">All Classes</option>';
+
+            let classesList = [];
+            try {
+                classesList = JSON.parse(localStorage.getItem('school_classes') || '[]');
+            } catch (e) { }
+
+            if (classesList.length === 0) {
+                classesList = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+            }
+
+            classesList.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.innerText = classTranslations[cls] || cls;
+                classSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...classSelect.options].some(o => o.value === currentSelected)) {
+                classSelect.value = currentSelected;
+            }
+        }
+
+        function populateExamFilter() {
+            const examSelect = document.getElementById('filter-exam');
+            if (!examSelect) return;
+            const currentSelected = examSelect.value;
+
+            examSelect.innerHTML = '<option value="all">সকল পরীক্ষা (All Exams / Routine Title)</option>';
+
+            let routines = [];
+            let seatPlansStore = {};
+            let examTypes = [];
+
+            try {
+                routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                seatPlansStore = JSON.parse(localStorage.getItem('school_seat_plans_store') || '{}');
+                examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+            } catch (e) { }
+
+            const examSet = new Set();
+
+            // 1. Gather exam names from Saved Seat Plans Store
+            if (seatPlansStore && typeof seatPlansStore === 'object') {
+                Object.values(seatPlansStore).forEach(plan => {
+                    if (plan && plan.examName && plan.examName.trim() !== '' && plan.examName !== 'All') {
+                        examSet.add(plan.examName.trim());
+                    }
+                });
+            }
+
+            // 2. Gather exam names from Saved Exam Routines
+            if (Array.isArray(routines)) {
+                routines.forEach(r => {
+                    if (r && r.examName && r.examName.trim() !== '') {
+                        examSet.add(r.examName.trim());
+                    }
+                });
+            }
+
+            // 3. Gather exam names from configured exam types
+            if (Array.isArray(examTypes)) {
+                examTypes.forEach(t => {
+                    if (t && t.name && t.name.trim() !== '') {
+                        examSet.add(t.name.trim());
+                    }
+                });
+            }
+
+            const examNames = [...examSet];
+            examNames.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam;
+                const translated = translateExamName(exam);
+                opt.innerText = (translated !== exam) ? `${translated} (${exam})` : exam;
+                examSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...examSelect.options].some(o => o.value === currentSelected)) {
+                examSelect.value = currentSelected;
+            }
+        }
+
+        function populateShiftFilter() {
+            const shiftSelect = document.getElementById('filter-shift');
+            if (!shiftSelect) return;
+            const currentSelected = shiftSelect.value;
+
+            shiftSelect.innerHTML = '<option value="all">All Shifts</option>';
+
+            let shiftTimes = [];
+            try {
+                shiftTimes = JSON.parse(localStorage.getItem('school_shift_times') || '[]');
+            } catch (e) { }
+
+            const shiftsSet = new Set();
+            if (Array.isArray(shiftTimes)) {
+                shiftTimes.forEach(st => {
+                    if (st && st.shift && st.shift.trim()) shiftsSet.add(st.shift.trim());
+                });
+            }
+
+            if (shiftsSet.size === 0) {
+                shiftsSet.add('Morning Shift');
+                shiftsSet.add('Afternoon Shift');
+            }
+
+            shiftsSet.forEach(shift => {
+                const opt = document.createElement('option');
+                opt.value = shift;
+                const item = Array.isArray(shiftTimes) ? shiftTimes.find(t => t.shift === shift) : null;
+                const bn = item && item.shiftBn ? item.shiftBn : (shiftTranslations[shift] || shift);
+                opt.innerText = bn ? `${shift} (${bn})` : shift;
+                shiftSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...shiftSelect.options].some(o => o.value === currentSelected)) {
+                shiftSelect.value = currentSelected;
+            }
+        }
+
+        function resetAllAdmitCardFilters() {
+            if (document.getElementById('filter-class')) document.getElementById('filter-class').value = 'all';
+            if (document.getElementById('filter-exam')) document.getElementById('filter-exam').value = 'all';
+            if (document.getElementById('filter-shift')) document.getElementById('filter-shift').value = 'all';
+            if (document.getElementById('search-student')) document.getElementById('search-student').value = '';
+            renderAdmitCards();
+        }
+
+        function isExamMatching(planExam, selectedExam) {
+            if (!selectedExam || selectedExam === 'all' || selectedExam === 'All') return true;
+            if (!planExam) return false;
+            const p = planExam.toLowerCase().trim();
+            const s = selectedExam.toLowerCase().trim();
+            if (p === s || p.includes(s) || s.includes(p)) return true;
+            const pTrans = (translateExamName(planExam) || '').toLowerCase().trim();
+            const sTrans = (translateExamName(selectedExam) || '').toLowerCase().trim();
+            return pTrans === sTrans || p === sTrans || pTrans === s || pTrans.includes(sTrans) || sTrans.includes(pTrans);
+        }
+
+        function getRoutineForStudent(student, routines, selectedExam = 'all') {
+            if (!student || !student.class) return null;
+
+            const className = (student.class || '').trim();
+            const sectionName = (student.section || '').trim();
+            const groupName = (student.roll || '').trim();
+
+            const isNineOrTen = /nine|ten|9|10|নবম|দশম/i.test(className);
+
+            const matchingClassRoutines = routines.filter(r => {
+                if (!r || !r.class) return false;
+                const rc = r.class.toLowerCase().trim();
+                const sc = className.toLowerCase().trim();
+                return rc === sc || rc.startsWith(sc + ' ') || rc.startsWith(sc + '-') || rc.includes(sc);
+            });
+
+            if (matchingClassRoutines.length === 0) return null;
+
+            let candidateRoutines = matchingClassRoutines;
+
+            if (isNineOrTen || matchingClassRoutines.some(r => r.class && (r.class.includes('-') || r.class.includes('(')))) {
+                const secLower = sectionName.toLowerCase();
+                const grpLower = groupName.toLowerCase();
+
+                let sectionMatched = [];
+                if (secLower.includes('ব্যবসায়') || secLower.includes('বাণিজ্য') || secLower.includes('business') || secLower.includes('commerce')) {
+                    sectionMatched = matchingClassRoutines.filter(r => {
+                        const rc = (r.class || '').toLowerCase();
+                        return rc.includes('ব্যবসায়') || rc.includes('বাণিজ্য') || rc.includes('business') || rc.includes('commerce');
+                    });
+                } else if (secLower.includes('বিজ্ঞান') || secLower.includes('science')) {
+                    sectionMatched = matchingClassRoutines.filter(r => {
+                        const rc = (r.class || '').toLowerCase();
+                        return rc.includes('বিজ্ঞান') || rc.includes('science');
+                    });
+                } else if (secLower.includes('মানবিক') || secLower.includes('humanities') || secLower.includes('arts')) {
+                    sectionMatched = matchingClassRoutines.filter(r => {
+                        const rc = (r.class || '').toLowerCase();
+                        return rc.includes('মানবিক') || rc.includes('humanities') || rc.includes('arts');
+                    });
+                }
+
+                if (sectionMatched.length === 0 && grpLower) {
+                    if (grpLower.includes('ব্যবসায়') || grpLower.includes('বাণিজ্য') || grpLower.includes('business') || grpLower.includes('commerce')) {
+                        sectionMatched = matchingClassRoutines.filter(r => {
+                            const rc = (r.class || '').toLowerCase();
+                            return rc.includes('ব্যবসায়') || rc.includes('বাণিজ্য') || rc.includes('business') || rc.includes('commerce');
+                        });
+                    } else if (grpLower.includes('বিজ্ঞান') || grpLower.includes('science')) {
+                        sectionMatched = matchingClassRoutines.filter(r => {
+                            const rc = (r.class || '').toLowerCase();
+                            return rc.includes('বিজ্ঞান') || rc.includes('science');
+                        });
+                    } else if (grpLower.includes('মানবিক') || grpLower.includes('humanities') || grpLower.includes('arts')) {
+                        sectionMatched = matchingClassRoutines.filter(r => {
+                            const rc = (r.class || '').toLowerCase();
+                            return rc.includes('মানবিক') || rc.includes('humanities') || rc.includes('arts');
+                        });
+                    }
+                }
+
+                if (sectionMatched.length > 0) {
+                    candidateRoutines = sectionMatched;
+                }
+            }
+
+            let targetExam = selectedExam;
+            let filteredRoutines = [];
+
+            if (selectedExam !== 'all') {
+                filteredRoutines = candidateRoutines.filter(r => !r.examName || isExamMatching(r.examName, selectedExam));
+                if (filteredRoutines.length === 0) {
+                    filteredRoutines = candidateRoutines;
+                } else {
+                    targetExam = selectedExam;
+                }
+            } else {
+                const examNameCounts = {};
+                candidateRoutines.forEach(r => {
+                    if (r.examName) examNameCounts[r.examName] = (examNameCounts[r.examName] || 0) + 1;
+                });
+                if (Object.keys(examNameCounts).length > 0) {
+                    targetExam = Object.keys(examNameCounts).reduce((a, b) => examNameCounts[a] > examNameCounts[b] ? a : b);
+                    filteredRoutines = candidateRoutines.filter(r => r.examName === targetExam);
+                } else {
+                    targetExam = candidateRoutines[0].examName || "পরীক্ষা ২০২৬";
+                    filteredRoutines = candidateRoutines;
+                }
+            }
+
+            return {
+                examName: targetExam,
+                schedule: filteredRoutines.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+            };
+        }
+
+        function getStudentReligionCategory(student) {
+            if (!student) return 'islam';
+            const r = (student.religion || student.religionBn || student.religion_en || '').toLowerCase().trim();
+            if (r.includes('hindu') || r.includes('হিন্দু')) return 'hindu';
+            if (r.includes('buddh') || r.includes('বৌদ্ধ')) return 'buddhism';
+            if (r.includes('christ') || r.includes('খ্রি')) return 'christianity';
+            if (r.includes('islam') || r.includes('muslim') || r.includes('ইসলাম') || r.includes('মুস')) return 'islam';
+            return 'islam';
+        }
+
+        function isReligionSubject(subjectName) {
+            if (!subjectName) return false;
+            const s = subjectName.toLowerCase();
+            return s.includes('islam') || s.includes('hindu') || s.includes('religion') ||
+                s.includes('ধর্ম') || s.includes('ইসলাম') || s.includes('হিন্দু') ||
+                s.includes('buddh') || s.includes('বৌদ্ধ') ||
+                s.includes('christ') || s.includes('খ্রি');
+        }
+
+        function isEntryForOtherReligion(entrySub, studentRel) {
+            if (!entrySub) return false;
+            const s = entrySub.toLowerCase();
+            const isIslamEntry = s.includes('islam') || s.includes('ইসলাম');
+            const isHinduEntry = s.includes('hindu') || s.includes('হিন্দু');
+            const isBuddhEntry = s.includes('buddh') || s.includes('বৌদ্ধ');
+            const isChristEntry = s.includes('christ') || s.includes('খ্রি');
+
+            const isCombo = (isIslamEntry && isHinduEntry) || s.includes('/') || s.includes('combo');
+            if (isCombo) return false;
+
+            const isGenericReligion = (s.includes('religion') || s.includes('ধর্ম')) && !isIslamEntry && !isHinduEntry && !isBuddhEntry && !isChristEntry;
+            if (isGenericReligion) return false;
+
+            if (studentRel === 'islam') {
+                return isHinduEntry || isBuddhEntry || isChristEntry;
+            } else if (studentRel === 'hindu') {
+                return isIslamEntry || isBuddhEntry || isChristEntry;
+            } else if (studentRel === 'buddhism') {
+                return isIslamEntry || isHinduEntry || isChristEntry;
+            } else if (studentRel === 'christianity') {
+                return isIslamEntry || isHinduEntry || isBuddhEntry;
+            }
+            return false;
+        }
+
+        function getStudentOptionalSubject(student) {
+            if (!student) return '';
+            return (student.optionalSubject || student.optional || student.optional_subject || student['ঐচ্ছিক বিষয়'] || '').trim();
+        }
+
+        function isOptionalComboOrSubject(subName) {
+            if (!subName) return false;
+            const s = subName.toLowerCase();
+            return s.includes('agriculture') || s.includes('agri') || s.includes('কৃষি') ||
+                s.includes('higher') || s.includes('hmath') || s.includes('h.math') || s.includes('উচ্চতর') ||
+                s.includes('home science') || s.includes('গার্হস্থ্য');
+        }
+
+        function isOptionalCombo(subName) {
+            if (!subName) return false;
+            const s = subName.toLowerCase();
+            const hasAgri = s.includes('agriculture') || s.includes('agri') || s.includes('কৃষি');
+            const hasHmath = s.includes('higher') || s.includes('hmath') || s.includes('h.math') || s.includes('উচ্চতর');
+            return (hasAgri && hasHmath) || s.includes('combo') || (s.includes('/') && (hasAgri || hasHmath));
+        }
+
+        function isEntryForOtherOptional(entrySub, studentOpt) {
+            if (!entrySub || !studentOpt) return false;
+            const s = entrySub.toLowerCase();
+            const opt = studentOpt.toLowerCase();
+
+            const isAgriEntry = s.includes('agriculture') || s.includes('agri') || s.includes('কৃষি');
+            const isHmathEntry = s.includes('higher') || s.includes('hmath') || s.includes('h.math') || s.includes('উচ্চতর');
+            const isHomeEntry = s.includes('home science') || s.includes('গার্হস্থ্য');
+
+            if (isOptionalCombo(entrySub)) return false;
+
+            const studentIsHmath = opt.includes('higher') || opt.includes('hmath') || opt.includes('h.math') || opt.includes('উচ্চতর');
+            const studentIsAgri = opt.includes('agriculture') || opt.includes('agri') || opt.includes('কৃষি');
+            const studentIsHome = opt.includes('home') || opt.includes('গার্হস্থ্য');
+
+            if (studentIsHmath) {
+                return (isAgriEntry && !isHmathEntry) || isHomeEntry;
+            } else if (studentIsAgri) {
+                return (isHmathEntry && !isAgriEntry) || isHomeEntry;
+            } else if (studentIsHome) {
+                return isHmathEntry || isAgriEntry;
+            }
+            return false;
+        }
+
+        function resolveSubjectForStudent(entry, student, classSubjects, lang) {
+            let rawSubject = entry.subject || '';
+            const cleanSub = rawSubject.trim();
+
+            const isReligion = isReligionSubject(cleanSub);
+            const relCategory = getStudentReligionCategory(student);
+
+            const optSubject = getStudentOptionalSubject(student);
+            const isClassNineOrTen = student.class && /nine|ten|9|10|নবম|দশম/i.test(student.class);
+            const isOptional = isOptionalComboOrSubject(cleanSub) && (isClassNineOrTen || optSubject);
+
+            let subCode = "";
+            let subName = cleanSub;
+            let subDisplay = "";
+
+            if (isReligion) {
+                if (relCategory === 'islam') {
+                    const matched = classSubjects.find(s => {
+                        const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                        return n.includes('islam') || n.includes('ইসলাম');
+                    });
+                    subCode = matched ? (matched.code || "110") : "110";
+                    subName = matched ? (matched.name || "Islamic Studies") : "Islamic Studies";
+                    const nameBn = "ইসলাম ও নৈতিক শিক্ষা";
+
+                    if (lang === 'en') {
+                        subDisplay = "Islam & Moral Education";
+                    } else if (lang === 'both') {
+                        subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Islam & Moral Education</div>`;
+                    } else {
+                        subDisplay = nameBn;
+                    }
+                } else if (relCategory === 'hindu') {
+                    const matched = classSubjects.find(s => {
+                        const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                        return n.includes('hindu') || n.includes('হিন্দু');
+                    });
+                    subCode = matched ? (matched.code || "111") : "111";
+                    subName = matched ? (matched.name || "Hindu Religion Studies") : "Hindu Religion Studies";
+                    const nameBn = "হিন্দুধর্ম ও নৈতিক শিক্ষা";
+
+                    if (lang === 'en') {
+                        subDisplay = "Hinduism & Moral Education";
+                    } else if (lang === 'both') {
+                        subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Hinduism & Moral Education</div>`;
+                    } else {
+                        subDisplay = nameBn;
+                    }
+                } else if (relCategory === 'buddhism') {
+                    const matched = classSubjects.find(s => {
+                        const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                        return n.includes('buddh') || n.includes('বৌদ্ধ');
+                    });
+                    subCode = matched ? (matched.code || "112") : "112";
+                    subName = matched ? (matched.name || "Buddhism and Moral Education") : "Buddhism and Moral Education";
+                    const nameBn = "বৌদ্ধধর্ম ও নৈতিক শিক্ষা";
+
+                    if (lang === 'en') {
+                        subDisplay = "Buddhism & Moral Education";
+                    } else if (lang === 'both') {
+                        subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Buddhism & Moral Education</div>`;
+                    } else {
+                        subDisplay = nameBn;
+                    }
+                } else if (relCategory === 'christianity') {
+                    const matched = classSubjects.find(s => {
+                        const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                        return n.includes('christ') || n.includes('খ্রি');
+                    });
+                    subCode = matched ? (matched.code || "113") : "113";
+                    subName = matched ? (matched.name || "Christianity and Moral Education") : "Christianity and Moral Education";
+                    const nameBn = "খ্রিস্টধর্ম ও নৈতিক শিক্ষা";
+
+                    if (lang === 'en') {
+                        subDisplay = "Christianity & Moral Education";
+                    } else if (lang === 'both') {
+                        subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Christianity & Moral Education</div>`;
+                    } else {
+                        subDisplay = nameBn;
+                    }
+                } else {
+                    subCode = "110";
+                    subName = "Islam and Moral Education";
+                    subDisplay = "ইসলাম ও নৈতিক শিক্ষা";
+                }
+            } else if (isOptional) {
+                if (optSubject) {
+                    const optLower = optSubject.toLowerCase();
+                    const isHmath = optLower.includes('higher') || optLower.includes('hmath') || optLower.includes('h.math') || optLower.includes('উচ্চতর');
+                    const isAgri = optLower.includes('agriculture') || optLower.includes('agri') || optLower.includes('কৃষি');
+                    const isHome = optLower.includes('home') || optLower.includes('গার্হস্থ্য');
+
+                    if (isHmath) {
+                        const matched = classSubjects.find(s => {
+                            const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                            return n.includes('higher') || n.includes('hmath') || n.includes('উচ্চতর');
+                        });
+                        subCode = matched ? (matched.code || "505") : "505";
+                        subName = matched ? (matched.name || "Higher Mathematics") : "Higher Mathematics";
+                        const nameBn = "উচ্চতর গণিত";
+
+                        if (lang === 'en') {
+                            subDisplay = "Higher Mathematics";
+                        } else if (lang === 'both') {
+                            subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Higher Mathematics</div>`;
+                        } else {
+                            subDisplay = nameBn;
+                        }
+                    } else if (isAgri) {
+                        const matched = classSubjects.find(s => {
+                            const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                            return n.includes('agriculture') || n.includes('agri') || n.includes('কৃষি');
+                        });
+                        subCode = matched ? (matched.code || "109") : "109";
+                        subName = matched ? (matched.name || "Agriculture Studies") : "Agriculture Studies";
+                        const nameBn = "কৃষি শিক্ষা";
+
+                        if (lang === 'en') {
+                            subDisplay = "Agriculture Studies";
+                        } else if (lang === 'both') {
+                            subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Agriculture Studies</div>`;
+                        } else {
+                            subDisplay = nameBn;
+                        }
+                    } else if (isHome) {
+                        const matched = classSubjects.find(s => {
+                            const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                            return n.includes('home') || n.includes('গার্হস্থ্য');
+                        });
+                        subCode = matched ? (matched.code || "151") : "151";
+                        subName = matched ? (matched.name || "Home Science") : "Home Science";
+                        const nameBn = "গার্হস্থ্য বিজ্ঞান";
+
+                        if (lang === 'en') {
+                            subDisplay = "Home Science";
+                        } else if (lang === 'both') {
+                            subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Home Science</div>`;
+                        } else {
+                            subDisplay = nameBn;
+                        }
+                    } else {
+                        const matchedOpt = classSubjects.find(s => {
+                            const n = ((s.name || '') + ' ' + (s.nameBn || '') + ' ' + (s.shortName || '')).toLowerCase();
+                            return n.includes(optLower) || optLower.includes((s.name || '').toLowerCase());
+                        });
+                        if (matchedOpt) {
+                            subCode = matchedOpt.code || "";
+                            subName = matchedOpt.name || optSubject;
+                            const nameBn = matchedOpt.nameBn || translateSubject(subName);
+                            if (lang === 'en') {
+                                subDisplay = subName;
+                            } else if (lang === 'both') {
+                                subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">${subName}</div>`;
+                            } else {
+                                subDisplay = nameBn;
+                            }
+                        } else {
+                            subName = optSubject;
+                            subCode = (optLower.includes('higher') || optLower.includes('উচ্চতর')) ? "505" : "109";
+                            const nameBn = translateSubject(subName);
+                            if (lang === 'en') {
+                                subDisplay = subName;
+                            } else if (lang === 'both') {
+                                subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">${subName}</div>`;
+                            } else {
+                                subDisplay = nameBn;
+                            }
+                        }
+                    }
+                } else {
+                    subCode = "109/505";
+                    subName = "Agriculture Studies/Higher Mathematics";
+                    const nameBn = "কৃষি শিক্ষা/উচ্চতর গণিত";
+                    if (lang === 'en') {
+                        subDisplay = "Agriculture Studies/Higher Mathematics";
+                    } else if (lang === 'both') {
+                        subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${nameBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">Agriculture Studies/Higher Mathematics</div>`;
+                    } else {
+                        subDisplay = nameBn;
+                    }
+                }
+            } else {
+                const matchedSub = classSubjects.find(sub => {
+                    if (!sub.name) return false;
+                    const subNameClean = sub.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const entryNameClean = cleanSub.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return subNameClean === entryNameClean || subNameClean.includes(entryNameClean) || entryNameClean.includes(subNameClean);
+                }) || classSubjects.find(sub => {
+                    if (!sub.shortName) return false;
+                    const shortClean = sub.shortName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const entryClean = cleanSub.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return shortClean === entryClean || shortClean.includes(entryClean) || entryClean.includes(shortClean);
+                });
+
+                if (matchedSub) {
+                    subCode = matchedSub.code || "";
+                    subName = matchedSub.name || cleanSub;
+                } else {
+                    subCode = entry.id ? entry.id.substring(3, 6) : "কোড";
+                    subName = cleanSub;
+                }
+
+                subDisplay = translateSubject(subName);
+                if (lang === 'en') {
+                    subDisplay = subName;
+                } else if (lang === 'both') {
+                    const subBn = translateSubject(subName);
+                    if (subBn !== subName) {
+                        subDisplay = `<div style="line-height: 1.05; margin: 0; padding: 0; font-weight: 800;">${subBn}</div><div style="font-size: 0.88em; color: #475569; font-weight: 700; line-height: 1.05; margin: 0; padding: 0;">${subName}</div>`;
+                    } else {
+                        subDisplay = subBn;
+                    }
+                }
+            }
+
+            return { subCode, subName, subDisplay };
+        }
+
+        function generateFrontCardHTML(student, seat, schoolName, schoolSubtitle, examNameTranslated, schoolLogo, studentShift, lang = 'bn') {
+            const classBn = classTranslations[student.class] || student.class;
+            const secBn = sectionTranslations[student.section] || student.section || "";
+            const classSecTextBn = `${classBn} ${secBn ? `(${secBn})` : ""}`;
+            const classSecTextEn = `${student.class} ${student.section ? `(${student.section})` : ""}`;
+            const classDisplay = lang === 'en' ? classSecTextEn : (lang === 'both' ? `${classSecTextBn} / ${classSecTextEn}` : classSecTextBn);
+
+            const roomNo = seat ? seat.roomNo : "";
+            const buildingName = seat ? seat.buildingName : "";
+            const logoSrc = schoolLogo ? schoolLogo : 'school_logo.svg';
+
+            const shiftFormatted = getShiftFormattedName(studentShift, student.class);
+            const shiftBadgeText = (lang === 'en') ?
+                (shiftFormatted === 'বিকাল' ? 'Afternoon' : (shiftFormatted === 'সকাল' ? 'Morning' : shiftFormatted)) :
+                (lang === 'both' ? `${shiftFormatted} (${shiftFormatted === 'বিকাল' ? 'Afternoon' : 'Morning'})` : shiftFormatted);
+
+            const cardTitle = lang === 'en' ? 'ADMIT CARD' : (lang === 'both' ? 'প্রবেশপত্র (ADMIT CARD)' : 'প্রবেশপত্র');
+            const lblNameBn = lang === 'en' ? 'Student Name' : (lang === 'both' ? 'শিক্ষার্থীর নাম (Name)' : 'শিক্ষার্থীর নাম (বাংলা)');
+            const lblNameEn = lang === 'en' ? 'Name in English' : (lang === 'both' ? 'Name (English)' : 'Name (English)');
+            const lblStdId = lang === 'en' ? 'Student ID' : (lang === 'both' ? 'স্টুডেন্ট আইডি (ID)' : 'স্টুডেন্ট আইডি (ID)');
+            const lblRegNo = lang === 'en' ? 'Reg. No' : (lang === 'both' ? 'রেজিস্ট্রেশন নং (Reg. No)' : 'রেজিস্ট্রেশন নং');
+            const lblClassSec = lang === 'en' ? 'Class & Section' : (lang === 'both' ? 'শ্রেণী ও শাখা (Class & Sec)' : 'শ্রেণী ও বিভাগ/গ্রুপ');
+            const lblBldg = lang === 'en' ? 'Building' : (lang === 'both' ? 'বিল্ডিং (Building)' : 'বিল্ডিং');
+            const lblRoom = lang === 'en' ? 'Room No' : (lang === 'both' ? 'রুম নং (Room No)' : 'রুম নং');
+            const lblRulesHead = lang === 'en' ? 'Rules & Instructions for Candidates:' : (lang === 'both' ? 'পরীক্ষার্থীদের জন্য নিয়মাবলী (Rules & Instructions):' : 'পরীক্ষার্থীদের জন্য নিয়মাবলী:');
+
+            const rule1 = lang === 'en' ? '1. No candidate will be allowed without an Admit Card.' : '১. প্রবেশপত্র ব্যতিত কোনো পরীক্ষার্থীকে পরীক্ষা কক্ষে প্রবেশ করতে দেয়া হবে না।';
+            const rule2 = lang === 'en' ? '2. Mobile phones or digital watches are strictly prohibited.' : '২. পরীক্ষা কক্ষে কোনো প্রকার মোবাইল ফোন বা ডিজিটাল ঘড়ি আনা সম্পূর্ণ নিষিদ্ধ।';
+            const rule3 = lang === 'en' ? '3. Write Subject Code and Roll Number correctly on the answer sheet.' : '৩. উত্তরপত্রের কভার পৃষ্ঠায় বিষয় কোড ও রোল নম্বর সঠিকভাবে লিখতে হবে।';
+            const rule4 = lang === 'en' ? '4. Any attempt at unfair means will lead to cancellation of exam.' : '৪. অসদুপায় অবলম্বনের চেষ্টা করলে পরীক্ষা বাতিল করা হবে।';
+
+            const sigClass = "শ্রেণী শিক্ষকের স্বাক্ষর";
+            const sigStudent = "শিক্ষার্থীর স্বাক্ষর";
+            const sigHead = "প্রধান শিক্ষকের স্বাক্ষর";
+
+            const hm = typeof getHeadmasterByDepartment === 'function' ? getHeadmasterByDepartment(student.department || student.dept || student.class) : null;
+            const hmSignature = hm ? (hm.signature || '') : '';
+
+            let customHeader = '';
+            let customInstructionsHTML = '';
+            try {
+                customHeader = localStorage.getItem('school_admit_instruction_header_' + lang) || '';
+                customInstructionsHTML = localStorage.getItem('school_admit_instructions_html_' + lang) || '';
+            } catch (e) { }
+
+            const finalHeader = customHeader || lblRulesHead;
+            const defaultRulesHTML = `
+                <li>${rule1}</li>
+                <li>${rule2}</li>
+                <li>${rule3}</li>
+                <li>${rule4}</li>
+            `;
+            const finalRulesHTML = customInstructionsHTML || defaultRulesHTML;
+
+            return `
+                <div class="card">
+                    <div>
+                        <div class="header">
+                            <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='school_logo.svg'">
+                            <div class="header-text">
+                                <h1>${schoolName}</h1>
+                                <p>${schoolSubtitle}</p>
+                                <div class="exam-subtitle">${examNameTranslated}</div>
+                                <span class="exam-title">${cardTitle}</span>
+                            </div>
+                            <div class="header-spacer"></div>
+                        </div>
+
+                        <div class="main-content">
+                            <table class="info-table">
+                                <tr class="name-row name-bn">
+                                    <td class="label">${lblNameBn}</td>
+                                    <td class="colon">:</td>
+                                    <td><b>${student.nameBn || student.name}</b></td>
+                                </tr>
+                                <tr class="name-row name-en">
+                                    <td class="label">${lblNameEn}</td>
+                                    <td class="colon">:</td>
+                                    <td>${student.name}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">${lblStdId}</td>
+                                    <td class="colon">:</td>
+                                    <td><b>${student.studentId}</b></td>
+                                </tr>
+                                <tr>
+                                    <td class="label">${lblRegNo}</td>
+                                    <td class="colon">:</td>
+                                    <td>${student.regNo || "-"}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">${lblClassSec}</td>
+                                    <td class="colon">:</td>
+                                    <td>${classDisplay}</td>
+                                </tr>
+                                 <tr>
+                                      <td class="label">${lblBldg}</td>
+                                      <td class="colon">:</td>
+                                      <td>${buildingName || "-"} <span style="margin-left: 50px; font-size: 1.05em; font-weight: 700;">${lblRoom} : ${roomNo || "-"}</span></td>
+                                  </tr>
+                            </table>
+
+                             <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                 <div class="photo-box">
+                                     ${student.photo ? `<img src="${student.photo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">` : `<span>${lang === 'en' ? 'Passport Size<br>Photo' : 'পাসপোর্ট সাইজের<br>ছবি'}</span>`}
+                                 </div>
+                                 <div class="shift-box">
+                                     ${lang === 'en' ? 'Shift' : 'শিফট'} : ${shiftBadgeText}
+                                 </div>
+                             </div>
+                        </div>
+
+                        <div class="instructions-box">
+                            <h4 contenteditable="true" onblur="saveCustomInstructionHeader(this, '${lang}')" title="ক্লিক করে হেডিং এডিট করুন">${finalHeader}</h4>
+                            <ul contenteditable="true" onblur="saveCustomInstructionsHTML(this, '${lang}')" title="ক্লিক করে নিয়মাবলী এডিট করুন বা নতুন নিয়ম লিখুন">
+                                ${finalRulesHTML}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-signatures">
+                        <div class="sig-box">
+                            <div class="sig-line">${sigClass}</div>
+                        </div>
+                        <div class="sig-box">
+                            <div class="sig-line">${sigStudent}</div>
+                        </div>
+                        <div class="sig-box">
+                            ${hmSignature ? `<img src="${hmSignature}" class="sig-img" alt="প্রধান শিক্ষকের স্বাক্ষর">` : '<div style="height: 57px;"></div>'}
+                            <div class="sig-line">${sigHead}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateBackCardHTML(student, routineEntries, examNameTranslated, subjectsData, lang = 'bn') {
+            const classBn = classTranslations[student.class] || student.class;
+            const classEn = student.class;
+            const classSubjects = subjectsData[student.class] || [];
+            const studentRel = getStudentReligionCategory(student);
+            const studentOpt = getStudentOptionalSubject(student);
+
+            let filteredEntries = (routineEntries || []).filter(entry => {
+                if (!entry.subject) return true;
+
+                if (isEntryForOtherReligion(entry.subject, studentRel)) {
+                    const hasMatchingRelEntry = routineEntries.some(other =>
+                        other !== entry &&
+                        !isEntryForOtherReligion(other.subject, studentRel) &&
+                        isReligionSubject(other.subject)
+                    );
+                    if (hasMatchingRelEntry) {
+                        return false;
+                    }
+                }
+
+                if (studentOpt && isEntryForOtherOptional(entry.subject, studentOpt)) {
+                    const hasMatchingOptEntry = routineEntries.some(other =>
+                        other !== entry &&
+                        !isEntryForOtherOptional(other.subject, studentOpt) &&
+                        isOptionalComboOrSubject(other.subject)
+                    );
+                    if (hasMatchingOptEntry) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            let tableRows = '';
+            if (filteredEntries.length > 0) {
+                tableRows = filteredEntries.map(entry => {
+                    let formattedDate = entry.date;
+                    try {
+                        const dateObj = new Date(entry.date);
+                        const daysBn = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+                        const daysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                        const dayBn = daysBn[dateObj.getDay()];
+                        const dayEn = daysEn[dateObj.getDay()];
+                        const parts = entry.date.split('-');
+
+                        if (lang === 'en') {
+                            formattedDate = `${parts[2]}/${parts[1]}/${parts[0]} (${dayEn})`;
+                        } else if (lang === 'both') {
+                            formattedDate = `${parts[2]}/${parts[1]}/${parts[0]} (${dayBn} / ${dayEn})`;
+                        } else {
+                            formattedDate = `${parts[2]}/${parts[1]}/${parts[0]} (${dayBn})`;
+                        }
+                    } catch (e) { }
+
+                    const { subCode, subDisplay } = resolveSubjectForStudent(entry, student, classSubjects, lang);
+
+                    return `
+                        <tr>
+                            <td>${formattedDate}</td>
+                            <td>${subCode}</td>
+                            <td>${subDisplay}</td>
+                            <td>${getShiftTimeRange(entry.shift)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tableRows = `<tr><td colspan="4" style="padding: 20px; font-weight: 700; color: #475569;">${lang === 'en' ? 'No Exam Routine Found' : 'রুটিন পাওয়া যায়নি'}</td></tr>`;
+            }
+
+            const rHeadTitle = lang === 'en' ? 'Exam Routine & Detailed Instructions' : (lang === 'both' ? 'পরীক্ষার সময়সূচী ও নির্দেশনাবলী (Exam Routine & Instructions)' : 'পরীক্ষার সময়সূচী ও বিস্তারিত নির্দেশনাবলী');
+            const thDate = lang === 'en' ? 'Date & Day' : (lang === 'both' ? 'তারিখ ও বার (Date)' : 'তারিখ ও বার');
+            const thCode = lang === 'en' ? 'Code' : (lang === 'both' ? 'কোড (Code)' : 'বিষয় কোড');
+            const thSub = lang === 'en' ? 'Subject Name' : (lang === 'both' ? 'বিষয় (Subject)' : 'বিষয়');
+            const thTime = lang === 'en' ? 'Time' : (lang === 'both' ? 'সময় (Time)' : 'সময়');
+
+            const secBn = sectionTranslations[student.section] || student.section || "";
+            const secEn = student.section || "";
+
+            let clsDisp = "";
+            if (lang === 'en') {
+                clsDisp = `Class: ${classEn}${secEn ? ` - Section: ${secEn}` : ''}`;
+            } else if (lang === 'both') {
+                clsDisp = `শ্রেণী: ${classBn}${secBn ? ` (${secBn})` : ''} / Class: ${classEn}${secEn ? ` (${secEn})` : ''}`;
+            } else {
+                clsDisp = `শ্রেণী: ${classBn}${secBn ? ` (শাখা: ${secBn})` : ''}`;
+            }
+
+            return `
+                <div class="card">
+                    <div>
+                        <div class="routine-header">
+                            <h2>${rHeadTitle}</h2>
+                            <p style="font-size: 13.35px;">${examNameTranslated}<br>(${clsDisp})</p>
+                        </div>
+
+                        <table class="routine-table">
+                            <thead>
+                                <tr>
+                                    <th>${thDate}</th>
+                                    <th>${thCode}</th>
+                                    <th>${thSub}</th>
+                                    <th>${thTime}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdmitCards() {
+            const classSelect = document.getElementById('filter-class');
+            const examSelect = document.getElementById('filter-exam');
+            const shiftSelect = document.getElementById('filter-shift');
+            const langSelect = document.getElementById('filter-lang');
+            const searchInput = document.getElementById('search-student');
+
+            const classVal = classSelect ? classSelect.value : 'all';
+            const examVal = examSelect ? examSelect.value : 'all';
+            const shiftVal = shiftSelect ? shiftSelect.value : 'all';
+            const langVal = langSelect ? langSelect.value : 'bn';
+            const searchVal = searchInput && searchInput.value ? searchInput.value.toLowerCase().trim() : '';
+
+            const container = document.getElementById('dynamic-cards-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            let students = [];
+            let routines = [];
+            let seatAllocations = {};
+            let rooms = [];
+            let buildings = [];
+            let settings = {};
+            let schoolLogo = '';
+            let subjectsData = {};
+            let seatPlansStore = {};
+
+            try {
+                students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                seatAllocations = JSON.parse(localStorage.getItem('school_seat_allocations') || localStorage.getItem('school_saved_seat_allocations') || '{}');
+                rooms = JSON.parse(localStorage.getItem('school_rooms') || '[]');
+                buildings = JSON.parse(localStorage.getItem('school_buildings') || '[]');
+                settings = JSON.parse(localStorage.getItem('school_settings') || '{}');
+                schoolLogo = localStorage.getItem('school_logo') || '';
+                subjectsData = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+                seatPlansStore = JSON.parse(localStorage.getItem('school_seat_plans_store') || '{}');
+            } catch (e) {
+                console.error("Error loading data from localStorage:", e);
+            }
+
+            if (!Array.isArray(students) || students.length === 0) {
+                students = [
+                    { id: "s1", studentId: "2606001", name: "Md. Tanvir Ahmed", nameBn: "মো: তানভীর আহমেদ", class: "Six", section: "A", roll: "(প্রযোজ্য না)", regNo: "260001", religion: "Islam" },
+                    { id: "s2", studentId: "2606002", name: "Sushanto Kumar Ray", nameBn: "সুশান্ত কুমার রায়", class: "Six", section: "A", roll: "(প্রযোজ্য না)", regNo: "260002", religion: "Hindu (হিন্দু)" }
+                ];
+            }
+
+            const schoolName = settings.schoolName || "Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School";
+            const schoolAddress = settings.schoolAddress || "জলঢাকা, নীলফামালী।";
+
+            const studentSeats = {};
+            const roomMap = {};
+            rooms.forEach(r => {
+                const b = buildings.find(build => build.id === r.buildingId);
+                roomMap[r.id] = {
+                    roomNo: r.number,
+                    buildingName: b ? b.name : "Academic Bhaban"
+                };
+            });
+
+            for (const planId in seatPlansStore) {
+                const plan = seatPlansStore[planId];
+                if (plan && plan.allocations) {
+                    if (examVal !== 'all' && !isExamMatching(plan.examName, examVal)) {
+                        continue;
+                    }
+                    const allocations = plan.allocations;
+                    for (const roomId in allocations) {
+                        const item = allocations[roomId];
+                        let benchList = [];
+                        let bldgName = roomMap[roomId]?.buildingName || "Academic Bhaban";
+                        let roomNo = roomMap[roomId]?.roomNo || roomId;
+                        let shift = plan.shift || "";
+
+                        if (Array.isArray(item)) {
+                            benchList = item;
+                        } else if (item && typeof item === 'object') {
+                            benchList = item.benches || [];
+                            if (item.building && item.building.name) bldgName = item.building.name;
+                            if (item.room && item.room.number) roomNo = item.room.number;
+                            if (item.shift) shift = plan.shift || item.shift;
+                        }
+
+                        if (Array.isArray(benchList)) {
+                            benchList.forEach(bench => {
+                                if (bench.left) {
+                                    const info = { roomNo, buildingName: bldgName, shift: shift, examName: plan.examName || "" };
+                                    if (bench.left.id) studentSeats[bench.left.id] = info;
+                                    if (bench.left.studentId) studentSeats[bench.left.studentId] = info;
+                                    if (bench.left.regNo) studentSeats[bench.left.regNo] = info;
+                                }
+                                if (bench.right) {
+                                    const info = { roomNo, buildingName: bldgName, shift: shift, examName: plan.examName || "" };
+                                    if (bench.right.id) studentSeats[bench.right.id] = info;
+                                    if (bench.right.studentId) studentSeats[bench.right.studentId] = info;
+                                    if (bench.right.regNo) studentSeats[bench.right.regNo] = info;
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            for (const roomId in seatAllocations) {
+                const item = seatAllocations[roomId];
+                let benchList = [];
+                let bldgName = roomMap[roomId]?.buildingName || "Academic Bhaban";
+                let roomNo = roomMap[roomId]?.roomNo || roomId;
+                let shift = item.shift || "";
+
+                if (Array.isArray(item)) {
+                    benchList = item;
+                } else if (item && typeof item === 'object') {
+                    benchList = item.benches || [];
+                    if (item.building && item.building.name) bldgName = item.building.name;
+                    if (item.room && item.room.number) roomNo = item.room.number;
+                    if (item.shift) shift = item.shift;
+                }
+
+                if (Array.isArray(benchList)) {
+                    benchList.forEach(bench => {
+                        if (bench.left) {
+                            const targetId = bench.left.id;
+                            const targetStdId = bench.left.studentId;
+                            const targetRegNo = bench.left.regNo;
+                            const info = { roomNo, buildingName: bldgName, shift };
+                            if (targetId && !studentSeats[targetId]) studentSeats[targetId] = info;
+                            if (targetStdId && !studentSeats[targetStdId]) studentSeats[targetStdId] = info;
+                            if (targetRegNo && !studentSeats[targetRegNo]) studentSeats[targetRegNo] = info;
+                        }
+                        if (bench.right) {
+                            const targetId = bench.right.id;
+                            const targetStdId = bench.right.studentId;
+                            const targetRegNo = bench.right.regNo;
+                            const info = { roomNo, buildingName: bldgName, shift };
+                            if (targetId && !studentSeats[targetId]) studentSeats[targetId] = info;
+                            if (targetStdId && !studentSeats[targetStdId]) studentSeats[targetStdId] = info;
+                            if (targetRegNo && !studentSeats[targetRegNo]) studentSeats[targetRegNo] = info;
+                        }
+                    });
+                }
+            }
+
+            const isShiftMatching = (selected, studentShift) => {
+                if (selected === 'all') return true;
+                if (!studentShift) return true;
+                const sel = selected.toLowerCase();
+                const std = studentShift.toLowerCase();
+                if (sel === std) return true;
+                if (sel.includes('morning') || sel.includes('সকাল')) {
+                    return std.includes('morning') || std.includes('সকাল') || std.includes('প্রভাতি');
+                }
+                if (sel.includes('afternoon') || sel.includes('বিকাল')) {
+                    return std.includes('afternoon') || std.includes('বিকাল') || std.includes('দিবা');
+                }
+                return true;
+            };
+
+            let filteredStudents = students.filter(student => {
+                if (classVal !== 'all') {
+                    const sc = (student.class || '').toLowerCase().trim();
+                    const cv = classVal.toLowerCase().trim();
+                    if (sc !== cv && !sc.includes(cv) && !cv.includes(sc)) return false;
+                }
+
+                const classRoutine = getRoutineForStudent(student, routines, examVal);
+                const seatInfo = studentSeats[student.id] || studentSeats[student.studentId] || (student.regNo ? studentSeats[student.regNo] : null);
+                const studentShift = (seatInfo && seatInfo.shift) || (classRoutine && classRoutine.schedule.length > 0 ? classRoutine.schedule[0].shift : "");
+
+                if (!isShiftMatching(shiftVal, studentShift)) return false;
+
+                if (searchVal) {
+                    const matchId = student.studentId && student.studentId.toLowerCase().includes(searchVal);
+                    const matchName = student.name && student.name.toLowerCase().includes(searchVal);
+                    const matchNameBn = student.nameBn && student.nameBn.toLowerCase().includes(searchVal);
+                    if (!matchId && !matchName && !matchNameBn) return false;
+                }
+
+                return true;
+            });
+
+            const statsEl = document.getElementById('print-stats');
+            if (statsEl) statsEl.innerText = `Total Cards: ${filteredStudents.length}`;
+
+            totalSheetsCount = Math.ceil(filteredStudents.length / 2);
+
+            const navBar = document.getElementById('admit-page-navigation-bar');
+            if (filteredStudents.length === 0) {
+                if (navBar) navBar.style.display = 'none';
+                container.innerHTML = `
+                    <div class="no-print" style="text-align: center; padding: 40px; font-weight: 700; color: #dc2626; font-size: 1.15rem; background: #fff; max-width: 210mm; margin: 0 auto; border-radius: 12px; border: 1.5px solid #cbd5e1;">
+                        বর্তমানে সিলেক্ট করা ফিল্টারে কোনো শিক্ষার্থী বা প্রবেশপত্র পাওয়া যায়নি।<br><br>
+                        <button onclick="resetAllAdmitCardFilters()" style="background: #0284c7; color: #ffffff; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                            🔄 সকল ফিল্টার রিসেট করে সব প্রবেশপত্র দেখুন (Show All Admit Cards)
+                        </button>
+                    </div>
+                `;
+                return;
+            } else {
+                if (navBar) navBar.style.display = 'flex';
+            }
+
+            if (currentSheetIndex >= totalSheetsCount) {
+                currentSheetIndex = Math.max(0, totalSheetsCount - 1);
+            }
+
+            const jumpSelect = document.getElementById('sheet-jump-select');
+            if (jumpSelect) {
+                jumpSelect.innerHTML = '';
+                for (let s = 0; s < totalSheetsCount; s++) {
+                    const stdA = filteredStudents[s * 2];
+                    const stdB = (s * 2 + 1 < filteredStudents.length) ? filteredStudents[s * 2 + 1] : null;
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    const nameA = stdA ? (stdA.nameBn || stdA.name) : '';
+                    const nameB = stdB ? (stdB.nameBn || stdB.name) : '';
+                    const rollA = stdA ? (stdA.roll || stdA.studentId) : '';
+                    const rollB = stdB ? (stdB.roll || stdB.studentId) : '';
+
+                    if (stdB) {
+                        opt.innerText = `পাতা ${s + 1}/${totalSheetsCount}: ${nameA} (${rollA}) + ${nameB} (${rollB})`;
+                    } else {
+                        opt.innerText = `পাতা ${s + 1}/${totalSheetsCount}: ${nameA} (${rollA})`;
+                    }
+                    jumpSelect.appendChild(opt);
+                }
+                jumpSelect.value = currentSheetIndex;
+            }
+
+            for (let i = 0; i < filteredStudents.length; i += 2) {
+                const sheetIndex = i / 2;
+                const studentA = filteredStudents[i];
+                const studentB = i + 1 < filteredStudents.length ? filteredStudents[i + 1] : null;
+
+                const seatA = studentSeats[studentA.id] || studentSeats[studentA.studentId] || (studentA.regNo ? studentSeats[studentA.regNo] : null);
+                const targetExamA = (examVal !== 'all') ? examVal : (seatA && seatA.examName ? seatA.examName : (routines.length > 0 ? (routines[0].examName || "পরীক্ষা ২০২৬") : "পরীক্ষা ২০২৬"));
+                const classRoutineA = getRoutineForStudent(studentA, routines, targetExamA);
+                const examNameA = translateExamName(targetExamA);
+                const shiftA = (seatA && seatA.shift) ? seatA.shift : (classRoutineA && classRoutineA.schedule.length > 0 ? classRoutineA.schedule[0].shift : "");
+
+                const seatB = studentB ? (studentSeats[studentB.id] || studentSeats[studentB.studentId] || (studentB.regNo ? studentSeats[studentB.regNo] : null)) : null;
+                const targetExamB = studentB ? ((examVal !== 'all') ? examVal : (seatB && seatB.examName ? seatB.examName : (routines.length > 0 ? (routines[0].examName || "পরীক্ষা ২০২৬") : "পরীক্ষা ২০২৬"))) : "";
+                const classRoutineB = studentB ? getRoutineForStudent(studentB, routines, targetExamB) : null;
+                const examNameB = studentB ? translateExamName(targetExamB) : "";
+                const shiftB = studentB ? ((seatB && seatB.shift) ? seatB.shift : (classRoutineB && classRoutineB.schedule.length > 0 ? classRoutineB.schedule[0].shift : "")) : "";
+
+                const sheetSet = document.createElement('div');
+                sheetSet.className = 'sheet-duplex-set' + (sheetIndex === currentSheetIndex ? ' active-sheet' : '');
+                sheetSet.id = 'sheet-set-' + sheetIndex;
+                if (currentViewMode === 'page' && sheetIndex !== currentSheetIndex) {
+                    sheetSet.style.display = 'none';
+                }
+
+                let cardA_HTML = generateFrontCardHTML(studentA, seatA, schoolName, schoolAddress, examNameA, schoolLogo, shiftA, langVal);
+                let cardB_HTML = studentB ? generateFrontCardHTML(studentB, seatB, schoolName, schoolAddress, examNameB, schoolLogo, shiftB, langVal) : `<div class="card" style="visibility: hidden;"></div>`;
+
+                const pageFrontHTML = `
+                    <div class="a4-page">
+                        ${cardA_HTML}
+                        ${cardB_HTML}
+                    </div>
+                `;
+
+                let routineA_HTML = generateBackCardHTML(studentA, classRoutineA ? classRoutineA.schedule : [], examNameA, subjectsData, langVal);
+                let routineB_HTML = studentB ? generateBackCardHTML(studentB, classRoutineB ? classRoutineB.schedule : [], examNameB, subjectsData, langVal) : `<div class="card" style="visibility: hidden;"></div>`;
+
+                const pageBackHTML = `
+                    <div class="a4-page">
+                        ${routineA_HTML}
+                        ${routineB_HTML}
+                    </div>
+                `;
+
+                const gridHTML = `
+                    <div class="sheet-duplex-grid">
+                        <div class="sheet-column">
+                            ${pageFrontHTML}
+                        </div>
+                        <div class="sheet-column">
+                            ${pageBackHTML}
+                        </div>
+                    </div>
+                `;
+
+                sheetSet.innerHTML = gridHTML;
+                container.appendChild(sheetSet);
+            }
+
+            updatePaginationButtons();
+        }
+    
+
+        // ==========================================================================
+        // STUDENT ATTENDANCE SHEET ENGINE (MERGED FROM Student attendance sheet.html)
+        // Dynamically synchronized with Saved Seat Plans (school_seat_plans_store),
+        // Active Allocations, Exam Routines, and Student Directory
+        // ==========================================================================
+
+        function toBnNum(num) {
+            if (num === null || num === undefined) return '';
+            const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return String(num).replace(/\d/g, d => bn[d]);
+        }
+
+        function buildAttendanceStudentLookupMap() {
+            const map = {
+                byId: new Map(),
+                byReg: new Map(),
+                byNameClass: new Map()
+            };
+            try {
+                const list = JSON.parse(localStorage.getItem('school_students') || '[]');
+                if (Array.isArray(list)) {
+                    list.forEach(s => {
+                        if (!s) return;
+                        if (s.id) map.byId.set(String(s.id).trim(), s);
+                        if (s.regNo) map.byReg.set(String(s.regNo).trim(), s);
+                        const cKey = String(s.class || '').trim().toLowerCase();
+                        const nKey = String(s.name || '').trim().toLowerCase();
+                        const nbKey = String(s.nameBn || '').trim().toLowerCase();
+                        const rKey = String(s.roll || '').trim();
+                        if (cKey && nKey) map.byNameClass.set(`${cKey}___${nKey}`, s);
+                        if (cKey && nbKey) map.byNameClass.set(`${cKey}___${nbKey}`, s);
+                        if (cKey && rKey) map.byNameClass.set(`${cKey}___roll_${rKey}`, s);
+                    });
+                }
+            } catch (e) {}
+            return map;
+        }
+
+        function resolveAttendanceLiveStudent(st, studentLookupMap = null) {
+            if (!st || typeof st !== 'object') return st;
+            const lookup = studentLookupMap || (typeof window !== 'undefined' && window.__currentAttendanceLookupMap) || buildAttendanceStudentLookupMap();
+            let live = null;
+            if (st.id && lookup.byId && lookup.byId.has(String(st.id).trim())) {
+                live = lookup.byId.get(String(st.id).trim());
+            } else if (st.regNo && lookup.byReg && lookup.byReg.has(String(st.regNo).trim())) {
+                live = lookup.byReg.get(String(st.regNo).trim());
+            } else {
+                const cKey = String(st.class || st.className || '').trim().toLowerCase();
+                const nKey = String(st.name || '').trim().toLowerCase();
+                const nbKey = String(st.nameBn || '').trim().toLowerCase();
+                const rKey = String(st.roll || '').trim();
+                if (cKey && nKey && lookup.byNameClass && lookup.byNameClass.has(`${cKey}___${nKey}`)) {
+                    live = lookup.byNameClass.get(`${cKey}___${nKey}`);
+                } else if (cKey && nbKey && lookup.byNameClass && lookup.byNameClass.has(`${cKey}___${nbKey}`)) {
+                    live = lookup.byNameClass.get(`${cKey}___${nbKey}`);
+                } else if (cKey && rKey && lookup.byNameClass && lookup.byNameClass.has(`${cKey}___roll_${rKey}`)) {
+                    live = lookup.byNameClass.get(`${cKey}___roll_${rKey}`);
+                }
+            }
+
+            let finalId = '';
+            if (live) {
+                finalId = live.studentId || (live.roll && !isNaN(parseInt(live.roll)) ? String(parseInt(live.roll)).padStart(4, '0') : '');
+            }
+            if (!finalId) {
+                finalId = st.studentId || '';
+            }
+            if (!finalId || finalId.startsWith('178') || finalId.length > 10) {
+                if (st.roll && !isNaN(parseInt(st.roll))) {
+                    finalId = String(parseInt(st.roll)).padStart(4, '0');
+                } else if (st.regNo && String(st.regNo).trim()) {
+                    finalId = String(st.regNo).trim();
+                } else {
+                    finalId = '-';
+                }
+            }
+
+            return {
+                ...st,
+                studentId: finalId,
+                roll: live ? (live.roll || st.roll) : st.roll,
+                regNo: live ? (live.regNo || st.regNo) : st.regNo,
+                name: live ? (live.name || st.name) : st.name,
+                nameBn: live ? (live.nameBn || st.nameBn) : st.nameBn,
+                class: live ? (live.class || st.class) : st.class,
+                section: live ? (live.section || st.section) : st.section,
+                gender: live ? (live.gender || st.gender) : st.gender,
+                religion: live ? (live.religion || st.religion) : st.religion,
+                optionalSubject: live ? (live.optionalSubject || st.optionalSubject) : st.optionalSubject
+            };
+        }
+
+        function getAttendanceAllStudentsList() {
+            let allStudents = [];
+            const studentLookup = buildAttendanceStudentLookupMap();
+            window.__currentAttendanceLookupMap = studentLookup;
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+            // 1. PRIMARY SOURCE: Saved Seat Plans Store (school_seat_plans_store)
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.keys(store).forEach(planKey => {
+                    const plan = store[planKey];
+                    if (!plan || !plan.allocations) return;
+                    const planExamName = plan.examName || 'বার্ষিক পরীক্ষা ২০২৬';
+                    const planShift = plan.shift || 'Morning Shift';
+
+                    Object.entries(plan.allocations).forEach(([roomId, item]) => {
+                        if (item && item.benches && Array.isArray(item.benches)) {
+                            const rNo = item.room ? (item.room.number || item.room.name || roomId) : roomId;
+                            const bldgName = (item.building && item.building.name && item.building.name.trim()) ? item.building.name.trim() : 'একাডেমিক ভবন-ক';
+                            const itemShift = item.shift || planShift;
+                            const itemExamName = item.examName || planExamName;
+
+                            item.benches.forEach(b => {
+                                [b.left, b.right].forEach(st => {
+                                    if (st) {
+                                        const stId = st.regNo || st.studentId || st.id || st.roll;
+                                        if (stId) {
+                                            allStudents.push({
+                                                id: stId,
+                                                studentId: stId,
+                                                regNo: st.regNo || stId,
+                                                roll: parseInt(st.roll) || (allStudents.length + 1),
+                                                name: st.name || st.studentName || st.nameBn || '',
+                                                nameBn: st.nameBn || st.name || st.studentName || '',
+                                                class: st.class || st.className || 'Nine',
+                                                section: st.section || st.sec || '',
+                                                shift: itemShift,
+                                                buildingName: bldgName,
+                                                roomNo: rNo,
+                                                examName: itemExamName
+                                            });
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
+            }
+
+            // 2. SECONDARY SOURCE: Active Saved Allocations (school_saved_seat_allocations)
+            if (allStudents.length === 0 && savedAlloc && typeof savedAlloc === 'object' && Object.keys(savedAlloc).length > 0) {
+                Object.entries(savedAlloc).forEach(([roomId, item]) => {
+                    if (item && item.benches && Array.isArray(item.benches)) {
+                        const rNo = item.room ? (item.room.number || item.room.name || roomId) : roomId;
+                        const bldgName = (item.building && item.building.name && item.building.name.trim()) ? item.building.name.trim() : 'একাডেমিক ভবন-ক';
+                        const itemShift = item.shift || 'Morning Shift';
+                        const itemExamName = item.examName || 'বার্ষিক পরীক্ষা ২০২৬';
+
+                        item.benches.forEach(b => {
+                            [b.left, b.right].forEach(st => {
+                                if (st) {
+                                    const stId = st.regNo || st.studentId || st.id || st.roll;
+                                    if (stId) {
+                                        allStudents.push({
+                                            id: stId,
+                                            studentId: stId,
+                                            regNo: st.regNo || stId,
+                                            roll: parseInt(st.roll) || (allStudents.length + 1),
+                                            name: st.name || st.studentName || st.nameBn || '',
+                                            nameBn: st.nameBn || st.name || st.studentName || '',
+                                            class: st.class || st.className || 'Nine',
+                                            section: st.section || st.sec || '',
+                                            shift: itemShift,
+                                            buildingName: bldgName,
+                                            roomNo: rNo,
+                                            examName: itemExamName
+                                        });
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+
+            // 3. TERTIARY SOURCE: Student Directory Database (school_students)
+            if (allStudents.length === 0) {
+                const directoryStudents = safeJsonParse('school_students', []) || (typeof window !== 'undefined' && Array.isArray(window.studentsData) ? window.studentsData : []);
+                if (Array.isArray(directoryStudents) && directoryStudents.length > 0) {
+                    directoryStudents.forEach(st => {
+                        const stId = st.regNo || st.studentId || st.id;
+                        if (stId) {
+                            allStudents.push({
+                                id: stId,
+                                studentId: stId,
+                                regNo: st.regNo || stId,
+                                roll: parseInt(st.roll) || (allStudents.length + 1),
+                                name: st.name || st.studentName || st.nameBn || '',
+                                nameBn: st.nameBn || st.name || st.studentName || '',
+                                class: st.class || st.className || 'Nine',
+                                section: st.section || st.sec || '',
+                                shift: st.shift || 'Morning Shift',
+                                buildingName: st.buildingName || st.building || 'একাডেমিক ভবন-ক',
+                                roomNo: st.roomNo || '101',
+                                examName: st.examName || 'বার্ষিক পরীক্ষা ২০২৬'
+                            });
+                        }
+                    });
+                }
+            }
+
+            // 4. FALLBACK MOCK DATASET (If no stored data exists in localStorage)
+            if (allStudents.length === 0) {
+                allStudents = [
+                    { id: '2606001', studentId: '2606001', roll: 1, name: 'Abdullah Al Mamun', nameBn: 'আব্দুল্লাহ আল মামুন', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2606002', studentId: '2606002', roll: 2, name: 'Farjana Akter', nameBn: 'ফারজানা আক্তার', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2606003', studentId: '2606003', roll: 3, name: 'Tanvir Ahmed', nameBn: 'তানভীর আহমেদ', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2606004', studentId: '2606004', roll: 4, name: 'Sadia Sultana', nameBn: 'সাদিয়া সুলতানা', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2606005', studentId: '2606005', roll: 5, name: 'Md. Rafsan Hossain', nameBn: 'মোঃ রাফসান হোসেন', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2610001', studentId: '2610001', roll: 1, name: 'Rakibul Hasan', nameBn: 'রাকিবুল হাসান', class: 'Ten', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '102', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2610002', studentId: '2610002', roll: 2, name: 'Jahanara Begum', nameBn: 'জাহানারা বেগম', class: 'Ten', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '102', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2610003', studentId: '2610003', roll: 3, name: 'Shahadat Hossain', nameBn: 'শাহাদাত হোসেন', class: 'Ten', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '102', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2608001', studentId: '2608001', roll: 1, name: 'Mahir Faisel', nameBn: 'মাহির ফয়সাল', class: 'Eight', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '103', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2608002', studentId: '2608002', roll: 2, name: 'Tasnim Jahan', nameBn: 'তাসনিম জাহান', class: 'Eight', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '103', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2607001', studentId: '2607001', roll: 1, name: 'Ahsan Habib', nameBn: 'আহসান হাবীব', class: 'Seven', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '104', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+                    { id: '2607002', studentId: '2607002', roll: 2, name: 'Nabila Karim', nameBn: 'নাবিলা করিম', class: 'Seven', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '104', examName: 'বার্ষিক পরীক্ষা ২০২৬' }
+                ];
+            }
+
+            return allStudents;
+        }
+
+        function populateAttendanceSheetClassFilter() {
+            const classSelect = document.getElementById('attendance-sheet-filter-class');
+            if (!classSelect) return;
+            const currentSelected = classSelect.value || 'all';
+            classSelect.innerHTML = '<option value="all">All Classes</option>';
+
+            const classSet = new Set();
+            const allStudents = getAttendanceAllStudentsList();
+            allStudents.forEach(st => {
+                if (st.class && String(st.class).trim()) {
+                    classSet.add(String(st.class).trim());
+                }
+            });
+
+            if (classSet.size === 0) {
+                try {
+                    const classesList = JSON.parse(localStorage.getItem('school_classes') || '[]');
+                    if (Array.isArray(classesList)) {
+                        classesList.forEach(c => {
+                            const cName = (typeof c === 'string' ? c : (c.name || c.className || ''));
+                            if (cName.trim()) classSet.add(cName.trim());
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            const predefinedOrder = [
+                'play', 'nursery', 'kg',
+                'class 1', 'class 2', 'class 3', 'class 4', 'class 5',
+                'class 6', 'class 7', 'class 8', 'class 9', 'class 10',
+                'six', 'seven', 'eight', 'nine', 'ten',
+                'প্রথম', 'দ্বিতীয়', 'তৃতীয়', 'চতুর্থ', 'পঞ্চম',
+                'ষষ্ঠ', 'সপ্তম', 'অষ্টম', 'নবম', 'দশম'
+            ];
+
+            const sortedClasses = Array.from(classSet).sort((a, b) => {
+                const aIdx = predefinedOrder.indexOf(a.toLowerCase());
+                const bIdx = predefinedOrder.indexOf(b.toLowerCase());
+                if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                if (aIdx !== -1) return -1;
+                if (bIdx !== -1) return 1;
+                return a.localeCompare(b, 'bn');
+            });
+
+            sortedClasses.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.innerText = cls;
+                classSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...classSelect.options].some(o => o.value === currentSelected)) {
+                classSelect.value = currentSelected;
+            }
+        }
+
+        function populateAttendanceSheetExamFilter() {
+            const examSelect = document.getElementById('attendance-sheet-filter-exam');
+            if (!examSelect) return;
+            const currentSelected = examSelect.value || 'all';
+            examSelect.innerHTML = '<option value="all">সকল পরীক্ষা (All Exams / Routine Title)</option>';
+
+            const examSet = new Set();
+            try {
+                const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                if (Array.isArray(routines)) {
+                    routines.forEach(r => {
+                        if (r && r.examName && r.examName.trim()) {
+                            examSet.add(r.examName.trim());
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            try {
+                const seatPlansStore = JSON.parse(localStorage.getItem('school_seat_plans_store') || '{}');
+                if (seatPlansStore && typeof seatPlansStore === 'object') {
+                    Object.values(seatPlansStore).forEach(plan => {
+                        if (plan && plan.examName && plan.examName.trim()) {
+                            examSet.add(plan.examName.trim());
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            try {
+                const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+                if (Array.isArray(examTypes)) {
+                    examTypes.forEach(t => {
+                        const tName = typeof t === 'string' ? t : (t.name || t.examName || '');
+                        if (tName.trim()) examSet.add(tName.trim());
+                    });
+                }
+            } catch (e) {}
+
+            if (examSet.size === 0) {
+                const settings = safeJsonParse('school_settings', null);
+                if (settings?.examName && settings.examName.trim()) {
+                    examSet.add(settings.examName.trim());
+                } else {
+                    examSet.add('বার্ষিক পরীক্ষা ২০২৬');
+                }
+            }
+
+            examSet.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam;
+                opt.innerText = exam;
+                examSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...examSelect.options].some(o => o.value === currentSelected)) {
+                examSelect.value = currentSelected;
+            }
+        }
+
+        function populateAttendanceSheetShiftFilter() {
+            const shiftSelect = document.getElementById('attendance-sheet-filter-shift');
+            if (!shiftSelect) return;
+            const currentSelected = shiftSelect.value || 'all';
+            shiftSelect.innerHTML = '<option value="all">All Shifts</option>';
+
+            const shiftSet = new Set();
+            const allStudents = getAttendanceAllStudentsList();
+            allStudents.forEach(st => {
+                if (st.shift && String(st.shift).trim()) {
+                    shiftSet.add(String(st.shift).trim());
+                }
+            });
+
+            try {
+                const shiftTimes = JSON.parse(localStorage.getItem('school_shift_times') || '[]');
+                if (Array.isArray(shiftTimes)) {
+                    shiftTimes.forEach(s => {
+                        const sName = typeof s === 'string' ? s : (s.name || s.shiftName || '');
+                        if (sName.trim()) shiftSet.add(sName.trim());
+                    });
+                }
+            } catch (e) {}
+
+            if (shiftSet.size === 0) {
+                shiftSet.add('Morning Shift');
+                shiftSet.add('Afternoon Shift');
+            }
+
+            shiftSet.forEach(shift => {
+                const opt = document.createElement('option');
+                opt.value = shift;
+                opt.innerText = shift;
+                shiftSelect.appendChild(opt);
+            });
+
+            if (currentSelected && [...shiftSelect.options].some(o => o.value === currentSelected)) {
+                shiftSelect.value = currentSelected;
+            }
+        }
+
+        function updateAttendanceSheetFontSize(val) {
+            const num = parseFloat(val) || 14;
+            const valLabel = document.getElementById('attendance-sheet-font-size-val');
+            if (valLabel) valLabel.innerText = num + 'px';
+
+            const container = document.getElementById('attendance-pages-container');
+            if (!container) return;
+
+            const tds = container.querySelectorAll('td');
+            tds.forEach(td => {
+                td.style.fontSize = (num * 1.1) + 'px';
+            });
+
+            const studentNames = container.querySelectorAll('.student-name');
+            studentNames.forEach(sn => {
+                sn.style.fontSize = (num * 1.27) + 'px';
+            });
+
+            const ths = container.querySelectorAll('th');
+            ths.forEach(th => {
+                th.style.fontSize = (num * 1.0) + 'px';
+            });
+        }
+
+        function getAttendanceSubjectShortName(nameStr) {
+            if (!nameStr) return 'SUB';
+            const s = String(nameStr).trim();
+            if (!s) return 'SUB';
+
+            // 0. Check live school_subjects from localStorage for custom short names/codes
+            try {
+                const subMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+                const cleanInput = s.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+                for (const clsKey of Object.keys(subMap)) {
+                    const list = subMap[clsKey];
+                    if (Array.isArray(list)) {
+                        for (const item of list) {
+                            if (!item) continue;
+                            const itemCleanName = (item.name || '').toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+                            const itemCleanBn = (item.nameBn || '').toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+                            if (cleanInput && (cleanInput === itemCleanName || cleanInput === itemCleanBn)) {
+                                if (item.shortName && item.shortName.trim()) {
+                                    return item.shortName.trim().toUpperCase();
+                                }
+                                if (item.code && item.code.trim()) {
+                                    return item.code.trim().toUpperCase();
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            const lower = s.toLowerCase();
+
+            // 1. Higher Math vs General Math
+            if (/higher\s*math|h\.?\s*math|উচ্চতর\s*গণিত/i.test(lower)) return 'H.MATH';
+
+            // 2. Bangladesh and Global Studies (BGS) - MUST match before general Bangla
+            if (/\bbgs\b|bangladesh\s*and\s*global|bangladesh\s*&\s*global|বাংলাদেশ\s*ও\s*বিশ্ব|বাওবি|সমাজ\s*বিজ্ঞান/i.test(lower)) return 'BGS';
+
+            // 3. Bangla Papers
+            if (/bangla.*1|বাংলা.*১|bangla\s*sahitya|বাংলা\s*সাহিত্য|bangla.*first/i.test(lower)) return 'BAN 1st';
+            if (/bangla.*2|বাংলা.*২|bangla.*gram|বাংলা.*ব্যাকরণ|byakaran|নির্মিতি|bangla.*second/i.test(lower)) return 'BAN 2nd';
+            if (/\bbangla\b|\bbng\b|বাংলা(?!দেশ)/i.test(lower)) return 'BAN';
+
+            // 4. English Papers
+            if (/english.*1|ইংরেজি.*১|english\s*for\s*today|english.*first/i.test(lower)) return 'ENG 1st';
+            if (/english.*2|ইংরেজি.*২|english.*gram|composition|রচনা|english.*second/i.test(lower)) return 'ENG 2nd';
+            if (/\benglish\b|\beng\b|ইংরেজি/i.test(lower)) return 'ENG';
+
+            // 5. Work & Life, Physical Education, Arts & Crafts (before bio / physics / science)
+            if (/work\s*and\s*life|কর্ম\s*ও\s*জীবন|কর্মমুখী|কর্ম/i.test(lower)) return 'WORK';
+            if (/physical\s*ed|শারীরিক\s*শিক্ষা|শারীরিক/i.test(lower)) return 'PHY.ED';
+            if (/art|drawing|চারু\s*ও\s*কারু|চারু|ড্রয়িং|অঙ্কন/i.test(lower)) return 'ART';
+
+            // 6. Commerce & Humanities Specific Subjects (before general Science / Math)
+            if (/accounting|হিসাববিজ্ঞান|হিসাব/i.test(lower)) return 'ACC';
+            if (/finance|ফিন্যান্স|ব্যাংকিং/i.test(lower)) return 'FIN';
+            if (/business\s*ent|ব্যবসায়\s*উদ্যোগ|ব্যবসায়\s*উদ্যোগ|\bbusiness\b|ব্যবসায়|ব্যবসায়/i.test(lower)) return 'B.ENT';
+            if (/economics|অর্থনীতি/i.test(lower)) return 'ECON';
+            if (/civic|পৌরনীতি/i.test(lower)) return 'CIV';
+            if (/history|ইতিহাস|বিশ্বসভ্যতা/i.test(lower)) return 'HIST';
+            if (/geography|ভূগোল/i.test(lower)) return 'GEO';
+
+            // 7. General Math
+            if (/general\s*math|mathematics|\bmath\b|গণিত/i.test(lower)) return 'MATH';
+
+            // 8. ICT
+            if (/\bict\b|information\s*and\s*communication|information\s*&\s*communication|তথ্য\s*ও\s*যোগাযোগ|তথ্যপ্রযুক্তি/i.test(lower)) return 'ICT';
+
+            // 9. Physics / Chemistry / Biology
+            if (/physics|পদার্থবিজ্ঞান|পদার্থ/i.test(lower)) return 'PHY';
+            if (/chemistry|রসায়নবিজ্ঞান|রসায়ন|রসায়ন/i.test(lower)) return 'CHEM';
+            if (/biology|জীববিজ্ঞান/i.test(lower)) return 'BIO';
+
+            // 10. Home Science vs Agriculture vs General Science
+            if (/home\s*sci|গার্হস্থ্য/i.test(lower)) return 'HOME';
+            if (/agri|কৃষি/i.test(lower)) return 'AGRI';
+            if (/general\s*science|প্রাথমিক\s*বিজ্ঞান|\bscience\b|\bsci\b|বিজ্ঞান/i.test(lower)) return 'SCI';
+
+            // 11. Religions
+            if (/(islam|ইসলাম).*(hindu|হিন্দু)|(hindu|হিন্দু).*(islam|ইসলাম)/i.test(lower)) return 'ISLAM/HINDU';
+            if (/hindu|হিন্দু/i.test(lower)) return 'HINDU';
+            if (/islam|ইসলাম/i.test(lower)) return 'ISLAM';
+            if (/christian|খ্রিস্ট/i.test(lower)) return 'CHRIST';
+            if (/buddh|বৌদ্ধ/i.test(lower)) return 'BUDDHA';
+            if (/religion|ধর্ম/i.test(lower)) return 'ISLAM/HINDU';
+
+            // 12. General Knowledge
+            if (/general\s*knowledge|\bgk\b|সাধারণ\s*জ্ঞান/i.test(lower)) return 'GK';
+
+            // 13. Madrasah subjects
+            if (/arabic|আরবি/i.test(lower)) return 'ARABIC';
+            if (/quran|কুরআন/i.test(lower)) return 'QURAN';
+            if (/hadith|হাদিস/i.test(lower)) return 'HADITH';
+            if (/fiqh|ফিকহ/i.test(lower)) return 'FIQH';
+            if (/aqaid|আকাইদ/i.test(lower)) return 'AQAID';
+
+            const words = s.split(/[\s\-–—/]+/);
+            if (words.length === 1) {
+                return words[0].substring(0, 5).toUpperCase();
+            }
+            return words.map(w => w[0]).join('').substring(0, 5).toUpperCase();
+        }
+
+        function getAttendanceSingleSubjectBangla(code, name) {
+            const raw = (code || name || '').toUpperCase().trim();
+            const lowerName = (name || '').toLowerCase();
+
+            if (/BAN 1|BNG1|বাংলা ১|BANGLA 1/i.test(raw) || /বাংলা.*১ম/i.test(lowerName)) return 'বাংলা ১ম';
+            if (/BAN 2|BNG2|বাংলা ২|BANGLA 2/i.test(raw) || /বাংলা.*২য়|বাংলা.*২য়/i.test(lowerName)) return 'বাংলা ২য়';
+            if (/^BAN$|^BNG$|^বাংলা$/i.test(raw) || /^বাংলা$/i.test(lowerName)) return 'বাংলা';
+
+            if (/ENG 1|ENG1|ইংরেজি ১|ENGLISH 1/i.test(raw) || /ইংরেজি.*১ম/i.test(lowerName)) return 'ইংরেজি ১ম';
+            if (/ENG 2|ENG2|ইংরেজি ২|ENGLISH 2/i.test(raw) || /ইংরেজি.*২য়|ইংরেজি.*২য়/i.test(lowerName)) return 'ইংরেজি ২য়';
+            if (/^ENG$|^ইংরেজি$/i.test(raw) || /^ইংরেজি$/i.test(lowerName)) return 'ইংরেজি';
+
+            if (/H\.?MATH|উচ্চতর/i.test(raw) || /উচ্চতর.*গণিত/i.test(lowerName)) return 'উ:গণিত';
+            if (/MATH|গণিত/i.test(raw) || /গণিত/i.test(lowerName)) return 'গণিত';
+            if (/BGS|বাওবি|বাংলাদেশ/i.test(raw) || /বাংলাদেশ ও বিশ্বপরিচয়|সমাজ/i.test(lowerName)) return 'বাওবি';
+            if (/ICT|তথ্যপ্রযুক্তি/i.test(raw) || /তথ্য ও যোগাযোগ|তথ্যপ্রযুক্তি/i.test(lowerName)) return 'আইসিটি';
+
+            if (/PHY\.ED|শারীরিক/i.test(raw) || /শারীরিক শিক্ষা/i.test(lowerName)) return 'শারীরিক শিক্ষা';
+            if (/WORK|কর্ম/i.test(raw) || /কর্ম ও জীবন/i.test(lowerName)) return 'কর্ম ও জীবন';
+            if (/ART|চারু|ড্রয়িং|অঙ্কন/i.test(raw) || /চারু ও কারু|চারু/i.test(lowerName)) return 'চারু ও কারু';
+
+            if (/ACC|হিসাব/i.test(raw) || /হিসাববিজ্ঞান/i.test(lowerName)) return 'হিসাববিজ্ঞান';
+            if (/FIN|ফিন্যান্স/i.test(raw) || /ফিন্যান্স/i.test(lowerName)) return 'ফিন্যান্স';
+            if (/B\.ENT|BUS|ব্যবসায়|ব্যবসায়/i.test(raw) || /ব্যবসায় উদ্যোগ|ব্যবসায়/i.test(lowerName)) return 'ব্যবসায় উদ্যোগ';
+            if (/ECON|অর্থনীতি/i.test(raw) || /অর্থনীতি/i.test(lowerName)) return 'অর্থনীতি';
+            if (/CIV|পৌরনীতি/i.test(raw) || /পৌরনীতি/i.test(lowerName)) return 'পৌরনীতি';
+            if (/HIST|ইতিহাস/i.test(raw) || /ইতিহাস/i.test(lowerName)) return 'ইতিহাস';
+            if (/GEO|ভূগোল/i.test(raw) || /ভূগোল/i.test(lowerName)) return 'ভূগোল';
+
+            if (/PHY|পদার্থ/i.test(raw) || /পদার্থবিজ্ঞান/i.test(lowerName)) return 'পদার্থ';
+            if (/CHEM|CHE|রসায়ন|রসায়ন/i.test(raw) || /রসায়ন|রসায়ন/i.test(lowerName)) return 'রসায়ন';
+            if (/BIO|জীব/i.test(raw) || /জীববিজ্ঞান/i.test(lowerName)) return 'জীববিজ্ঞান';
+
+            if (/HOME|গার্হস্থ্য/i.test(raw) || /গার্হস্থ্য/i.test(lowerName)) return 'গার্হস্থ্য';
+            if (/AGRI|কৃষি/i.test(raw) || /কৃষি/i.test(lowerName)) return 'কৃষি';
+            if (/SCI|বিজ্ঞান/i.test(raw) || /বিজ্ঞান/i.test(lowerName)) return 'বিজ্ঞান';
+
+            if (/ISLAM\/HINDU|REL|ধর্ম/i.test(raw) || /ধর্ম ও নৈতিক শিক্ষা/i.test(lowerName)) return 'ধর্ম';
+            if (/ISLAM|ইসলাম/i.test(raw) || /ইসলাম/i.test(lowerName)) return 'ইসলাম';
+            if (/HINDU|হিন্দু/i.test(raw) || /হিন্দু/i.test(lowerName)) return 'হিন্দু';
+            if (/CHRIST|খ্রিস্ট/i.test(raw) || /খ্রিস্ট/i.test(lowerName)) return 'খ্রিস্টধর্ম';
+            if (/BUDDHA|বৌদ্ধ/i.test(raw) || /বৌদ্ধ/i.test(lowerName)) return 'বৌদ্ধধর্ম';
+
+            if (/GK|সাধারণ জ্ঞান/i.test(raw) || /সাধারণ জ্ঞান/i.test(lowerName)) return 'সাধারণ জ্ঞান';
+            if (/ARABIC|আরবি/i.test(raw) || /আরবি/i.test(lowerName)) return 'আরবি';
+            if (/QURAN|কুরআন/i.test(raw) || /কুরআন/i.test(lowerName)) return 'কুরআন';
+            if (/HADITH|হাদিস/i.test(raw) || /হাদিস/i.test(lowerName)) return 'হাদিস';
+            if (/FIQH|ফিকহ/i.test(raw) || /ফিকহ/i.test(lowerName)) return 'ফিকহ';
+            if (/AQAID|আকাইদ/i.test(raw) || /আকাইদ/i.test(lowerName)) return 'আকাইদ';
+
+            if (code) return code;
+            return name ? name.substring(0, 6) : 'বিষয়';
+        }
+
+        function getAttendanceSubjectHeaderDisplay(subCode, subName, langVal = 'en') {
+            if (!subCode) subCode = getAttendanceSubjectShortName(subName);
+
+            const parts = subCode.split('/').map(p => p.trim()).filter(Boolean);
+            const nameParts = (subName || '').split(/\s*\/\s*/);
+
+            if (langVal === 'en') {
+                if (parts.length >= 3) {
+                    return parts.slice(0, 2).join('/') + '<br>/' + parts.slice(2).join('/');
+                }
+                return subCode;
+            } else if (langVal === 'bn') {
+                const bnParts = parts.map((p, idx) => getAttendanceSingleSubjectBangla(p, nameParts[idx] || subName));
+                if (bnParts.length >= 3) {
+                    return bnParts.slice(0, 2).join('/') + '<br>/' + bnParts.slice(2).join('/');
+                }
+                return bnParts.join('/');
+            } else if (langVal === 'both') {
+                if (parts.length > 1) {
+                    const combined = parts.map((p, idx) => {
+                        const bn = getAttendanceSingleSubjectBangla(p, nameParts[idx] || subName);
+                        return `${bn} (${p})`;
+                    }).join('<br>');
+                    return combined;
+                } else {
+                    const bn = getAttendanceSingleSubjectBangla(subCode, subName);
+                    return `${bn} (${subCode})`;
+                }
+            }
+            return subCode;
+        }
+
+        function formatAttendanceRoutineDateForHeader(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return '';
+            const d = dateStr.trim();
+            const parts = d.split(/[-/.]/);
+            if (parts.length === 3) {
+                let day = parts[2];
+                let month = parts[1];
+                let year = parts[0];
+                if (parts[0].length === 2 && parts[2].length === 4) {
+                    day = parts[0];
+                    month = parts[1];
+                    year = parts[2];
+                }
+                const monthNum = parseInt(month, 10);
+                const monthNamesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (monthNum >= 1 && monthNum <= 12) {
+                    return `${parseInt(day, 10)}-${monthNamesEn[monthNum - 1]}`;
+                }
+            }
+            const dt = new Date(d);
+            if (!isNaN(dt.getTime())) {
+                const monthNamesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${dt.getDate()}-${monthNamesEn[dt.getMonth()]}`;
+            }
+            return d.substring(0, 6);
+        }
+
+        function normalizeAttendanceClassKey(cls) {
+            if (!cls) return '';
+            let s = String(cls).toLowerCase().trim();
+            s = s.replace(/^class\s+/i, '').replace(/^শ্রেণি\s+/i, '').replace(/^শ্রেণী\s+/i, '');
+            const map = {
+                'play': 'play', 'প্লে': 'play',
+                'nursery': 'nursery', 'নার্সারি': 'nursery', 'নার্সারী': 'nursery',
+                'kg': 'kg', 'কেজি': 'kg',
+                'one': '1', '1': '1', '১': '1', 'প্রথম': '1',
+                'two': '2', '2': '2', '২': '2', 'দ্বিতীয়': '2', 'দ্বিতীয়': '2',
+                'three': '3', '3': '3', '৩': '3', 'তৃতীয়': '3', 'তৃতীয়': '3',
+                'four': '4', '4': '4', '৪': '4', 'চতুর্থ': '4',
+                'five': '5', '5': '5', '৫': '5', 'পঞ্চম': '5',
+                'six': '6', '6': '6', '৬': '6', 'ষষ্ঠ': '6',
+                'seven': '7', '7': '7', '৭': '7', 'সপ্তম': '7',
+                'eight': '8', '8': '8', '৮': '8', 'অষ্টম': '8',
+                'nine': '9', '9': '9', '৯': '9', 'নবম': '9',
+                'ten': '10', '10': '10', '১০': '10', 'দশম': '10'
+            };
+            return map[s] || s;
+        }
+
+        function isAttendanceClassMatch(routineClass, targetClass) {
+            if (!routineClass || !targetClass) return false;
+            const normR = normalizeAttendanceClassKey(routineClass);
+            const normT = normalizeAttendanceClassKey(targetClass);
+            if (normR === normT) return true;
+
+            const rClean = String(routineClass).toLowerCase().trim();
+            const tClean = String(targetClass).toLowerCase().trim();
+            return rClean.includes(tClean) || tClean.includes(rClean);
+        }
+
+        function expandAttendanceSubjectItem(sName, sDate) {
+            if (!sName) return [];
+            let name = sName.trim();
+            let date = sDate || '';
+
+            if (/\+|,|\/|&| ও | এবং /.test(name)) {
+                const subParts = name.split(/\s*(?:\+| এবং | ও |,|\/|&)\s*/).filter(p => p.trim().length > 0);
+                if (subParts.length > 1) {
+                    return subParts.map(sp => {
+                        const code = getAttendanceSubjectShortName(sp);
+                        return { name: sp.trim(), code: code, date: date };
+                    });
+                }
+            }
+            const code = getAttendanceSubjectShortName(name);
+            return [{ name: name, code: code, date: date }];
+        }
+
+        function getDefaultAttendanceSubjectsForClass(cName) {
+            const norm = normalizeAttendanceClassKey(cName);
+            if (['play', 'nursery', 'kg'].includes(norm)) {
+                return [
+                    { name: 'বাংলা', shortName: 'BAN' },
+                    { name: 'ইংরেজি', shortName: 'ENG' },
+                    { name: 'গণিত', shortName: 'MATH' },
+                    { name: 'ড্রয়িং ও সাধারণ জ্ঞান', shortName: 'ART/GK' }
+                ];
+            }
+            if (['1', '2', '3', '4', '5'].includes(norm)) {
+                return [
+                    { name: 'বাংলা', shortName: 'BAN' },
+                    { name: 'ইংরেজি', shortName: 'ENG' },
+                    { name: 'গণিত', shortName: 'MATH' },
+                    { name: 'প্রাথমিক বিজ্ঞান', shortName: 'SCI' },
+                    { name: 'বাংলাদেশ ও বিশ্বপরিচয়', shortName: 'BGS' },
+                    { name: 'ধর্ম ও নৈতিক শিক্ষা', shortName: 'ISLAM/HINDU' }
+                ];
+            }
+            if (['6', '7', '8'].includes(norm)) {
+                return [
+                    { name: 'বাংলা ১ম পত্র', shortName: 'BAN 1st' },
+                    { name: 'বাংলা ২য় পত্র', shortName: 'BAN 2nd' },
+                    { name: 'ইংরেজি ১ম পত্র', shortName: 'ENG 1st' },
+                    { name: 'ইংরেজি ২য় পত্র', shortName: 'ENG 2nd' },
+                    { name: 'গণিত', shortName: 'MATH' },
+                    { name: 'বিজ্ঞান', shortName: 'SCI' },
+                    { name: 'বাংলাদেশ ও বিশ্বপরিচয়', shortName: 'BGS' },
+                    { name: 'ধর্ম ও নৈতিক শিক্ষা', shortName: 'ISLAM/HINDU' },
+                    { name: 'তথ্য ও যোগাযোগ প্রযুক্তি', shortName: 'ICT' },
+                    { name: 'কৃষি / গার্হস্থ্য বিজ্ঞান', shortName: 'AGRI/HOME' }
+                ];
+            }
+            return [
+                { name: 'বাংলা ১ম পত্র', shortName: 'BAN 1st' },
+                { name: 'বাংলা ২য় পত্র', shortName: 'BAN 2nd' },
+                { name: 'ইংরেজি ১ম পত্র', shortName: 'ENG 1st' },
+                { name: 'ইংরেজি ২য় পত্র', shortName: 'ENG 2nd' },
+                { name: 'গণিত', shortName: 'MATH' },
+                { name: 'তথ্য ও যোগাযোগ প্রযুক্তি', shortName: 'ICT' },
+                { name: 'ধর্ম ও নৈতিক শিক্ষা', shortName: 'ISLAM/HINDU' },
+                { name: 'পদার্থবিজ্ঞান / হিসাববিজ্ঞান / ভূগোল', shortName: 'PHY/ACC/GEO' },
+                { name: 'রসায়ন / ফিন্যান্স / ইতিহাস', shortName: 'CHEM/FIN/HIST' },
+                { name: 'জীববিজ্ঞান / ব্যবসায় উদ্যোগ / পৌরনীতি', shortName: 'BIO/B.ENT/CIV' },
+                { name: 'উচ্চতর গণিত / কৃষি শিক্ষা', shortName: 'H.MATH/AGRI' }
+            ];
+        }
+
+        function getRoutineSubjectsForAttendanceSheet(examVal = 'all', classVal = 'all') {
+            const routineData = safeJsonParse('school_exam_routines', null) ||
+                                safeJsonParse('school_exam_schedules', null) ||
+                                safeJsonParse('school_exam_routine', null) ||
+                                safeJsonParse('school_routines', null) ||
+                                safeJsonParse('school_saved_routines', null) ||
+                                safeJsonParse('exam_routines', []);
+
+            let rawSubjects = [];
+            if (Array.isArray(routineData) && routineData.length > 0) {
+                let filtered = routineData;
+                if (examVal && examVal !== 'all') {
+                    const exClean = examVal.toLowerCase().trim();
+                    filtered = filtered.filter(r => {
+                        const rExam = (r.examName || '').toLowerCase().trim();
+                        return rExam === exClean || rExam.includes(exClean) || exClean.includes(rExam);
+                    });
+                }
+                if (classVal && classVal !== 'all') {
+                    filtered = filtered.filter(r => isAttendanceClassMatch(r.class || r.className, classVal));
+                }
+
+                if (filtered.length > 0) {
+                    filtered.forEach(item => {
+                        if (Array.isArray(item.subjects)) {
+                            item.subjects.forEach(sub => {
+                                const sName = sub.subjectName || sub.name || sub.subject || '';
+                                const sDate = sub.examDate || sub.date || item.examDate || item.date || '';
+                                if (sName) {
+                                    const expanded = expandAttendanceSubjectItem(sName, sDate);
+                                    rawSubjects.push(...expanded);
+                                }
+                            });
+                        } else if (item.subject || item.subjectName) {
+                            const sName = item.subject || item.subjectName || '';
+                            const sDate = item.examDate || item.date || '';
+                            if (sName) {
+                                const expanded = expandAttendanceSubjectItem(sName, sDate);
+                                rawSubjects.push(...expanded);
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (rawSubjects.length === 0) {
+                return getDefaultAttendanceSubjectsForClass(classVal);
+            }
+
+            const dateGroups = {};
+            let autoDateIdx = 1;
+
+            rawSubjects.forEach(subItem => {
+                let dKey = subItem.date ? subItem.date.trim() : '';
+                if (!dKey) {
+                    dKey = `NO_DATE_${autoDateIdx++}`;
+                }
+                if (!dateGroups[dKey]) {
+                    dateGroups[dKey] = [];
+                }
+                dateGroups[dKey].push(subItem);
+            });
+
+            const sortedDateKeys = Object.keys(dateGroups).sort((a, b) => {
+                if (a.startsWith('NO_DATE_') && !b.startsWith('NO_DATE_')) return 1;
+                if (!a.startsWith('NO_DATE_') && b.startsWith('NO_DATE_')) return -1;
+                const dtA = new Date(a);
+                const dtB = new Date(b);
+                if (!isNaN(dtA.getTime()) && !isNaN(dtB.getTime())) {
+                    return dtA.getTime() - dtB.getTime();
+                }
+                return a.localeCompare(b);
+            });
+
+            const finalSubjects = [];
+            sortedDateKeys.forEach(dKey => {
+                const itemsInDate = dateGroups[dKey];
+                const seenCodes = new Set();
+                const subCodes = [];
+                const subNames = [];
+
+                itemsInDate.forEach(item => {
+                    const effectiveCode = item.code || getAttendanceSubjectShortName(item.name);
+                    if (effectiveCode && !seenCodes.has(effectiveCode)) {
+                        seenCodes.add(effectiveCode);
+                        subCodes.push(effectiveCode);
+                        subNames.push(item.name);
+                    }
+                });
+
+                if (subCodes.length > 0) {
+                    const combinedCode = subCodes.join('/');
+                    const combinedName = subNames.join(' / ');
+                    finalSubjects.push({
+                        name: combinedName,
+                        shortName: combinedCode,
+                        date: dKey,
+                        subCodes: subCodes,
+                        subNames: subNames
+                    });
+                }
+            });
+
+            if (finalSubjects.length > 0) return finalSubjects;
+            return getDefaultAttendanceSubjectsForClass(classVal);
+        }
+
+        function updateAttendanceSheetLive() {
+            const settings = safeJsonParse('school_settings', null);
+
+            const classVal = document.getElementById('attendance-sheet-filter-class')?.value || 'all';
+            const examVal = document.getElementById('attendance-sheet-filter-exam')?.value || 'all';
+            const shiftVal = document.getElementById('attendance-sheet-filter-shift')?.value || 'all';
+            const langVal = document.getElementById('attendance-sheet-filter-lang')?.value || 'en';
+            const searchVal = (document.getElementById('attendance-sheet-search-student')?.value || '').trim().toLowerCase();
+
+            const schoolName = settings?.schoolName || 'আলহেরা এডুকেয়ার হোম উচ্চ বিদ্যালয়';
+            const customLogo = localStorage.getItem('school_logo');
+            const logoUrl = customLogo || settings?.schoolLogo;
+            const logoHtml = logoUrl 
+                ? `<img src="${logoUrl}" alt="Logo" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
+                : `<span id="site-logo-icon">🎓</span>`;
+
+            // 1. Get All Students and filter
+            let allStudents = getAttendanceAllStudentsList();
+            let filtered = allStudents;
+
+            // Filter Class
+            if (classVal !== 'all') {
+                const reqClass = classVal.toLowerCase().trim();
+                filtered = filtered.filter(s => {
+                    const sc = (s.class || '').toLowerCase().trim();
+                    return sc === reqClass || sc.includes(reqClass) || reqClass.includes(sc);
+                });
+            }
+
+            // Filter Exam
+            if (examVal !== 'all') {
+                const reqExam = examVal.toLowerCase().trim();
+                filtered = filtered.filter(s => {
+                    const se = (s.examName || '').toLowerCase().trim();
+                    return se === reqExam || se.includes(reqExam) || reqExam.includes(se);
+                });
+            }
+
+            // Filter Shift
+            if (shiftVal !== 'all') {
+                const reqShift = shiftVal.toLowerCase().trim();
+                filtered = filtered.filter(s => {
+                    const ss = (s.shift || '').toLowerCase().trim();
+                    return ss === reqShift || ss.includes(reqShift) || reqShift.includes(ss);
+                });
+            }
+
+            // Filter Search Text
+            if (searchVal) {
+                filtered = filtered.filter(s => {
+                    const stId = String(s.studentId || s.id || '').toLowerCase();
+                    const stRoll = String(s.roll || '').toLowerCase();
+                    const stNameBn = String(s.nameBn || '').toLowerCase();
+                    const stNameEn = String(s.name || s.studentName || '').toLowerCase();
+                    const stRoom = String(s.roomNo || '').toLowerCase();
+                    const stBldg = String(s.buildingName || '').toLowerCase();
+                    return stId.includes(searchVal) || stRoll.includes(searchVal) || stNameBn.includes(searchVal) || stNameEn.includes(searchVal) || stRoom.includes(searchVal) || stBldg.includes(searchVal);
+                });
+            }
+
+            const pagesContainer = document.getElementById('attendance-pages-container');
+            if (!pagesContainer) return;
+
+            if (filtered.length === 0) {
+                pagesContainer.innerHTML = `
+                    <div style="background:#fff; padding:35px 20px; margin-top:25px; border-radius:10px; text-align:center; font-weight:700; color:#ef4444; font-size:1.1rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); border: 1.5px solid #fca5a5; max-width:600px;">
+                        ⚠️ কোনো তথ্য পাওয়া যায়নি (No matching student attendance sheet data found for selected filters).
+                    </div>`;
+                return;
+            }
+
+            // 2. Group Students by: (Exam Name + Shift Name + Building Name + Room No + Class Name)
+            const pageGroupMap = {};
+            filtered.forEach(st => {
+                const eName = st.examName || (examVal !== 'all' ? examVal : (settings?.examName || 'বার্ষিক পরীক্ষা ২০২৬'));
+                const sName = st.shift || 'Morning Shift';
+                const bName = st.buildingName || 'একাডেমিক ভবন-ক';
+                const rNo = st.roomNo || '101';
+                const cName = st.class || 'Nine';
+
+                const gKey = eName + '___' + sName + '___' + bName + '___' + rNo + '___' + cName;
+                if (!pageGroupMap[gKey]) {
+                    pageGroupMap[gKey] = {
+                        examName: eName,
+                        shiftName: sName,
+                        buildingName: bName,
+                        roomNo: rNo,
+                        className: cName,
+                        students: []
+                    };
+                }
+                pageGroupMap[gKey].students.push(st);
+            });
+
+            const groupKeys = Object.keys(pageGroupMap);
+
+            // Sort group keys logically
+            groupKeys.sort((aKey, bKey) => {
+                const gA = pageGroupMap[aKey];
+                const gB = pageGroupMap[bKey];
+
+                if (gA.examName !== gB.examName) return gA.examName.localeCompare(gB.examName, 'bn');
+
+                const isAMorning = /morning|sokal|সকাল|প্রভাতি/i.test(gA.shiftName);
+                const isBMorning = /morning|sokal|সকাল|প্রভাতি/i.test(gB.shiftName);
+                if (isAMorning && !isBMorning) return -1;
+                if (!isAMorning && isBMorning) return 1;
+
+                if (gA.buildingName !== gB.buildingName) return gA.buildingName.localeCompare(gB.buildingName, 'bn');
+
+                const roomComp = String(gA.roomNo).localeCompare(String(gB.roomNo), undefined, { numeric: true });
+                if (roomComp !== 0) return roomComp;
+
+                return String(gA.className).localeCompare(String(gB.className), 'bn');
+            });
+
+            let pagesHtml = '';
+            let pageIdx = 1;
+
+            const ROWS_PER_PAGE_STUDENTS = 10;
+
+            groupKeys.forEach(gKey => {
+                const { examName, shiftName, buildingName, roomNo, className, students } = pageGroupMap[gKey];
+
+                // Sort students in this page group by roll
+                students.sort((a, b) => (parseInt(a.roll) || 0) - (parseInt(b.roll) || 0));
+
+                const studentChunks = [];
+                if (students.length === 0) {
+                    studentChunks.push([]);
+                } else {
+                    for (let i = 0; i < students.length; i += ROWS_PER_PAGE_STUDENTS) {
+                        studentChunks.push(students.slice(i, i + ROWS_PER_PAGE_STUDENTS));
+                    }
+                }
+
+                studentChunks.forEach((chunkStudents, chunkIdx) => {
+                    // Formatted strings
+                    let shiftStrBn = 'বিকাল';
+                    let shiftStrEn = 'Afternoon';
+                    if (/morning|sokal|সকাল|প্রভাতি/i.test(shiftName)) {
+                        shiftStrBn = 'সকাল';
+                        shiftStrEn = 'Morning';
+                    }
+
+                    let sheetTitleStr = '';
+                    if (langVal === 'en') {
+                        sheetTitleStr = `Students Attendance Sheet (${shiftStrEn})`;
+                    } else if (langVal === 'both') {
+                        sheetTitleStr = `পরীক্ষার্থীদের হাজিরা শীট (${shiftStrBn}) / Attendance Sheet (${shiftStrEn})`;
+                    } else {
+                        sheetTitleStr = `পরীক্ষার্থীদের হাজিরা শীট (${shiftStrBn})`;
+                    }
+
+                    const rmNum = (langVal === 'en') ? roomNo : toBnNum(roomNo);
+                    let roomBldgDisplay = '';
+                    if (langVal === 'en') {
+                        roomBldgDisplay = `Room No : ${rmNum} | Building : ${buildingName}`;
+                    } else if (langVal === 'both') {
+                        roomBldgDisplay = `রুম নং / Room : ${rmNum} | বিল্ডিং / Building : ${buildingName}`;
+                    } else {
+                        roomBldgDisplay = `রুম নং : ${rmNum} | বিল্ডিং : ${buildingName}`;
+                    }
+
+                    const cntNum = (langVal === 'en') ? students.length : toBnNum(students.length);
+                    let studentCountDisplay = '';
+                    if (langVal === 'en') studentCountDisplay = 'Total Students : ' + cntNum;
+                    else if (langVal === 'both') studentCountDisplay = 'পরীক্ষার্থীর সংখ্যা / Total : ' + cntNum;
+                    else studentCountDisplay = 'পরীক্ষার্থীর সংখ্যা : ' + cntNum;
+
+                    let classDisplay = '';
+                    if (langVal === 'en') classDisplay = 'Class : ' + className;
+                    else if (langVal === 'both') classDisplay = 'ক্লাস / Class : ' + className;
+                    else classDisplay = 'ক্লাস : ' + className;
+
+                    // Subjects Header
+                    const subjects = getRoutineSubjectsForAttendanceSheet(examName, className);
+                    const subColsCount = (Array.isArray(subjects) && subjects.length > 0) ? subjects.length : 1;
+
+                    let subThHtml = '';
+                    subjects.forEach(sub => {
+                        const subCode = sub.shortName || getAttendanceSubjectShortName(sub.name);
+                        const displayCode = getAttendanceSubjectHeaderDisplay(subCode, sub.name, langVal);
+                        const formattedDate = formatAttendanceRoutineDateForHeader(sub.date);
+                        const subDate = formattedDate ? `<span style="display: block; font-size: 11px; font-weight: normal; line-height: 1; margin-top: 2px;">${formattedDate}</span>` : '';
+                        subThHtml += `<th style="line-height: 1.15; padding: 2px 1px;">${displayCode}${subDate}</th>`;
+                    });
+
+                    const emptySubTds = '<td></td>'.repeat(subColsCount);
+                    const blankSubTds = '<td>&nbsp;</td>'.repeat(subColsCount);
+
+                    // Table Rows (Exactly 10 student rows + 2 footer rows + 2 header rows = 14 rows total)
+                    let tbodyHtml = '';
+                    const startSl = chunkIdx * ROWS_PER_PAGE_STUDENTS;
+
+                    for (let rIdx = 0; rIdx < ROWS_PER_PAGE_STUDENTS; rIdx++) {
+                        const st = chunkStudents[rIdx];
+                        if (st) {
+                            const globalIdx = startSl + rIdx;
+                            const slStr = (langVal === 'en') ? (globalIdx + 1) : toBnNum(globalIdx + 1);
+                            const liveResolved = resolveAttendanceLiveStudent(st);
+                            const stId = (langVal === "bn") ? toBnNum(liveResolved.studentId || "-") : (liveResolved.studentId || "-");
+                            
+                            let stNameHtml = '';
+                            if (langVal === 'both') {
+                                const nameBn = st.nameBn || st.name || 'শিক্ষার্থী';
+                                const nameEn = (st.name && st.name !== st.nameBn) ? st.name : (st.studentName || '');
+                                if (nameEn) {
+                                    stNameHtml = `<div style="font-weight: 700; line-height: 1.15;">${nameBn}</div><div style="font-size: 0.85em; color: #334155; font-weight: 600; line-height: 1.1; margin-top: 2px;">${nameEn}</div>`;
+                                } else {
+                                    stNameHtml = `<div style="font-weight: 700; line-height: 1.15;">${nameBn}</div>`;
+                                }
+                            } else if (langVal === 'en') {
+                                stNameHtml = st.name || st.nameBn || 'Student';
+                            } else {
+                                stNameHtml = st.nameBn || st.name || 'শিক্ষার্থী';
+                            }
+
+                            tbodyHtml += `
+                                <tr>
+                                    <td>${slStr}</td>
+                                    <td>${stId}</td>
+                                    <td class="student-name" style="${langVal === 'both' ? 'padding-top: 3px; padding-bottom: 3px;' : ''}">${stNameHtml}</td>
+                                    ${emptySubTds}
+                                </tr>
+                            `;
+                        } else {
+                            tbodyHtml += `
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td class="student-name">&nbsp;</td>
+                                    ${blankSubTds}
+                                </tr>
+                            `;
+                        }
+                    }
+
+                    // Footer Signature & Count rows (Rows 10 and 11)
+                    let presentLabel = 'উপস্থিত পরীক্ষার্থীর সংখ্যা';
+                    let invigLabel = 'ইনভিজিলেটরের স্বাক্ষর';
+                    if (langVal === 'en') {
+                        presentLabel = 'Present Candidates Count';
+                        invigLabel = 'Invigilator Signature';
+                    } else if (langVal === 'both') {
+                        presentLabel = 'উপস্থিত পরীক্ষার্থীর সংখ্যা / Present Count';
+                        invigLabel = 'ইনভিজিলেটরের স্বাক্ষর / Invigilator Signature';
+                    }
+
+                    tbodyHtml += `
+                        <tr class="present-count-row">
+                            <td colspan="3" class="invigilator-label">${presentLabel}</td>
+                            ${emptySubTds}
+                        </tr>
+                        <tr class="invigilator-row">
+                            <td colspan="3" class="invigilator-label">${invigLabel}</td>
+                            ${emptySubTds}
+                        </tr>
+                    `;
+
+                    const sigHeaderLabel = (langVal === 'en') ? 'Candidate Signature' : (langVal === 'both' ? 'পরীক্ষার্থীর স্বাক্ষর / Candidate Signature' : 'পরীক্ষার্থীর স্বাক্ষর');
+                    const slHeaderLabel = (langVal === 'en') ? 'SL No.' : (langVal === 'both' ? 'ক্র: (SL)' : 'ক্র: নং');
+                    const rollHeaderLabel = (langVal === 'en') ? 'Student ID' : (langVal === 'both' ? 'আইডি (ID)' : 'শিক্ষার্থীর আইডি');
+                    const nameHeaderLabel = (langVal === 'en') ? 'Candidate Name' : (langVal === 'both' ? 'পরীক্ষার্থীর নাম / Name' : 'পরীক্ষার্থীর নাম');
+
+                    let chunkInfoStr = '';
+                    if (studentChunks.length > 1) {
+                        const startNum = startSl + 1;
+                        const endNum = Math.min(startSl + chunkStudents.length, students.length);
+                        chunkInfoStr = ` - ক্র: ${toBnNum(startNum)}-${toBnNum(endNum)}`;
+                    }
+
+                    pagesHtml += `
+                        <!-- Page Indicator Pill (Screen Preview Only) -->
+                        <div class="no-print" style="margin-top: 25px; margin-bottom: 10px; font-weight: 800; font-size: 0.95rem; color: #0284c7; background: #e0f2fe; padding: 6px 20px; border-radius: 20px; border: 1.5px solid #7dd3fc; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15); display: inline-flex; align-items: center; gap: 8px;">
+                            <span>📄 পৃষ্ঠা ${pageIdx} (${examName} - ${buildingName} - শ্রেণি ${className} - রুম নং ${roomNo} - ${shiftStrBn} শিফট${chunkInfoStr})</span>
+                        </div>
+
+                        <!-- Single Page Attendance Sheet Container -->
+                        <div class="container">
+                            <div class="header-section">
+                                <div class="header-logo-badge" style="position: absolute; left: 0; top: 0; margin-top: -0.03in; transform: translateY(-0.03in); width: 64px; height: 64px; background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%); color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25); border: 2.5px solid #0284c7; z-index: 5;">
+                                    ${logoHtml}
+                                </div>
+                                <h1 class="school-name">${schoolName}</h1>
+                                <div class="exam-row">
+                                    <div class="class-placeholder"></div>
+                                    <h2 class="exam-name">${examName}</h2>
+                                    <div class="class-name">${classDisplay}</div>
+                                </div>
+                                <div class="title-row">
+                                    <div class="room-no">${roomBldgDisplay}</div>
+                                    <h3 class="sheet-title">${sheetTitleStr}</h3>
+                                    <div class="student-count">${studentCountDisplay}</div>
+                                </div>
+                            </div>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2" class="col-sl">${slHeaderLabel}</th>
+                                        <th rowspan="2" class="col-roll">${rollHeaderLabel}</th>
+                                        <th rowspan="2" class="col-name">${nameHeaderLabel}</th>
+                                        <th colspan="${subColsCount}" class="sig-header-cell">${sigHeaderLabel}</th>
+                                    </tr>
+                                    <tr>
+                                        ${subThHtml}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tbodyHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                    pageIdx++;
+                });
+            });
+
+            pagesContainer.innerHTML = pagesHtml;
+
+            const currentFontSize = document.getElementById('attendance-sheet-font-size-slider')?.value;
+            if (currentFontSize) {
+                updateAttendanceSheetFontSize(currentFontSize);
+            }
+        }
+
+        function refreshStudentAttendanceData() {
+            populateAttendanceSheetClassFilter();
+            populateAttendanceSheetExamFilter();
+            populateAttendanceSheetShiftFilter();
+            updateAttendanceSheetLive();
+        }
+
+        function refreshAttendanceSheetData() {
+            refreshStudentAttendanceData();
+        }
+
+        function printStudentAttendanceSheet() {
+            document.body.classList.add('print-attendance-sheet-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-attendance-sheet-mode');
+            }, 1000);
+        }
+
+        async function downloadStudentAttendancePDF() {
+            const container = document.getElementById('attendance-pages-container');
+            const pages = container ? container.querySelectorAll('.container') : [];
+            if (!container || pages.length === 0) {
+                alert('ডাউনলোড করার মতো কোনো তথ্য পাওয়া যায়নি!');
+                return;
+            }
+
+            if (document.fonts && document.fonts.ready) {
+                try { await document.fonts.ready; } catch (e) { }
+            }
+
+            const examVal = document.getElementById('attendance-sheet-filter-exam')?.value || 'all';
+            const classVal = document.getElementById('attendance-sheet-filter-class')?.value || 'all';
+            const safeExamName = (examVal === 'all' ? 'Attendance_Sheet' : examVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const safeClassName = (classVal === 'all' ? 'All_Classes' : classVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+            const fileName = `Attendance_Sheet_${safeClassName}_${safeExamName}.pdf`;
+
+            const btn = document.getElementById('attendance-sheet-btn-download-pdf');
+            const originalBtnText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '⏳ পিডিএফ প্রস্তুত হচ্ছে...';
+                btn.disabled = true;
+            }
+
+            try {
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+                    const pdf = new JsPDFConstructor({ orientation: 'landscape', unit: 'mm', format: 'legal', compress: true });
+
+                    for (let i = 0; i < pages.length; i++) {
+                        if (btn) {
+                            btn.innerHTML = `⏳ পাতা ${i + 1}/${pages.length} তৈরি হচ্ছে...`;
+                        }
+                        const pageEl = pages[i];
+                        const originalBoxShadow = pageEl.style.boxShadow;
+                        const originalMargin = pageEl.style.marginBottom;
+
+                        pageEl.style.boxShadow = 'none';
+                        pageEl.style.marginBottom = '0';
+
+                        const canvas = await html2canvas(pageEl, {
+                            scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0
+                        });
+
+                        pageEl.style.boxShadow = originalBoxShadow;
+                        pageEl.style.marginBottom = originalMargin;
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        if (i > 0) {
+                            pdf.addPage('legal', 'landscape');
+                        }
+                        pdf.addImage(imgData, 'JPEG', 0, 0, 355.6, 215.9, undefined, 'FAST');
+                    }
+
+                    pdf.save(fileName);
+                    if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+                    return;
+                }
+
+                if (typeof html2pdf !== 'undefined') {
+                    const opt = {
+                        margin: 0, filename: fileName, image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' },
+                        jsPDF: { unit: 'mm', format: 'legal', orientation: 'landscape' },
+                        pagebreak: { mode: ['css', 'legacy'] }
+                    };
+                    await html2pdf().set(opt).from(container).save();
+                    if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+                    return;
+                }
+                throw new Error('PDF Engine not loaded');
+            } catch (err) {
+                console.error('PDF Generation Error:', err);
+                if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+                alert('সরাসরি ব্রাউজার প্রিন্ট ডায়ালগ থেকে "Destination: Save as PDF" সিলেক্ট করে সংরক্ষণ করতে পারেন।');
+                printStudentAttendanceSheet();
+            }
+        }
+
+        window.toBnNum = toBnNum;
+        window.refreshStudentAttendanceData = refreshStudentAttendanceData;
+        window.refreshAttendanceSheetData = refreshStudentAttendanceData;
+        window.updateAttendanceSheetLive = updateAttendanceSheetLive;
+        window.downloadStudentAttendancePDF = downloadStudentAttendancePDF;
+        window.printStudentAttendanceSheet = printStudentAttendanceSheet;
+
+        /* ==========================================================================
+           STUDENT DATA TOPSHEET JAVASCRIPT ENGINE (MERGED FROM Student Data Topsheet.html)
+           ========================================================================== */
+
+        function getSDTElement(id) {
+            return document.getElementById('sdt-' + id) || document.getElementById(id);
+        }
+
+        function toBengaliNumerals(num) {
+            if (num === null || num === undefined || num === '') return '-';
+            const str = String(num);
+            if (!/^\d+$/.test(str)) return str;
+            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return str.split('').map(d => bengaliDigits[parseInt(d)] || d).join('');
+        }
+
+        function formatClassName(c) {
+            if (!c) return 'Unassigned';
+            const map = {
+                'play': 'Play', 'nursery': 'Nursery', 'kg': 'KG',
+                'one': 'Class 1', 'two': 'Class 2', 'three': 'Class 3',
+                'four': 'Class 4', 'five': 'Class 5', 'six': 'Class 6',
+                'seven': 'Class 7', 'eight': 'Class 8', 'nine': 'Class 9', 'ten': 'Class 10'
+            };
+            const key = String(c).toLowerCase().trim();
+            return map[key] || c;
+        }
+
+        function formatShiftInfo(s) {
+            if (!s) return { name: 'সকাল', time: '10:00 AM - 12:30 PM' };
+            const shiftTimes = safeJsonParse('school_shift_times', {
+                'Morning Shift': '10:00 AM - 12:30 PM',
+                'Afternoon Shift': '01:30 PM - 04:00 PM'
+            });
+
+            const match = s.match(/^(.*?)\s*\((.*?)\)$/);
+            let bnName = s;
+            let timeStr = shiftTimes[s] || (s.toLowerCase().includes('afternoon') ? '01:30 PM - 04:00 PM' : '10:00 AM - 12:30 PM');
+
+            if (match) {
+                bnName = match[1].trim();
+                timeStr = match[2].trim();
+            } else {
+                if (s.toLowerCase().includes('morning') || s.includes('সকাল')) {
+                    bnName = 'সকাল';
+                } else if (s.toLowerCase().includes('afternoon') || s.includes('বিকাল') || s.includes('দুপুর')) {
+                    bnName = 'বিকাল';
+                }
+            }
+            return { name: bnName, time: timeStr };
+        }
+
+        function updateStudentDataTopsheetFontSize(val) {
+            const valSpan = getSDTElement('font-size-val');
+            if (valSpan) valSpan.innerText = val + 'px';
+            const container = getSDTElement('topsheet-render-container');
+            if (container) container.style.fontSize = (val / 16) + 'em';
+            localStorage.setItem('sdt_font_size', val);
+        }
+
+        function updateStudentDataTopsheetFontFamily(fontVal) {
+            const container = getSDTElement('topsheet-render-container');
+            if (container) {
+                container.style.fontFamily = fontVal;
+            }
+            localStorage.setItem('topsheet_font_family', fontVal);
+        }
+
+        function initStudentDataTopsheetFontFamily() {
+            const savedFont = localStorage.getItem('topsheet_font_family');
+            const fontSelect = getSDTElement('filter-font-family');
+            if (savedFont && fontSelect) {
+                if ([...fontSelect.options].some(o => o.value === savedFont)) {
+                    fontSelect.value = savedFont;
+                }
+            }
+            const currentFont = fontSelect ? fontSelect.value : "'Noto Rashi Hebrew', 'Tiro Bangla', 'Kalpurush', serif";
+            const container = getSDTElement('topsheet-render-container');
+            if (container) {
+                container.style.fontFamily = currentFont;
+            }
+
+            const savedSize = localStorage.getItem('sdt_font_size');
+            const slider = getSDTElement('font-size-slider');
+            if (savedSize && slider) {
+                slider.value = savedSize;
+                updateStudentDataTopsheetFontSize(savedSize);
+            }
+        }
+
+        function populateStudentDataTopsheetDropdowns() {
+            const examSelect = getSDTElement('filter-exam');
+            const buildingSelect = getSDTElement('filter-building');
+            const classSelect = getSDTElement('filter-class');
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+            // Populate Exams
+            if (examSelect) {
+                const currentExam = examSelect.value || 'all';
+                examSelect.innerHTML = '<option value="all">সকল সংরক্ষিত সিটপ্ল্যান (All Saved Seat Plans)</option>';
+                const examSet = new Set();
+
+                if (store && typeof store === 'object') {
+                    Object.values(store).forEach(plan => {
+                        if (plan && plan.examName && plan.examName.trim() && plan.examName !== 'All') {
+                            examSet.add(plan.examName.trim());
+                        }
+                    });
+                }
+
+                examSet.forEach(ex => {
+                    const opt = document.createElement('option');
+                    opt.value = ex;
+                    opt.innerText = ex;
+                    examSelect.appendChild(opt);
+                });
+
+                if (currentExam && [...examSelect.options].some(o => o.value === currentExam)) {
+                    examSelect.value = currentExam;
+                }
+            }
+
+            // Populate Buildings
+            if (buildingSelect) {
+                const currentBuilding = buildingSelect.value || 'all';
+                buildingSelect.innerHTML = '<option value="all">সকল বিল্ডিং (All Buildings)</option>';
+                const bSet = new Set();
+
+                const buildingsStore = safeJsonParse('school_buildings', []);
+                if (Array.isArray(buildingsStore)) {
+                    buildingsStore.forEach(b => {
+                        if (b && b.name) bSet.add(b.name);
+                    });
+                }
+
+                if (store && typeof store === 'object') {
+                    Object.values(store).forEach(plan => {
+                        if (plan && plan.allocations) {
+                            Object.values(plan.allocations).forEach(item => {
+                                const bName = item.building?.name || item.buildingName || item.building_name;
+                                if (bName) bSet.add(bName);
+                            });
+                        }
+                    });
+                }
+
+                bSet.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b;
+                    opt.innerText = b;
+                    buildingSelect.appendChild(opt);
+                });
+
+                if (currentBuilding && [...buildingSelect.options].some(o => o.value === currentBuilding)) {
+                    buildingSelect.value = currentBuilding;
+                }
+            }
+
+            // Populate Classes
+            if (classSelect) {
+                const currentClass = classSelect.value || 'all';
+                classSelect.innerHTML = '<option value="all">সকল শ্রেণি (All Classes)</option>';
+                const classSet = new Set();
+
+                const classesList = safeJsonParse('school_classes', ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"]);
+                classesList.forEach(c => classSet.add(c));
+
+                classSet.forEach(cls => {
+                    const opt = document.createElement('option');
+                    opt.value = cls;
+                    opt.innerText = formatClassName(cls);
+                    classSelect.appendChild(opt);
+                });
+
+                if (currentClass && [...classSelect.options].some(o => o.value === currentClass)) {
+                    classSelect.value = currentClass;
+                }
+            }
+        }
+
+        function getRoomGenderSuffix(sData, roomNo) {
+            if (!sData || !roomNo) return '';
+            const rInfo = sData.roomGenders ? sData.roomGenders[roomNo] : null;
+            if (rInfo) {
+                if (rInfo.female > 0 && rInfo.male === 0) return ' (ছাত্রী)';
+                if (rInfo.male > 0 && rInfo.female === 0) return ' (ছাত্র)';
+                if (rInfo.female > 0 && rInfo.male > 0) return ' (যৌথ)';
+                if (rInfo.roomGenderAttr) {
+                    const attr = String(rInfo.roomGenderAttr).toLowerCase();
+                    if (/female|girl|girls|ছাত্রী|মহিলা/i.test(attr)) return ' (ছাত্রী)';
+                    if (/male|boy|boys|ছাত্র|পুরুষ/i.test(attr)) return ' (ছাত্র)';
+                    if (/both|co|যৌথ/i.test(attr)) return ' (যৌথ)';
+                }
+            }
+            return '';
+        }
+
+        function getSampleDataFallback() {
+            return {
+                'ভবন ক': {
+                    'Morning Shift': {
+                        shiftInfo: { name: 'সকাল', time: '10:00 AM - 12:30 PM' },
+                        rooms: ['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '১০৮'],
+                        roomsSet: new Set(['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '১০৮']),
+                        classesData: {
+                            'Play': { '১০১': 10, '১০২': 2, '১০৩': 2, '১০৪': 2, '১০৫': 2, '১০৬': 2, '১০৭': 2, '১০৮': 2 },
+                            'Nursery': { '১০১': 15, '১০২': 5, '১০৩': 5, '১০৪': 5, '১০৫': 5, '১০৬': 5, '১০৭': 5, '১০৮': 5 },
+                            'KG': { '১০১': 20, '১০২': 10, '১০৩': 10, '১০৪': 10, '১০৫': 10, '১০৬': 10, '১০৭': 10, '১০৮': 10 },
+                            'Class 1': { '১০১': 0, '১০২': 15, '১০৩': 15, '১০৪': 15, '১০৫': 15, '১০৬': 15, '১০৭': 15, '১০৮': 15 },
+                            'Class 2': { '১০১': 0, '১০২': 0, '১০৩': 20, '১০৪': 20, '১০৫': 20, '১০৬': 20, '১০৭': 20, '১০৮': 20 },
+                            'Class 3': { '১০১': 0, '১০২': 0, '১০৩': 0, '১০৪': 25, '১০৫': 25, '১০৬': 25, '১০৭': 25, '১০৮': 25 }
+                        }
+                    },
+                    'Afternoon Shift': {
+                        shiftInfo: { name: 'বিকাল', time: '01:30 PM - 04:00 PM' },
+                        rooms: ['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '১০৮'],
+                        roomsSet: new Set(['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '১০৮']),
+                        classesData: {
+                            'Class 6': { '১০১': 25, '১০২': 25, '১০৩': 25, '১০৪': 25, '১০৫': 25, '১০৬': 25, '১০৭': 25, '১০৮': 25 },
+                            'Class 7': { '১০১': 20, '১০২': 20, '১০৩': 20, '১০৪': 20, '১০৫': 20, '১০৬': 20, '১০৭': 20, '১০৮': 20 },
+                            'Class 8': { '১০১': 15, '১০২': 15, '১০৩': 15, '১০৪': 15, '১০৫': 15, '১০৬': 15, '১০৭': 15, '১০৮': 15 }
+                        }
+                    }
+                }
+            };
+        }
+
+        function getStudentDataTopsheetLang() {
+            return getSDTElement('filter-lang')?.value || 'bn';
+        }
+
+        function formatNumberByLang(num, lang) {
+            if (num === null || num === undefined || num === '') return '-';
+            const nStr = String(num);
+            if (nStr === '-' || nStr === '0') {
+                return nStr === '0' ? (lang === 'en' ? '0' : toBengaliNumerals(0)) : '-';
+            }
+            if (lang === 'en') {
+                const bnToEnMap = { '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9' };
+                return nStr.split('').map(c => bnToEnMap[c] || c).join('');
+            }
+            return toBengaliNumerals(nStr);
+        }
+
+        function formatClassNameByLang(clsName, lang) {
+            let clean = String(clsName || '').trim();
+            const classMap = {
+                'play': { bn: 'প্লে', en: 'Play' },
+                'nursery': { bn: 'নার্সারি', en: 'Nursery' },
+                'kg': { bn: 'কেজি', en: 'KG' },
+                'class 1': { bn: '১ম', en: 'Class 1' },
+                'class 2': { bn: '২য়', en: 'Class 2' },
+                'class 3': { bn: '৩য়', en: 'Class 3' },
+                'class 4': { bn: '৪র্থ', en: 'Class 4' },
+                'class 5': { bn: '৫ম', en: 'Class 5' },
+                'class 6': { bn: '৬ষ্ঠ', en: 'Class 6' },
+                'class 7': { bn: '৭ম', en: 'Class 7' },
+                'class 8': { bn: '৮ম', en: 'Class 8' },
+                'class 9': { bn: '৯ম', en: 'Class 9' },
+                'class 10': { bn: '১০ম', en: 'Class 10' },
+                'one': { bn: '১ম', en: 'One' },
+                'two': { bn: '২য়', en: 'Two' },
+                'three': { bn: '৩য়', en: 'Three' },
+                'four': { bn: '৪র্থ', en: 'Four' },
+                'five': { bn: '৫ম', en: 'Five' },
+                'six': { bn: '৬ষ্ঠ', en: 'Six' },
+                'seven': { bn: '৭ম', en: 'Seven' },
+                'eight': { bn: '৮ম', en: 'Eight' },
+                'nine': { bn: '৯ম', en: 'Nine' },
+                'ten': { bn: '১০ম', en: 'Ten' }
+            };
+
+            const low = clean.toLowerCase();
+            if (classMap[low]) {
+                if (lang === 'en') return classMap[low].en;
+                if (lang === 'both') return `${classMap[low].bn} (${classMap[low].en})`;
+                return classMap[low].bn;
+            }
+            clean = clean.replace(/\s*শ্রেণি/g, '');
+            return clean;
+        }
+
+        function formatShiftInfoByLang(rawShift, lang) {
+            let info = formatShiftInfo(rawShift);
+            let nameBn = info.name || 'সকাল';
+            let nameEn = 'Morning';
+            const clean = String(rawShift).toLowerCase();
+
+            if (clean.includes('afternoon') || clean.includes('বিকাল') || clean.includes('দুপুর')) {
+                nameBn = 'বিকাল';
+                nameEn = 'Afternoon';
+            } else if (clean.includes('morning') || clean.includes('সকাল')) {
+                nameBn = 'সকাল';
+                nameEn = 'Morning';
+            }
+
+            let dispName = nameBn;
+            if (lang === 'en') dispName = nameEn;
+            if (lang === 'both') dispName = `${nameBn} (${nameEn})`;
+
+            return {
+                name: dispName,
+                time: info.time || ''
+            };
+        }
+
+        function formatBuildingNameByLang(bName, lang) {
+            const clean = String(bName || 'ভবন ক');
+            if (lang === 'en') {
+                if (clean.includes('ভবন ক')) return 'Building A';
+                if (clean.includes('ভবন খ')) return 'Building B';
+                if (clean.includes('ভবন গ')) return 'Building C';
+                return clean.replace(/ভবন/g, 'Building');
+            }
+            if (lang === 'both') {
+                if (clean.includes('ভবন ক')) return 'ভবন ক (Building A)';
+                if (clean.includes('ভবন খ')) return 'ভবন খ (Building B)';
+                if (clean.includes('ভবন গ')) return 'ভবন গ (Building C)';
+                return `${clean} (Building)`;
+            }
+            return clean;
+        }
+
+        function getMainTitleByLang(lang) {
+            if (lang === 'en') return 'Student Data Topsheet';
+            if (lang === 'both') return 'শিক্ষার্থীর তথ্য টপশীট (Student Data Topsheet)';
+            return 'শিক্ষার্থীর তথ্য টপশীট';
+        }
+
+        function getBuildingLabelByLang(bName, lang) {
+            const bDisp = formatBuildingNameByLang(bName, lang);
+            if (lang === 'en') return `Building : ${bDisp}`;
+            if (lang === 'both') return `বিল্ডিং (Building) : ${bDisp}`;
+            return `বিল্ডিং : ${bDisp}`;
+        }
+
+        function getShiftLabelPrefix(lang) {
+            if (lang === 'en') return 'Shift';
+            if (lang === 'both') return 'শিফট (Shift)';
+            return 'শিফট';
+        }
+
+        function getShiftHeaderByLang(lang) {
+            if (lang === 'en') return 'Shift';
+            if (lang === 'both') return 'শিফট (Shift)';
+            return 'শিফট';
+        }
+
+        function getClassHeaderByLang(lang) {
+            if (lang === 'en') return 'Class';
+            if (lang === 'both') return 'ক্লাস (Class)';
+            return 'ক্লাস';
+        }
+
+        function getTotalHeaderByLang(lang) {
+            if (lang === 'en') return 'Total';
+            if (lang === 'both') return 'মোট (Total)';
+            return 'মোট';
+        }
+
+        function getGrandTotalLabelByLang(lang) {
+            if (lang === 'en') return 'Grand Total Students';
+            if (lang === 'both') return 'সর্বমোট শিক্ষার্থী (Total Students)';
+            return 'সর্বমোট শিক্ষার্থী';
+        }
+
+        function formatRoomNumberByLang(roomNo, sData, lang) {
+            const suffix = getRoomGenderSuffix(sData, roomNo);
+            const bnNum = toBengaliNumerals(roomNo);
+            const enNum = String(roomNo).replace(/\D/g, '') || String(roomNo);
+
+            if (lang === 'en') {
+                return enNum + suffix.replace('মহিলা', 'Female').replace('পুরুষ', 'Male').replace('যৌথ', 'Combined');
+            }
+            if (lang === 'both') {
+                return `${bnNum} (${enNum})${suffix}`;
+            }
+            return bnNum + suffix;
+        }
+
+        function updateStudentDataTopsheetLive() {
+            populateStudentDataTopsheetDropdowns();
+            initStudentDataTopsheetFontFamily();
+
+            const lang = getStudentDataTopsheetLang();
+            const examVal = getSDTElement('filter-exam')?.value || 'all';
+            const shiftVal = getSDTElement('filter-shift')?.value || 'all';
+            const buildingVal = getSDTElement('filter-building')?.value || 'all';
+            const classVal = getSDTElement('filter-class')?.value || 'all';
+            const searchVal = (getSDTElement('search-student')?.value || '').toLowerCase().trim();
+
+            const schoolSettings = safeJsonParse('school_settings', {});
+            const schoolName = schoolSettings.schoolName || 'আল-হাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যা তীর্থ উচ্চ বিদ্যালয়';
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+            let activeAllocations = [];
+            let activeExamName = 'বার্ষিক পরীক্ষা - ২০২৬';
+            let hasSavedPlans = false;
+
+            if (examVal !== 'all') {
+                activeExamName = examVal;
+            } else if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                const firstKey = Object.keys(store)[0];
+                if (store[firstKey]?.examName) {
+                    activeExamName = store[firstKey].examName;
+                }
+            }
+
+            // 1. Gather all allocations across store matching Exam filter
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+                Object.keys(store).forEach(planKey => {
+                    const plan = store[planKey];
+                    if (!plan || !plan.allocations) return;
+
+                    let matchesExam = false;
+                    if (examVal === 'all') {
+                        matchesExam = true;
+                    } else {
+                        const cleanExam = examVal.toLowerCase().trim();
+                        const cleanPlanExam = (plan.examName || '').toLowerCase().trim();
+                        const cleanPlanKey = planKey.toLowerCase().trim();
+                        matchesExam = (cleanPlanExam === cleanExam) || (cleanPlanKey === cleanExam) || cleanPlanExam.includes(cleanExam);
+                    }
+
+                    if (matchesExam) {
+                        hasSavedPlans = true;
+                        Object.keys(plan.allocations).forEach(rId => {
+                            const item = plan.allocations[rId];
+                            if (item) {
+                                const itemCopy = JSON.parse(JSON.stringify(item));
+                                if (!itemCopy.shift && plan.shift) itemCopy.shift = plan.shift;
+                                activeAllocations.push(itemCopy);
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 2. Fallback to Active Saved Allocations (school_saved_seat_allocations) if store is empty
+            if (activeAllocations.length === 0 && savedAlloc && typeof savedAlloc === 'object' && Object.keys(savedAlloc).length > 0) {
+                if (examVal === 'all') {
+                    hasSavedPlans = true;
+                    Object.keys(savedAlloc).forEach(rId => {
+                        if (savedAlloc[rId]) activeAllocations.push(savedAlloc[rId]);
+                    });
+                }
+            }
+
+            const container = getSDTElement('topsheet-render-container');
+            if (!container) return;
+
+            // Structure to hold data: buildingMap[buildingName][shiftKey] = { shiftInfo, roomsSet, classRoomCounts }
+            let buildingMap = {};
+
+            if (hasSavedPlans && activeAllocations.length > 0) {
+                activeAllocations.forEach(alloc => {
+                    const buildingName = alloc.building?.name || alloc.buildingName || alloc.building_name || 'ভবন ক';
+                    const rawShift = alloc.shift || 'Morning Shift';
+                    const shiftInfo = formatShiftInfoByLang(rawShift, lang);
+                    const roomNo = alloc.room?.number || alloc.roomNo || alloc.room_no || alloc.roomName || alloc.room || '১০১';
+
+                    // Apply Shift & Building Filter
+                    if (buildingVal !== 'all' && buildingName !== buildingVal) return;
+                    if (shiftVal !== 'all') {
+                        const cleanShiftVal = shiftVal.toLowerCase();
+                        const cleanRawShift = rawShift.toLowerCase();
+                        const cleanShiftName = shiftInfo.name.toLowerCase();
+                        if (!cleanRawShift.includes(cleanShiftVal) && !cleanShiftName.includes(cleanShiftVal)) return;
+                    }
+
+                    if (!buildingMap[buildingName]) {
+                        buildingMap[buildingName] = {};
+                    }
+                    if (!buildingMap[buildingName][shiftInfo.name]) {
+                        buildingMap[buildingName][shiftInfo.name] = {
+                            shiftInfo: shiftInfo,
+                            rawShift: rawShift,
+                            roomsSet: new Set(),
+                            classesData: {},
+                            roomGenders: {}
+                        };
+                    }
+
+                    const shiftObj = buildingMap[buildingName][shiftInfo.name];
+                    shiftObj.roomsSet.add(roomNo);
+
+                    if (!shiftObj.roomGenders[roomNo]) {
+                        shiftObj.roomGenders[roomNo] = {
+                            total: 0,
+                            female: 0,
+                            male: 0,
+                            roomGenderAttr: alloc.room?.gender || alloc.roomGender || alloc.gender || ''
+                        };
+                    }
+                    const rMeta = shiftObj.roomGenders[roomNo];
+
+                    const benches = alloc.benches || [];
+                    benches.forEach(bench => {
+                        ['left', 'right'].forEach(side => {
+                            const student = bench[side];
+                            if (student && (student.id || student.studentId || student.name || student.class)) {
+                                rMeta.total++;
+                                const gStr = String(student.gender || student.sex || '').toLowerCase();
+                                if (/female|girl|girls|ছাত্রী|মহিলা|f/i.test(gStr)) {
+                                    rMeta.female++;
+                                } else if (/male|boy|boys|ছাত্র|পুরুষ|m/i.test(gStr)) {
+                                    rMeta.male++;
+                                }
+
+                                const rawCls = student.class || student.className || student.studentClass || 'Unassigned';
+                                const formattedCls = formatClassName(rawCls);
+
+                                // Apply Class & Search Filter
+                                if (classVal !== 'all' && formattedCls.toLowerCase() !== formatClassName(classVal).toLowerCase()) return;
+                                if (searchVal) {
+                                    const matchSearch = String(roomNo).toLowerCase().includes(searchVal) ||
+                                                        formattedCls.toLowerCase().includes(searchVal) ||
+                                                        shiftInfo.name.toLowerCase().includes(searchVal);
+                                    if (!matchSearch) return;
+                                }
+
+                                if (!shiftObj.classesData[formattedCls]) {
+                                    shiftObj.classesData[formattedCls] = {};
+                                }
+                                shiftObj.classesData[formattedCls][roomNo] = (shiftObj.classesData[formattedCls][roomNo] || 0) + 1;
+                            }
+                        });
+                    });
+                });
+            }
+
+            // Check if processed data is present
+            let hasProcessedData = Object.keys(buildingMap).some(b => Object.keys(buildingMap[b]).length > 0);
+
+            // 3. Fallback Sample Dataset if no saved plans match or exist
+            if (!hasProcessedData && examVal === 'all' && shiftVal === 'all' && buildingVal === 'all' && classVal === 'all' && !searchVal) {
+                const sample = getSampleDataFallback();
+                buildingMap = sample;
+                hasProcessedData = true;
+            }
+
+            if (!hasProcessedData) {
+                container.innerHTML = `
+                    <div class="page-block">
+                        <div class="no-data-alert">
+                            ⚠️ কোনো সিটপ্ল্যান তথ্য পাওয়া যায়নি (No saved seat plan data found for selected filters).
+                            <br><span style="font-size: 0.9em; font-weight: normal; color: #64748b;">"Generate Auto" বাটন দিয়ে সিটপ্ল্যান তৈরি করে সেভ করুন।</span>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const mainTitleText = getMainTitleByLang(lang);
+            const shiftHeaderLabel = getShiftHeaderByLang(lang);
+            const classHeaderLabel = getClassHeaderByLang(lang);
+            const totalHeaderLabel = getTotalHeaderByLang(lang);
+            const grandTotalLabel = getGrandTotalLabelByLang(lang);
+            const shiftPrefix = getShiftLabelPrefix(lang);
+
+            // Render Tables with Page Block for each building (Both Morning & Afternoon shifts on same page)
+            let html = '';
+            Object.keys(buildingMap).forEach(bName => {
+                const shiftsData = buildingMap[bName];
+                const shiftKeys = Object.keys(shiftsData);
+
+                if (shiftKeys.length === 0) return;
+
+                const bLabelText = getBuildingLabelByLang(bName, lang);
+
+                html += `
+                    <div class="page-block">
+                        <!-- Printable Headline Header on Every Building Page -->
+                        <div class="topsheet-header" style="text-align: center; margin-bottom: 16px; border-bottom: 2px solid #000000; padding-bottom: 10px;">
+                            <h1 class="topsheet-school-name" style="margin: 0 0 4px 0; font-size: 1.55em; color: #000000 !important; font-weight: 900; letter-spacing: 0.3px;">
+                                ${schoolName}
+                            </h1>
+                            <div class="topsheet-exam-name" style="font-size: 1.15em; font-weight: 800; color: #000000 !important; margin-bottom: 5px;">
+                                ${activeExamName}
+                            </div>
+                            <h2 class="main-topsheet-title" style="margin: 0; font-size: 1.3em; color: #000000 !important; font-weight: 800;">
+                                ${mainTitleText}
+                            </h2>
+                        </div>
+                `;
+
+                shiftKeys.forEach((sKey, shiftIdx) => {
+                    const sData = shiftsData[sKey];
+                    const shiftInfo = formatShiftInfoByLang(sData.rawShift || sKey, lang);
+                    let rooms = Array.from(sData.roomsSet || []);
+
+                    // Sort rooms numerically / alphanumerically
+                    rooms.sort((a, b) => {
+                        const na = parseInt(String(a).replace(/\D/g, '')) || 0;
+                        const nb = parseInt(String(b).replace(/\D/g, '')) || 0;
+                        return na - nb || String(a).localeCompare(String(b));
+                    });
+
+                    const classesData = sData.classesData || {};
+                    let classList = Object.keys(classesData);
+
+                    // Standard Class Sort Order
+                    const classOrderMap = {
+                        'play': 1, 'nursery': 2, 'kg': 3, 'one': 4, 'two': 5, 'three': 6,
+                        'four': 7, 'five': 8, 'six': 9, 'seven': 10, 'eight': 11, 'nine': 12, 'ten': 13
+                    };
+                    classList.sort((a, b) => {
+                        const o1 = classOrderMap[a.toLowerCase()] || 99;
+                        const o2 = classOrderMap[b.toLowerCase()] || 99;
+                        return o1 - o2;
+                    });
+
+                    if (classList.length === 0) return;
+
+                    const marginTop = shiftIdx > 0 ? '20px' : '0px';
+
+                    html += `
+                        <div class="shift-section" style="margin-top: ${marginTop}; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <h3 class="shift-title" style="margin: 0; color: #000000 !important;">
+                                    ${shiftPrefix}: ${shiftInfo.name} ${shiftInfo.time ? `<span style="font-size: 0.9em; font-weight: normal; color: #000000 !important;">(${shiftInfo.time})</span>` : ''}
+                                </h3>
+                                <div style="font-size: 1.05em; font-weight: bold; color: #000000 !important;">
+                                    ${bLabelText}
+                                </div>
+                            </div>
+                            <table class="topsheet-table hide-col-lines">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 22%;">${shiftHeaderLabel}</th>
+                                        <th style="width: 15%;">${classHeaderLabel}</th>
+                                        ${rooms.map(r => `<th>${formatRoomNumberByLang(r, sData, lang)}</th>`).join('')}
+                                        <th style="width: 12%;">${totalHeaderLabel}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    // Calculate totals
+                    let roomTotals = {};
+                    rooms.forEach(r => roomTotals[r] = 0);
+                    let shiftGrandTotal = 0;
+
+                    classList.forEach((clsName, idx) => {
+                        let rowTotal = 0;
+                        const clsRoomMap = classesData[clsName] || {};
+                        const clsDisp = formatClassNameByLang(clsName, lang);
+
+                        html += `<tr>`;
+                        if (idx === 0) {
+                            html += `
+                                <td rowspan="${classList.length}" style="font-weight: bold; background: #ffffff; vertical-align: middle;">
+                                    <b>${shiftInfo.name}</b><br>
+                                    <span style="font-size: 0.88em; font-weight: normal; color: #475569;">${shiftInfo.time}</span>
+                                </td>
+                            `;
+                        }
+
+                        html += `<td style="font-weight: 600;">${clsDisp}</td>`;
+
+                        rooms.forEach(r => {
+                            const cnt = clsRoomMap[r] || 0;
+                            rowTotal += cnt;
+                            roomTotals[r] += cnt;
+                            html += `<td>${formatNumberByLang(cnt, lang)}</td>`;
+                        });
+
+                        shiftGrandTotal += rowTotal;
+                        html += `<td style="font-weight: bold; background: #fafafa;"><b>${formatNumberByLang(rowTotal, lang)}</b></td>`;
+                        html += `</tr>`;
+                    });
+
+                    html += `
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2">${grandTotalLabel}</td>
+                                            ${rooms.map(r => `<td>${formatNumberByLang(roomTotals[r], lang)}</td>`).join('')}
+                                            <td><b>${formatNumberByLang(shiftGrandTotal, lang)}</b></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                    `;
+                });
+
+                html += `</div>`; // Close .page-block for this building
+            });
+
+            container.innerHTML = html;
+        }
+
+        function printStudentDataTopsheet() {
+            let printStyle = document.getElementById('sdt-dynamic-print-style');
+            if (!printStyle) {
+                printStyle = document.createElement('style');
+                printStyle.id = 'sdt-dynamic-print-style';
+                document.head.appendChild(printStyle);
+            }
+            printStyle.innerHTML = `
+                @page {
+                    size: A4 landscape !important;
+                    margin: 0.3in !important;
+                }
+            `;
+            document.body.classList.add('print-student-data-topsheet-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-student-data-topsheet-mode');
+                if (printStyle && printStyle.parentNode) {
+                    printStyle.parentNode.removeChild(printStyle);
+                }
+            }, 1500);
+        }
+
+        // Automatic Landscape orientation for Ctrl+P while on Student Data Topsheet tab
+        window.addEventListener('beforeprint', () => {
+            const sdtView = document.getElementById('subview-student-data-topsheet');
+            if (sdtView && sdtView.classList.contains('active')) {
+                document.body.classList.add('print-student-data-topsheet-mode');
+                let printStyle = document.getElementById('sdt-dynamic-print-style');
+                if (!printStyle) {
+                    printStyle = document.createElement('style');
+                    printStyle.id = 'sdt-dynamic-print-style';
+                    document.head.appendChild(printStyle);
+                }
+                printStyle.innerHTML = `
+                    @page {
+                        size: A4 landscape !important;
+                        margin: 0.3in !important;
+                    }
+                `;
+            }
+        });
+
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('print-student-data-topsheet-mode');
+            const printStyle = document.getElementById('sdt-dynamic-print-style');
+            if (printStyle && printStyle.parentNode) {
+                printStyle.parentNode.removeChild(printStyle);
+            }
+        });
+
+        function downloadStudentDataTopsheetPDF() {
+            const container = getSDTElement('topsheet-render-container');
+            if (!container || !container.innerHTML.trim()) {
+                alert('ডাউনলোড করার মতো কোনো টপশীট পাওয়া যায়নি!');
+                return;
+            }
+            if (typeof html2pdf === 'function') {
+                const opt = {
+                    margin: [0.3, 0.3, 0.3, 0.3],
+                    filename: 'Student_Data_Topsheet.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                };
+                html2pdf().set(opt).from(container).save();
+            } else {
+                printStudentDataTopsheet();
+            }
+        }
+
+        function refreshStudentDataTopsheetData() {
+            updateStudentDataTopsheetLive();
+        }
+
+        window.updateStudentDataTopsheetLive = updateStudentDataTopsheetLive;
+        window.populateStudentDataTopsheetDropdowns = populateStudentDataTopsheetDropdowns;
+        window.updateStudentDataTopsheetFontSize = updateStudentDataTopsheetFontSize;
+        window.updateStudentDataTopsheetFontFamily = updateStudentDataTopsheetFontFamily;
+        window.printStudentDataTopsheet = printStudentDataTopsheet;
+        window.downloadStudentDataTopsheetPDF = downloadStudentDataTopsheetPDF;
+

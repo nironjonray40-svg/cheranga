@@ -1,0 +1,6 @@
+--- Inspecting Class Nine Students ---
+Student ID: 2609001, RegNo: 260133, Roll: 2609001, Class: Nine, Section/Group: A
+Student ID: 2609002, RegNo: 260134, Roll: 2609002, Class: Nine, Section/Group: A
+Student ID: 2609003, RegNo: 260135, Roll: 2609003, Class: Nine, Section/Group: A
+Student ID: 2609004, RegNo: 260136, Roll: 2609004, Class: Nine, Section/Group: A
+Student ID: 2609005, RegNo: 260137, Roll: 2609005, Class: Nine, Section/Group: A

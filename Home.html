@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script>
+        // Automatic CMS Mode: If user is not logged in, redirect directly to the login modal on CMS website
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('cms.html?login=required');
+        }
+    </script>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School - হোম</title>
+    <!-- Main Website Style CSS -->
+    <link rel="stylesheet" href="style.css?v=4.2">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Anton, Tiro Bangla / Hind Siliguri) -->
+    <link href="https://fonts.googleapis.com/css2?family=Agbalumo&family=Anton&family=Noto+Rashi+Hebrew:wght@100..900&family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@400;500;600;700&family=Kalpurush:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for Interactive Data Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'Hind Siliguri', serif;
+            background-color: #f1f5f9;
+        }
+        .home-body-content {
+            zoom: 115%;
+        }
+        .message-card-scaled {
+            zoom: 105%;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- HEADER / HERO SLIDESHOW SECTION -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container" id="homeSchoolLogoContainer">
+            <img id="homeSchoolLogo" src="school_logo.svg" alt="School Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
+        </div>
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</h1>
+            <p class="hero-subtitle">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</p>
+            <p class="hero-gmail" id="school-gmail"></p>
+            <div class="hero-other" id="school-other"></div>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR / TAB BAR SECTION -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand" title="হোম">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item active" data-tab="dashboard"><a href="index.html">Dashboard</a></li>
+                <li class="nav-item" data-tab="staff"><a href="staff.html">Staff Management</a></li>
+<li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=online-admissions">Online Admissions (অনলাইন ভর্তি আবেদন)</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="fees">
+                    <a href="fees.html">Fees & Payments</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="Money Collect.html">Money Collect</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="seat-plan">
+                    <a href="seat-plan.html?view=exam-routine">Seat Plan</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="seat-plan.html?view=exam-routine">Exam Routine</a></li>
+                        <li><a href="seat-plan.html?view=building-mgmt">Building Management</a></li>
+                        <li><a href="seat-plan.html?view=seat-distribution">Seat Distribution</a></li>
+                        <li><a href="seat-plan.html?view=seating-details">Seating Details (সামারি ও আসন বিন্যাস)</a></li>
+                        <li><a href="seat-plan.html?view=room-topshet">Room Seat Topshet (কক্ষের আসন টপশীট)</a></li>
+
+                        <li><a href="seat-plan.html?view=student-attendance">Student Attendance Sheet (পরীক্ষার্থীদের হাজিরা শীট)</a></li>
+                        <li><a href="seat-plan.html?view=student-data-topsheet">Student Data Topsheet (শিক্ষার্থীর তথ্য টপশীট)</a></li>
+                        <li><a href="seat-plan.html?view=find-seat">Seat Plan Report</a></li>
+                        <li><a href="seat-plan.html?view=exam-document-report">Exam Document Report</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal.html?view=exam-entry">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam List</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="result-portal">
+                    <a href="result-portal.html">Result Management</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="result-portal.html">Result Search</a></li>
+                        <li><a href="Tabulation Sheet.html">Tabulation Sheet</a></li>
+                        <li><a href="Marksheet.html">Marksheet</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                                        <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                        <li><a href="advance.html?view=designation-structure">Staff Designation Structure</a></li>
+                        <li><a href="advance.html?view=speeches-management">সভাপতির বাণী ও প্রধান শিক্ষকের বাণী</a></li>
+                        <li><a href="advance.html?view=chat">💬 Active Users & Live Chat</a></li>
+                        <li><a href="advance.html?view=user-management">👥 শিক্ষক-স্টাফ ইউজার ও পাসওয়ার্ড</a></li>
+                        <li><a href="advance.html?view=sms-settings">📱 SMS Gateway & API Settings</a></li>
+                        <li><a href="advance.html?view=cms-portal">🌐 CMS Website & Data Import</a></li>
+                        <li><a href="advance.html?view=address-structure">📍 ভর্তি ফরমের ঠিকানা কনফিগারেশন</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="cms-website">
+                    <a href="cms.html" target="_blank" style="background: linear-gradient(135deg, #0052ff 0%, #0284c7 100%); color: #ffffff !important; font-weight: 700; border-radius: 8px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;">
+                        <span>🌐 CMS ওয়েবসাইট</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR SECTION -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label"><i class="fa-solid fa-bullhorn" style="font-size: 0.8rem;"></i> নোটিশ / Notice:</span>
+            <div class="notice-ticker" title="নোটিশ পড়তে মাউস রাখুন">
+                <span class="notice-text" id="homeNoticeMarquee">বার্ষিক মডেল টেস্ট পরীক্ষা ২০২৬-এর সময়সূচি ও প্রবেশপত্র বিতরণ সংক্রান্ত জরুরি বিজ্ঞপ্তি। ✦ ষষ্ঠ থেকে দশম শ্রেণির অর্ধবার্ষিক পারফরম্যান্স মূল্যায়ন প্রকাশিত হয়েছে।</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Container (Full Screen Width) -->
+    <div class="w-full px-4 md:px-8 py-4 md:py-6 home-body-content">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+
+            <!-- Left Main Area (3 Columns) -->
+            <div class="md:col-span-3 space-y-6">
+
+                <!-- Row 1: Chairman (Left) & Hero Slider + Notice Board & Admin Summary (Right) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+                    <!-- Left Column (1 Col): Chairman's Message & Progress -->
+                    <div class="md:col-span-1 space-y-5">
+                        <!-- Left: Chairman -->
+                        <div class="bg-white p-5 rounded-xl shadow-md border-2 border-slate-300 flex flex-col h-auto message-card-scaled">
+                            <div>
+                                <div class="flex items-center gap-2 border-b-2 border-amber-200 pb-3 mb-3">
+                                    <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></span>
+                                    <h3 class="font-extrabold uppercase tracking-wider text-black" style="font-size: 18px !important; color: #000000; font-weight: 800;">সভাপতির বাণী</h3>
+                                </div>
+                                <div class="text-center mb-3 flex flex-col items-center">
+                                    <div class="bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mx-auto mb-2 text-3xl shadow-inner border-2 border-amber-300 overflow-hidden relative" style="width: 4cm; height: 5cm; min-width: 4cm; min-height: 5cm; max-width: 100%; border-radius: 8px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);">
+                                        <img id="homeChairmanPhoto" src="" alt="সভাপতি" class="w-full h-full object-cover hidden" onerror="this.classList.add('hidden'); document.getElementById('homeChairmanIcon').classList.remove('hidden');" style="width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; transform: scaleX(1.00);">
+                                        <i id="homeChairmanIcon" class="fa-solid fa-user-graduate"></i>
+                                    </div>
+                                    <h4 id="homeChairmanName" class="font-black text-black text-base" style="color: #000000; font-weight: 800;"></h4>
+                                    <p id="homeChairmanTitle" class="text-xs text-amber-800 font-extrabold mt-0.5" style="color: #92400e; font-weight: 800;"></p>
+                                </div>
+                            </div>
+                            <div class="bg-amber-50/90 p-3.5 rounded-lg border-2 border-amber-200 text-justify mt-3 shadow-inner">
+                                <p id="homeChairmanText" class="text-xs font-normal leading-relaxed text-justify m-0 my-0 py-0" style="color: #000000 !important; font-weight: 400; text-align: justify; margin-top: 0px !important; margin-bottom: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important; line-height: 1.65;"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (2 Cols): Hero Slider & (Notice Board + Admin Summary Directly Under Slider) -->
+                    <div class="md:col-span-2 space-y-5">
+                        <!-- Hero Banner Slider -->
+                        <div class="relative overflow-hidden bg-slate-900 rounded-xl shadow-md h-[300px] sm:h-[330px] flex flex-col justify-center">
+                            <div id="heroSlider" class="flex transition-transform duration-700 ease-in-out w-full h-full">
+                                <!-- Slides populated dynamically -->
+                            </div>
+                            <!-- Controls -->
+                            <button id="prevSlideBtn" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm border border-white/20 text-xs">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button id="nextSlideBtn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition backdrop-blur-sm border border-white/20 text-xs">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <!-- Indicators -->
+                            <div id="slideIndicatorsContainer" class="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                                <button class="slide-dot w-2.5 h-2.5 rounded-full bg-white transition" data-index="0"></button>
+                                <button class="slide-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white transition" data-index="1"></button>
+                                <button class="slide-dot w-2.5 h-2.5 rounded-full bg-white/50 hover:bg-white transition" data-index="2"></button>
+                            </div>
+                        </div>
+
+                        <!-- Directly Under Hero Slider: Notice Board & Admin Summary -->
+                        <div>
+                            <!-- Notice Board -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex items-center justify-between mb-4 border-l-4 border-sky-600 pl-2">
+                                    <h2 class="text-base font-bold text-gray-800">প্রশাসনিক নোটিশ বোর্ড</h2>
+                                    <a href="notice-board.html" class="text-[11px] text-sky-600 hover:text-sky-800 font-semibold flex items-center gap-1 transition">
+                                        সকল নোটিশ <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </a>
+                                </div>
+                                <div id="homeNoticeList" class="space-y-2.5">
+                                    <div class="border-b pb-2">
+                                        <span class="text-[11px] bg-sky-100 text-sky-700 font-semibold px-2 py-0.5 rounded">১০ আগস্ট ২০২৬</span>
+                                        <p class="text-xs text-gray-700 font-medium mt-1">সকল শিক্ষকমণ্ডলীর উপস্থিতিতে বার্ষিক একাডেমিক পরিকল্পনা সভা।</p>
+                                    </div>
+                                    <div class="border-b pb-2">
+                                        <span class="text-[11px] bg-sky-100 text-sky-700 font-semibold px-2 py-0.5 rounded">০৫ আগস্ট ২০২৬</span>
+                                        <p class="text-xs text-gray-700 font-medium mt-1">ষষ্ঠ থেকে দশম শ্রেণির মডেল টেস্ট পরীক্ষা সংক্রান্ত নোটিশ।</p>
+                                    </div>
+                                    <div class="pb-1">
+                                        <span class="text-[11px] bg-sky-100 text-sky-700 font-semibold px-2 py-0.5 rounded">২৮ জুলাই ২০২৬</span>
+                                        <p class="text-xs text-gray-700 font-medium mt-1">অভিভাবক সমাবেশ ও অর্ধবার্ষিক পরীক্ষার ফলাফল প্রদান।</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Admin & Teacher Summary Table (Hidden as requested) -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hidden" style="display: none !important;">
+                                <h2 class="text-base font-bold text-gray-800 border-l-4 border-sky-600 pl-2 mb-4">প্রশাসনিক সারসংক্ষেপ</h2>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs text-left">
+                                        <thead>
+                                            <tr class="text-gray-500 border-b">
+                                                <th class="pb-2">বিভাগ</th>
+                                                <th class="pb-2">সংখ্যা</th>
+                                                <th class="pb-2">অবস্থা</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="homeAdminSummaryBody" class="divide-y text-gray-700">
+                                            <tr>
+                                                <td class="py-2">অনুমোদিত পদ</td>
+                                                <td class="py-2">২৫ জন</td>
+                                                <td class="py-2"><span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">পূর্ণাঙ্গ</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-2">কর্মকর্তা ও স্টাফ</td>
+                                                <td class="py-2">০৮ জন</td>
+                                                <td class="py-2"><span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">সক্রিয়</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-2">শিক্ষক উপস্থিতি</td>
+                                                <td class="py-2">৯৬%</td>
+                                                <td class="py-2"><span class="bg-sky-100 text-sky-700 text-[10px] font-bold px-2 py-0.5 rounded">২৪/২৫</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-2">ল্যাব ও লাইব্রেরি</td>
+                                                <td class="py-2">০৩ জন</td>
+                                                <td class="py-2"><span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">সক্রিয়</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-2">ম্যানেজমেন্ট সিস.</td>
+                                                <td class="py-2">ভার্সন ৩.২</td>
+                                                <td class="py-2"><span class="bg-sky-100 text-sky-700 text-[10px] font-bold px-2 py-0.5 rounded">আপডেটেড</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Student Data & Class Statistics (Graphs & Table) -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+                        <div>
+                            <h2 class="text-base font-bold text-gray-800 border-l-4 border-sky-600 pl-2">শিক্ষার্থীর তথ্য ও শ্রেণিভিত্তিক পরিসংখ্যান (২০২৬)</h2>
+                            <p class="text-xs text-gray-500 mt-0.5 pl-3">শ্রেণিভিত্তিক ছাত্র-ছাত্রীর উপস্থিতি ও সার্বিক গ্রাফিক্যাল চিত্রায়নে তথ্যপ্রবাহ</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1 text-xs bg-sky-50 text-sky-700 px-2.5 py-1 rounded-full font-medium border border-sky-200">
+                                <i class="fa-solid fa-chart-column text-sky-600"></i> গ্রাফিক্যাল দৃশ্যমানতা
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Graph Container -->
+                    <div class="grid grid-cols-1 gap-5">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-chart-simple text-sky-600"></i> শ্রেণিভিত্তিক ছাত্র ও ছাত্রী সংখ্যা
+                                </h3>
+                                <span id="homeTotalStudentsBadge" class="text-[11px] text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200 font-semibold">মোট ৫৫০ জন</span>
+                            </div>
+                            <div class="relative h-64 w-full">
+                                <canvas id="studentBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table View (Hidden as requested) -->
+                    <div class="pt-2 hidden" style="display: none !important;">
+                        <h3 class="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-table text-slate-600"></i> শ্রেণিভিত্তিক বিস্তারিত ডেটা টেবিল
+                        </h3>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                            <table class="w-full text-xs text-center">
+                                <thead class="bg-gray-100 text-gray-700 font-bold border-b">
+                                    <tr>
+                                        <th class="py-2.5 text-left pl-3">শ্রেণি</th>
+                                        <th class="py-2.5">মোট শাখা</th>
+                                        <th class="py-2.5 text-sky-700">ছাত্র সংখ্যা</th>
+                                        <th class="py-2.5 text-pink-700">ছাত্রী সংখ্যা</th>
+                                        <th class="py-2.5 font-bold text-gray-900">মোট শিক্ষার্থী</th>
+                                        <th class="py-2.5 text-emerald-700">দৈনিক উপস্থিতি</th>
+                                        <th class="py-2.5">পারফরম্যান্স</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="homeStudentTableBody" class="divide-y text-gray-700 bg-white">
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="py-2.5 text-left pl-3 font-bold text-slate-800">ষষ্ঠ শ্রেণি</td>
+                                        <td>২ (ক, খ)</td>
+                                        <td class="font-medium text-sky-700">৬৫ জন</td>
+                                        <td class="font-medium text-pink-700">৫৫ জন</td>
+                                        <td class="font-bold text-slate-900">১২০ জন</td>
+                                        <td class="font-semibold text-emerald-600">৯৫.০%</td>
+                                        <td><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">চমৎকার</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="py-2.5 text-left pl-3 font-bold text-slate-800">সপ্তম শ্রেণি</td>
+                                        <td>২ (ক, খ)</td>
+                                        <td class="font-medium text-sky-700">৬০ জন</td>
+                                        <td class="font-medium text-pink-700">৫৫ জন</td>
+                                        <td class="font-bold text-slate-900">১১৫ জন</td>
+                                        <td class="font-semibold text-emerald-600">৯৩.২%</td>
+                                        <td><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">ভালো</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="py-2.5 text-left pl-3 font-bold text-slate-800">অষ্টম শ্রেণি</td>
+                                        <td>২ (ক, খ)</td>
+                                        <td class="font-medium text-sky-700">৫৮ জন</td>
+                                        <td class="font-medium text-pink-700">৫২ জন</td>
+                                        <td class="font-bold text-slate-900">১১০ জন</td>
+                                        <td class="font-semibold text-emerald-600">৯৪.৫%</td>
+                                        <td><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">চমৎকার</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="py-2.5 text-left pl-3 font-bold text-slate-800">নবম শ্রেণি</td>
+                                        <td>২ (বিজ্ঞান, মানবিক)</td>
+                                        <td class="font-medium text-sky-700">৫৫ জন</td>
+                                        <td class="font-medium text-pink-700">৫০ জন</td>
+                                        <td class="font-bold text-slate-900">১০৫ জন</td>
+                                        <td class="font-semibold text-emerald-600">৯২.০%</td>
+                                        <td><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold">সন্তোষজনক</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="py-2.5 text-left pl-3 font-bold text-slate-800">দশম শ্রেণি (SSC)</td>
+                                        <td>২ (বিজ্ঞান, মানবিক)</td>
+                                        <td class="font-medium text-sky-700">৫২ জন</td>
+                                        <td class="font-medium text-pink-700">৪৮ জন</td>
+                                        <td class="font-bold text-slate-900">১০০ জন</td>
+                                        <td class="font-semibold text-emerald-600">৯৬.৮%</td>
+                                        <td><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">অতি উত্তম</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar Area: Headmaster Message & Important Govt Links -->
+            <div class="md:col-span-1 space-y-6">
+                <!-- Headmaster's Message -->
+                <div class="bg-white p-5 rounded-xl shadow-md border-2 border-slate-300 flex flex-col h-auto message-card-scaled">
+                    <div>
+                        <div class="flex items-center gap-2 border-b-2 border-emerald-200 pb-3 mb-4">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
+                            <h3 class="font-extrabold uppercase tracking-wider text-black" style="font-size: 18px !important; color: #000000; font-weight: 800;">প্রধান শিক্ষকের বাণী</h3>
+                        </div>
+                        <div class="text-center mb-4 flex flex-col items-center">
+                            <div class="bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner border-2 border-emerald-300 overflow-hidden relative" style="width: 4cm; height: 5cm; min-width: 4cm; min-height: 5cm; max-width: 100%; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">
+                                <img id="homeHeadmasterPhoto" src="" alt="প্রধান শিক্ষক" class="w-full h-full object-cover hidden" onerror="this.classList.add('hidden'); document.getElementById('homeHeadmasterIcon').classList.remove('hidden');" style="width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
+                                <i id="homeHeadmasterIcon" class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <h4 id="homeHeadmasterName" class="font-black text-black text-base" style="color: #000000; font-weight: 800;">শাহ মোঃ রোকনুজ্জামান চৌধুরী</h4>
+                            <p id="homeHeadmasterTitle" class="text-xs text-emerald-800 font-extrabold mt-0.5" style="color: #065f46; font-weight: 800;">প্রধান শিক্ষক</p>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50/90 p-3.5 rounded-lg border-2 border-emerald-200 text-justify mt-3 shadow-inner">
+                                <p id="homeHeadmasterText" class="text-xs font-normal leading-relaxed text-justify m-0 my-0 py-0" style="color: #000000 !important; font-weight: 400; text-align: justify; margin-top: 0px !important; margin-bottom: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important; line-height: 1.65;">
+                            "প্রিয় শিক্ষার্থীরা, তোমাদের সবাইকে আমার পক্ষ থেকে আন্তরিক শুভেচ্ছা ও ভালোবাসা। তোমরাই আগামী দিনের ভবিষ্যৎ, দেশের আশা ও জাতির সম্ভাবনা। একটি সুন্দর ভবিষ্যৎ গড়তে হলে তোমাদের এখনই সৎ, মেধাবী, পরিশ্রমী এবং দায়িত্বশীল মানুষ হিসেবে গড়ে উঠতে হবে। আমাদের বিদ্যালয় তোমাদের শুধু বইয়ের জ্ঞান নয়, বরং নৈতিকতা, ভদ্রতা, দেশপ্রেম এবং মানুষ হওয়ার শিক্ষা দেয়। আমরা চাই তোমরা যেন শ্রদ্ধাশীল হও, নিয়মিত পাঠে মনোযোগী হও, সময়ের মূল্য বুঝো এবং সবসময় সত্য ও ন্যায়ের পথে চলো। ভবিষ্যতে কে কী হবে—ডাক্তার, শিক্ষক, প্রকৌশলী, শিল্পী, বিজ্ঞানী—তা বড় কথা নয়; বড় কথা হলো, তোমরা যেন ভালো মানুষ হও। একজন ভালো মানুষ শুধু নিজের জন্য নয়, সমাজ ও দেশের জন্যও গুরুত্বপূর্ণ। তোমাদের যেকোনো প্রয়োজনে আমরা শিক্ষকরা পাশে আছি। ভয় বা সংকোচ না করে আমাদের সঙ্গে কথা বলো, প্রশ্ন করো, শেখো। তোমাদের উন্নত ভবিষ্যতের জন্য আমরা সবসময় আন্তরিকভাবে কাজ করে যাব। সবশেষে বলবো— স্বপ্ন দেখো, পরিশ্রম করো, এবং নিজের প্রতি বিশ্বাস রাখো। আল্লাহ্ চাইলে একদিন তোমরাও সফল হবে, নিজের পরিবার, সমাজ ও দেশের গর্ব হয়ে উঠবে। ভালো থেকো, সুস্থ থেকো, নিয়মিত পড়াশোনা করো। তোমাদের প্রতিটি দিন হোক শেখায় ভরপুর ও আনন্দময়।"
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Important Links (e-Services) -->
+                <div id="important-links" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80">
+                    <div class="flex items-center gap-2 border-b pb-3 mb-4">
+                        <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
+                        <h2 class="text-sm font-bold text-gray-800">গুরুত্বপূর্ণ লিংক (ই-সেবা)</h2>
+                    </div>
+                    <div class="flex flex-col space-y-3" id="homeImportantLinksContainer">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Progress & Achievement -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200/80">
+                    <div class="flex items-center gap-2 border-b pb-3 mb-4">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                        <h2 class="text-sm font-bold text-gray-800">প্রতিষ্ঠানের অগ্রগতি ও অর্জন</h2>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-emerald-50 p-3 rounded-lg text-center border border-emerald-100">
+                            <span id="homeAchievementPassRate" class="text-lg font-extrabold text-emerald-600 block">৯৮.৫%</span>
+                            <span class="text-xs text-gray-600 font-medium">এসএসসি পাস</span>
+                        </div>
+                        <div class="bg-sky-50 p-3 rounded-lg text-center border border-sky-100">
+                            <span id="homeAchievementTotalStudents" class="text-lg font-extrabold text-sky-600 block">৬৫০+</span>
+                            <span class="text-xs text-gray-600 font-medium">শিক্ষার্থী</span>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-lg text-center border border-amber-100">
+                            <span id="homeAchievementSmartClasses" class="text-lg font-extrabold text-amber-600 block">১০টি</span>
+                            <span class="text-xs text-gray-600 font-medium">স্মার্ট ক্লাস</span>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
+                            <span id="homeAchievementGpa5" class="text-lg font-extrabold text-purple-600 block">৪৫ জন</span>
+                            <span class="text-xs text-gray-600 font-medium">জিপিএ-৫</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Main Sync & Database Handler -->
+    <script src="main.js?v=4.2"></script>
+
+    <!-- Dynamic Data Synchronization & Interactive Script -->
+    <script>
+        let studentChartInstance = null;
+
+        function renderStudentChart(maleData, femaleData, customLabels) {
+            const ctxBar = document.getElementById('studentBarChart')?.getContext('2d');
+            if (!ctxBar) return;
+
+            if (studentChartInstance) {
+                studentChartInstance.destroy();
+            }
+
+            const defaultClassNames = ['ষষ্ঠ', 'সপ্তম', 'অষ্টম', 'নবম', 'দশম'];
+            const chartLabels = customLabels || maleData.map((mVal, i) => {
+                const fVal = femaleData[i] || 0;
+                const total = mVal + fVal;
+                const name = defaultClassNames[i] || `শ্রেণি ${i+6}`;
+                return `${name} : ${total} জন`;
+            });
+
+            const valuesAboveBarPlugin = {
+                id: 'valuesAboveBar',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        meta.data.forEach((bar, index) => {
+                            const value = dataset.data[index];
+                            ctx.fillStyle = i === 0 ? '#0284c7' : '#db2777';
+                            ctx.font = "bold 11px 'Tiro Bangla', sans-serif";
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(value + ' জন', bar.x, bar.y - 4);
+                        });
+                    });
+                }
+            };
+
+            studentChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                plugins: [valuesAboveBarPlugin],
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            label: 'ছাত্র',
+                            data: maleData,
+                            backgroundColor: 'rgba(14, 165, 233, 0.85)',
+                            borderColor: 'rgb(14, 165, 233)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'ছাত্রী',
+                            data: femaleData,
+                            backgroundColor: 'rgba(236, 72, 153, 0.85)',
+                            borderColor: 'rgb(236, 72, 153)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 25 } },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { family: "'Noto Rashi Hebrew', 'Tiro Bangla', serif", size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' জন';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grace: '15%',
+                            title: { display: true, text: 'শিক্ষার্থীর সংখ্যা' }
+                        },
+                        x: {
+                            ticks: {
+                                font: { family: "'Noto Rashi Hebrew', 'Tiro Bangla', serif", size: 11, weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHomeDataFromWebsite() {
+            // 1. School General Settings & Logo
+            try {
+                const customLogo = localStorage.getItem('school_logo');
+                const logoImgEl = document.getElementById('homeSchoolLogo');
+                if (logoImgEl) {
+                    if (customLogo) {
+                        logoImgEl.src = customLogo;
+                    } else {
+                        logoImgEl.src = 'school_logo.svg';
+                    }
+                }
+
+                const settings = JSON.parse(localStorage.getItem('school_settings') || '{}');
+                const schoolTitleEl = document.getElementById('homeSchoolTitle');
+                const schoolSubEl = document.getElementById('homeSchoolSubTitle');
+                
+                if (schoolTitleEl) {
+                    schoolTitleEl.textContent = settings.schoolName || "Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School";
+                }
+                if (schoolSubEl) {
+                    schoolSubEl.textContent = settings.schoolSubtitle || (settings.schoolAddress ? `${settings.schoolAddress}${settings.estYear ? ' — স্থাপিত: ' + settings.estYear : ''}` : "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়");
+                }
+
+                // Update Slider Header Elements (Subtitle, Gmail, and Other Info)
+                const heroTitle = document.getElementById('school-name');
+                if (heroTitle) {
+                    heroTitle.textContent = settings.schoolName || "Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School";
+                }
+                const heroSubtitle = document.querySelector('.hero-subtitle');
+                if (heroSubtitle) {
+                    heroSubtitle.textContent = settings.schoolSubtitle || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়";
+                }
+                const heroGmail = document.querySelector('.hero-gmail');
+                if (heroGmail) {
+                    if (settings.schoolGmail) {
+                        heroGmail.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="display: inline-block; vertical-align: middle; margin-right: 6px; position: relative; top: -1.5px;"><path fill="#4285F4" d="M20 18h1.5V8L17 5v13h3z"/><path fill="#34A853" d="M4 18h3V5L2.5 8v10H4z"/><path fill="#EA4335" d="M17 5L12 8.5 7 5v13h10V5z"/><path fill="#FBBC05" d="M12 8.5l5-3.5L12 1.5 7 5l5 3.5z"/></svg><span style="vertical-align: middle;">${settings.schoolGmail}</span>`;
+                        heroGmail.style.display = 'block';
+                    } else {
+                        heroGmail.style.display = 'none';
+                    }
+                }
+                const heroOther = document.querySelector('.hero-other');
+                if (heroOther) {
+                    if (settings.schoolOther) {
+                        heroOther.textContent = settings.schoolOther;
+                        heroOther.style.display = 'block';
+                    } else {
+                        heroOther.style.display = 'none';
+                    }
+                }
+
+                // Update Login Button Option
+                if (typeof initializeNavbarLogin === 'function') {
+                    initializeNavbarLogin();
+                }
+                // Chairman message & photo
+                const chNameEl = document.getElementById('homeChairmanName');
+                if (chNameEl) {
+                    chNameEl.textContent = settings.chairmanName || "";
+                }
+                const chTitleEl = document.getElementById('homeChairmanTitle');
+                if (chTitleEl) {
+                    chTitleEl.textContent = settings.chairmanTitle || "";
+                }
+                const chTextEl = document.getElementById('homeChairmanText');
+                if (chTextEl) {
+                    chTextEl.textContent = settings.chairmanMsg ? `"${settings.chairmanMsg}"` : "";
+                }
+                const chPhotoEl = document.getElementById('homeChairmanPhoto');
+                const chIconEl = document.getElementById('homeChairmanIcon');
+                if (chPhotoEl) {
+                    if (settings.chairmanPhoto) {
+                        chPhotoEl.src = settings.chairmanPhoto;
+                        chPhotoEl.classList.remove('hidden');
+                        chPhotoEl.style.display = 'block';
+                        if (chIconEl) {
+                            chIconEl.classList.add('hidden');
+                            chIconEl.style.display = 'none';
+                        }
+                    } else {
+                        chPhotoEl.src = "";
+                        chPhotoEl.classList.add('hidden');
+                        chPhotoEl.style.display = 'none';
+                        if (chIconEl) {
+                            chIconEl.classList.remove('hidden');
+                            chIconEl.style.display = 'inline-block';
+                        }
+                    }
+                }
+
+                // Headmaster info
+                const staffList = JSON.parse(localStorage.getItem('school_staff') || '[]');
+                const headmaster = staffList.find(s => typeof isHeadmasterDesignation === 'function' ? isHeadmasterDesignation(s.designation || s.designationBn) : (s.designation || '').includes('প্রধান শিক্ষক'));
+
+                let hmName = "";
+                if (headmaster && headmaster.nameBn) {
+                    if (settings.headmasterName && !/^[A-Za-z\s.,'-]+$/.test(settings.headmasterName.trim())) {
+                        hmName = settings.headmasterName;
+                    } else {
+                        hmName = headmaster.nameBn;
+                    }
+                } else if (settings.headmasterName) {
+                    hmName = settings.headmasterName;
+                } else if (headmaster) {
+                    hmName = headmaster.nameBn || headmaster.name || "শাহ মোঃ রোকনুজ্জামান চৌধুরী";
+                } else {
+                    hmName = "শাহ মোঃ রোকনুজ্জামান চৌধুরী";
+                }
+                const hmTitle = settings.headmasterTitle !== undefined ? settings.headmasterTitle : (headmaster && headmaster.designation);
+                const hmMsg = settings.headmasterMsg !== undefined ? settings.headmasterMsg : (headmaster && headmaster.message);
+                const hmPhoto = settings.headmasterPhoto !== undefined ? settings.headmasterPhoto : (headmaster && headmaster.photo);
+
+                if (hmName && document.getElementById('homeHeadmasterName')) {
+                    document.getElementById('homeHeadmasterName').textContent = hmName;
+                }
+                if (hmTitle !== undefined && document.getElementById('homeHeadmasterTitle')) {
+                    document.getElementById('homeHeadmasterTitle').textContent = hmTitle;
+                }
+                if (hmMsg !== undefined && document.getElementById('homeHeadmasterText')) {
+                    document.getElementById('homeHeadmasterText').textContent = hmMsg ? `"${hmMsg}"` : "";
+                }
+                const hmPhotoEl = document.getElementById('homeHeadmasterPhoto');
+                const hmIconEl = document.getElementById('homeHeadmasterIcon');
+                if (hmPhoto && hmPhotoEl) {
+                    hmPhotoEl.src = hmPhoto;
+                    hmPhotoEl.classList.remove('hidden');
+                    hmPhotoEl.style.display = 'block';
+                    if (hmIconEl) {
+                        hmIconEl.classList.add('hidden');
+                        hmIconEl.style.display = 'none';
+                    }
+                } else if (hmPhotoEl && hmIconEl) {
+                    hmPhotoEl.classList.add('hidden');
+                    hmPhotoEl.style.display = 'none';
+                    hmIconEl.classList.remove('hidden');
+                    hmIconEl.style.display = 'inline-block';
+                }
+            } catch (e) { console.error("Settings load error:", e); }
+
+            // 2. Published Notices & Unified Ticker (Sourced from Advance Ticker Manager & Notice Board)
+            try {
+                if (typeof updateNoticeTicker === 'function') {
+                    updateNoticeTicker();
+                }
+
+                // Load ticker notices (from Advance -> Scrolling Notice Ticker Manager)
+                let tickerNotices = [];
+                try {
+                    const rawTicker = localStorage.getItem('school_ticker_notices');
+                    if (rawTicker) {
+                        const parsed = JSON.parse(rawTicker);
+                        if (Array.isArray(parsed)) {
+                            tickerNotices = parsed.map((t, idx) => {
+                                if (!t) return null;
+                                if (typeof t === 'string' && t.trim()) {
+                                    return { id: 'tk_' + idx, title: t.trim(), date: '২০২৬', desc: '', pdf: null, fileName: null };
+                                }
+                                if (typeof t === 'object') {
+                                    return {
+                                        id: 'tk_' + idx,
+                                        title: (t.text || t.title || '').trim(),
+                                        date: t.date || '২০২৬',
+                                        desc: t.desc || '',
+                                        pdf: t.pdf || null,
+                                        fileName: t.fileName || null,
+                                        fileSize: t.fileSize || 0
+                                    };
+                                }
+                                return null;
+                            }).filter(Boolean);
+                        }
+                    }
+                } catch (e) { console.error("Ticker load error:", e); }
+
+                // Load published notices (from Notice Board)
+                let publishedNotices = [];
+                try {
+                    const rawNotices = localStorage.getItem('school_notices');
+                    if (rawNotices) {
+                        const parsed = JSON.parse(rawNotices);
+                        if (Array.isArray(parsed)) {
+                            publishedNotices = parsed.map((n, idx) => ({
+                                id: n.id || 'pub_' + idx,
+                                title: n.title || n.desc || n.text || 'বিজ্ঞপ্তি',
+                                date: n.date || '২০২৬',
+                                desc: (n.description || n.desc || ''),
+                                pdf: n.pdf || n.file || n.pdfUrl || n.attachment || null,
+                                fileName: n.fileName || null
+                            }));
+                        }
+                    }
+                } catch (e) { console.error("Notice load error:", e); }
+
+                // Combine: Advance ticker notices + Notice board published notices
+                let combinedNotices = [];
+                const seenTitles = new Set();
+
+                // 1. Ticker notices from Advance (especially with PDF)
+                tickerNotices.forEach(tn => {
+                    if (tn.title && !seenTitles.has(tn.title.toLowerCase())) {
+                        seenTitles.add(tn.title.toLowerCase());
+                        combinedNotices.push(tn);
+                    }
+                });
+
+                // 2. Published notices from Notice Board
+                publishedNotices.forEach(pn => {
+                    if (pn.title && !seenTitles.has(pn.title.toLowerCase())) {
+                        seenTitles.add(pn.title.toLowerCase());
+                        combinedNotices.push(pn);
+                    } else if (pn.title && seenTitles.has(pn.title.toLowerCase())) {
+                        const existing = combinedNotices.find(c => c.title.toLowerCase() === pn.title.toLowerCase());
+                        if (existing && !existing.pdf && pn.pdf) {
+                            existing.pdf = pn.pdf;
+                            existing.fileName = pn.fileName || existing.fileName;
+                        }
+                    }
+                });
+
+                // 3. Fallback defaults if no notices exist
+                if (combinedNotices.length === 0) {
+                    combinedNotices = [
+                        { id: 'def_1', title: 'সকল শিক্ষকমণ্ডলীর উপস্থিতিতে বার্ষিক একাডেমিক পরিকল্পনা সভা।', date: '১০ আগস্ট ২০২৬', desc: 'সকল শিক্ষকমণ্ডলীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী ১০ আগস্ট বার্ষিক একাডেমিক পরিকল্পনা সভা অনুষ্ঠিত হবে।' },
+                        { id: 'def_2', title: 'ষষ্ঠ থেকে দশম শ্রেণির মডেল টেস্ট পরীক্ষা সংক্রান্ত নোটিশ।', date: '০৫ আগস্ট ২০২৬', desc: 'ষষ্ঠ থেকে দশম শ্রেণির মডেল টেস্ট পরীক্ষা সংক্রান্ত নোটিশ ও রুটিন প্রকাশ করা হলো।' },
+                        { id: 'def_3', title: 'অভিভাবক সমাবেশ ও অর্ধবার্ষিক পরীক্ষার ফলাফল প্রদান।', date: '২৮ জুলাই ২০২৬', desc: 'অভিভাবক সমাবেশ ও অর্ধবার্ষিক পরীক্ষার ফলাফল প্রদান অনুষ্ঠান বিদ্যালয় মিলনায়তনে অনুষ্ঠিত হবে।' }
+                    ];
+                }
+
+                window.currentHomeNotices = combinedNotices;
+                const noticeListEl = document.getElementById('homeNoticeList');
+
+                if (noticeListEl && combinedNotices.length > 0) {
+                    noticeListEl.innerHTML = combinedNotices.slice(0, 4).map((n, i) => {
+                        const hasPdf = !!(n.pdf || n.file || n.pdfUrl || n.attachment);
+                        const title = n.title || n.desc || n.text || 'বিজ্ঞপ্তি';
+                        const desc = (n.desc && n.title && n.desc !== n.title) ? n.desc : (n.description || '');
+                        const dateStr = n.date || '২০২৬';
+
+                        return `
+                            <div onclick="handleHomeNoticeClick(${i})" class="group p-3 rounded-xl border border-gray-100 hover:border-sky-300 hover:bg-sky-50/50 transition-all duration-200 cursor-pointer flex flex-col shadow-2xs hover:shadow-xs bg-white" title="${hasPdf ? 'ক্লিক করে নোটিশ ও PDF দেখুন' : 'ক্লিক করে বিস্তারিত বিবরণ দেখুন'}">
+                                <div class="flex items-start justify-between gap-2">
+                                    <span class="text-[11px] bg-sky-100 text-sky-800 font-semibold px-2 py-0.5 rounded flex items-center gap-1 shrink-0 mt-0.5">
+                                        <i class="fa-regular fa-calendar-alt text-[10px] text-sky-600"></i> ${dateStr}
+                                    </span>
+                                    <div class="flex flex-col items-end shrink-0">
+                                        <span class="text-[11px] text-sky-600 font-semibold flex items-center gap-0.5 group-hover:text-sky-800 transition">
+                                            বিস্তারিত <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                                        </span>
+                                        ${hasPdf ? `
+                                            <button type="button" onclick="event.stopPropagation(); handleHomeNoticePdfClick(${i});" class="mt-1.5 inline-flex items-center gap-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 font-bold px-2 py-0.5 rounded text-[10.5px] transition-all shadow-2xs hover:shadow-xs cursor-pointer" title="PDF ফাইলটি চালু ও ডাউনলোড করুন">
+                                                <i class="fa-solid fa-file-pdf text-[11px]"></i> <span>Pdf</span>
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-800 font-semibold group-hover:text-sky-700 transition mt-1.5 line-clamp-2 leading-relaxed">${title}</p>
+                                ${desc ? `<p class="text-[11px] text-gray-500 line-clamp-1 mt-0.5">${desc}</p>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (e) { console.error("Notice load error:", e); }
+
+            // 3. Staff & Administrative Summary
+            try {
+                const staff = JSON.parse(localStorage.getItem('school_staff') || '[]');
+                const teachers = staff.filter(s => s.role === 'teacher' || s.designation?.includes('শিক্ষক')).length;
+                const totalStaff = staff.length || 25;
+                const officeStaff = staff.length > 0 ? Math.max(1, totalStaff - teachers) : 8;
+                
+                const adminBodyEl = document.getElementById('homeAdminSummaryBody');
+                if (adminBodyEl) {
+                    adminBodyEl.innerHTML = `
+                        <tr>
+                            <td class="py-2">অনুমোদিত পদ</td>
+                            <td class="py-2">${totalStaff} জন</td>
+                            <td class="py-2"><span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">পূর্ণাঙ্গ</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">শিক্ষক ও কর্মকর্তা</td>
+                            <td class="py-2">${teachers > 0 ? teachers : 17} জন</td>
+                            <td class="py-2"><span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">সক্রিয়</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">সহকারী ও স্টাফ</td>
+                            <td class="py-2">${officeStaff} জন</td>
+                            <td class="py-2"><span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">সক্রিয়</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">শিক্ষক উপস্থিতি</td>
+                            <td class="py-2">৯৬%</td>
+                            <td class="py-2"><span class="bg-sky-100 text-sky-700 text-[10px] font-bold px-2 py-0.5 rounded">২৪/২৫</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">ম্যানেজমেন্ট সিস.</td>
+                            <td class="py-2">ভার্সন ৩.২</td>
+                            <td class="py-2"><span class="bg-sky-100 text-sky-700 text-[10px] font-bold px-2 py-0.5 rounded">আপডেটেড</span></td>
+                        </tr>
+                    `;
+                }
+            } catch (e) { console.error("Staff summary load error:", e); }
+
+            // 4. Student Data & Class Statistics
+            try {
+                const students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                const classNames = ['ষষ্ঠ শ্রেণি', 'সপ্তম শ্রেণি', 'অষ্টম শ্রেণি', 'নবম শ্রেণি', 'দশম শ্রেণি (SSC)'];
+                const classKeys = ['Six', 'Seven', 'Eight', 'Nine', 'Ten'];
+                
+                let chartMaleData = [65, 60, 58, 55, 52];
+                let chartFemaleData = [55, 55, 52, 50, 48];
+                let tableRowsData = [];
+
+                if (students.length > 0) {
+                    chartMaleData = [];
+                    chartFemaleData = [];
+
+                    classKeys.forEach((ck, idx) => {
+                        const classStudents = students.filter(s => {
+                            const c = (s.class || s.studentClass || '').toString().toLowerCase();
+                            return c.includes(ck.toLowerCase()) || c.includes((idx + 6).toString()) || c.includes(classNames[idx].toLowerCase());
+                        });
+
+                        const maleCount = classStudents.filter(s => {
+                            const g = (s.gender || s.studentGender || '').toString().toLowerCase();
+                            return g === 'male' || g === 'ছাত্র' || g === 'm';
+                        }).length;
+
+                        const femaleCount = classStudents.filter(s => {
+                            const g = (s.gender || s.studentGender || '').toString().toLowerCase();
+                            return g === 'female' || g === 'ছাত্রী' || g === 'f';
+                        }).length;
+
+                        const totalInClass = classStudents.length;
+
+                        chartMaleData.push(maleCount || (65 - idx * 3));
+                        chartFemaleData.push(femaleCount || (55 - idx * 2));
+
+                        tableRowsData.push({
+                            name: classNames[idx],
+                            section: idx < 3 ? '২ (ক, খ)' : '২ (বিজ্ঞান, মানবিক)',
+                            male: maleCount || (65 - idx * 3),
+                            female: femaleCount || (55 - idx * 2),
+                            total: totalInClass || (120 - idx * 5),
+                            attendance: (93.5 + (idx % 3)).toFixed(1) + '%',
+                            status: idx === 4 ? 'অতি উত্তম' : 'চমৎকার'
+                        });
+                    });
+
+                    // Update Total Students Badge & Counters
+                    const totalCount = students.length;
+                    const badgeEl = document.getElementById('homeTotalStudentsBadge');
+                    if (badgeEl) badgeEl.textContent = `মোট ${totalCount} জন`;
+
+                    const counterEl = document.getElementById('homeAchievementTotalStudents');
+                    if (counterEl) counterEl.textContent = `${totalCount}+`;
+                } else {
+                    tableRowsData = [
+                        { name: 'ষষ্ঠ শ্রেণি', section: '২ (ক, খ)', male: 65, female: 55, total: 120, attendance: '৯৫.০%', status: 'চমৎকার' },
+                        { name: 'সপ্তম শ্রেণি', section: '২ (ক, খ)', male: 60, female: 55, total: 115, attendance: '৯৩.২%', status: 'ভালো' },
+                        { name: 'অষ্টম শ্রেণি', section: '২ (ক, খ)', male: 58, female: 52, total: 110, attendance: '৯৪.৫%', status: 'চমৎকার' },
+                        { name: 'নবম শ্রেণি', section: '২ (বিজ্ঞান, মানবিক)', male: 55, female: 50, total: 105, attendance: '৯২.০%', status: 'সন্তোষজনক' },
+                        { name: 'দশম শ্রেণি (SSC)', section: '২ (বিজ্ঞান, মানবিক)', male: 52, female: 48, total: 100, attendance: '৯৬.৮%', status: 'অতি উত্তম' }
+                    ];
+                }
+
+                const studentTableBody = document.getElementById('homeStudentTableBody');
+                if (studentTableBody) {
+                    studentTableBody.innerHTML = tableRowsData.map(row => `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="py-2.5 text-left pl-3 font-bold text-slate-800">${row.name}</td>
+                            <td>${row.section}</td>
+                            <td class="font-medium text-sky-700">${row.male} জন</td>
+                            <td class="font-medium text-pink-700">${row.female} জন</td>
+                            <td class="font-bold text-slate-900">${row.total} জন</td>
+                            <td class="font-semibold text-emerald-600">${row.attendance}</td>
+                            <td><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">${row.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Generate custom class labels with total student count
+                const baseClassLabels = ['ষষ্ঠ', 'সপ্তম', 'অষ্টম', 'নবম', 'দশম'];
+                const customLabels = chartMaleData.map((mVal, idx) => {
+                    const fVal = chartFemaleData[idx] || 0;
+                    const totalVal = mVal + fVal;
+                    const labelName = baseClassLabels[idx] || (classNames[idx] ? classNames[idx].replace(' শ্রেণি', '').trim() : `শ্রেণি ${idx+6}`);
+                    return `${labelName} : ${totalVal} জন`;
+                });
+
+                // Render Chart.js
+                renderStudentChart(chartMaleData, chartFemaleData, customLabels);
+
+            } catch (e) { console.error("Student stats load error:", e); }
+
+            // 5. Render Dynamic Important Links (e-Services)
+            try {
+                renderHomeImportantLinks();
+            } catch (e) { console.error("Important links render error:", e); }
+        }
+
+        const DEFAULT_IMPORTANT_LINKS = [
+            { title: "শিক্ষা মন্ত্রণালয়", url: "http://moedu.gov.bd", subtitle: "moedu.gov.bd", icon: "fa-landmark", color: "sky" },
+            { title: "মাধ্যমিক ও উচ্চশিক্ষা অধিদপ্তর", url: "http://dshe.gov.bd", subtitle: "dshe.gov.bd", icon: "fa-building-columns", color: "amber" },
+            { title: "জাতীয় শিক্ষাক্রম ও পাঠ্যপুস্তক বোর্ড", url: "http://nctb.gov.bd", subtitle: "nctb.gov.bd", icon: "fa-book", color: "emerald" },
+            { title: "দিনাজপুর শিক্ষা বোর্ড", url: "http://dinajpurboard.gov.bd", subtitle: "dinajpurboard.gov.bd", icon: "fa-graduation-cap", color: "rose" },
+            { title: "ব্যানবেইস (BANBEIS)", url: "http://banbeis.gov.bd", subtitle: "banbeis.gov.bd", icon: "fa-chart-bar", color: "sky" },
+            { title: "শিক্ষক বাতায়ন", url: "http://teachers.gov.bd", subtitle: "teachers.gov.bd", icon: "fa-chalkboard-user", color: "emerald" }
+        ];
+
+        function renderHomeImportantLinks() {
+            const container = document.getElementById('homeImportantLinksContainer');
+            if (!container) return;
+
+            let links = DEFAULT_IMPORTANT_LINKS;
+            try {
+                const stored = localStorage.getItem('school_important_links');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        links = parsed;
+                    }
+                }
+            } catch (e) { console.error("Links load error:", e); }
+
+            const colorClasses = {
+                sky: 'bg-sky-100 text-sky-600',
+                amber: 'bg-amber-100 text-amber-600',
+                emerald: 'bg-emerald-100 text-emerald-600',
+                rose: 'bg-rose-100 text-rose-600',
+                purple: 'bg-purple-100 text-purple-600'
+            };
+
+            container.innerHTML = links.map(link => {
+                const badgeStyle = colorClasses[link.color] || 'bg-sky-100 text-sky-600';
+                const iconClass = link.icon || 'fa-globe';
+                const displaySub = link.subtitle || link.url.replace(/^https?:\/\//, '');
+
+                return `
+                    <a href="${link.url}" target="_blank" class="flex items-center p-3 border border-slate-200 rounded-xl hover:border-sky-500 hover:bg-sky-50/50 transition group shadow-2xs">
+                        <div class="w-9 h-9 ${badgeStyle} rounded-lg flex items-center justify-center shrink-0 mr-3 group-hover:scale-105 transition shadow-inner">
+                            <i class="fa-solid ${iconClass} text-sm"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <h4 class="text-xs font-bold text-gray-800 group-hover:text-sky-600 transition truncate">${link.title}</h4>
+                            <span class="text-[10px] text-gray-400 block truncate">${displaySub}</span>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        // Dynamic Hero Banner Slider Initializer
+        const DEFAULT_HOME_SLIDES = [
+            {
+                url: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+                badge: "স্মার্ট ক্যাম্পাস ২০২৬",
+                badgeColor: "bg-amber-500 text-slate-950",
+                title: "গুণগত শিক্ষা ও মনোরম পরিবেশের সেরা ঠিকানা",
+                desc: "Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School — শিক্ষার্থীদের নৈতিক, শারীরিক ও মানসিক বিকাশে অনন্য প্রতিষ্ঠান।"
+            },
+            {
+                url: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80",
+                badge: "ডিজিটাল ক্লাসরুম",
+                badgeColor: "bg-sky-500 text-white",
+                title: "আধুনিক আইসিটি ল্যাব ও স্মার্ট লার্নিং ব্যবস্থা",
+                desc: "মাল্টিমিডিয়া প্রজেক্টর, কম্পিউটার ল্যাব ও প্রযুক্তি নির্ভর নতুন শিক্ষাক্রমের যুগোপযোগী প্রতিফলন।"
+            },
+            {
+                url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+                badge: "সমৃদ্ধ পাঠাগার",
+                badgeColor: "bg-emerald-500 text-white",
+                title: "জ্ঞানচর্চা ও বই পড়ার চমৎকার পরিবেশ",
+                desc: "সহস্রাধিক বই সংবলিত সুসজ্জিত লাইব্রেরি, বিজ্ঞানাগার ও বৈচিত্র্যময় সহপাঠ্যক্রমিক কার্যক্রম।"
+            },
+            {
+                url: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1200&q=80",
+                badge: "অভিজ্ঞ শিক্ষকমণ্ডলী",
+                badgeColor: "bg-purple-500 text-white",
+                title: "দক্ষ ও নিবেদিতপ্রাণ শিক্ষকবৃন্দের সার্বক্ষণিক তদারকি",
+                desc: "প্রতিটি শিক্ষার্থীর পৃথক যত্ন, নিয়মিত পাঠ্য মূল্যায়ন এবং ভবিষ্যৎ গঠনের দিকনির্দেশনা।"
+            }
+        ];
+
+        let heroSlideInterval = null;
+        let currentHeroSlideIndex = 0;
+
+        function initDynamicHeroSlider() {
+            const sliderContainer = document.getElementById('heroSlider');
+            const dotsContainer = document.getElementById('slideIndicatorsContainer');
+            const prevBtn = document.getElementById('prevSlideBtn');
+            const nextBtn = document.getElementById('nextSlideBtn');
+            if (!sliderContainer) return;
+
+            let slidesData = [];
+
+            try {
+                const stored = localStorage.getItem('school_slider_images');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        slidesData = parsed.map((item) => {
+                            if (typeof item === 'string') {
+                                return {
+                                    url: item,
+                                    badge: 'স্মার্ট ক্যাম্পাস ২০২৬',
+                                    badgeColor: 'bg-amber-500 text-slate-950',
+                                    title: '',
+                                    desc: ''
+                                };
+                            }
+                            return item;
+                        }).filter(s => s && (s.url || s.image));
+                    }
+                }
+            } catch (e) { console.error("Slider data load error:", e); }
+
+            if (slidesData.length === 0) {
+                if (heroSlideInterval) clearInterval(heroSlideInterval);
+                if (prevBtn) prevBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'none';
+                if (dotsContainer) dotsContainer.style.display = 'none';
+                sliderContainer.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-6 text-center min-h-[300px] sm:min-h-[330px]">
+                        <div class="w-14 h-14 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-images text-indigo-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-100">স্মার্ট ডিজিটাল ক্যাম্পাস</h3>
+                        <p class="text-xs text-slate-400 mt-1 max-w-md">অ্যাডভান্স প্যানেল থেকে আপনার নিজস্ব স্লাইড ছবি ও বিবরণ আপলোড করুন।</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (prevBtn) prevBtn.style.display = '';
+            if (nextBtn) nextBtn.style.display = '';
+            if (dotsContainer) dotsContainer.style.display = '';
+
+            // Render Slide Items HTML
+            sliderContainer.innerHTML = slidesData.map(slide => `
+                <div class="w-full shrink-0 relative h-full min-h-[300px] sm:min-h-[330px]">
+                    <img src="${slide.url || slide.image}" alt="${slide.title || 'Slide Image'}" class="w-full h-full object-cover brightness-75 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/40 to-transparent flex items-end p-5 md:p-6">
+                        <div class="text-white">
+                            ${slide.badge ? `<span class="${slide.badgeColor || 'bg-amber-500 text-slate-950'} text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 inline-block shadow-xs">${slide.badge}</span>` : ''}
+                            ${slide.title ? `<h2 class="text-xl sm:text-2xl font-bold tracking-tight drop-shadow-md">${slide.title}</h2>` : ''}
+                            ${slide.desc ? `<p class="text-xs text-gray-200 mt-1 drop-shadow line-clamp-2">${slide.desc}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render Dot Indicators
+            if (dotsContainer) {
+                dotsContainer.innerHTML = slidesData.map((_, idx) => `
+                    <button class="slide-dot w-2.5 h-2.5 rounded-full ${idx === 0 ? 'bg-white' : 'bg-white/50 hover:bg-white'} transition" data-index="${idx}"></button>
+                `).join('');
+            }
+
+            const totalSlides = slidesData.length;
+            currentHeroSlideIndex = 0;
+
+            function goToSlide(index) {
+                currentHeroSlideIndex = (index + totalSlides) % totalSlides;
+                sliderContainer.style.transform = `translateX(-${currentHeroSlideIndex * 100}%)`;
+                
+                const dots = dotsContainer?.querySelectorAll('.slide-dot');
+                dots?.forEach((dot, i) => {
+                    if (i === currentHeroSlideIndex) {
+                        dot.classList.remove('bg-white/50');
+                        dot.classList.add('bg-white');
+                    } else {
+                        dot.classList.remove('bg-white');
+                        dot.classList.add('bg-white/50');
+                    }
+                });
+            }
+
+            // Attach button handlers
+            if (prevBtn) {
+                prevBtn.onclick = () => {
+                    goToSlide(currentHeroSlideIndex - 1);
+                    resetHeroTimer();
+                };
+            }
+
+            if (nextBtn) {
+                nextBtn.onclick = () => {
+                    goToSlide(currentHeroSlideIndex + 1);
+                    resetHeroTimer();
+                };
+            }
+
+            const dots = dotsContainer?.querySelectorAll('.slide-dot');
+            dots?.forEach((dot, i) => {
+                dot.onclick = () => {
+                    goToSlide(i);
+                    resetHeroTimer();
+                };
+            });
+
+            function startHeroTimer() {
+                if (heroSlideInterval) clearInterval(heroSlideInterval);
+                heroSlideInterval = setInterval(() => {
+                    goToSlide(currentHeroSlideIndex + 1);
+                }, 4500);
+            }
+
+            function resetHeroTimer() {
+                if (heroSlideInterval) clearInterval(heroSlideInterval);
+                startHeroTimer();
+            }
+
+            startHeroTimer();
+        }
+
+        function handleHomeNoticePdfClick(index) {
+            const notices = window.currentHomeNotices || [];
+            const notice = notices[index];
+            if (!notice) return;
+
+            const pdfData = notice.pdf || notice.file || notice.pdfUrl || notice.attachment;
+            if (pdfData) {
+                const fileName = notice.fileName || notice.title || 'নোটিশ-ডকুমেন্ট.pdf';
+                if (typeof openNoticePdf === 'function') {
+                    openNoticePdf(pdfData, fileName);
+                } else if (typeof window.openNoticePdf === 'function') {
+                    window.openNoticePdf(pdfData, fileName);
+                } else {
+                    window.open(pdfData, '_blank');
+                }
+            }
+        }
+        window.handleHomeNoticePdfClick = handleHomeNoticePdfClick;
+
+        function handleHomeNoticeClick(index) {
+            const notices = window.currentHomeNotices || [];
+            const notice = notices[index];
+            if (!notice) return;
+
+            const pdfData = notice.pdf || notice.file || notice.pdfUrl || notice.attachment;
+            if (pdfData) {
+                const fileName = notice.fileName || notice.title || 'নোটিশ-ডকুমেন্ট.pdf';
+                if (typeof openNoticePdf === 'function') {
+                    openNoticePdf(pdfData, fileName);
+                } else if (typeof window.openNoticePdf === 'function') {
+                    window.openNoticePdf(pdfData, fileName);
+                } else {
+                    window.open(pdfData, '_blank');
+                }
+            } else {
+                openHomeNoticeDetailModal(notice);
+            }
+        }
+        window.handleHomeNoticeClick = handleHomeNoticeClick;
+
+        function openHomeNoticeDetailModal(notice) {
+            if (!notice) return;
+            const modalEl = document.getElementById('homeNoticeDetailModal');
+            if (!modalEl) {
+                if (notice.title) {
+                    alert(notice.title + '\n\n' + (notice.desc || notice.description || ''));
+                }
+                return;
+            }
+
+            const titleEl = document.getElementById('homeModalNoticeTitle');
+            const dateEl = document.getElementById('homeModalNoticeDate');
+            const descEl = document.getElementById('homeModalNoticeDesc');
+            const pdfActionEl = document.getElementById('homeModalPdfAction');
+            const pdfBtnEl = document.getElementById('homeModalPdfBtn');
+
+            if (titleEl) titleEl.textContent = notice.title || notice.text || 'বিজ্ঞপ্তি';
+            if (dateEl) dateEl.textContent = notice.date || '২০২৬';
+            if (descEl) descEl.textContent = notice.desc || notice.description || notice.title || 'কোনো বিস্তারিত বিবরণ পাওয়া যায়নি।';
+
+            const pdfData = notice.pdf || notice.file || notice.pdfUrl || notice.attachment;
+            if (pdfActionEl && pdfBtnEl) {
+                if (pdfData) {
+                    pdfActionEl.classList.remove('hidden');
+                    pdfBtnEl.onclick = function() {
+                        if (typeof openNoticePdf === 'function') {
+                            openNoticePdf(pdfData, notice.fileName || notice.title || 'নোটিশ-ডকুমেন্ট.pdf');
+                        } else {
+                            window.open(pdfData, '_blank');
+                        }
+                    };
+                } else {
+                    pdfActionEl.classList.add('hidden');
+                    pdfBtnEl.onclick = null;
+                }
+            }
+
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+        }
+
+        function closeHomeNoticeDetailModal() {
+            const modalEl = document.getElementById('homeNoticeDetailModal');
+            if (modalEl) {
+                modalEl.classList.add('hidden');
+                modalEl.classList.remove('flex');
+            }
+        }
+        window.openHomeNoticeDetailModal = openHomeNoticeDetailModal;
+        window.closeHomeNoticeDetailModal = closeHomeNoticeDetailModal;
+
+        // Expose functions globally for main.js triggerAllUIRefresh
+        window.updateHomeDataFromWebsite = updateHomeDataFromWebsite;
+        window.initDynamicHeroSlider = initDynamicHeroSlider;
+
+        // Immediate event listeners
+        window.addEventListener('storage', () => {
+            if (typeof applySchoolSettings === 'function') applySchoolSettings();
+            updateHomeDataFromWebsite();
+            initDynamicHeroSlider();
+        });
+
+        window.addEventListener('dbSynced', () => {
+            if (typeof applySchoolSettings === 'function') applySchoolSettings();
+            updateHomeDataFromWebsite();
+            initDynamicHeroSlider();
+        });
+
+        window.addEventListener('tickerNoticesUpdated', () => {
+            if (typeof applySchoolSettings === 'function') applySchoolSettings();
+            updateHomeDataFromWebsite();
+            initDynamicHeroSlider();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof applySchoolSettings === 'function') applySchoolSettings();
+            updateHomeDataFromWebsite();
+            initDynamicHeroSlider();
+        });
+
+        // Ensure fresh data boot re-renders UI as soon as server response arrives
+        if (window.dbBootPromise) {
+            window.dbBootPromise.then(() => {
+                if (typeof applySchoolSettings === 'function') applySchoolSettings();
+                updateHomeDataFromWebsite();
+                initDynamicHeroSlider();
+            });
+        }
+    </script>
+
+    <!-- Home Notice Detail Modal -->
+    <div id="homeNoticeDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-[999999] hidden items-center justify-center p-4 transition-all duration-300" onclick="if(event.target === this) closeHomeNoticeDetailModal();">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <div class="bg-gradient-to-r from-sky-600 to-blue-700 text-white p-5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg shrink-0">
+                        <i id="homeModalNoticeIcon" class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <div>
+                        <span class="text-[11px] bg-white/20 px-2 py-0.5 rounded font-semibold">বিজ্ঞপ্তি বিবরণ</span>
+                        <h3 id="homeModalNoticeTitle" class="text-base font-bold text-white mt-0.5 leading-snug">নোটিশ শিরোনাম</h3>
+                    </div>
+                </div>
+                <button onclick="closeHomeNoticeDetailModal()" class="text-white/80 hover:text-white text-2xl font-bold w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex items-center justify-between text-xs text-gray-500 border-b pb-3">
+                    <span class="flex items-center gap-1.5 font-medium"><i class="fa-regular fa-calendar-alt text-sky-600"></i> প্রকাশকাল: <span id="homeModalNoticeDate" class="text-gray-800 font-semibold"></span></span>
+                    <span class="bg-sky-50 text-sky-700 font-semibold px-2 py-0.5 rounded text-[11px]">প্রশাসনিক নোটিশ</span>
+                </div>
+                <div class="text-xs text-gray-700 leading-relaxed font-normal bg-gray-50 p-4 rounded-xl border border-gray-100 max-h-60 overflow-y-auto whitespace-pre-wrap" id="homeModalNoticeDesc">
+                    নোটিশের পূর্ণাঙ্গ বিবরণ...
+                </div>
+                <div id="homeModalPdfAction" class="hidden pt-2 border-t flex justify-end">
+                    <button id="homeModalPdfBtn" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-xs cursor-pointer">
+                        <i class="fa-solid fa-file-pdf"></i> সংযুক্ত PDF ফাইল ওপেন করুন (নতুন ট্যাব)
+                    </button>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3 border-t flex justify-end">
+                <button onclick="closeHomeNoticeDetailModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#0b1c33] text-gray-400 text-xs py-4 text-center mt-6 border-t border-slate-700">
+        <div class="container mx-auto px-4">
+            <p>© ২০২৬ Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School | সর্বস্বত্ব সংরক্ষিত | ডিজিটাল গভর্ন্যান্স ও স্মার্ট এডুকেশন পোর্টাল</p>
+            <div class="footer-socials flex justify-center gap-3 mt-3">
+                <a href="#" class="social-icon" aria-label="Facebook" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:inline-flex; justify-content:center; align-items:center; color:#94a3b8; transition:all 0.3s;">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z" />
+                    </svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:inline-flex; justify-content:center; align-items:center; color:#94a3b8; transition:all 0.3s;">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:inline-flex; justify-content:center; align-items:center; color:#94a3b8; transition:all 0.3s;">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Quick Access Button for Mobile (Screen Right Side) -->
+    <a href="#important-links" class="md:hidden fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-sky-600 hover:bg-sky-700 text-white py-2.5 px-1.5 rounded-l-lg shadow-lg flex flex-col items-center gap-1 text-[11px] font-bold transition">
+        <i class="fa-solid fa-link text-xs"></i>
+        <span class="[writing-mode:vertical-lr] tracking-wider">ই-সেবা</span>
+    </a>
+</body>
+</html>

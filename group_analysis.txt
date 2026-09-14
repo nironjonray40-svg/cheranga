@@ -1,0 +1,41 @@
+
+--- Nine Students Group/Section Analysis ---
+Roll: 2609001, Name: সার্থক শর্মা — S, Section: A, Group: None, Branch: None
+Roll: 2609002, Name: প্রশান্ত রায় — S, Section: A, Group: None, Branch: None
+Roll: 2609003, Name: বৃষ্টি শর্মা — S, Section: A, Group: None, Branch: None
+Roll: 2609004, Name: মিম আক্তার — S, Section: A, Group: None, Branch: None
+Roll: 2609005, Name: রিমা আক্তার — A, Section: A, Group: None, Branch: None
+Roll: 2609006, Name: ঝর্ণা রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609007, Name: বিধান রায় — S, Section: A, Group: None, Branch: None
+Roll: 2609008, Name: রচনা রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609009, Name: গৌরী রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609010, Name: বিথী রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609011, Name: বীনা রানী — S, Section: A, Group: None, Branch: None
+Roll: 2609012, Name: সৈকত রায় — S, Section: A, Group: None, Branch: None
+Roll: 2609014, Name: ভবেশ রায় — A, Section: A, Group: None, Branch: None
+Roll: 2609015, Name: কবিতা রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609016, Name: সংগীত রানী — S, Section: A, Group: None, Branch: None
+Roll: 2609017, Name: জয়দেব রায় — S, Section: A, Group: None, Branch: None
+Roll: 2609018, Name: পল্লবী রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609019, Name: লাবনী রানী — A, Section: A, Group: None, Branch: None
+Roll: 2609020, Name: কাজল রায় — S, Section: A, Group: None, Branch: None
+Roll: 2609022, Name: সজল রায় — A, Section: A, Group: None, Branch: None
+Roll: 2609023, Name: দিপা রানী — S, Section: A, Group: None, Branch: None
+Roll: 2609024, Name: তুলি রানী — A, Section: A, Group: None, Branch: None
+
+--- Ten Students Group/Section Analysis ---
+Roll: 2610001, Name: সন্ধ্যা রায় — S, Section: A, Group: None, Branch: None
+Roll: 2610003, Name: দিপ্তি রায় — S, Section: A, Group: None, Branch: None
+Roll: 2610004, Name: মিথুন রায় — S, Section: A, Group: None, Branch: None
+Roll: 2610005, Name: অন্তর রায় — S, Section: A, Group: None, Branch: None
+Roll: 2610006, Name: সুষ্মিতা রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610007, Name: প্রসেনজিৎ রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610009, Name: দেবাশীষ রায় — S, Section: A, Group: None, Branch: None
+Roll: 2610010, Name: অপনা রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610011, Name: জয়ন্ত রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610012, Name: শংকর রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610013, Name: গৌরকিশোর রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610014, Name: চন্দন রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610015, Name: সাগর রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610016, Name: দিশা রায় — A, Section: A, Group: None, Branch: None
+Roll: 2610017, Name: কৃষ্ণ রায় — A, Section: A, Group: None, Branch: None

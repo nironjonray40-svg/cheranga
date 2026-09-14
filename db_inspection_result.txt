@@ -1,0 +1,162 @@
+SECTIONS IN DB:
+[
+  {
+    "class": "Six",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Six",
+    "section": "B",
+    "capacity": 50
+  },
+  {
+    "class": "Seven",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Seven",
+    "section": "B",
+    "capacity": 50
+  },
+  {
+    "class": "Eight",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Eight",
+    "section": "B",
+    "capacity": 50
+  },
+  {
+    "class": "Seven",
+    "section": "C",
+    "capacity": 50
+  },
+  {
+    "class": "Eight",
+    "section": "C",
+    "capacity": 50
+  },
+  {
+    "class": "Nursery",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Five",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Four",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Three",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "One",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Five",
+    "section": "B",
+    "capacity": 50
+  },
+  {
+    "class": "Two",
+    "section": "A",
+    "capacity": 50
+  },
+  {
+    "class": "Six",
+    "section": "C",
+    "capacity": 50
+  },
+  {
+    "class": "Six",
+    "section": "D",
+    "capacity": 50
+  },
+  {
+    "class": "Seven",
+    "section": "D",
+    "capacity": 50
+  },
+  {
+    "class": "Ten",
+    "section": "মানবিক",
+    "capacity": 50
+  },
+  {
+    "class": "Ten",
+    "section": "বিজ্ঞান",
+    "capacity": 50
+  },
+  {
+    "class": "Ten",
+    "section": "ব্যবসায়",
+    "capacity": 50
+  },
+  {
+    "class": "Nine",
+    "section": "মানবিক",
+    "capacity": 50
+  },
+  {
+    "class": "Nine",
+    "section": "বিজ্ঞান",
+    "capacity": 50
+  },
+  {
+    "class": "Nine",
+    "section": "ব্যবসায়",
+    "capacity": 50
+  }
+]
+
+---
+SUBJECTS IN DB:
+
+Class Nine Subjects count: 16
+  Code: 103, Name: English For Today, NameBn: ইংরেজি ১ম পত্র, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 104, Name: English Grammar and Composition, NameBn: ইংরেজি ২য় পত্র, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 105, Name: Mathematics, NameBn: সাধারণ গণিত, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 106, Name: Information And Communication Technology, NameBn: তথ্য ও যোগাযোগ প্রযুক্তি, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 107, Name: Bangladesh And Global Studies, NameBn: বাংলাদেশ ও বিশ্বপরিচয়, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 110, Name: Islamic Studies, NameBn: ইসলাম ও নৈতিক শিক্ষা, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 111, Name: Hindu Religion Studies, NameBn: হিন্দুধর্ম ও নৈতিক শিক্ষা, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 505, Name: Higher Mathematics, NameBn: উচ্চতর গণিত, Sec: বিজ্ঞান
+  Code: 109, Name: Agriculture Studies, NameBn: কৃষি শিক্ষা, Sec: মানবিক, বিজ্ঞান
+  Code: 108, Name: Science, NameBn: বিজ্ঞান, Sec: বিজ্ঞান
+  Code: 101, Name: Bangla Sahitya, NameBn: বাংলা সাহিত্য, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 102, Name: Bangla Bhashar Byakaran and Nirmiti, NameBn: বাংলা ভাষার ব্যাকরণ ও নির্মিতি, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 1111, Name: Physics, NameBn: পদার্থবিজ্ঞান, Sec: বিজ্ঞান
+  Code: 135, Name: Chemistry, NameBn: রসায়ন, Sec: বিজ্ঞান
+  Code: 180, Name: Biology, NameBn: জীববিজ্ঞান, Sec: বিজ্ঞান
+  Code: 1252, Name: Accounting, NameBn: হিসাববিজ্ঞান, Sec: ব্যবসায়
+
+Class Ten Subjects count: 16
+  Code: 101, Name: Bangla Sahitya, NameBn: বাংলা সাহিত্য, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 102, Name: Bangla Bhashar Byakaran and Nirmiti, NameBn: বাংলা ভাষার ব্যাকরণ ও নির্মিতি, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 103, Name: English For Today, NameBn: ইংরেজি ১ম পত্র, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 104, Name: English Grammar and Composition, NameBn: ইংরেজি ২য় পত্র, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 105, Name: Mathematics, NameBn: সাধারণ গণিত, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 106, Name: Information And Communication Technology, NameBn: তথ্য ও যোগাযোগ প্রযুক্তি, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 107, Name: Bangladesh And Global Studies, NameBn: বাংলাদেশ ও বিশ্বপরিচয়, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 108, Name: Science, NameBn: বিজ্ঞান, Sec: বিজ্ঞান
+  Code: 110, Name: Islamic Studies, NameBn: ইসলাম ও নৈতিক শিক্ষা, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 111, Name: Hindu Religion Studies, NameBn: হিন্দুধর্ম ও নৈতিক শিক্ষা, Sec: মানবিক, বিজ্ঞান, ব্যবসায়
+  Code: 505, Name: Higher Mathematics, NameBn: উচ্চতর গণিত, Sec: বিজ্ঞান
+  Code: 109, Name: Agriculture Studies, NameBn: কৃষি শিক্ষা, Sec: মানবিক, বিজ্ঞান
+  Code: 1111, Name: Physics, NameBn: পদার্থবিজ্ঞান, Sec: বিজ্ঞান
+  Code: 135, Name: Chemistry, NameBn: রসায়ন, Sec: বিজ্ঞান
+  Code: 180, Name: Biology, NameBn: জীববিজ্ঞান, Sec: বিজ্ঞান
+  Code: 1252, Name: Accounting, NameBn: হিসাববিজ্ঞান, Sec: ব্যবসায়

@@ -1,0 +1,56 @@
+=== school_saved_seat_allocations ===
+Keys: []
+=== school_seat_plans_store ===
+Keys: ['SEAT_PLAN_High Level__বার্ষিক পরীক্ষা__Afternoon__mtkv8wzgkopl', 'SEAT_PLAN_High Level__বার্ষিক পরীক্ষা__Morning__mtkvan8jcfrv']
+Sample under 'SEAT_PLAN_High Level__বার্ষিক পরীক্ষা__Afternoon__mtkv8wzgkopl': {
+  "dept": "High Level",
+  "examName": "বার্ষিক পরীক্ষা",
+  "shift": "Afternoon",
+  "timestamp": "2026-09-03T01:48:25.468Z",
+  "allocations": {
+    "r101": {
+      "room": {
+        "id": "r101",
+        "buildingId": "b1",
+        "number": "101",
+        "floor": "1",
+        "benches": 5,
+        "gender": "Both"
+      },
+      "building": {
+        "id": "b1",
+        "name": "পলাশ ভবন A",
+        "floors": 4
+      },
+      "shift": "Afternoon",
+      "dept": "High Level",
+      "examName":
+=== school_students ===
+Item count: 333
+First item sample: {
+  "photo": "",
+  "studentId": "0001",
+  "regNo": "260091",
+  "name": "Sarthak Sharma",
+  "nameBn": "সার্থক শর্মা — S",
+  "class": "Ten",
+  "section": "ব্যবসায়",
+  "roll": "1",
+  "optionalSubject": "",
+  "session": "2026",
+  "dob": "",
+  "gender": "Male",
+  "religion": "Hindu (হিন্দু)",
+  "blood": "A+",
+  "fatherName": "",
+  "fatherOccup": "",
+  "fatherPhone": "",
+  "motherName": "",
+  "motherOccup": "",
+  "motherPhone": "",
+  "phone": "",
+  "email": "",
+  "presentAddress": "",
+  "permanentAddress": "",
+  "id": "1787156440065-41920-0"
+}

@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('cms.html?login=required');
+        }
+    </script>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <meta charset="UTF-8">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Rashi+Hebrew:wght@100..900&family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700;800&family=Outfit:wght@400;600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+
+        @page {
+            size: A4 landscape !important;
+            margin: 0.3in !important;
+        }
+
+
+
+        * {
+
+            box-sizing: border-box;
+
+        }
+
+
+
+        body {
+
+            margin: 0;
+
+            padding: 0;
+
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'Kalpurush', 'SolaimanLipi', serif;
+
+            background: #f1f5f9;
+
+            color: #0f172a;
+
+        }
+
+
+
+        /* Non-Printable Top Control Toolbar */
+
+        .no-print-controls {
+
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+
+            border-bottom: 2px solid #cbd5e1;
+
+            padding: 12px 18px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 1000;
+
+        }
+
+
+
+        .control-group {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+        }
+
+
+
+        .control-group label {
+
+            font-weight: 700;
+
+            font-size: 0.88rem;
+
+            color: #475569;
+
+        }
+
+
+
+        .control-group select,
+
+        .control-group input[type="text"] {
+
+            padding: 6px 10px;
+
+            border-radius: 6px;
+
+            border: 1.5px solid #cbd5e1;
+
+            outline: none;
+
+            font-size: 0.88rem;
+
+            font-weight: 600;
+
+            background: #ffffff;
+
+            color: #0f172a;
+
+        }
+
+
+
+        .btn-action {
+
+            padding: 6px 14px;
+
+            border-radius: 6px;
+
+            border: none;
+
+            font-weight: 700;
+
+            font-size: 0.88rem;
+
+            cursor: pointer;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+
+            transition: all 0.2s ease;
+
+        }
+
+
+
+        .btn-print {
+
+            background: #0284c7;
+
+            color: #ffffff;
+
+        }
+
+
+
+        .btn-print:hover {
+
+            background: #0369a1;
+
+        }
+
+
+
+        .btn-pdf {
+
+            background: #059669;
+
+            color: #ffffff;
+
+        }
+
+
+
+        .btn-pdf:hover {
+
+            background: #047857;
+
+        }
+
+
+
+        /* Main Page Container (A4 Landscape Preview) */
+
+        .page-block {
+
+            width: 100%;
+
+            max-width: 297mm;
+
+            min-height: 210mm;
+
+            padding: 0.3in !important;
+
+            background-color: #ffffff;
+
+            margin: 15px auto;
+
+            font-size: 1.16em;
+
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+            box-sizing: border-box;
+
+            color: #000000 !important;
+
+            page-break-after: always;
+
+            break-after: page;
+
+        }
+
+
+
+        .page-block * {
+
+            color: #000000 !important;
+
+        }
+
+
+
+        .topsheet-header {
+
+            text-align: center;
+
+            margin-bottom: 20px;
+
+        }
+
+
+
+        .topsheet-header h2 {
+
+            margin: 0 0 6px 0;
+
+            font-size: 1.5em;
+
+            color: #000000 !important;
+
+            font-weight: 800;
+
+        }
+
+
+
+        .building-title {
+
+            display: none !important;
+
+        }
+
+
+
+        .shift-section {
+
+            margin-bottom: 30px;
+
+        }
+
+
+
+        .shift-title {
+
+            margin: 0 0 10px 0;
+
+            text-align: left;
+
+            font-size: 1.1em;
+
+            font-weight: 800;
+
+            color: #000000 !important;
+
+        }
+
+
+
+        .topsheet-table {
+
+            border-collapse: collapse;
+
+            width: 100%;
+
+            text-align: center;
+
+            border: 1.5px solid #000000;
+
+            font-size: 1.16em;
+
+            background: #ffffff;
+
+            margin-bottom: 10px;
+
+        }
+
+
+
+        .topsheet-table th,
+
+        .topsheet-table td {
+
+            border: 1px solid #000000;
+
+            padding: 6px 8px;
+
+            vertical-align: middle;
+
+        }
+
+
+
+        .topsheet-table th {
+
+            background-color: #f1f5f9;
+
+            font-weight: bold;
+
+            color: #000000 !important;
+
+        }
+
+
+
+        .topsheet-table tfoot tr {
+
+            background-color: #e2e8f0;
+
+            font-weight: bold;
+
+        }
+
+
+
+        .hide-col-lines th:first-child,
+
+        .hide-col-lines td:first-child {
+
+            border-left: 1px solid #000000 !important;
+
+            border-right: 1px solid #000000 !important;
+
+        }
+
+
+
+        .no-data-alert {
+
+            padding: 20px;
+
+            background: #fef2f2;
+
+            border: 1.5px solid #fca5a5;
+
+            color: #991b1b;
+
+            border-radius: 8px;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            margin: 20px 0;
+
+        }
+
+
+
+        /* Print Specific Styles (Strict A4 Landscape & 0.3in Margins) */
+
+        @media print {
+
+            @page {
+            size: A4 landscape !important;
+            margin: 0.3in !important;
+        }
+
+
+
+            body {
+
+                background: #ffffff !important;
+
+                padding: 0 !important;
+
+                margin: 0 !important;
+
+            }
+
+
+
+            .no-print,
+
+            .no-print-controls {
+
+                display: none !important;
+
+            }
+
+
+
+            .page-block {
+
+                padding: 0.3in !important;
+
+                margin: 0 !important;
+
+                width: 100% !important;
+
+                max-width: none !important;
+
+                min-height: auto !important;
+
+                box-shadow: none !important;
+
+                page-break-after: always !important;
+
+                break-after: page !important;
+
+            }
+
+
+
+            .page-block:last-child {
+
+                page-break-after: avoid !important;
+
+                break-after: avoid !important;
+
+            }
+
+
+
+            .topsheet-table {
+
+                font-size: 11.6pt !important;
+
+            }
+
+
+
+            thead {
+
+                display: table-header-group;
+
+            }
+
+
+
+            tr, th, td {
+
+                page-break-inside: avoid;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <!-- Non-Printable Top Control Toolbar -->
+
+    <div class="no-print-controls no-print">
+
+        
+
+        <!-- Exam Filter -->
+
+        <div class="control-group">
+
+            <label for="filter-exam">পরীক্ষা (Exam):</label>
+
+            <select id="filter-exam" onchange="updateStudentDataTopsheetLive()">
+
+                <option value="all">সকল সংরক্ষিত সিটপ্ল্যান (All Saved Seat Plans)</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Shift Filter -->
+
+        <div class="control-group">
+
+            <label for="filter-shift">শিফট (Shift):</label>
+
+            <select id="filter-shift" onchange="updateStudentDataTopsheetLive()">
+
+                <option value="all">সকল শিফট (All Shifts)</option>
+
+                <option value="Morning Shift">সকাল (Morning Shift)</option>
+
+                <option value="Afternoon Shift">বিকাল (Afternoon Shift)</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Building Filter -->
+
+        <div class="control-group">
+
+            <label for="filter-building">বিল্ডিং (Building):</label>
+
+            <select id="filter-building" onchange="updateStudentDataTopsheetLive()">
+
+                <option value="all">সকল বিল্ডিং (All Buildings)</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Class Filter -->
+
+        <div class="control-group">
+
+            <label for="filter-class">শ্রেণি (Class):</label>
+
+            <select id="filter-class" onchange="updateStudentDataTopsheetLive()">
+
+                <option value="all">সকল শ্রেণি (All Classes)</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Language Filter -->
+
+        <div class="control-group">
+
+            <label for="filter-lang">ভাষা (Language):</label>
+
+            <select id="filter-lang" onchange="updateStudentDataTopsheetLive()">
+
+                <option value="bn">বাংলা (Bangla)</option>
+
+                <option value="en">English</option>
+
+                <option value="both">বাংলা + English</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Font Family Selector -->
+
+        <div class="control-group">
+
+            <label for="filter-font-family">ফন্ট স্টাইল (Font Style):</label>
+
+            <select id="filter-font-family" onchange="updateFontFamily(this.value)">
+
+                <option value="'Noto Rashi Hebrew', 'Tiro Bangla', 'Kalpurush', serif" selected>Noto Rashi Hebrew + Tiro Bangla (ডিফল্ট - গর্জিয়াস)</option>
+                <option value="'Tiro Bangla', 'Kalpurush', sans-serif">Tiro Bangla (তিরো বাংলা)</option>
+                <option value="'Kalpurush', 'SolaimanLipi', Arial, sans-serif">Kalpurush (কালপুরুষ - ক্লাসিক)</option>
+
+                <option value="'Hind Siliguri', 'SolaimanLipi', sans-serif">Hind Siliguri (হিন্দ শিলিগুড়ি - স্টাইলিশ)</option>
+
+                <option value="'SolaimanLipi', 'Kalpurush', sans-serif">SolaimanLipi (সোলাইমান লিপি - ক্লাসিক)</option>
+
+                <option value="'Noto Sans Bengali', sans-serif">Noto Sans Bengali (নোটো সান্স)</option>
+
+                <option value="'Outfit', 'Hind Siliguri', sans-serif">Outfit (আউটফিট - মডার্ন)</option>
+
+                <option value="'Inter', 'SolaimanLipi', sans-serif">Inter (ইন্টার - ক্লিন)</option>
+
+                <option value="'Noto Rashi Hebrew', 'Kalpurush', serif">Noto Rashi Hebrew (নোটো রাশি হিব্রু - গর্জিয়াস)</option>
+
+                <option value="Georgia, 'Times New Roman', serif">Georgia (জর্জিয়া - সেফ)</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Font Size Slider -->
+
+        <div class="control-group">
+
+            <label for="font-size-slider">ফন্ট (Font):</label>
+
+            <input type="range" id="font-size-slider" min="11" max="20" value="15.5" step="0.5"
+
+                oninput="updateFontSize(this.value)" style="width: 80px; cursor: pointer; accent-color: #0284c7;">
+
+            <span id="font-size-val" style="font-weight: 800; font-size: 0.88rem; color: #0284c7; min-width: 42px;">15.5px</span>
+
+        </div>
+
+
+
+        <!-- Search Input -->
+
+        <div class="control-group" style="flex-grow: 1; max-width: 220px;">
+
+            <input type="text" id="search-student" oninput="updateStudentDataTopsheetLive()"
+
+                placeholder="রুম বা শ্রেণি দিয়ে খুঁজুন..." style="width: 100%;">
+
+        </div>
+
+
+
+        <!-- Action Buttons -->
+
+        <div style="display: flex; gap: 8px;">
+
+            <button type="button" class="btn-action btn-pdf" onclick="window.print()">
+
+                📥 PDF ডাউনলোড
+
+            </button>
+
+            <button type="button" class="btn-action btn-print" onclick="window.print()">
+
+                🖨️ প্রিন্ট করুন
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Main Render Container -->
+
+    <div id="topsheet-render-container">
+
+        <!-- Dynamic Page Blocks Will Be Rendered Here -->
+
+    </div>
+
+
+
+    <script>
+
+        
+        function buildStudentLookupMap() {
+            const map = {
+                byId: new Map(),
+                byReg: new Map(),
+                byNameClass: new Map()
+            };
+            try {
+                const list = JSON.parse(localStorage.getItem('school_students') || '[]');
+                if (Array.isArray(list)) {
+                    list.forEach(s => {
+                        if (!s) return;
+                        if (s.id) map.byId.set(String(s.id).trim(), s);
+                        if (s.regNo) map.byReg.set(String(s.regNo).trim(), s);
+                        const cKey = String(s.class || '').trim().toLowerCase();
+                        const nKey = String(s.name || '').trim().toLowerCase();
+                        const nbKey = String(s.nameBn || '').trim().toLowerCase();
+                        const rKey = String(s.roll || '').trim();
+                        if (cKey && nKey) map.byNameClass.set(`${cKey}___${nKey}`, s);
+                        if (cKey && nbKey) map.byNameClass.set(`${cKey}___${nbKey}`, s);
+                        if (cKey && rKey) map.byNameClass.set(`${cKey}___roll_${rKey}`, s);
+                    });
+                }
+            } catch (e) {}
+            return map;
+        }
+
+        function resolveAttendanceLiveStudent(st, studentLookupMap = null) {
+            if (!st || typeof st !== 'object') return st;
+            const lookup = studentLookupMap || (typeof window !== 'undefined' && window.__currentStudentLookupMap) || buildStudentLookupMap();
+            let live = null;
+            if (st.id && lookup.byId && lookup.byId.has(String(st.id).trim())) {
+                live = lookup.byId.get(String(st.id).trim());
+            } else if (st.regNo && lookup.byReg && lookup.byReg.has(String(st.regNo).trim())) {
+                live = lookup.byReg.get(String(st.regNo).trim());
+            } else {
+                const cKey = String(st.class || st.className || '').trim().toLowerCase();
+                const nKey = String(st.name || '').trim().toLowerCase();
+                const nbKey = String(st.nameBn || '').trim().toLowerCase();
+                const rKey = String(st.roll || '').trim();
+                if (cKey && nKey && lookup.byNameClass && lookup.byNameClass.has(`${cKey}___${nKey}`)) {
+                    live = lookup.byNameClass.get(`${cKey}___${nKey}`);
+                } else if (cKey && nbKey && lookup.byNameClass && lookup.byNameClass.has(`${cKey}___${nbKey}`)) {
+                    live = lookup.byNameClass.get(`${cKey}___${nbKey}`);
+                } else if (cKey && rKey && lookup.byNameClass && lookup.byNameClass.has(`${cKey}___roll_${rKey}`)) {
+                    live = lookup.byNameClass.get(`${cKey}___roll_${rKey}`);
+                }
+            }
+
+            let finalId = '';
+            if (live) {
+                finalId = live.studentId || (live.roll && !isNaN(parseInt(live.roll)) ? String(parseInt(live.roll)).padStart(4, '0') : '');
+            }
+            if (!finalId) {
+                finalId = st.studentId || '';
+            }
+            if (!finalId || finalId.startsWith('178') || finalId.length > 10) {
+                if (st.roll && !isNaN(parseInt(st.roll))) {
+                    finalId = String(parseInt(st.roll)).padStart(4, '0');
+                } else if (st.regNo && String(st.regNo).trim()) {
+                    finalId = String(st.regNo).trim();
+                } else {
+                    finalId = '-';
+                }
+            }
+
+            return {
+                ...st,
+                studentId: finalId,
+                roll: live ? (live.roll || st.roll) : st.roll,
+                regNo: live ? (live.regNo || st.regNo) : st.regNo,
+                name: live ? (live.name || st.name) : st.name,
+                nameBn: live ? (live.nameBn || st.nameBn) : st.nameBn,
+                class: live ? (live.class || st.class) : st.class,
+                section: live ? (live.section || st.section) : st.section,
+                gender: live ? (live.gender || st.gender) : st.gender,
+                religion: live ? (live.religion || st.religion) : st.religion,
+                optionalSubject: live ? (live.optionalSubject || st.optionalSubject) : st.optionalSubject
+            };
+        }
+
+        function safeJsonParse(key, fallback = null) {
+
+            try {
+
+                const item = localStorage.getItem(key);
+
+                return item ? JSON.parse(item) : fallback;
+
+            } catch (e) {
+
+                return fallback;
+
+            }
+
+        }
+
+
+
+        function toBengaliNumerals(num) {
+
+            if (num === null || num === undefined || num === '') return '-';
+
+            const str = String(num);
+
+            if (!/^\d+$/.test(str)) return str;
+
+            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+            return str.split('').map(d => bengaliDigits[parseInt(d)] || d).join('');
+
+        }
+
+
+
+        function formatClassName(cls) {
+
+            if (!cls) return '';
+
+            const c = String(cls).trim();
+
+            const map = {
+
+                'play': 'Play',
+
+                'nursery': 'Nursery',
+
+                'kg': 'KG',
+
+                'one': 'One', '1': 'One',
+
+                'two': 'Two', '2': 'Two',
+
+                'three': 'Three', '3': 'Three',
+
+                'four': 'Four', '4': 'Four',
+
+                'five': 'Five', '5': 'Five',
+
+                'six': 'Six', '6': 'Six',
+
+                'seven': 'Seven', '7': 'Seven',
+
+                'eight': 'Eight', '8': 'Eight',
+
+                'nine': 'Nine', '9': 'Nine',
+
+                'ten': 'Ten', '10': 'Ten'
+
+            };
+
+            const key = c.toLowerCase().replace(/^class\s*/i, '');
+
+            return map[key] || c;
+
+        }
+
+
+
+        function formatShiftInfo(shiftName) {
+
+            const s = String(shiftName || '').toLowerCase().trim();
+
+            const shiftTimes = safeJsonParse('school_shift_times', []);
+
+            
+
+            if (Array.isArray(shiftTimes)) {
+
+                const match = shiftTimes.find(t => 
+
+                    (t.shift && t.shift.toLowerCase().trim() === s) ||
+
+                    (t.shiftBn && t.shiftBn.toLowerCase().trim() === s)
+
+                );
+
+                if (match) {
+
+                    const bnName = match.shiftBn || (s.includes('morning') || s.includes('sokal') ? 'সকাল' : 'বিকাল');
+
+                    const timeStr = (match.startTime && match.endTime) ? `${match.startTime} - ${match.endTime}` : '';
+
+                    return { name: bnName, time: timeStr, raw: shiftName };
+
+                }
+
+            }
+
+
+
+            if (s.includes('morning') || s.includes('sokal') || s.includes('সকাল') || s.includes('প্রভাতি')) {
+
+                return { name: 'সকাল', time: '10:00 AM - 12:30 PM', raw: 'Morning Shift' };
+
+            }
+
+            if (s.includes('afternoon') || s.includes('bikal') || s.includes('বিকাল') || s.includes('দিবা')) {
+
+                return { name: 'বিকাল', time: '01:00 PM - 04:30 PM', raw: 'Afternoon Shift' };
+
+            }
+
+
+
+            return { name: shiftName || 'সকাল', time: '', raw: shiftName };
+
+        }
+
+
+
+        function updateFontSize(val) {
+
+            const valSpan = document.getElementById('font-size-val');
+
+            if (valSpan) valSpan.innerText = val + 'px';
+
+            const container = document.getElementById('topsheet-render-container');
+
+            if (container) container.style.fontSize = (parseFloat(val) / 14) + 'em';
+
+        }
+
+
+
+        function updateFontFamily(fontVal) {
+
+            const container = document.getElementById('topsheet-render-container');
+
+            if (container) {
+
+                container.style.fontFamily = fontVal;
+
+            }
+
+            localStorage.setItem('topsheet_font_family', fontVal);
+
+        }
+
+
+
+        function initFontFamily() {
+
+            const savedFont = localStorage.getItem('topsheet_font_family');
+
+            const fontSelect = document.getElementById('filter-font-family');
+
+            if (savedFont && fontSelect) {
+
+                if ([...fontSelect.options].some(o => o.value === savedFont)) {
+
+                    fontSelect.value = savedFont;
+
+                }
+
+            }
+
+            const currentFont = fontSelect?.value || "'Noto Rashi Hebrew', 'Tiro Bangla', 'Kalpurush', serif";
+
+            const container = document.getElementById('topsheet-render-container');
+
+            if (container) {
+
+                container.style.fontFamily = currentFont;
+
+            }
+
+        }
+
+
+
+        function populateFilterDropdowns() {
+
+            const examSelect = document.getElementById('filter-exam');
+
+            const buildingSelect = document.getElementById('filter-building');
+
+            const classSelect = document.getElementById('filter-class');
+
+
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+
+
+            // Populate Exams
+
+            if (examSelect) {
+
+                const currentExam = examSelect.value || 'all';
+
+                examSelect.innerHTML = '<option value="all">সকল সংরক্ষিত সিটপ্ল্যান (All Saved Seat Plans)</option>';
+
+                const examSet = new Set();
+
+
+
+                if (store && typeof store === 'object') {
+
+                    Object.values(store).forEach(plan => {
+
+                        if (plan && plan.examName && plan.examName.trim() && plan.examName !== 'All') {
+
+                            examSet.add(plan.examName.trim());
+
+                        }
+
+                    });
+
+                }
+
+
+
+                examSet.forEach(ex => {
+
+                    const opt = document.createElement('option');
+
+                    opt.value = ex;
+
+                    opt.innerText = ex;
+
+                    examSelect.appendChild(opt);
+
+                });
+
+
+
+                if (currentExam && [...examSelect.options].some(o => o.value === currentExam)) {
+
+                    examSelect.value = currentExam;
+
+                }
+
+            }
+
+
+
+            // Populate Buildings
+
+            if (buildingSelect) {
+
+                const currentBuilding = buildingSelect.value || 'all';
+
+                buildingSelect.innerHTML = '<option value="all">সকল বিল্ডিং (All Buildings)</option>';
+
+                const bSet = new Set();
+
+
+
+                const buildingsStore = safeJsonParse('school_buildings', []);
+
+                if (Array.isArray(buildingsStore)) {
+
+                    buildingsStore.forEach(b => {
+
+                        if (b && b.name) bSet.add(b.name);
+
+                    });
+
+                }
+
+
+
+                if (store && typeof store === 'object') {
+
+                    Object.values(store).forEach(plan => {
+
+                        if (plan && plan.allocations) {
+
+                            Object.values(plan.allocations).forEach(item => {
+
+                                const bName = item.building?.name || item.buildingName || item.building_name;
+
+                                if (bName) bSet.add(bName);
+
+                            });
+
+                        }
+
+                    });
+
+                }
+
+
+
+                bSet.forEach(b => {
+
+                    const opt = document.createElement('option');
+
+                    opt.value = b;
+
+                    opt.innerText = b;
+
+                    buildingSelect.appendChild(opt);
+
+                });
+
+
+
+                if (currentBuilding && [...buildingSelect.options].some(o => o.value === currentBuilding)) {
+
+                    buildingSelect.value = currentBuilding;
+
+                }
+
+            }
+
+
+
+            // Populate Classes
+
+            if (classSelect) {
+
+                const currentClass = classSelect.value || 'all';
+
+                classSelect.innerHTML = '<option value="all">সকল শ্রেণি (All Classes)</option>';
+
+                const classSet = new Set();
+
+
+
+                const classesList = safeJsonParse('school_classes', ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"]);
+
+                classesList.forEach(c => classSet.add(c));
+
+
+
+                classSet.forEach(cls => {
+
+                    const opt = document.createElement('option');
+
+                    opt.value = cls;
+
+                    opt.innerText = formatClassName(cls);
+
+                    classSelect.appendChild(opt);
+
+                });
+
+
+
+                if (currentClass && [...classSelect.options].some(o => o.value === currentClass)) {
+
+                    classSelect.value = currentClass;
+
+                }
+
+            }
+
+        }
+
+
+
+        function getRoomGenderSuffix(sData, roomNo) {
+
+            if (!sData || !roomNo) return '';
+
+
+
+            // 1. Check tracked room gender info from active allocations
+
+            const rInfo = sData.roomGenders ? sData.roomGenders[roomNo] : null;
+
+            if (rInfo) {
+
+                // If both male and female students are allocated in the room
+
+                if (rInfo.female > 0 && rInfo.male > 0) {
+
+                    return ' (যৌথ)';
+
+                }
+
+                const attr = String(rInfo.roomGenderAttr || '').toLowerCase();
+
+                if (attr.includes('both') || attr.includes('coed') || attr.includes('co-ed') || attr.includes('combined') || attr.includes('উভয়')) {
+
+                    return ' (যৌথ)';
+
+                }
+
+                if (attr.includes('female') || attr.includes('girl') || attr.includes('ছাত্রী')) {
+
+                    return ' (ছাত্রী)';
+
+                }
+
+                if (attr.includes('male') || attr.includes('boy') || attr.includes('ছাত্র')) {
+
+                    return ' (ছাত্র)';
+
+                }
+
+            }
+
+
+
+            // 2. Check master school_rooms store in localStorage
+
+            const schoolRooms = safeJsonParse('school_rooms', []);
+
+            if (Array.isArray(schoolRooms)) {
+
+                const cleanRNo = String(roomNo).replace(/\D/g, '');
+
+                const found = schoolRooms.find(r => {
+
+                    const rNumStr = String(r.number || r.id || '').replace(/\D/g, '');
+
+                    return rNumStr && cleanRNo && rNumStr === cleanRNo;
+
+                });
+
+                if (found && found.gender) {
+
+                    const gStr = String(found.gender).toLowerCase();
+
+                    if (gStr.includes('both') || gStr.includes('coed') || gStr.includes('co-ed') || gStr.includes('combined') || gStr.includes('উভয়')) return ' (যৌথ)';
+
+                    if (/female|girl|girls|ছাত্রী/i.test(gStr)) return ' (ছাত্রী)';
+
+                    if (/male|boy|boys|ছাত্র/i.test(gStr) && !gStr.includes('female')) return ' (ছাত্র)';
+
+                }
+
+            }
+
+
+
+            // 3. Check fallback sample gender rooms lists
+
+            if (sData.combinedRooms && Array.isArray(sData.combinedRooms)) {
+
+                if (sData.combinedRooms.some(cr => String(cr).includes(String(roomNo)) || String(roomNo).includes(String(cr)))) {
+
+                    return ' (যৌথ)';
+
+                }
+
+            }
+
+            if (sData.femaleRooms && Array.isArray(sData.femaleRooms)) {
+
+                if (sData.femaleRooms.some(fr => String(fr).includes(String(roomNo)) || String(roomNo).includes(String(fr)))) {
+
+                    return ' (ছাত্রী)';
+
+                }
+
+            }
+
+            if (sData.maleRooms && Array.isArray(sData.maleRooms)) {
+
+                if (sData.maleRooms.some(mr => String(mr).includes(String(roomNo)) || String(roomNo).includes(String(mr)))) {
+
+                    return ' (ছাত্র)';
+
+                }
+
+            }
+
+
+
+            return '';
+
+        }
+
+
+
+        function getSampleDataFallback() {
+
+            return {
+
+                'ভবন ক': {
+
+                    'Morning Shift': {
+
+                        shiftInfo: { name: 'সকাল', time: '10:00 AM - 12:30 PM' },
+
+                        rooms: ['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '১০৮'],
+
+                        femaleRooms: ['১০২', '১০৪', '১০৬'],
+
+                        maleRooms: ['১০১', '১০৩', '১০৫'],
+
+                        combinedRooms: ['১০৭', '১০৮'],
+
+                        classesData: {
+
+                            'Six': { '১০১': 4, '১০২': 3, '১০৩': 3, '১০৪': 4, '১০৫': 3, '১০৬': 3, '১০৭': 2, '১০৮': 2 },
+
+                            'Eight': { '১০১': 3, '১০২': 4, '১০৩': 3, '১০৪': 3, '১০৫': 4, '১০৬': 3, '১০৭': 2, '১০৮': 2 },
+
+                            'Ten': { '১০১': 3, '১০২': 3, '১০৩': 4, '১০৪': 3, '১০৫': 3, '১০৬': 4, '১০৭': 2, '১০৮': 2 }
+
+                        }
+
+                    },
+
+                    'Afternoon Shift': {
+
+                        shiftInfo: { name: 'বিকাল', time: '01:00 PM - 04:30 PM' },
+
+                        rooms: ['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '১০৮'],
+
+                        femaleRooms: ['১০১', '১০৩', '১০৫'],
+
+                        maleRooms: ['১০২', '১০৪'],
+
+                        classesData: {
+
+                            'Seven': { '১০১': 5, '১০২': 5, '১০৩': 5, '১০৪': 5, '১০৫': 0, '১০৬': 0, '১০৭': 0, '১০৮': 0 },
+
+                            'Nine': { '১০১': 5, '১০২': 5, '১০৩': 5, '১০৪': 5, '১০৫': 0, '১০৬': 0, '১০৭': 0, '১০৮': 0 }
+
+                        }
+
+                    }
+
+                }
+
+            };
+
+        }
+
+
+
+        function getLang() {
+
+            return document.getElementById('filter-lang')?.value || 'bn';
+
+        }
+
+
+
+        function formatNumberByLang(num, lang) {
+
+            if (num === null || num === undefined || num === '') return '-';
+
+            const nStr = String(num);
+
+            if (nStr === '-' || nStr === '0') {
+
+                return nStr === '0' ? (lang === 'en' ? '0' : toBengaliNumerals(0)) : '-';
+
+            }
+
+            if (lang === 'en') return nStr;
+
+            return toBengaliNumerals(nStr);
+
+        }
+
+
+
+        function formatClassNameByLang(clsName, lang) {
+
+            const clean = String(clsName || '').trim();
+
+            const classMap = {
+
+                'play': { bn: 'প্লে', en: 'Play' },
+
+                'nursery': { bn: 'নার্সারি', en: 'Nursery' },
+
+                'kg': { bn: 'কেজি', en: 'KG' },
+
+                'one': { bn: '১ম', en: 'One' },
+
+                'two': { bn: '২য়', en: 'Two' },
+
+                'three': { bn: '৩য়', en: 'Three' },
+
+                'four': { bn: '৪র্থ', en: 'Four' },
+
+                'five': { bn: '৫ম', en: 'Five' },
+
+                'six': { bn: '৬ষ্ঠ', en: 'Six' },
+
+                'seven': { bn: '৭ম', en: 'Seven' },
+
+                'eight': { bn: '৮ম', en: 'Eight' },
+
+                'nine': { bn: '৯ম', en: 'Nine' },
+
+                'ten': { bn: '১০ম', en: 'Ten' }
+
+            };
+
+            const item = classMap[clean.toLowerCase()];
+
+            if (item) {
+
+                if (lang === 'en') return item.en;
+
+                if (lang === 'both') return `${item.bn} (${item.en})`;
+
+                return item.bn;
+
+            }
+
+            return clean;
+
+        }
+
+
+
+        function formatShiftInfoByLang(rawShift, lang) {
+
+            let info = formatShiftInfo(rawShift);
+
+            let nameBn = info.name || 'সকাল';
+
+            let nameEn = 'Morning';
+
+            const clean = String(rawShift).toLowerCase();
+
+
+
+            if (clean.includes('afternoon') || clean.includes('বিকাল') || clean.includes('দ্বিপ্রহর')) {
+
+                nameBn = 'বিকাল';
+
+                nameEn = 'Afternoon';
+
+            } else if (clean.includes('evening') || clean.includes('সন্ধ্যা')) {
+
+                nameBn = 'সন্ধ্যা';
+
+                nameEn = 'Evening';
+
+            }
+
+
+
+            let dispName = nameBn;
+
+            if (lang === 'en') dispName = nameEn;
+
+            else if (lang === 'both') dispName = `${nameBn} / ${nameEn}`;
+
+
+
+            return {
+
+                name: dispName,
+
+                nameBn: nameBn,
+
+                nameEn: nameEn,
+
+                time: info.time
+
+            };
+
+        }
+
+
+
+        function formatBuildingNameByLang(bName, lang) {
+
+            const clean = String(bName || 'ভবন ক');
+
+            if (lang === 'en') {
+
+                if (clean.includes('ভবন ক')) return 'Building A';
+
+                if (clean.includes('ভবন খ')) return 'Building B';
+
+                if (clean.includes('ভবন গ')) return 'Building C';
+
+                return clean;
+
+            }
+
+            if (lang === 'both') {
+
+                if (clean.includes('ভবন ক')) return 'ভবন ক / Building A';
+
+                if (clean.includes('ভবন খ')) return 'ভবন খ / Building B';
+
+                if (clean.includes('ভবন গ')) return 'ভবন গ / Building C';
+
+                return clean;
+
+            }
+
+            return clean;
+
+        }
+
+
+
+        function getMainTitleByLang(lang) {
+
+            if (lang === 'en') return 'Student Data Topsheet';
+
+            if (lang === 'both') return 'শিক্ষার্থীর তথ্য টপশীট (Student Data Topsheet)';
+
+            return 'শিক্ষার্থীর তথ্য টপশীট';
+
+        }
+
+
+
+        function getBuildingLabelByLang(bName, lang) {
+
+            const bDisp = formatBuildingNameByLang(bName, lang);
+
+            if (lang === 'en') return `Building : ${bDisp}`;
+
+            if (lang === 'both') return `বিল্ডিং (Building) : ${bDisp}`;
+
+            return `বিল্ডিং : ${bDisp}`;
+
+        }
+
+
+
+        function getShiftLabelPrefix(lang) {
+
+            if (lang === 'en') return 'Shift';
+
+            if (lang === 'both') return 'শিফট (Shift)';
+
+            return 'শিফট';
+
+        }
+
+
+
+        function getShiftHeaderByLang(lang) {
+
+            if (lang === 'en') return 'Shift';
+
+            if (lang === 'both') return 'শিফট (Shift)';
+
+            return 'শিফট';
+
+        }
+
+
+
+        function getClassHeaderByLang(lang) {
+
+            if (lang === 'en') return 'Class';
+
+            if (lang === 'both') return 'ক্লাস (Class)';
+
+            return 'ক্লাস';
+
+        }
+
+
+
+        function getTotalHeaderByLang(lang) {
+
+            if (lang === 'en') return 'Total';
+
+            if (lang === 'both') return 'মোট (Total)';
+
+            return 'মোট';
+
+        }
+
+
+
+        function getGrandTotalLabelByLang(lang) {
+
+            if (lang === 'en') return 'Grand Total Students';
+
+            if (lang === 'both') return 'সর্বমোট শিক্ষার্থী (Total Students)';
+
+            return 'সর্বমোট শিক্ষার্থী';
+
+        }
+
+
+
+        function formatRoomNumberByLang(roomNo, sData, lang) {
+
+            const suffix = getRoomGenderSuffix(sData, roomNo);
+
+            const bnNum = toBengaliNumerals(roomNo);
+
+            const enNum = String(roomNo).replace(/\D/g, '') || String(roomNo);
+
+
+
+            if (lang === 'en') {
+
+                return `${enNum}${suffix}`;
+
+            }
+
+            if (lang === 'both') {
+
+                if (bnNum !== enNum && enNum.length > 0) {
+
+                    return `${bnNum} / ${enNum}${suffix}`;
+
+                }
+
+                return `${bnNum}${suffix}`;
+
+            }
+
+            return `${bnNum}${suffix}`;
+
+        }
+
+
+
+        function updateStudentDataTopsheetLive() {
+
+            populateFilterDropdowns();
+
+            initFontFamily();
+
+
+
+            const lang = getLang();
+
+            const examVal = document.getElementById('filter-exam')?.value || 'all';
+
+            const shiftVal = document.getElementById('filter-shift')?.value || 'all';
+
+            const buildingVal = document.getElementById('filter-building')?.value || 'all';
+
+            const classVal = document.getElementById('filter-class')?.value || 'all';
+
+            const searchVal = (document.getElementById('search-student')?.value || '').trim().toLowerCase();
+
+
+
+            const settings = safeJsonParse('school_settings', {});
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+
+
+            // Update School Name
+
+            const schoolName = settings?.schoolName || 'আলহেরা এডুকেয়ার হোম উচ্চ বিদ্যালয়';
+
+
+
+            // Update Exam Name
+
+            let activeExamName = 'বার্ষিক পরীক্ষা - ২০২৬';
+
+            if (examVal !== 'all') {
+
+                activeExamName = examVal;
+
+            } else if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+
+                const planKeys = Object.keys(store);
+
+                const lastKey = planKeys[planKeys.length - 1];
+
+                if (store[lastKey] && store[lastKey].examName && store[lastKey].examName !== 'All') {
+
+                    activeExamName = store[lastKey].examName;
+
+                }
+
+            } else {
+
+                const routines = safeJsonParse('school_exam_routines', []);
+
+                if (Array.isArray(routines) && routines.length > 0 && routines[0].examName) {
+
+                    activeExamName = routines[0].examName;
+
+                }
+
+            }
+
+
+
+            let activeAllocations = [];
+
+            let hasSavedPlans = false;
+
+
+
+            // 1. Gather all allocations from Saved Seat Plans Store (school_seat_plans_store)
+
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+
+                Object.keys(store).forEach(planKey => {
+
+                    const plan = store[planKey];
+
+                    if (!plan || !plan.allocations) return;
+
+
+
+                    let matchesExam = false;
+
+                    if (examVal === 'all') {
+
+                        matchesExam = true;
+
+                    } else {
+
+                        const cleanExam = examVal.toLowerCase().trim();
+
+                        const cleanPlanExam = (plan.examName || '').toLowerCase().trim();
+
+                        const cleanPlanKey = planKey.toLowerCase().trim();
+
+                        matchesExam = (cleanPlanExam === cleanExam) || (cleanPlanKey === cleanExam) || cleanPlanExam.includes(cleanExam);
+
+                    }
+
+
+
+                    if (matchesExam) {
+
+                        hasSavedPlans = true;
+
+                        Object.keys(plan.allocations).forEach(rId => {
+
+                            const item = plan.allocations[rId];
+
+                            if (item) {
+
+                                const itemCopy = JSON.parse(JSON.stringify(item));
+
+                                if (!itemCopy.shift && plan.shift) itemCopy.shift = plan.shift;
+
+                                activeAllocations.push(itemCopy);
+
+                            }
+
+                        });
+
+                    }
+
+                });
+
+            }
+
+
+
+            // 2. Fallback to Active Saved Allocations (school_saved_seat_allocations) if store is empty
+
+            if (activeAllocations.length === 0 && savedAlloc && typeof savedAlloc === 'object' && Object.keys(savedAlloc).length > 0) {
+
+                if (examVal === 'all') {
+
+                    hasSavedPlans = true;
+
+                    Object.keys(savedAlloc).forEach(rId => {
+
+                        if (savedAlloc[rId]) activeAllocations.push(savedAlloc[rId]);
+
+                    });
+
+                }
+
+            }
+
+
+
+            const container = document.getElementById('topsheet-render-container');
+
+            if (!container) return;
+
+
+
+            // Structure to hold data: buildingMap[buildingName][shiftKey] = { shiftInfo, roomsSet, classRoomCounts }
+
+            let buildingMap = {};
+
+
+
+            if (hasSavedPlans && activeAllocations.length > 0) {
+
+                activeAllocations.forEach(alloc => {
+
+                    const buildingName = alloc.building?.name || alloc.buildingName || alloc.building_name || 'ভবন ক';
+
+                    const rawShift = alloc.shift || 'Morning Shift';
+
+                    const shiftInfo = formatShiftInfoByLang(rawShift, lang);
+
+                    const roomNo = alloc.room?.number || alloc.roomNo || alloc.room_no || alloc.roomName || alloc.room || '১০১';
+
+
+
+                    // Apply Shift & Building Filter
+
+                    if (buildingVal !== 'all' && buildingName !== buildingVal) return;
+
+                    if (shiftVal !== 'all') {
+
+                        const cleanShiftVal = shiftVal.toLowerCase();
+
+                        const cleanRawShift = rawShift.toLowerCase();
+
+                        const cleanShiftName = shiftInfo.name.toLowerCase();
+
+                        if (!cleanRawShift.includes(cleanShiftVal) && !cleanShiftName.includes(cleanShiftVal)) return;
+
+                    }
+
+
+
+                    if (!buildingMap[buildingName]) {
+
+                        buildingMap[buildingName] = {};
+
+                    }
+
+                    if (!buildingMap[buildingName][shiftInfo.name]) {
+
+                        buildingMap[buildingName][shiftInfo.name] = {
+
+                            shiftInfo: shiftInfo,
+
+                            rawShift: rawShift,
+
+                            roomsSet: new Set(),
+
+                            classesData: {},
+
+                            roomGenders: {}
+
+                        };
+
+                    }
+
+
+
+                    const shiftObj = buildingMap[buildingName][shiftInfo.name];
+
+                    shiftObj.roomsSet.add(roomNo);
+
+
+
+                    if (!shiftObj.roomGenders[roomNo]) {
+
+                        shiftObj.roomGenders[roomNo] = {
+
+                            total: 0,
+
+                            female: 0,
+
+                            male: 0,
+
+                            roomGenderAttr: alloc.room?.gender || alloc.roomGender || alloc.gender || ''
+
+                        };
+
+                    }
+
+                    const rMeta = shiftObj.roomGenders[roomNo];
+
+
+
+                    const benches = alloc.benches || [];
+
+                    benches.forEach(bench => {
+
+                        ['left', 'right'].forEach(side => {
+
+                            const rawStudent = bench[side];
+                            const student = resolveAttendanceLiveStudent(rawStudent);
+                            if (student && (student.id || student.studentId || student.name || student.class)) {
+
+                                rMeta.total++;
+
+                                const gStr = String(student.gender || student.sex || '').toLowerCase();
+
+                                if (/female|girl|girls|ছাত্রী|মহিলা|f/i.test(gStr)) {
+
+                                    rMeta.female++;
+
+                                } else if (/male|boy|boys|ছাত্র|পুরুষ|m/i.test(gStr)) {
+
+                                    rMeta.male++;
+
+                                }
+
+
+
+                                const rawCls = student.class || student.className || student.studentClass || 'Unassigned';
+
+                                const formattedCls = formatClassName(rawCls);
+
+
+
+                                // Apply Class & Search Filter
+
+                                if (classVal !== 'all' && formattedCls.toLowerCase() !== formatClassName(classVal).toLowerCase()) return;
+
+                                if (searchVal) {
+
+                                    const matchSearch = String(roomNo).toLowerCase().includes(searchVal) ||
+
+                                                        formattedCls.toLowerCase().includes(searchVal) ||
+
+                                                        shiftInfo.name.toLowerCase().includes(searchVal);
+
+                                    if (!matchSearch) return;
+
+                                }
+
+
+
+                                if (!shiftObj.classesData[formattedCls]) {
+
+                                    shiftObj.classesData[formattedCls] = {};
+
+                                }
+
+                                shiftObj.classesData[formattedCls][roomNo] = (shiftObj.classesData[formattedCls][roomNo] || 0) + 1;
+
+                            }
+
+                        });
+
+                    });
+
+                });
+
+            }
+
+
+
+            // Check if processed data is present
+
+            let hasProcessedData = Object.keys(buildingMap).some(b => Object.keys(buildingMap[b]).length > 0);
+
+
+
+            // 3. Fallback Sample Dataset if no saved plans match or exist
+
+            if (!hasProcessedData && examVal === 'all' && shiftVal === 'all' && buildingVal === 'all' && classVal === 'all' && !searchVal) {
+
+                const sample = getSampleDataFallback();
+
+                buildingMap = sample;
+
+                hasProcessedData = true;
+
+            }
+
+
+
+            if (!hasProcessedData) {
+
+                container.innerHTML = `
+
+                    <div class="page-block">
+
+                        <div class="no-data-alert">
+
+                            ⚠️ কোনো সিটপ্ল্যান তথ্য পাওয়া যায়নি (No saved seat plan data found for selected filters).
+
+                            <br><span style="font-size: 0.9em; font-weight: normal; color: #64748b;">"Generate Auto" বাটন দিয়ে সিটপ্ল্যান তৈরি করে সেভ করুন।</span>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+
+            const mainTitleText = getMainTitleByLang(lang);
+
+            const shiftHeaderLabel = getShiftHeaderByLang(lang);
+
+            const classHeaderLabel = getClassHeaderByLang(lang);
+
+            const totalHeaderLabel = getTotalHeaderByLang(lang);
+
+            const grandTotalLabel = getGrandTotalLabelByLang(lang);
+
+            const shiftPrefix = getShiftLabelPrefix(lang);
+
+
+
+            // Render Tables with Page Block for each building (Both Morning & Afternoon shifts on same page)
+
+            let html = '';
+
+            Object.keys(buildingMap).forEach(bName => {
+
+                const shiftsData = buildingMap[bName];
+
+                const shiftKeys = Object.keys(shiftsData);
+
+
+
+                if (shiftKeys.length === 0) return;
+
+
+
+                const bLabelText = getBuildingLabelByLang(bName, lang);
+
+
+
+                html += `
+
+                    <div class="page-block">
+
+                        <!-- Printable Headline Header on Every Building Page -->
+
+                        <div class="topsheet-header" style="text-align: center; margin-bottom: 16px; border-bottom: 2px solid #000000; padding-bottom: 10px;">
+
+                            <h1 class="topsheet-school-name" style="margin: 0 0 4px 0; font-size: 1.55em; color: #000000 !important; font-weight: 900; letter-spacing: 0.3px;">
+
+                                ${schoolName}
+
+                            </h1>
+
+                            <div class="topsheet-exam-name" style="font-size: 1.15em; font-weight: 800; color: #000000 !important; margin-bottom: 5px;">
+
+                                ${activeExamName}
+
+                            </div>
+
+                            <h2 class="main-topsheet-title" style="margin: 0; font-size: 1.3em; color: #000000 !important; font-weight: 800;">
+
+                                ${mainTitleText}
+
+                            </h2>
+
+                        </div>
+
+                `;
+
+
+
+                shiftKeys.forEach((sKey, shiftIdx) => {
+
+                    const sData = shiftsData[sKey];
+
+                    const shiftInfo = formatShiftInfoByLang(sData.rawShift || sKey, lang);
+
+                    let rooms = Array.from(sData.roomsSet || []);
+
+
+
+                    // Sort rooms numerically / alphanumerically
+
+                    rooms.sort((a, b) => {
+
+                        const na = parseInt(String(a).replace(/\D/g, '')) || 0;
+
+                        const nb = parseInt(String(b).replace(/\D/g, '')) || 0;
+
+                        return na - nb || String(a).localeCompare(String(b));
+
+                    });
+
+
+
+                    const classesData = sData.classesData || {};
+
+                    let classList = Object.keys(classesData);
+
+
+
+                    // Standard Class Sort Order
+
+                    const classOrderMap = {
+
+                        'play': 1, 'nursery': 2, 'kg': 3, 'one': 4, 'two': 5, 'three': 6,
+
+                        'four': 7, 'five': 8, 'six': 9, 'seven': 10, 'eight': 11, 'nine': 12, 'ten': 13
+
+                    };
+
+                    classList.sort((a, b) => {
+
+                        const o1 = classOrderMap[a.toLowerCase()] || 99;
+
+                        const o2 = classOrderMap[b.toLowerCase()] || 99;
+
+                        return o1 - o2;
+
+                    });
+
+
+
+                    if (classList.length === 0) return;
+
+
+
+                    const marginTop = shiftIdx > 0 ? '20px' : '0px';
+
+
+
+                    html += `
+
+                        <div class="shift-section" style="margin-top: ${marginTop}; margin-bottom: 20px;">
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+
+                                <h3 class="shift-title" style="margin: 0; color: #000000 !important;">
+
+                                    ${shiftPrefix}: ${shiftInfo.name} ${shiftInfo.time ? `<span style="font-size: 0.9em; font-weight: normal; color: #000000 !important;">(${shiftInfo.time})</span>` : ''}
+
+                                </h3>
+
+                                <div style="font-size: 1.05em; font-weight: bold; color: #000000 !important;">
+
+                                    ${bLabelText}
+
+                                </div>
+
+                            </div>
+
+                            <table class="topsheet-table hide-col-lines">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th style="width: 22%;">${shiftHeaderLabel}</th>
+
+                                        <th style="width: 15%;">${classHeaderLabel}</th>
+
+                                        ${rooms.map(r => `<th>${formatRoomNumberByLang(r, sData, lang)}</th>`).join('')}
+
+                                        <th style="width: 12%;">${totalHeaderLabel}</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                    `;
+
+
+
+                    // Calculate totals
+
+                    let roomTotals = {};
+
+                    rooms.forEach(r => roomTotals[r] = 0);
+
+                    let shiftGrandTotal = 0;
+
+
+
+                    classList.forEach((clsName, idx) => {
+
+                        let rowTotal = 0;
+
+                        const clsRoomMap = classesData[clsName] || {};
+
+                        const clsDisp = formatClassNameByLang(clsName, lang);
+
+
+
+                        html += `<tr>`;
+
+                        if (idx === 0) {
+
+                            html += `
+
+                                <td rowspan="${classList.length}" style="font-weight: bold; background: #ffffff; vertical-align: middle;">
+
+                                    <b>${shiftInfo.name}</b><br>
+
+                                    <span style="font-size: 0.88em; font-weight: normal; color: #475569;">${shiftInfo.time}</span>
+
+                                </td>
+
+                            `;
+
+                        }
+
+
+
+                        html += `<td style="font-weight: 600;">${clsDisp}</td>`;
+
+
+
+                        rooms.forEach(r => {
+
+                            const cnt = clsRoomMap[r] || 0;
+
+                            rowTotal += cnt;
+
+                            roomTotals[r] += cnt;
+
+                            html += `<td>${formatNumberByLang(cnt, lang)}</td>`;
+
+                        });
+
+
+
+                        shiftGrandTotal += rowTotal;
+
+                        html += `<td style="font-weight: bold; background: #fafafa;"><b>${formatNumberByLang(rowTotal, lang)}</b></td>`;
+
+                        html += `</tr>`;
+
+                    });
+
+
+
+                    html += `
+
+                                    </tbody>
+
+                                    <tfoot>
+
+                                        <tr>
+
+                                            <td colspan="2">${grandTotalLabel}</td>
+
+                                            ${rooms.map(r => `<td>${formatNumberByLang(roomTotals[r], lang)}</td>`).join('')}
+
+                                            <td><b>${formatNumberByLang(shiftGrandTotal, lang)}</b></td>
+
+                                        </tr>
+
+                                    </tfoot>
+
+                                </table>
+
+                            </div>
+
+                    `;
+
+                });
+
+
+
+                html += `</div>`; // Close .page-block for this building
+
+            });
+
+
+
+            container.innerHTML = html;
+
+        }
+
+
+
+        // Real-Time Event Listeners
+
+        window.addEventListener('DOMContentLoaded', () => {
+
+            updateStudentDataTopsheetLive();
+
+        });
+
+
+
+        function refreshStudentDataTopsheetData() {
+
+            updateStudentDataTopsheetLive();
+
+        }
+
+        window.addEventListener('storage', (e) => {
+
+            if (!e.key || e.key === 'school_seat_plans_store' || e.key === 'school_saved_seat_allocations' || e.key === 'school_shift_times' || e.key === 'school_settings' || e.key === 'school_students') {
+
+                refreshStudentDataTopsheetData();
+
+            }
+
+        });
+
+        window.addEventListener('dbSynced', refreshStudentDataTopsheetData);
+
+
+
+        window.addEventListener('message', (e) => {
+
+            updateStudentDataTopsheetLive();
+
+        });
+
+
+
+        // Global functions for parent iframe calls
+
+        window.updateStudentDataTopsheetLive = updateStudentDataTopsheetLive;
+
+        window.updateAttendanceSheetLive = updateStudentDataTopsheetLive;
+
+
+
+        // Periodic Polling Fallback to catch intra-tab updates
+
+        let lastStorageHash = '';
+
+        setInterval(() => {
+
+            const currentHash = (localStorage.getItem('school_seat_plans_store') || '') + (localStorage.getItem('school_saved_seat_allocations') || '') + (localStorage.getItem('school_settings') || '');
+
+            if (currentHash !== lastStorageHash) {
+
+                lastStorageHash = currentHash;
+
+                updateStudentDataTopsheetLive();
+
+            }
+
+        }, 1500);
+
+    </script>
+
+<script src="main.js?v=4.2"></script>
+
+</body>
+
+</html>

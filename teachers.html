@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>শিক্ষক ও স্টাফ ডিরেক্টরি - আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@400;500;600;700&family=Alkatra:wght@400..700&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --font-bengali: 'Tiro Bangla', 'Hind Siliguri', serif;
+            --font-english: 'Outfit', 'Inter', sans-serif;
+            --primary: #0052ff;
+            --primary-dark: #003db3;
+            --primary-light: #e0e7ff;
+            --secondary: #0284c7;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-surface: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --card-shadow-hover: 0 20px 30px -10px rgba(0, 82, 255, 0.15), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Tiro Bangla', 'Hind Siliguri', 'Inter', serif, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-main);
+            line-height: 1.65;
+            overflow-x: hidden;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font-family: 'Tiro Bangla', 'Hind Siliguri', 'Inter', serif, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Tiro Bangla', 'Hind Siliguri', serif;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 82, 255, 0.08);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+            position: relative;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* TOP ANNOUNCEMENT BAR */
+        .top-bar {
+            background: #0f172a;
+            color: #cbd5e1;
+            font-size: 0.84rem;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .top-bar-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .top-info-left,
+        .top-info-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .top-info-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .top-info-item i {
+            color: #38bdf8;
+        }
+
+        .top-btn-erp {
+            background: linear-gradient(135deg, #0052ff 0%, #003db3 100%);
+            color: #ffffff !important;
+            padding: 3px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .top-btn-erp:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 82, 255, 0.4);
+        }
+
+        /* BRAND HEADER */
+        .cms-brand-header {
+            background: #ffffff;
+            padding: 18px 0;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            z-index: 100;
+        }
+
+        .brand-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand-link-main {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            text-decoration: none;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .brand-logo-wrap {
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #ffffff;
+            border: 3px solid var(--primary);
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0, 82, 255, 0.28);
+        }
+
+        .brand-logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .brand-text-block {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .brand-title-en {
+            font-family: 'Outfit', 'Inter', 'Hind Siliguri', sans-serif;
+            font-size: clamp(1.1rem, 2.0vw, 1.55rem);
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.25;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-transform: uppercase;
+        }
+
+        .brand-subtitle-bn {
+            font-family: 'Tiro Bangla', 'Hind Siliguri', serif;
+            font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+            font-weight: 700;
+            color: var(--primary);
+            margin: 4px 0 0 0;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .brand-header-badges {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .header-badge-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-badge-card i {
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .header-badge-text span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .header-badge-text strong {
+            display: block;
+            font-size: 0.92rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        /* MAIN NAVBAR (STICKY) */
+        .header-main {
+            background: #ffffff;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .navbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 56px;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            gap: 4px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 14px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.96rem;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .nav-link i {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover,
+        .nav-item.active .nav-link {
+            color: var(--primary);
+            background: rgba(0, 82, 255, 0.06);
+        }
+
+        .nav-link:hover i,
+        .nav-item.active .nav-link i {
+            color: var(--primary);
+        }
+
+        .nav-cta-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-portal-action {
+            background: linear-gradient(135deg, #0052ff 0%, #003db3 100%);
+            color: #ffffff !important;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 82, 255, 0.3);
+            transition: var(--transition);
+        }
+
+        .btn-portal-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 82, 255, 0.4);
+        }
+
+        .btn-outline-portal {
+            background: transparent;
+            color: var(--primary) !important;
+            border: 1.5px solid var(--primary);
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-outline-portal:hover {
+            background: var(--primary);
+            color: #ffffff !important;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            font-size: 1.4rem;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 6px;
+        }
+
+        .mobile-nav-label {
+            display: none;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark);
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* PAGE BANNER */
+        .page-hero-banner {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);
+            color: #ffffff;
+            padding: 45px 0 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-hero-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.6;
+        }
+
+        .page-hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            padding: 5px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: #93c5fd;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .breadcrumb-nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .breadcrumb-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .page-hero-content h1 {
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .page-hero-content p {
+            font-size: 1.05rem;
+            color: #e2e8f0;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        /* DIRECTORY SECTION */
+        .section-py {
+            padding: 50px 0 70px;
+        }
+
+        .staff-filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 35px;
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .class-pill-btn {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid var(--border-color);
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .class-pill-btn:hover,
+        .class-pill-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 82, 255, 0.25);
+        }
+
+        .search-box-wrap {
+            position: relative;
+            min-width: 290px;
+        }
+
+        .search-box-wrap input {
+            width: 100%;
+            padding: 10px 16px 10px 42px;
+            border-radius: 30px;
+            border: 1.5px solid var(--border-color);
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .search-box-wrap input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.15);
+        }
+
+        .search-box-wrap i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 28px;
+        }
+
+        .staff-card {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--card-shadow-hover);
+            border-color: rgba(0, 82, 255, 0.3);
+        }
+
+        .staff-avatar-wrap {
+            height: 180px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+        }
+
+        .staff-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            object-fit: cover;
+            background: #ffffff;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .staff-body {
+            padding: 22px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .staff-body h3 {
+            font-size: 1.18rem;
+            margin-bottom: 4px;
+            color: var(--dark);
+        }
+
+        .staff-desig {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+        }
+
+        .staff-meta-list {
+            list-style: none;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+            flex: 1;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .staff-meta-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            word-break: break-word;
+        }
+
+        .staff-meta-list li i {
+            color: var(--primary);
+            width: 16px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* FOOTER */
+        .footer-main {
+            background: #0b1120;
+            color: #94a3b8;
+            padding: 60px 0 25px;
+            border-top: 3px solid var(--primary);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-about h3 {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .footer-about p {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 10px;
+        }
+
+        .footer-social-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #1e293b;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-social-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+            transform: translateY(-3px);
+        }
+
+        .footer-col h4 {
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin-bottom: 18px;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: modalPop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 16px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .modal-close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close-btn:hover {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            .nav-menu, .nav-cta-btns {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .mobile-nav-label {
+                display: flex;
+            }
+            .brand-header-badges {
+                display: none;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .staff-filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box-wrap {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="container top-bar-inner">
+            <div class="top-info-left">
+                <span class="top-info-item" id="topEiinBadge"><i class="fa-solid fa-graduation-cap"></i> EIIN: <strong>124915</strong></span>
+                <span class="top-info-item" id="topCodeBadge"><i class="fa-solid fa-barcode"></i> কোড: <strong>465056</strong></span>
+                <span class="top-info-item" id="topPhone"><i class="fa-solid fa-phone"></i> +8801794918384</span>
+                <span class="top-info-item" id="topEmail"><i class="fa-solid fa-envelope"></i> nironjoray40@gmail.com</span>
+            </div>
+            <div class="top-info-right" id="topAuthContainer">
+                <a href="cms.html" class="top-btn-erp" title="হোম পেজে ফিরে যান">
+                    <i class="fa-solid fa-house"></i> <span>হোম পেজ</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BRAND HEADER -->
+    <div class="cms-brand-header">
+        <div class="container brand-header-flex">
+            <a href="cms.html" class="brand-link-main">
+                <div class="brand-logo-wrap">
+                    <img id="cmsSchoolLogo" src="school_logo.svg" alt="School Logo">
+                </div>
+                <div class="brand-text-block">
+                    <h1 id="cmsSchoolName" class="brand-title-en">Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</h1>
+                    <p id="cmsSchoolSubtitle" class="brand-subtitle-bn">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</p>
+                </div>
+            </a>
+            <div class="brand-header-badges">
+                <div class="header-badge-card">
+                    <i class="fa-solid fa-medal"></i>
+                    <div class="header-badge-text">
+                        <span>স্থাপিত</span>
+                        <strong id="headerEstdText">১৯৯০ ইং</strong>
+                    </div>
+                </div>
+                <div class="header-badge-card">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div class="header-badge-text">
+                        <span>স্বীকৃতি</span>
+                        <strong>দিনাজপুর বোর্ড</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STICKY NAVBAR -->
+    <header class="header-main" id="headerNavbar">
+        <div class="container navbar-inner">
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="cms.html#hero" class="nav-link"><i class="fa-solid fa-house"></i> হোম</a></li>
+                <li class="nav-item"><a href="cms.html#speeches" class="nav-link"><i class="fa-solid fa-landmark"></i> পরিচিতি ও বাণী</a></li>
+                <li class="nav-item"><a href="cms.html#academics" class="nav-link"><i class="fa-solid fa-book-open"></i> শ্রেণি ও বিষয়</a></li>
+                <li class="nav-item active"><a href="teachers.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> শিক্ষক ও স্টাফ</a></li>
+                <li class="nav-item"><a href="cms.html#notices" class="nav-link"><i class="fa-solid fa-bell"></i> নোটিশ বোর্ড</a></li>
+                <li class="nav-item"><a href="cms.html#admission" class="nav-link"><i class="fa-solid fa-user-plus"></i> ভর্তি তথ্য</a></li>
+                <li class="nav-item"><a href="cms.html#gallery" class="nav-link"><i class="fa-solid fa-images"></i> গ্যালারি</a></li>
+                <li class="nav-item"><a href="cms.html#contact" class="nav-link"><i class="fa-solid fa-envelope"></i> যোগাযোগ</a></li>
+            </ul>
+
+            <div class="mobile-nav-label">
+                <i class="fa-solid fa-chalkboard-user"></i> শিক্ষক ও স্টাফ ডিরেক্টরি
+            </div>
+
+            <div class="nav-cta-btns">
+                <a href="cms.html" class="btn-portal-action">
+                    <i class="fa-solid fa-house"></i> হোম পেজ
+                </a>
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open Mobile Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MOBILE DRAWER -->
+    <div id="mobileDrawer" style="display: none; background: #ffffff; border-bottom: 2px solid var(--primary); padding: 15px 20px;">
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+            <li><a href="cms.html#hero" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-house"></i> হোম</a></li>
+            <li><a href="cms.html#speeches" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-landmark"></i> পরিচিতি ও বাণী</a></li>
+            <li><a href="cms.html#academics" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-book-open"></i> শ্রেণি ও বিষয়</a></li>
+            <li><a href="teachers.html" class="nav-link" style="color: var(--primary); font-weight: 700;"><i class="fa-solid fa-chalkboard-user" style="color: var(--primary);"></i> শিক্ষক ও স্টাফ ডিরেক্টরি</a></li>
+            <li><a href="cms.html#notices" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-bell"></i> নোটিশ বোর্ড</a></li>
+            <li><a href="cms.html#admission" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-user-plus"></i> ভর্তি তথ্য</a></li>
+            <li><a href="cms.html#gallery" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-images"></i> ফটো গ্যালারি</a></li>
+            <li><a href="cms.html#contact" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-envelope"></i> যোগাযোগ</a></li>
+            <li style="margin-top: 10px;">
+                <a href="cms.html" class="btn-portal-action" style="display: flex; justify-content: center; width: 100%;">
+                    <i class="fa-solid fa-house"></i> মূল ওয়েবসাইটে ফিরে যান
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- PAGE HERO BANNER -->
+    <div class="page-hero-banner">
+        <div class="container page-hero-content">
+            <div class="breadcrumb-nav">
+                <a href="cms.html"><i class="fa-solid fa-house"></i> হোম</a>
+                <span>/</span>
+                <span>শিক্ষক ও স্টাফ ডিরেক্টরি</span>
+            </div>
+            <h1>আমাদের অভিজ্ঞ শিক্ষক ও কর্মকর্তাবৃন্দ</h1>
+            <p>উচ্চশিক্ষিত, নিবেদিতপ্রাণ ও অভিজ্ঞ শিক্ষকমণ্ডলীর সার্বিক তত্ত্বাবধানে পরিচালিত আধুনিক ও সুশৃঙ্খল স্মার্ট ক্যাম্পাস</p>
+        </div>
+    </div>
+
+    <!-- MAIN DIRECTORY CONTENT -->
+    <main class="section-py">
+        <div class="container">
+            <!-- Filter & Search Bar -->
+            <div class="staff-filter-bar">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="class-pill-btn active" onclick="filterStaffCategory('all')">সকল সদস্য</button>
+                    <button type="button" class="class-pill-btn" onclick="filterStaffCategory('teacher')">সহকারী শিক্ষক</button>
+                    <button type="button" class="class-pill-btn" onclick="filterStaffCategory('senior')">সিনিয়র শিক্ষক</button>
+                    <button type="button" class="class-pill-btn" onclick="filterStaffCategory('staff')">অফিস স্টাফ</button>
+                </div>
+                <div class="search-box-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="staffSearchInput" placeholder="শিক্ষক বা বিষয়ের নাম দিয়ে খুঁজুন..." oninput="handleStaffSearch(this.value)">
+                </div>
+            </div>
+
+            <!-- Staff Grid -->
+            <div class="staff-grid" id="staffContainerGrid">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer-main">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- Col 1: About -->
+                <div class="footer-about">
+                    <h3 id="footerSchoolName">Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</h3>
+                    <p id="footerSchoolSubtitle">
+                        আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়, মাথাভাঙ্গা, জলঢাকা, নীলফামারী। আধুনিক শিক্ষা ও নৈতিক মূল্যবোধের নির্ভরযোগ্য প্রতিষ্ঠান।
+                    </p>
+                    <div class="footer-socials">
+                        <a href="#" id="footerFbLink" class="footer-social-btn" target="_blank" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" id="footerYtLink" class="footer-social-btn" target="_blank" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" id="footerTwLink" class="footer-social-btn" target="_blank" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="footer-col">
+                    <h4>দ্রুত লিংক</h4>
+                    <ul class="footer-links">
+                        <li><a href="cms.html#about"><i class="fa-solid fa-chevron-right"></i> প্রতিষ্ঠান পরিচিতি</a></li>
+                        <li><a href="cms.html#academics"><i class="fa-solid fa-chevron-right"></i> শ্রেণি ও বিষয়সমূহ</a></li>
+                        <li><a href="teachers.html"><i class="fa-solid fa-chevron-right"></i> শিক্ষকমণ্ডলীর তালিকা</a></li>
+                        <li><a href="cms.html#notices"><i class="fa-solid fa-chevron-right"></i> সাম্প্রতিক নোটিশ</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Academic Portals -->
+                <div class="footer-col">
+                    <h4>পোর্টাল সমূহ</h4>
+                    <ul class="footer-links">
+                        <li><a href="cms.html"><i class="fa-solid fa-house"></i> CMS হোম পেজ</a></li>
+                        <li><a href="student-portal.html"><i class="fa-solid fa-chevron-right"></i> শিক্ষার্থী পোর্টাল</a></li>
+                        <li><a href="result-portal.html"><i class="fa-solid fa-chevron-right"></i> রেজাল্ট পোর্টাল</a></li>
+                        <li><a href="seat-plan.html"><i class="fa-solid fa-chevron-right"></i> আসন বিন্যাস ও রুটিন</a></li>
+                        <li><a href="advance.html"><i class="fa-solid fa-chevron-right"></i> সিস্টেম সেটিংস</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Contact Summary -->
+                <div class="footer-col">
+                    <h4>যোগাযোগ</h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 10px;"><i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> মাথাভাঙ্গা, জলঢাকা, নীলফামারী</p>
+                    <p style="font-size: 0.9rem; margin-bottom: 10px;"><i class="fa-solid fa-phone" style="color: var(--primary);"></i> +8801794918384</p>
+                    <p style="font-size: 0.9rem; margin-bottom: 15px;"><i class="fa-solid fa-envelope" style="color: var(--primary);"></i> nironjoray40@gmail.com</p>
+                    <a href="cms.html" class="top-btn-erp" style="display: inline-flex; width: 100%; justify-content: center; padding: 10px;">
+                        <i class="fa-solid fa-house"></i> হোম পেজে যান
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>© ২০২৬ আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়। সর্বস্বত্ব সংরক্ষিত।</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TEACHER PROFILE MODAL -->
+    <div class="modal-overlay" id="teacherProfileModalOverlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>শিক্ষক / স্টাফ প্রোফাইল বিবরণ</h3>
+                <button type="button" class="modal-close-btn" onclick="closeTeacherModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <img id="modalTeacherPhoto" src="" alt="Teacher Photo" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-bottom: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.1);">
+                <h3 id="modalTeacherName" style="font-size: 1.4rem; margin-bottom: 4px;">নাম</h3>
+                <p id="modalTeacherDesig" style="color: var(--primary); font-weight: 700; margin-bottom: 20px;">পদবি</p>
+                <div id="modalTeacherDetails" style="text-align: left; line-height: 1.8; color: #334155; font-size: 1rem; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border-color);">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        let ERP_SETTINGS = {};
+        let ERP_STAFF = [];
+
+        function getStoreData(key, defaultVal) {
+            try {
+                const stored = localStorage.getItem(key);
+                if (!stored) return defaultVal;
+                return JSON.parse(stored);
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+
+        function safeParse(str, defaultVal) {
+            try {
+                if (typeof str === 'object') return str;
+                return JSON.parse(str);
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileDrawer');
+            if (!drawer) return;
+            drawer.style.display = (drawer.style.display === 'none' || drawer.style.display === '') ? 'block' : 'none';
+        }
+
+        async function loadTeachersDataEngine() {
+            try {
+                ERP_SETTINGS = getStoreData('school_settings', {}) || {};
+                ERP_STAFF = getStoreData('school_staff', []) || [];
+
+                try {
+                    const res = await fetch('/api/get_cms_data');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.school_settings) ERP_SETTINGS = safeParse(data.school_settings, ERP_SETTINGS);
+                        if (data.school_staff) ERP_STAFF = safeParse(data.school_staff, ERP_STAFF);
+                    }
+                } catch (e) {
+                    console.log('Using localStorage data');
+                }
+
+                applyHeaderSettings();
+                renderStaffDirectory(ERP_STAFF);
+            } catch (err) {
+                console.error('Error loading teachers data:', err);
+            }
+        }
+
+        function applyHeaderSettings() {
+            const nameBn = ERP_SETTINGS.schoolNameBn || ERP_SETTINGS.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়";
+            const nameEn = ERP_SETTINGS.schoolNameEn || "Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School";
+            const eiin = ERP_SETTINGS.eiin || "124915";
+            const code = ERP_SETTINGS.schoolCode || "465056";
+            const phone = ERP_SETTINGS.schoolPhone || "+8801794918384";
+            const email = ERP_SETTINGS.schoolEmail || "nironjoray40@gmail.com";
+            const estd = ERP_SETTINGS.establishedYear || "১৯৯০ ইং";
+            const logo = localStorage.getItem('school_logo') || ERP_SETTINGS.schoolLogo || "school_logo.svg";
+
+            document.title = "শিক্ষক ও কর্মকর্তা ডিরেক্টরি - " + nameBn;
+
+            const logoEl = document.getElementById('cmsSchoolLogo');
+            if (logoEl) logoEl.src = logo;
+
+            const brandName = document.getElementById('cmsSchoolName');
+            if (brandName) brandName.textContent = nameEn;
+            const brandSub = document.getElementById('cmsSchoolSubtitle');
+            if (brandSub) brandSub.textContent = nameBn;
+
+            const footName = document.getElementById('footerSchoolName');
+            if (footName) footName.textContent = nameEn;
+
+            const eiinEl = document.getElementById('topEiinBadge');
+            if (eiinEl) eiinEl.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> EIIN: <strong>${eiin}</strong>`;
+            const codeEl = document.getElementById('topCodeBadge');
+            if (codeEl) codeEl.innerHTML = `<i class="fa-solid fa-barcode"></i> কোড: <strong>${code}</strong>`;
+            const phoneEl = document.getElementById('topPhone');
+            if (phoneEl) phoneEl.innerHTML = `<i class="fa-solid fa-phone"></i> ${phone}`;
+            const emailEl = document.getElementById('topEmail');
+            if (emailEl) emailEl.innerHTML = `<i class="fa-solid fa-envelope"></i> ${email}`;
+            const estdEl = document.getElementById('headerEstdText');
+            if (estdEl) estdEl.textContent = estd;
+        }
+
+        function renderStaffDirectory(staffList) {
+            const container = document.getElementById('staffContainerGrid');
+            if (!container) return;
+
+            let list = staffList;
+            if (!list || list.length === 0) {
+                list = [
+                    { staffId: 'R1027928', name: 'SHAH MD ROKONUZZAMAN CHOWDHURY', nameBn: 'শাহ মোঃ রোকনুজ্জামান চৌধুরী', designation: 'প্রধান শিক্ষক', subject: 'গণিত ও বিজ্ঞান', mobile: '01712345678', qualification: 'এম.এসসি (১ম শ্রেণি), বি.এড' },
+                    { staffId: 'R552186', name: 'MD MAHTAB UDDIN', nameBn: 'মোঃ মাহতাব উদ্দিন', designation: 'সহকারী প্রধান শিক্ষক', subject: 'ইংরেজি', mobile: '01812345679', qualification: 'এম.এ (ইংরেজি), বি.এড' },
+                    { staffId: 'N56878529', name: 'PALASH CHANDRO ROY', nameBn: 'পলাশ চন্দ্র রায়', designation: 'কম্পিউটার অপারেটর', subject: 'আইসিটি ও অফিস ম্যানেজমেন্ট', mobile: '01794918384', qualification: 'ডিপ্লোমা ইন কম্পিউটার সায়েন্স' },
+                    { staffId: 'T882910', name: 'ABDUL JALIL', nameBn: 'মোঃ আব্দুল জলিল', designation: 'সিনিয়র শিক্ষক', subject: 'বাংলা ভাষা ও সাহিত্য', mobile: '01711223344', qualification: 'এম.এ (বাংলা)' }
+                ];
+            }
+
+            let html = '';
+            list.forEach(staff => {
+                const name = staff.nameBn || staff.name || 'শিক্ষক / স্টাফ';
+                const desig = staff.designation || 'শিক্ষক';
+                const subject = staff.subject || staff.teachingSubject || 'সাধারণ বিষয়';
+                const mobile = staff.mobile || staff.phone || '০১৭XXXXXXXX';
+                const qual = staff.qualification || staff.degree || 'স্নাতক / স্নাতকোত্তর';
+                const photo = staff.photo || '';
+
+                const avatarHtml = photo 
+                    ? `<img class="staff-avatar" src="${photo}" alt="${name}" onerror="this.outerHTML='<div class=\\'staff-avatar\\' style=\\'display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0052ff,#0284c7);color:#ffffff;font-size:2.2rem;\\'><i class=\\'fa-solid fa-user-tie\\'></i></div>'">`
+                    : `<div class="staff-avatar" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0052ff,#0284c7);color:#ffffff;font-size:2.2rem;"><i class="fa-solid fa-user-tie"></i></div>`;
+
+                html += `
+                    <div class="staff-card">
+                        <div class="staff-avatar-wrap">
+                            ${avatarHtml}
+                        </div>
+                        <div class="staff-body">
+                            <h3>${name}</h3>
+                            <div class="staff-desig">${desig}</div>
+                            <ul class="staff-meta-list">
+                                <li><i class="fa-solid fa-book"></i> <span><strong>বিষয়:</strong> ${subject}</span></li>
+                                <li><i class="fa-solid fa-graduation-cap"></i> <span><strong>যোগ্যতা:</strong> ${qual}</span></li>
+                                <li><i class="fa-solid fa-phone"></i> <span><strong>মোবাইল:</strong> ${mobile}</span></li>
+                            </ul>
+                            <button type="button" class="btn-outline-portal" style="width: 100%; justify-content: center; font-size: 0.86rem;" onclick="viewTeacherProfile('${staff.staffId || ''}', '${encodeURIComponent(name)}')">
+                                <i class="fa-solid fa-id-badge"></i> বিস্তারিত প্রোফাইল
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function filterStaffCategory(cat) {
+            const buttons = document.querySelectorAll('.class-pill-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if (window.event && window.event.target) window.event.target.classList.add('active');
+
+            if (cat === 'all') {
+                renderStaffDirectory(ERP_STAFF);
+            } else if (cat === 'teacher') {
+                const filtered = ERP_STAFF.filter(s => (s.designation || '').includes('সহকারী') || (s.designation || '').includes('শিক্ষক'));
+                renderStaffDirectory(filtered.length ? filtered : ERP_STAFF);
+            } else if (cat === 'senior') {
+                const filtered = ERP_STAFF.filter(s => (s.designation || '').includes('প্রধান') || (s.designation || '').includes('সিনিয়র'));
+                renderStaffDirectory(filtered.length ? filtered : ERP_STAFF);
+            } else if (cat === 'staff') {
+                const filtered = ERP_STAFF.filter(s => (s.designation || '').includes('অফিস') || (s.designation || '').includes('সহকারী') || (s.designation || '').includes('কম্পিউটার') || (s.category || '') === 'Staff');
+                renderStaffDirectory(filtered.length ? filtered : ERP_STAFF);
+            }
+        }
+
+        function handleStaffSearch(query) {
+            const q = query.trim().toLowerCase();
+            if (!q) {
+                renderStaffDirectory(ERP_STAFF);
+                return;
+            }
+            const filtered = ERP_STAFF.filter(s => {
+                const n = (s.name || '').toLowerCase();
+                const nBn = (s.nameBn || '').toLowerCase();
+                const d = (s.designation || '').toLowerCase();
+                const sub = (s.subject || '').toLowerCase();
+                return n.includes(q) || nBn.includes(q) || d.includes(q) || sub.includes(q);
+            });
+            renderStaffDirectory(filtered);
+        }
+
+        function viewTeacherProfile(staffId, encodedName) {
+            const name = decodeURIComponent(encodedName);
+            const staff = ERP_STAFF.find(s => s.staffId === staffId || s.name === name || s.nameBn === name) || {};
+            
+            document.getElementById('modalTeacherName').textContent = staff.nameBn || staff.name || name;
+            document.getElementById('modalTeacherDesig').textContent = staff.designation || "সহকারী শিক্ষক";
+            
+            const photoEl = document.getElementById('modalTeacherPhoto');
+            if (staff.photo) {
+                photoEl.src = staff.photo;
+                photoEl.style.display = 'inline-block';
+            } else {
+                photoEl.style.display = 'none';
+            }
+
+            const detailsHtml = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.95rem;">
+                    <div><strong>স্টাফ আইডি:</strong> ${staff.staffId || 'N/A'}</div>
+                    <div><strong>বিষয়:</strong> ${staff.subject || 'সাধারণ'}</div>
+                    <div><strong>শিক্ষাগত যোগ্যতা:</strong> ${staff.qualification || 'স্নাতক / স্নাতকোত্তর'}</div>
+                    <div><strong>যোগদানের তারিখ:</strong> ${staff.joinDate || '২০২০'}</div>
+                    <div><strong>মোবাইল নম্বর:</strong> ${staff.mobile || '০১৭XXXXXXXX'}</div>
+                    <div><strong>রক্তের গ্রুপ:</strong> ${staff.bloodGroup || 'A+'}</div>
+                </div>
+                ${staff.address ? `<div style="margin-top: 12px; font-size: 0.92rem; border-top: 1px dashed #cbd5e1; padding-top: 8px;"><strong>স্থায়ী ঠিকানা:</strong> ${staff.address}</div>` : ''}
+            `;
+            document.getElementById('modalTeacherDetails').innerHTML = detailsHtml;
+            document.getElementById('teacherProfileModalOverlay').classList.add('active');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacherProfileModalOverlay').classList.remove('active');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('teacherProfileModalOverlay');
+            if (event.target === modal) {
+                closeTeacherModal();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTeachersDataEngine();
+        });
+    </script>
+</body>
+
+</html>

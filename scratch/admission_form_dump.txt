@@ -1,0 +1,561 @@
+3191:     <div class="modal-overlay" id="admissionModalOverlay">
+3192:         <div class="modal-card adm-fullscreen-card">
+3193:             <div class="modal-header">
+3194:                 <div style="display: flex; align-items: center; gap: 14px;">
+3195:                     <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1.5px solid #38bdf8; display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.3rem;">
+3196:                         <i class="fa-solid fa-graduation-cap"></i>
+3197:                     </div>
+3198:                     <div>
+3199:                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+3200:                             <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 800; margin: 0; letter-spacing: -0.2px;">
+3201:                                 অনলাইন ভর্তি আবেদন ফরম
+3202:                             </h3>
+3203:                             <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+3204:                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #38bdf8; display: inline-block;"></span> শিক্ষাবর্ষ ২০২৬
+3205:                             </span>
+3206:                         </div>
+3207:                         <p style="color: #94a3b8; font-size: 0.82rem; margin: 2px 0 0 0;" id="admissionHeaderSchoolName">
+3208:                             আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়
+3209:                         </p>
+3210:                     </div>
+3211:                 </div>
+3212:                 <div style="display: flex; align-items: center; gap: 10px;">
+3213:                     <button type="button" class="modal-close-btn"
+3214:                         style="color: #ffffff; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;"
+3215:                         title="ফরম বন্ধ করুন"
+3216:                         onclick="closeAdmissionModal()"><i class="fa-solid fa-xmark" style="font-size: 1.15rem;"></i></button>
+3217:                 </div>
+3218:             </div>
+3219:             <div class="modal-body" id="admissionModalBody">
+3220:                 
+3221:                 <!-- VIEW 1: DETAILED ADMISSION FORM -->
+3222:                 <div id="admissionFormContainer">
+3223:                     <div class="adm-info-badge" style="display: none;">
+3224:                         <i class="fa-solid fa-circle-info" style="font-size: 1.15rem; color: #0052ff;"></i>
+3225:                         <div>
+3226:                             <strong>বিজ্ঞপ্তি:</strong> অত্র প্রতিষ্ঠানে ২০২৬ শিক্ষাবর্ষে ভর্তির জন্য নির্ভুল তথ্য দিয়ে ফরমটি পূরণ করুন। আবেদন সফলভাবে জমা হওয়ার পর প্রিন্টযোগ্য <strong>ভর্তি আবেদন রসিদ ও ট্র্যাকিং স্লিপ</strong> পাওয়া যাবে।
+3227:                         </div>
+3228:                     </div>
+3229: 
+3230:                     <form id="onlineAdmissionForm" onsubmit="handleAdmissionSubmit(event)">
+3231:                         <div class="adm-form-wrapper">
+3232: 
+3233:                             <!-- SECTION 1: প্রাতিষ্ঠানিক ও ভর্তি তথ্য -->
+3234:                             <div class="adm-section-card">
+3235:                                 <div class="adm-section-header">
+3236:                                     <i class="fa-solid fa-school"></i>
+3237:                                     <span>১. প্রাতিষ্ঠানিক ও ভর্তি সংক্রান্ত তথ্য</span>
+3238:                                 </div>
+3239:                                 <div class="adm-grid-2">
+3240:                                     <div class="form-group">
+3241:                                         <label for="admTargetClass">ভর্তি ইচ্ছুক শ্রেণি *</label>
+3242:                                         <select class="form-control" id="admTargetClass" required onchange="handleAdmClassChange(this.value)">
+3243:                                             <option value="" disabled selected>শ্রেণি নির্বাচন করুন</option>
+3244:                                             <option value="প্লে">প্লে</option>
+3245:                                             <option value="নার্সারি">নার্সারি</option>
+3246:                                             <option value="কেজি">কেজি</option>
+3247:                                             <option value="১ম শ্রেণি">১ম শ্রেণি</option>
+3248:                                             <option value="২য় শ্রেণি">২য় শ্রেণি</option>
+3249:                                             <option value="৩য় শ্রেণি">৩য় শ্রেণি</option>
+3250:                                             <option value="৪র্থ শ্রেণি">৪র্থ শ্রেণি</option>
+3251:                                             <option value="৫ম শ্রেণি">৫ম শ্রেণি</option>
+3252:                                             <option value="৬ষ্ঠ শ্রেণি">৬ষ্ঠ শ্রেণি</option>
+3253:                                             <option value="৭ম শ্রেণি">৭ম শ্রেণি</option>
+3254:                                             <option value="৮ম শ্রেণি">৮ম শ্রেণি</option>
+3255:                                             <option value="৯ম শ্রেণি">৯ম শ্রেণি</option>
+3256:                                             <option value="১০ম শ্রেণি">১০ম শ্রেণি</option>
+3257:                                         </select>
+3258:                                     </div>
+3259:                                     <div class="form-group">
+3260:                                         <label for="admSession">শিক্ষাবর্ষ *</label>
+3261:                                         <input type="text" class="form-control" id="admSession" value="2026" required>
+3262:                                     </div>
+3263:                                     <div class="form-group" id="admGroupContainer" style="display: none;">
+3264:                                         <label for="admGroup">বিভাগ / গ্রুপ *</label>
+3265:                                         <select class="form-control" id="admGroup" onchange="handleAdmGroupChange(this.value)">
+3266:                                             <option value="" disabled selected>গ্রুপ নির্বাচন করুন</option>
+3267:                                             <option value="বিজ্ঞান">বিজ্ঞান</option>
+3268:                                             <option value="মানবিক">মানবিক</option>
+3269:                                             <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা</option>
+3270:                                         </select>
+3271:                                     </div>
+3272:                                     <div class="form-group" id="admOptionalContainer" style="display: none;">
+3273:                                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+3274:                                             <label for="admOptionalSubject" style="margin-bottom: 0; font-weight: 600; color: #1e293b; display: inline-flex; align-items: center; gap: 6px;">
+3275:                                                 <span>অপশনাল বিষয়</span>
+3276:                                                 <button type="button" class="adm-info-btn" onclick="openOptionalPolicyModal()" title="অপশনাল বিষয় নির্বাচনের নীতিমালা ও নির্দেশিকা">
+3277:                                                     <i class="fa-solid fa-circle-info"></i>
+3278:                                                 </button>
+3279:                                             </label>
+3280:                                         </div>
+3281:                                         <select class="form-control" id="admOptionalSubject">
+3282:                                             <option value="">অপশনাল বিষয় নির্বাচন করুন</option>
+3283:                                             <option value="উচ্চতর গণিত">উচ্চতর গণিত</option>
+3284:                                             <option value="জীববিজ্ঞান">জীববিজ্ঞান</option>
+3285:                                             <option value="কৃষি শিক্ষা">কৃষি শিক্ষা</option>
+3286:                                             <option value="গার্হস্থ্য বিজ্ঞান">গার্হস্থ্য বিজ্ঞান</option>
+3287:                                             <option value="পৌরনীতি ও নাগরিকতা">পৌরনীতি ও নাগরিকতা</option>
+3288:                                             <option value="অর্থনীতি">অর্থনীতি</option>
+3289:                                             <option value="ভূগোল ও পরিবেশ">ভূগোল ও পরিবেশ</option>
+3290:                                             <option value="ফিন্যান্স ও ব্যাংকিং">ফিন্যান্স ও ব্যাংকিং</option>
+3291:                                         </select>
+3292:                                     </div>
+3293:                                 </div>
+3294: 
+3295:                                 <!-- Hidden Fields as requested: Shift, Medium, Application Type -->
+3296:                                 <div style="display: none !important;">
+3297:                                     <select id="admShift">
+3298:                                         <option value="দিবা শাখা" selected>দিবা শাখা</option>
+3299:                                     </select>
+3300:                                     <select id="admMedium">
+3301:                                         <option value="বাংলা মাধ্যম" selected>বাংলা মাধ্যম</option>
+3302:                                     </select>
+3303:                                     <select id="admAppType">
+3304:                                         <option value="নতুন ভর্তি" selected>নতুন ভর্তি</option>
+3305:                                     </select>
+3306:                                 </div>
+3307:                             </div>
+3308: 
+3309:                             <!-- SECTION 2: শিক্ষার্থীর ব্যক্তিগত তথ্য ও ছবি -->
+3310:                             <div class="adm-section-card">
+3311:                                 <div class="adm-section-header">
+3312:                                     <i class="fa-solid fa-user-graduate"></i>
+3313:                                     <span>২. শিক্ষার্থীর ব্যক্তিগত তথ্য ও ছবি</span>
+3314:                                 </div>
+3315: 
+3316:                                 <!-- Photo Upload Dropzone -->
+3317:                                 <div class="adm-photo-box">
+3318:                                     <div class="adm-photo-preview" id="admPhotoPreviewBox">
+3319:                                         <img id="admPhotoImgPreview" src="" alt="Student Photo" style="display: none;">
+3320:                                         <div id="admPhotoPlaceholder" class="placeholder-icon">
+3321:                                             <i class="fa-solid fa-user-tie"></i>
+3322:                                         </div>
+3323:                                     </div>
+3324:                                     <div class="adm-photo-actions">
+3325:                                         <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 2px;">
+3326:                                             শিক্ষার্থীর পাসপোর্ট সাইজ ছবি
+3327:                                         </label>
+3328:                                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+3329:                                             <input type="file" id="admPhotoInput" accept="image/*" class="form-control" style="max-width: 280px; padding: 6px 10px; font-size: 0.85rem;" onchange="previewAdmissionPhoto(event)">
+3330:                                             <button type="button" class="btn-outline-portal" style="padding: 6px 12px; font-size: 0.82rem;" onclick="document.getElementById('admPhotoInput').click()">
+3331:                                                 <i class="fa-solid fa-camera"></i> ছবি ব্রাউজ করুন
+3332:                                             </button>
+3333:                                             <button type="button" id="admPhotoRemoveBtn" style="display: none; padding: 6px 10px; font-size: 0.82rem; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;" onclick="removeAdmissionPhoto()">
+3334:                                                 <i class="fa-solid fa-trash-can"></i> মুছুন
+3335:                                             </button>
+3336:                                         </div>
+3337:                                                   <div class="form-group" style="margin-top: 6px;">
+3338:                                     <label for="admFamilyIncome">পারিবারিক মাসিক আয়</label>
+3339:                                     <select class="form-control" id="admFamilyIncome">
+3340:                                         <option value="১০,০০০ টাকার নিচে">১০,০০০ টাকার নিচে</option>
+3341:                                         <option value="১০,০০০ - ২০,০০০ টাকা" selected>১০,০০০ - ২০,০০০ টাকা</option>
+3342:                                         <option value="২০,০০০ - ৩৫,০০০ টাকা">২০,০০০ - ৩৫,০০০ টাকা</option>
+3343:                                         <option value="৩৫,০০০ - ৫০,০০০ টাকা">৩৫,০০০ - ৫০,০০০ টাকা</option>
+3344:                                         <option value="৫০,০০০ টাকার বেশি">৫০,০০০ টাকার বেশি</option>
+3345:                                     </select>
+3346:                                 </div>
+3347:                             </div>
+3348: 
+3349:                             <!-- SECTION 4: অভিভাবক ও জরুরি যোগাযোগের তথ্য -->
+3350:                             <div class="adm-section-card">
+3351:                                 <div class="adm-section-header">
+3352:                                     <i class="fa-solid fa-users-gear"></i>
+3353:                                     <span>৪. অভিভাবক ও জরুরি যোগাযোগের তথ্য</span>
+3354:                                 </div>
+3355: 
+3356:                                 <div class="form-group">
+3357:                                     <label for="admGuardianType">অভিভাবক নির্বাচন *</label>
+3358:                                     <select class="form-control" id="admGuardianType" onchange="handleGuardianTypeChange(this.value)" required>
+3359:                                         <option value="Father" selected>পিতা</option>
+3360:                                         <option value="Mother">মাতা</option>
+3361:                                         <option value="Other">অন্যান্য (স্থানীয় অভিভাবক)</option>
+3362:                                     </select>
+3363:                                 </div>
+3364: 
+3365:                                 <div class="adm-grid-2">
+3366:                                     <div class="form-group">
+3367:                                         <label for="admGuardianName">অভিভাবকের নাম (বাংলা) *</label>
+3368:                                         <input type="text" class="form-control" id="admGuardianName" placeholder="অভিভাবকের নাম লিখুন" required>
+3369:                                     </div>
+3370:                                     <div class="form-group">
+3371:                                         <label for="admGuardianRelation">সম্পর্ক *</label>
+3372:                                         <input type="text" class="form-control" id="admGuardianRelation" placeholder="যেমন: পিতা / মাতা / চাচা / মামা" value="পিতা" required>
+3373:                                     </div>
+3374:                                 </div>
+3375: 
+3376:                                 <div class="adm-grid-3">
+3377:                                     <div class="form-group">
+3378:                                         <label for="admGuardianNid">অভিভাবকের জাতীয় পরিচয়পত্র নম্বর</label>
+3379:                                         <input type="text" class="form-control" id="admGuardianNid" placeholder="১০/১৩/১৭ ডিজিট NID নম্বর">
+3380:                                     </div>
+3381:                                     <div class="form-group">
+3382:                                         <label for="admGuardianPhone">অভিভাবকের মোবাইল নম্বর *</label>
+3383:                                         <input type="tel" class="form-control" id="admGuardianPhone" placeholder="০১৭XXXXXXXX" required>
+3384:                                     </div>
+3385:                                     <div class="form-group">
+3386:                                         <label for="admGuardianEmail">অভিভাবকের ইমেইল</label>
+3387:                                         <input type="email" class="form-control" id="admGuardianEmail" placeholder="example@mail.com">
+3388:                                     </div>
+3389:                                 </div>
+3390:                             </div>"" disabled selected>নির্বাচন করুন</option>
+3391:                                             <option value="ছাত্র">ছাত্র</option>
+3392:                                             <option value="ছাত্রী">ছাত্রী</option>
+3393:                                             <option value="অন্যান্য">অন্যান্য</option>
+3394:                                         </select>
+3395:                                     </div>
+3396:                                 </div>
+3397: 
+3398:                                 <div class="adm-grid-3">
+3399:                                     <div class="form-group">
+3400:                                         <label for="admReligion">ধর্ম *</label>
+3401:                                         <select class="form-control" id="admReligion" required>
+3402:                                             <option value="ইসলাম" selected>ইসলাম</option>
+3403:                                             <option value="সনাতন">সনাতন</option>
+3404:                                             <option value="বৌদ্ধ">বৌদ্ধ</option>
+3405:                                             <option value="খ্রিস্টান">খ্রিস্টান</option>
+3406:                                             <option value="অন্যান্য">অন্যান্য</option>
+3407:                                         </select>
+3408:                                     </div>
+3409:                                     <div class="form-group">
+3410:                                         <label for="admBloodGroup">রক্তের গ্রুপ</label>
+3411:                                         <select class="form-control" id="admBloodGroup">
+3412:                                             <option value="জানা নেই">জানা নেই</option>
+3413:                                             <option value="A+">A+</option>
+3414:                                             <option value="A-">A-</option>
+3415:                                             <option value="B+">B+</option>
+3416:                                             <option value="B-">B-</option>
+3417:                                             <option value="O+">O+</option>
+3418:                                             <option value="O-">O-</option>
+3419:                                             <option value="AB+">AB+</option>
+3420:                                             <option value="AB-">AB-</option>
+3421:                                         </select>
+3422:                                     </div>
+3423:                                     <div class="form-group">
+3424:                                         <label for="admNationality">জাতীয়তা</label>
+3425:                                         <input type="text" class="form-control" id="admNationality" value="বাংলাদেশী" readonly>
+3426:                                     </div>
+3427:                                 </div>
+3428: 
+3429:                                 <div class="form-group">
+3430:                                     <label for="admDisability">শারীরিক প্রতিবন্ধকতা / বিশেষ চাহিদা</label>
+3431:                                     <select class="form-control" id="admDisability">
+3432:                                         <option value="প্রযোজ্য নয়" selected>প্রযোজ্য নয়</option>
+3433:                                         <option value="দৃষ্টি প্রতিবন্ধী">দৃষ্টি প্রতিবন্ধী</option>
+3434:                                         <option value="শ্রবণ ও বাক প্রতিবন্ধী">শ্রবণ ও বাক প্রতিবন্ধী</option>
+3435:                                         <option value="শারীরিক প্রতিবন্ধী">শারীরিক প্রতিবন্ধী</option>
+3436:                                         <option value="অটিজম / অন্যান্য">অটিজম / অন্যান্য বিশেষ চাহিদা</option>
+3437:                                     </select>
+3438:                                 </div>
+3439:                             </div>
+3440: 
+3441:                             <!-- SECTION 3: পিতামাতার বিস্তারিত তথ্য -->
+3442:                             <div class="adm-section-card">
+3443:                                 <div class="adm-section-header">
+3444:                                     <i class="fa-solid fa-people-roof"></i>
+3445:                                     <span>৩. পিতামাতার বিস্তারিত তথ্য</span>
+3446:                                 </div>
+3447: 
+3448:                                 <div class="adm-grid-2">
+3449:                                     <div class="form-group">
+3450:                                         <label for="admFatherBn">পিতার নাম (বাংলায়) *</label>
+3451:                                         <input type="text" class="form-control" id="admFatherBn" placeholder="পিতার পুরো নাম বাংলায়" required>
+3452:                                     </div>
+3453:                                     <div class="form-group">
+3454:                                         <label for="admFatherEn">পিতার নাম (ইংরেজিতে) *</label>
+3455:                                         <input type="text" class="form-control" id="admFatherEn" placeholder="FATHER'S NAME IN ENGLISH" style="text-transform: uppercase;" required>
+3456:                                     </div>
+3457:                                 </div>
+3458: 
+3459:                                 <div class="adm-grid-3">
+3460:                                     <div class="form-group">
+3461:                                         <label for="admFatherNid">পিতার জাতীয় পরিচয়পত্র নম্বর</label>
+3462:                                         <input type="text" class="form-control" id="admFatherNid" placeholder="১০/১৩/১৭ ডিজিট NID নম্বর">
+3463:                                     </div>
+3464:                                     <div class="form-group">
+3465:                                         <label for="admFatherJob">পিতার পেশা *</label>
+3466:                                         <select class="form-control" id="admFatherJob" required>
+3467:                                             <option value="ব্যবসা">ব্যবসা</option>
+3468:                                             <option value="সরকারি চাকরি">সরকারি চাকরি</option>
+3469:                                             <option value="বেসরকারি চাকরি">বেসরকারি চাকরি</option>
+3470:                                             <option value="প্রবাসী">প্রবাসী</option>
+3471:                                             <option value="শিক্ষক">শিক্ষক</option>
+3472:                                             <option value="কৃষি">কৃষি</option>
+3473:                                             <option value="অন্যান্য">অন্যান্য</option>
+3474:                                         </select>
+3475:                                     </div>
+3476:                                     <div class="form-group">
+3477:                                         <label for="admFatherPhone">পিতার মোবাইল নম্বর *</label>
+3478:                                         <input type="tel" class="form-control" id="admFatherPhone" placeholder="০১৭XXXXXXXX" required>
+3479:                                     </div>
+3480:                                 </div>
+3481: 
+3482:                                 <hr style="border: none; border-top: 1px dashed #e2e8f0; margin: 14px 0;">
+3483: 
+3484:                                 <div class="adm-grid-2">
+3485:                                     <div class="form-group">
+3486:                                         <label for="admMotherBn">মাতার নাম (বাংলায়) *</label>
+3487:                                         <input type="text" class="form-control" id="admMotherBn" placeholder="মাতার পুরো নাম বাংলায়" required>
+3488:                                     </div>
+3489:                                     <div class="form-group">
+3490:                                         <label for="admMotherEn">মাতার নাম (ইংরেজিতে) *</label>
+3491:                                         <input type="text" class="form-control" id="admMotherEn" placeholder="MOTHER'S NAME IN ENGLISH" style="text-transform: uppercase;" required>
+3492:                                     </div>
+3493:                                 </div>
+3494: 
+3495:                                 <div class="adm-grid-3">
+3496:                                     <div class="form-group">
+3497:                                         <label for="admMotherNid">মাতার জাতীয় পরিচয়পত্র নম্বর</label>
+3498:                                         <input type="text" class="form-control" id="admMotherNid" placeholder="১০/১৩/১৭ ডিজিট NID নম্বর">
+3499:                                     </div>
+3500:                                     <div class="form-group">
+3501:                                         <label for="admMotherJob">মাতার পেশা *</label>
+3502:                                         <select class="form-control" id="admMotherJob" required>
+3503:                                             <option value="গৃহিণী" selected>গৃহিণী</option>
+3504:                                             <option value="সরকারি চাকরি">সরকারি চাকরি</option>
+3505:                                             <option value="বেসরকারি চাকরি">বেসরকারি চাকরি</option>
+3506:                                             <option value="ব্যবসা">ব্যবসা</option>
+3507:                                             <option value="শিক্ষক">শিক্ষক</option>
+3508:                                             <option value="অন্যান্য">অন্যান্য</option>
+3509:                                         </select>
+3510:                                     </div>
+3511:                                     <div class="form-group">
+3512:                                         <label for="admMotherPhone">মাতার মোবাইল নম্বর</label>
+3513:                                         <input type="tel" class="form-control" id="admMotherPhone" placeholder="০১৭XXXXXXXX">
+3514:                                     </div>
+3515:                                 </div>
+3516: 
+3517:                                 <div class="form-group" style="margin-top: 6px;">
+3518:                                     <label for="admFamilyIncome">পারিবারিক মাসিক আয়</label>
+3519:                                     <select class="form-control" id="admFamilyIncome">
+3520:                                         <option value="১০,০০০ টাকার নিচে">১০,০০০ টাকার নিচে</option>
+3521:                                         <option value="১০,০০০ - ২০,০০০ টাকা" selected>১০,০০০ - ২০,০০০ টাকা</option>
+3522:                                         <option value="২০,০০০ - ৩৫,০০০ টাকা">২০,০০০ - ৩৫,০০০ টাকা</option>
+3523:                                         <option value="৩৫,০০০ - ৫০,০০০ টাকা">৩৫,০০০ - ৫০,০০০ টাকা</option>
+3524:                                         <option                                          <input type="text" class="form-control" id="admPrevTc" placeholder="টিসি নম্বর (যদি থাকে)">
+3525:                                      </div>
+3526:                                  </div>
+3527:                              </div>
+3528: 
+3529:                             <!-- SECTION 7: অঙ্গীকারনামা -->
+3530:                             <div class="adm-section-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+3531:                                 <div class="adm-section-header" style="border-bottom-color: #cbd5e1;">
+3532:                                     <i class="fa-solid fa-signature"></i>
+3533:                                     <span>৭. আবেদনকারীর অঙ্গীকারনামা</span>
+3534:                                 </div>
+3535:                                 <div style="font-size: 0.88rem; color: #334155; line-height: 1.6; margin-bottom: 14px;">
+3536:                                     <label class="adm-checkbox-label" style="align-items: flex-start; gap: 10px;">
+3537:                                         <input type="checkbox" id="admAgreementCheckbox" required style="margin-top: 3px;">
+3538:                                         <span>
+3539:                                             আমি এই মর্মে অঙ্গীকার করছি যে, উপরে প্রদত্ত সকল তথ্য সম্পূর্ণ সত্য ও সঠিক। ভবিষ্যতে কোনো তথ্য অসত্য বা ভুল প্রমাণিত হলে অত্র বিদ্যালয়ে আমার ভর্তি বাতিল বলে গণ্য হবে এবং আমি কর্তৃপক্ষের যে কোনো সিদ্ধান্ত মেনে নিতে বাধ্য থাকব।
+3540:                                         </span>
+3541:                                     </label>
+3542:                                 </div>
+3543:                             </div>ss="form-control" id="admGuardianEmail" placeholder="example@mail.com">
+3544:                                     </div>
+3545:                                 </div>
+3546:                             </div>
+3547: 
+3548:                             <!-- SECTION 5: বর্তমান ও স্থায়ী ঠিকানা -->
+3549:                             <div class="adm-section-card">
+3550:                                 <div class="adm-section-header">
+3551:                                     <i class="fa-solid fa-map-location-dot"></i>
+3552:                                     <span>৫. ঠিকানা সংক্রান্ত তথ্য</span>
+3553:                                 </div>
+3554: 
+3555:                                 <!-- PRESENT ADDRESS -->
+3556:                                 <h4 style="font-size: 0.92rem; color: #1e293b; margin: 0 0 12px 0; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+3557:                                     <i class="fa-solid fa-house-user" style="color: #0052ff;"></i> বর্তমান ঠিকানা
+3558:                                 </h4>
+3559:                                 <div class="adm-grid-2">
+3560:                                     <div class="form-group">
+3561:                                         <label for="admPresDivision">বিভাগ *</label>
+3562:                                         <select class="form-control" id="admPresDivision" required onchange="handleDivisionChange('Pres', this.value)">
+3563:                                             <option value="" disabled selected>বিভাগ নির্বাচন করুন</option>
+3564:                                         </select>
+3565:                                     </div>
+3566:                                     <div class="form-group">
+3567:                                         <label for="admPresDistrict">জেলা *</label>
+3568:                                         <select class="form-control" id="admPresDistrict" required onchange="handleDistrictChange('Pres', this.value)">
+3569:                                             <option value="" disabled selected>প্রথমে বিভাগ নির্বাচন করুন</option>
+3570:                                         </select>
+3571:                                     </div>
+3572:                                 </div>
+3573:                                 <div class="adm-grid-2">
+3574:                                     <div class="form-group">
+3575:                                         <label for="admPresUpazila">উপজেলা / থানা *</label>
+3576:                                         <select class="form-control" id="admPresUpazila" required onchange="handleUpazilaChange('Pres', this.value)">
+3577:                                             <option value="" disabled selected>প্রথমে জেলা নির্বাচন করুন</option>
+3578:                                         </select>
+3579:                                     </div>
+3580:                                     <div class="form-group">
+3581:                                         <label for="admPresUnion">ইউনিয়ন / পৌরসভা *</label>
+3582:                                         <select class="form-control" id="admPresUnion" required onchange="handleUnionChange('Pres', this.value)">
+3583:                                             <option value="" disabled selected>প্রথমে উপজেলা নির্বাচন করুন</option>
+3584:                                         </select>
+3585:                                     </div>
+3586:                                 </div>
+3587:                                 <div class="adm-grid-2">
+3588:                                     <div class="form-group">
+3589:                                         <label for="admPresPost">ডাকঘর ও পোস্ট কোড *</label>
+3590:                                         <select class="form-control" id="admPresPost" required onchange="handlePostChange('Pres', this.value)">
+3591:                                             <option value="" disabled selected>প্রথমে ইউনিয়ন নির্বাচন করুন</option>
+3592:                                         </select>
+3593:                                     </div>
+3594:                                     <div class="form-group">
+3595:                                         <label for="admPresVillage">গ্রাম / বাড়ি নং / রোড / পাড়া *</label>
+3596:                                         <input type="text" class="form-control" id="admPresVillage" placeholder="গ্রাম, বাড়ি নং, রোড বা পাড়ার নাম লিখুন" required oninput="syncPermanentAddress()">
+3597:                                     </div>
+3598:                                 </div>
+3599: 
+3600:                                 <!-- SAME ADDRESS SYNC CHECKBOX -->
+3601:                                 <div style="margin: 14px 0 16px 0; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
+3602:                                     <label class="adm-checkbox-label">
+3603:                                         <input type="checkbox" id="admSameAddressCheckbox" onchange="toggleSameAddress(this.checked)">
+3604:                                         <span style="color: #1e40af; font-weight: 700;">বর্তমান ঠিকানা এবং স্থায়ী ঠিকানা একই</span>
+3605:                                     </label>
+3606:                                 </div>
+3607: 
+3608:                                 <!-- PERMANENT ADDRESS -->
+3609:                                 <h4 style="font-size: 0.92rem; color: #1e293b; margin: 0 0 12px 0; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+3610:                                     <i class="fa-solid fa-location-pin" style="color: #0052ff;"></i> স্থায়ী ঠিকানা
+3611:                                 </h4>
+3612:                                 <div class="adm-grid-2">
+3613:                                     <div class="form-group">
+3614:                                         <label for="admPermDivision">বিভাগ *</label>
+3615:                                         <select class="form-control" id="admPermDivision" required onchange="handleDivisionChange('Perm', this.value)">
+3616:                                             <option value="" disabled selected>বিভাগ নির্বাচন করুন</option>
+3617:                                         </select>
+3618:                                     </div>
+3619:                                     <div class="form-group">
+3620:                                         <label for="admPermDistrict">জেলা *</label>
+3621:                                         <select class="form-control" id="admPermDistrict" required onchange="handleDistrictChange('Perm', this.value)">
+3622:                                             <option value="" disabled selected>প্রথমে বিভাগ নির্বাচন করুন</option>
+3623:                                         </select>
+3624:                                     </div>
+3625:                                 </div>
+3626:                                 <div class="adm-grid-2">
+3627:                                     <div class="form-group">
+3628:                                         <label for="admPermUpazila">উপজেলা / থানা *</label>
+3629:                                         <select class="form-control" id="admPermUpazila" required onchange="handleUpazilaChange('Perm', this.value)">
+3630:                                             <option value="" disabled selected>প্রথমে জেলা নির্বাচন করুন</option>
+3631:                                         </select>
+3632:                                     </div>
+3633:                                     <div class="form-group">
+3634:                                         <label for="admPermUnion">ইউনিয়ন / পৌরসভা *</label>
+3635:                                         <select class="form-control" id="admPermUnion" required onchange="handleUnionChange('Perm', this.value)">
+3636:                                             <option value="" disabled selected>প্রথমে উপজেলা নির্বাচন করুন</option>
+3637:                                         </select>
+3638:                                     </div>
+3639:                                 </div>
+3640:                                 <div class="adm-grid-2">
+3641:                                     <div class="form-group">
+3642:                                         <label for="admPermPost">ডাকঘর ও পোস্ট কোড *</label>
+3643:                                         <select class="form-control" id="admPermPost" required>
+3644:                                             <option value="" disabled selected>প্রথমে ইউনিয়ন নির্বাচন করুন</option>
+3645:                                         </select>
+3646:                                     </div>
+3647:                                     <div class="form-group">
+3648:                                         <label for="admPermVillage">গ্রাম / বাড়ি নং / রোড / পাড়া *</label>
+3649:                                         <input type="text" class="form-control" id="admPermVillage" placeholder="স্থায়ী গ্রাম, বাড়ি নং, রোড বা পাড়ার নাম লিখুন" required>
+3650:                                     </div>
+3651:                                 </div>
+3652:                             </div>
+3653: 
+3654:                             <!-- SECTION 6: পূর্ববর্তী শিক্ষা প্রতিষ্ঠানের তথ্য -->
+3655:                             <div class="adm-section-card">
+3656:                                 <div class="adm-section-header">
+3657:                                     <i class="fa-solid fa-award"></i>
+3658:                                     <span>৬. পূর্ববর্তী বিদ্যালয়ের তথ্য (প্রযোজ্য ক্ষেত্রে)</span>
+3659:                                 </div>
+3660: 
+3661:                                 <div class="adm-grid-2">
+3662:                                     <div class="form-group">
+3663:                                         <label for="admPrevSchool">পূর্ববর্তী বিদ্যালয়ের নাম</label>
+3664:                                         <input type="text" class="form-control" id="admPrevSchool" placeholder="পূর্বে অধ্যয়নকৃত স্কুলের নাম">
+3665:                                     </div>
+3666:                                     <div class="form-group">
+3667:                                         <label for="admPrevClassRoll">পূর্ববর্তী শ্রেণি ও রোল নম্বর</label>
+3668:                                         <input type="text" class="form-control" id="admPrevClassRoll" placeholder="যেমন: ৫ম শ্রেণি, রোল ১২">
+3669:                                     </div>
+3670:                                 </div>
+3671: 
+3672:                                 <div class="adm-grid-3">
+3673:                                     <div class="form-group">
+3674:                                         <label for="admPrevYear">পাশের বছর</label>
+3675:                                         <input type="text" class="form-control" id="admPrevYear" placeholder="যেমন: ২০২৫" value="2025">
+3676:                                     </div>
+3677:                                     <div class="form-group">
+3678:                                         <label for="admPrevGpa">প্রাপ্ত জিপিএ / ফলাফল</label>
+3679:                                         <input type="text" class="form-control" id="admPrevGpa" placeholder="যেমন: 5.00 বা A+">
+3680:                                     </div>
+3681:                                     <div class="form-group">
+3682:                                         <label for="admPrevTc">ছাড়পত্র নম্বর ও তারিখ</label>
+3683:                                         <input type="text" class="form-control" id="admPrevTc" placeholder="টিসি নম্বর (যদি থাকে)">
+3684:                                     </div>
+3685:                                 </div>
+3686:                             </div>
+3687: 
+3688:                             <!-- SECTION 7: কোটা ও সহশিক্ষা কার্যক্রম -->
+3689:                             <div class="adm-section-card">
+3690:                                 <div class="adm-section-header">
+3691:                                     <i class="fa-solid fa-trophy"></i>
+3692:                                     <span>৭. কোটা ও সহশিক্ষা কার্যক্রম</span>
+3693:                                 </div>
+3694: 
+3695:                                 <div class="adm-grid-2">
+3696:                                     <div class="form-group">
+3697:                                         <label for="admQuota">কোটা নির্বাচন</label>
+3698:                                         <select class="form-control" id="admQuota">
+3699:                                             <option value="সাধারণ (কোন কোটা নেই)" selected>সাধারণ (কোন কোটা নেই)</option>
+3700:                                             <option value="মুক্তিযোদ্ধা কোটা (বীর মুক্তিযোদ্ধার সন্তান/নাতি-নাতনি)">মুক্তিযোদ্ধা কোটা (বীর মুক্তিযোদ্ধার সন্তান/নাতি-নাতনি)</option>
+3701:                                             <option value="শিক্ষক ও কর্মচারী সন্তান কোটা (পোষ্য কোটা)">শিক্ষক ও কর্মচারী সন্তান কোটা (পোষ্য কোটা)</option>
+3702:                                             <option value="প্রতিবন্ধী কোটা">প্রতিবন্ধী কোটা</option>
+3703:                                             <option value="ক্ষুদ্র নৃগোষ্ঠী / উপজাতি কোটা">ক্ষুদ্র নৃগোষ্ঠী / উপজাতি কোটা</option>
+3704:                                             <option value="এতিম ও দরিদ্র কোটা">এতিম ও দরিদ্র কোটা</option>
+3705:                                         </select>
+3706:                                     </div>
+3707:                                     <div class="form-group">
+3708:                                         <label for="admExtracurricular">সহশিক্ষা কার্যক্রম / বিশেষ দক্ষতা</label>
+3709:                                         <input type="text" class="form-control" id="admExtracurricular" placeholder="যেমন: ক্রিকেট, বিতর্ক, স্কাউটিং, বিজ্ঞান মেলা, আবৃত্তি">
+3710:                                     </div>
+3711:                                 </div>
+3712:                             </div>
+3713: 
+3714:                             <!-- SECTION 8: অঙ্গীকারনামা -->
+3715:                             <div class="adm-section-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+3716:                                 <div class="adm-section-header" style="border-bottom-color: #cbd5e1;">
+3717:                                     <i class="fa-solid fa-signature"></i>
+3718:                                     <span>৮. আবেদনকারীর অঙ্গীকারনামা</span>
+3719:                                 </div>
+3720:                                 <div style="font-size: 0.88rem; color: #334155; line-height: 1.6; margin-bottom: 14px;">
+3721:                                     <label class="adm-checkbox-label" style="align-items: flex-start; gap: 10px;">
+3722:                                         <input type="checkbox" id="admAgreementCheckbox" required style="margin-top: 3px;">
+3723:                                         <span>
+3724:                                             আমি এই মর্মে অঙ্গীকার করছি যে, উপরে প্রদত্ত সকল তথ্য সম্পূর্ণ সত্য ও সঠিক। ভবিষ্যতে কোনো তথ্য অসত্য বা ভুল প্রমাণিত হলে অত্র বিদ্যালয়ে আমার ভর্তি বাতিল বলে গণ্য হবে এবং আমি কর্তৃপক্ষের যে কোনো সিদ্ধান্ত মেনে নিতে বাধ্য থাকব।
+3725:                                         </span>
+3726:                                     </label>
+3727:                                 </div>
+3728:                             </div>
+3729: 
+3730:                             <!-- FORM ACTION BUTTONS -->
+3731:                             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
+3732:                                 <button type="button" class="btn-outline-portal" style="color: #64748b !important; border-color: #cbd5e1;" onclick="resetAdmissionFormInputs()">
+3733:                                     <i class="fa-solid fa-rotate-left"></i> রিসেট
+3734:                                 </button>
+3735:                                 <button type="button" class="btn-outline-portal" onclick="closeAdmissionModal()">
+3736:                                     বাতিল
+3737:                                 </button>
+3738:                                 <button type="submit" class="btn-portal-action" style="padding: 10px 24px; font-size: 0.95rem;">
+3739:                                     <i class="fa-solid fa-paper-plane"></i> 🎓 ভর্তি আবেদন সাবমিট করুন
+3740:                                 </button>
+3741:                             </div>
+3742: 
+3743:                         </div>
+3744:                     </form>
+3745:                 </div>
+3746: 
+3747:                 <!-- VIEW 2: PRINTABLE CONFIRMATION SLIP / RECEIPT -->
+3748:                 <div id="admissionReceiptContainer" style="display: none;">
+3749:                     <div id="admissionVoucherPrintArea">
+3750:                         <!-- Populated dynamically via handleAdmissionSubmit -->
+3751:                     </div>

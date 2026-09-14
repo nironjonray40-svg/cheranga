@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('cms.html?login=required');
+        }
+    </script>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>অর্থ আদায় ও তথ্য সংরক্ষণ সিস্টেম</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Agbalumo&family=Anton&family=Noto+Rashi+Hebrew:wght@100..900&family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=4.2">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'Hind Siliguri', 'SolaimanLipi', serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 20px;
+            font-size: 15.5px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: 15px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* 3-Column Layout Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 290px 1fr 400px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 1280px) {
+            .layout-grid {
+                grid-template-columns: 260px 1fr;
+            }
+
+            .right-panel {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 820px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                grid-column: span 1;
+            }
+        }
+
+        /* Panel Base Styling */
+        .panel {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .panel-title {
+            font-size: 19.5px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Left Panel - Student List */
+        .search-box {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        .student-list {
+            list-style: none;
+            max-height: 580px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .student-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .student-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .student-item {
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-item:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            transform: translateX(4px);
+        }
+
+        .student-item.active {
+            border-color: var(--primary);
+            background: #dbeafe;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+        }
+
+        .student-info .name {
+            font-weight: 600;
+            font-size: 16.5px;
+            color: #0f172a;
+        }
+
+        .student-info .roll {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .badge-count {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .student-item.active .badge-count {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Center Panel - Form & Table */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-box label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .input-box input,
+        .input-box select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        .input-box input:focus,
+        .input-box select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .roll-search-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .roll-search-group input {
+            flex: 1;
+        }
+
+        .btn-search {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-search:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Dynamic Fee Checkbox Box */
+        .fee-checkbox-box {
+            grid-column: 1 / -1;
+            background: #f8fafc;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 4px;
+        }
+
+        .fee-checkbox-box .box-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fee-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .fee-checkbox-item {
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .fee-checkbox-item:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .fee-checkbox-item input[type="checkbox"] {
+            width: 19px;
+            height: 19px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .fee-checkbox-item .fee-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .fee-checkbox-item .fee-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .fee-checkbox-item .fee-amount {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .btn-submit {
+            grid-column: 1 / -1;
+            background: #10b981 !important;
+            color: white !important;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-size: 17.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .btn-submit:hover {
+            background: #059669 !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Recent Transactions Table */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+            max-height: 260px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            text-align: left;
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border);
+            color: #1e293b;
+        }
+
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-badge.paid {
+            background: var(--success-bg);
+            color: #065f46;
+        }
+
+        .status-badge.partial {
+            background: var(--warning-bg);
+            color: #92400e;
+        }
+
+        /* Right Panel - 12 Month Ledger */
+        .student-summary-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        .student-summary-card .title {
+            font-size: 12px;
+            color: #1e40af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .student-summary-card .name {
+            font-size: 18.5px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-top: 2px;
+        }
+
+        .student-summary-card .meta {
+            font-size: 15px;
+            color: #1e3a8a;
+            margin-top: 3px;
+            font-weight: 700;
+        }
+
+        .months-container {
+            max-height: 540px;
+            overflow-y: auto;
+            padding-right: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .months-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .months-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .month-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 13px;
+            background: #ffffff;
+            transition: all 0.2s;
+        }
+
+        .month-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .month-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1e293b;
+        }
+
+        .month-total {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .fee-items-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .fee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 7px 11px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .fee-label {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .fee-status {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        .fee-status.paid {
+            background: var(--success-bg);
+            color: #047857;
+        }
+
+        .fee-status.unpaid {
+            background: var(--danger-bg);
+            color: #b91c1c;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 15px;
+            font-size: 15px;
+        }
+
+        .summary-stats-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+
+        .stat-pill.current {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .stat-pill.due {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+        }
+
+        .stat-pill strong {
+            font-size: 15px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOP HEADER / NAVIGATION BAR -->
+    <div class="header-nav">
+        <div class="nav-container container">
+            <a href="index.html" class="nav-brand" title="হোম">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="dashboard"><a href="index.html">Dashboard</a></li>
+                <li class="nav-item" data-tab="staff"><a href="staff.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html?view=list">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=online-admissions">Online Admissions (অনলাইন ভর্তি আবেদন)</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown active" data-tab="fees">
+                    <a href="fees">Fees & Payments</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="Money Collect.html">Money Collect</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="seat-plan">
+                    <a href="seat-plan?view=exam-routine">Seat Plan</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="seat-plan?view=exam-routine">Exam Routine</a></li>
+                        <li><a href="seat-plan?view=building-mgmt">Building Management</a></li>
+                        <li><a href="seat-plan?view=seat-distribution">Seat Distribution</a></li>
+                        <li><a href="seat-plan?view=seating-details">Seating Details (সামারি ও আসন বিন্যাস)</a></li>
+                        <li><a href="seat-plan?view=room-topshet">Room Seat Topshet (কক্ষের আসন টপশীট)</a></li>
+
+                        <li><a href="seat-plan?view=student-attendance">Student Attendance Sheet (পরীক্ষার্থীদের হাজিরা শীট)</a></li>
+                        <li><a href="seat-plan?view=student-data-topsheet">Student Data Topsheet (শিক্ষার্থীর তথ্য টপশীট)</a></li>
+                        <li><a href="seat-plan?view=find-seat">Seat Plan Report</a></li>
+                        <li><a href="seat-plan?view=exam-document-report">Exam Document Report</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal?view=exam-entry">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal?view=exam-entry">Exam List</a></li>
+                        <li><a href="exam-portal?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="result-portal">
+                    <a href="result-portal">Result Management</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="result-portal">Result Search</a></li>
+                        <li><a href="Tabulation Sheet.html">Tabulation Sheet</a></li>
+                        <li><a href="Marksheet.html">Marksheet</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance">Advance</a>
+                                        <ul class="dropdown-menu">
+                        <li><a href="advance?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance?view=slider-management">Headline & Slider Management</a></li>
+                        <li><a href="advance?view=designation-structure">Staff Designation Structure</a></li>
+                        <li><a href="advance?view=speeches-management">সভাপতির বাণী ও প্রধান শিক্ষকের বাণী</a></li>
+                        <li><a href="advance?view=chat">💬 Active Users & Live Chat</a></li>
+                        <li><a href="advance?view=user-management">👥 শিক্ষক-স্টাফ ইউজার ও পাসওয়ার্ড</a></li>
+                        <li><a href="advance?view=sms-settings">📱 SMS Gateway & API Settings</a></li>
+                        <li><a href="advance?view=cms-portal">🌐 CMS Website & Data Import</a></li>
+                        <li><a href="advance?view=address-structure">📍 ভর্তি ফরমের ঠিকানা কনফিগারেশন</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="header"
+        style="margin-top: 15px; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+        <!-- LEFT: Back Button -->
+        <a href="fees.html" onclick="if(window.history.length > 1){ window.history.back(); return false; }"
+            style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.15); color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.25); backdrop-filter: blur(5px); transition: all 0.2s ease;">
+            ⬅ Back
+        </a>
+
+        <!-- CENTER: Title & Subtitle -->
+        <div style="text-align: center; flex: 1;">
+            <h1 style="font-size: 24px; font-weight: 700; margin: 0; color: #ffffff;">অর্থ আদায় ও তথ্য সংরক্ষণ সিস্টেম
+            </h1>
+            <div class="subtitle" style="font-size: 14px; color: #94a3b8; margin-top: 2px;">শিক্ষার্থীদের ফি আদায়, ডাটা
+                ম্যানেজমেন্ট ও ১২ মাসের পেমেন্ট রেজিস্টার</div>
+        </div>
+
+        <!-- RIGHT: Session Badge & Close Button -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div
+                style="font-size: 13px; background: rgba(255,255,255,0.12); padding: 6px 14px; border-radius: 20px; font-weight: 600; color: #e2e8f0;">
+                📅 সেশন: ২০২৬
+            </div>
+            <a href="fees.html"
+                onclick="try { window.close(); } catch(e){}; window.location.href='fees.html'; return false;"
+                style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.25); color: #fca5a5; text-decoration: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.4); backdrop-filter: blur(5px); transition: all 0.2s ease;">
+                ✖ Close
+            </a>
+        </div>
+    </div>
+
+    <div class="layout-grid">
+
+        <!-- LEFT PANEL: Student List -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>👨‍🎓</span> শিক্ষার্থীর তালিকা
+                </div>
+                <span class="badge-count" id="studentTotalBadge">০ জন</span>
+            </div>
+
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="leftSearchInput" placeholder="নাম বা Student ID দিয়ে খুঁজুন..."
+                    oninput="filterStudentList()">
+            </div>
+
+            <ul class="student-list" id="studentListContainer">
+                <!-- Dynamic Student List items will appear here -->
+            </ul>
+        </div>
+
+        <!-- CENTER PANEL: Money Collection Form & History -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>💳</span> ফি আদায় ও ডাটা সংরক্ষণ ফরম
+                </div>
+            </div>
+
+            <form id="feeForm">
+                <div class="form-grid">
+                    <div class="input-box">
+                        <label for="rollNo">Student ID (সার্চ করুন):</label>
+                        <div class="roll-search-group">
+                            <input type="text" id="rollNo" required placeholder="যেমন: ১০১"
+                                oninput="onRollInputChange()" onchange="onRollInputChange()">
+                            <button type="button" class="btn-search" onclick="onRollInputChange(true)">সার্চ</button>
+                        </div>
+                    </div>
+
+                    <div class="input-box">
+                        <label for="studentName">শিক্ষার্থীর নাম:</label>
+                        <input type="text" id="studentName" required placeholder="যেমন: রাশেদ করিম">
+                    </div>
+
+                    <div class="input-box">
+                        <label for="studentClass">শ্রেণী (Class):</label>
+                        <select id="studentClass" required onchange="renderFeeCheckboxes()">
+                            <option value="Play">Class : Play</option>
+                            <option value="Nursery">Class : Nursery</option>
+                            <option value="KG">Class : KG</option>
+                            <option value="Class 1">Class : One</option>
+                            <option value="Class 2">Class : Two</option>
+                            <option value="Class 3">Class : Three</option>
+                            <option value="Class 4">Class : Four</option>
+                            <option value="Class 5">Class : Five</option>
+                            <option value="Six">Class : Six</option>
+                            <option value="Seven">Class : Seven</option>
+                            <option value="Eight">Class : Eight</option>
+                            <option value="Nine">Class : Nine</option>
+                            <option value="Ten" selected>Class : Ten</option>
+                        </select>
+                    </div>
+
+                    <div class="input-box">
+                        <label for="month">মাসের নাম:</label>
+                        <select id="month" required onchange="renderFeeCheckboxes()">
+                            <option value="">মাস নির্বাচন করুন</option>
+                            <option value="জানুয়ারী">জানুয়ারী</option>
+                            <option value="ফেব্রুয়ারী">ফেব্রুয়ারী</option>
+                            <option value="মার্চ">মার্চ</option>
+                            <option value="এপ্রিল">এপ্রিল</option>
+                            <option value="মে">মে</option>
+                            <option value="জুন">জুন</option>
+                            <option value="জুলাই">জুলাই</option>
+                            <option value="আগস্ট">আগস্ট</option>
+                            <option value="সেপ্টেম্বর">সেপ্টেম্বর</option>
+                            <option value="অক্টোবর">অক্টোবর</option>
+                            <option value="নভেম্বর">নভেম্বর</option>
+                            <option value="ডিসেম্বর">ডিসেম্বর</option>
+                        </select>
+                    </div>
+
+                    <div class="input-box">
+                        <label for="payDate">পেমেন্টের তারিখ:</label>
+                        <input type="date" id="payDate" required>
+                    </div>
+
+                    <div class="input-box" style="display: none;">
+                        <label for="status">পেমেন্ট স্টেটাস:</label>
+                        <select id="status">
+                            <option value="পরিশোধিত">পরিশোধিত (Paid)</option>
+                            <option value="আংশিক">আংশিক (Partial)</option>
+                        </select>
+                    </div>
+
+                    <!-- DYNAMIC FEE CHECKBOX BOX -->
+                    <div class="fee-checkbox-box">
+                        <div class="box-title">
+                            <span>আদায়কৃত ফি নির্বাচন করুন (টিক দিন):</span>
+                            <span id="totalSelectedAmount" style="color: var(--primary);">সর্বমোট আদায়: ৳ ০</span>
+                        </div>
+                        <div class="fee-checkbox-grid" id="feeCheckboxesContainer">
+                            <div style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">
+                                মাসের নাম নির্বাচন করলে উক্ত মাসের ফি গুলো টিক বক্স সহ দৃশ্যমান হবে।
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-submit" onclick="saveData()">
+                        <span>💾</span> টাকা জমা নিন ও সংরক্ষণ করুন
+                    </button>
+                </div>
+            </form>
+
+            <div style="margin-top: 25px; padding-top: 15px; border-top: 2px solid var(--bg-main);">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="panel-title" style="font-size: 15px;">
+                            <span>📋</span> সাম্প্রতিক জমা বিবরণী
+                        </div>
+                        <div
+                            style="display: flex; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px 10px; width: 200px;">
+                            <span style="font-size: 13px; color: #64748b; margin-right: 6px;">🔍</span>
+                            <input type="text" id="tableSearchInput" placeholder="ID দিয়ে ফিল্টার..."
+                                oninput="filterTransactionTable()"
+                                style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; font-family: inherit;">
+                        </div>
+                    </div>
+                    <div class="summary-stats-box">
+                        <div class="stat-pill current">
+                            <span id="currentMonthLabel">চলতি মাসের আদায়:</span>
+                            <strong id="currentMonthTotal">৳ ০</strong>
+                        </div>
+                        <div class="stat-pill due">
+                            <span>বকেয়া মাসের আদায়:</span>
+                            <strong id="dueMonthTotal">৳ ০</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>নাম</th>
+                                <th>শ্রেণী</th>
+                                <th>ফি-র ধরন</th>
+                                <th>মাস</th>
+                                <th>পরিমাণ</th>
+                                <th>তারিখ</th>
+                                <th>অবস্থা</th>
+                                <th style="text-align: center; width: 120px;">অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Dynamic Data Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: 12-Month Payment Ledger -->
+        <div class="panel right-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>📊</span> ১২ মাসের ফি ও পেমেন্ট রেকর্ড
+                </div>
+            </div>
+
+            <div id="studentSummaryBox" class="student-summary-card">
+                <div class="title">নির্বাচিত শিক্ষার্থী</div>
+                <div class="name" id="summaryStudentName">কোনো শিক্ষার্থী নির্বাচিত হয়নি</div>
+                <div class="meta" id="summaryStudentRoll">Student ID দিয়ে সার্চ করুন বা বামপাশ থেকে নির্বাচন করুন</div>
+            </div>
+
+            <div class="months-container" id="monthsContainer">
+                <div class="empty-state">
+                    শিক্ষার্থীর Student ID দিয়ে সার্চ করলে অথবা বামপাশের তালিকা থেকে নির্বাচন করলে ১২ মাসের ফি স্টেটাস
+                    এখানে দেখাবে।
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const ALL_MONTHS = [
+            "জানুয়ারী", "ফেব্রুয়ারী", "মার্চ", "এপ্রিল", "মে", "জুন",
+            "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"
+        ];
+
+        // Class-based Monthly Tuition Fee Mapping
+        const CLASS_TUITION = {
+            "Six": 10,
+            "Seven": 20,
+            "Eight": 30,
+            "Nine": 40,
+            "Ten": 50
+        };
+
+        const CLASS_NAMES_BN = {
+            "Play": "Class : Play",
+            "Nursery": "Class : Nursery",
+            "KG": "Class : KG",
+            "Class 1": "Class : One",
+            "Class 2": "Class : Two",
+            "Class 3": "Class : Three",
+            "Class 4": "Class : Four",
+            "Class 5": "Class : Five",
+            "Six": "Class : Six",
+            "Seven": "Class : Seven",
+            "Eight": "Class : Eight",
+            "Nine": "Class : Nine",
+            "Ten": "Class : Ten"
+        };
+
+        const CLASS_ORDER = {
+            "Play": 0,
+            "Nursery": 1,
+            "KG": 2,
+            "Class 1": 3,
+            "Class 2": 4,
+            "Class 3": 5,
+            "Class 4": 6,
+            "Class 5": 7,
+            "Six": 8,
+            "Seven": 9,
+            "Eight": 10,
+            "Nine": 11,
+            "Ten": 12
+        };
+
+        function formatClassName(rawClass) {
+            if (!rawClass) return 'Ten';
+            const s = rawClass.toString().trim();
+            if (s.includes('Play') || s.includes('প্লে')) return 'Play';
+            if (s.includes('Nursery') || s.includes('নার্সারি')) return 'Nursery';
+            if (s.includes('KG') || s.includes('কেজি')) return 'KG';
+            if (s.includes('10') || s.toLowerCase() === 'ten' || s.includes('১০')) return 'Ten';
+            if (s.includes('9') || s.toLowerCase() === 'nine' || s.includes('৯')) return 'Nine';
+            if (s.includes('8') || s.toLowerCase() === 'eight' || s.includes('৮')) return 'Eight';
+            if (s.includes('7') || s.toLowerCase() === 'seven' || s.includes('৭')) return 'Seven';
+            if (s.includes('6') || s.toLowerCase() === 'six' || s.includes('৬')) return 'Six';
+            if (s.includes('5') || s.toLowerCase() === 'five' || s.includes('৫')) return 'Five';
+            if (s.includes('4') || s.toLowerCase() === 'four' || s.includes('৪')) return 'Four';
+            if (s.includes('3') || s.toLowerCase() === 'three' || s.includes('৩')) return 'Three';
+            if (s.includes('2') || s.toLowerCase() === 'two' || s.includes('২')) return 'Two';
+            return s.replace(/^Class\s*:\s*/i, '');
+        }
+
+        function getClassNumericCode(className) {
+            const norm = String(className || '').trim().toLowerCase();
+            if (norm.includes('twelve') || norm.includes('দ্বাদশ') || norm === '12') return '12';
+            if (norm.includes('eleven') || norm.includes('একাদশ') || norm === '11') return '11';
+            if (norm.includes('ten') || norm.includes('দশম') || norm === '10') return '10';
+            if (norm.includes('nine') || norm.includes('নবম') || norm === '9') return '09';
+            if (norm.includes('eight') || norm.includes('অষ্টম') || norm === '8') return '08';
+            if (norm.includes('seven') || norm.includes('সপ্তম') || norm === '7') return '07';
+            if (norm.includes('six') || norm.includes('ষষ্ঠ') || norm === '6') return '06';
+            if (norm.includes('five') || norm.includes('পঞ্চম') || norm === '5') return '05';
+            if (norm.includes('four') || norm.includes('চতুর্থ') || norm === '4') return '04';
+            if (norm.includes('three') || norm.includes('তৃতীয়') || norm.includes('তৃতীয়') || norm === '3') return '03';
+            if (norm.includes('two') || norm.includes('দ্বিতীয়') || norm.includes('দ্বিতীয়') || norm === '2') return '02';
+            if (norm.includes('one') || norm.includes('প্রথম') || norm === '1') return '01';
+            if (norm.includes('nursery') || norm.includes('নার্সারি')) return '12';
+            if (norm.includes('play') || norm.includes('প্লে')) return '11';
+            if (norm.includes('kg') || norm.includes('কেজি')) return '00';
+            const digits = norm.replace(/\D/g, '');
+            if (digits) return digits.padStart(2, '0');
+            return '00';
+        }
+
+        // Read configured ID & Registration prefix settings from Advance page
+        function getIdRegPrefix(className) {
+            let settings = {};
+            try {
+                const stored = localStorage.getItem('school_id_reg_settings');
+                if (stored) settings = JSON.parse(stored);
+            } catch (e) { }
+            let prefix = null;
+
+            try {
+                const classPrefixes = JSON.parse(localStorage.getItem('school_class_id_prefixes') || '[]');
+                const code = getClassNumericCode(className);
+                if (Array.isArray(classPrefixes)) {
+                    let found = classPrefixes.find(p => p && p.class === className);
+                    if (!found) {
+                        found = classPrefixes.find(p => p && getClassNumericCode(p.class) === code);
+                    }
+                    if (found && typeof found.prefix === 'string') {
+                        prefix = found.prefix;
+                    }
+                } else if (classPrefixes && typeof classPrefixes[className] === 'string') {
+                    prefix = classPrefixes[className];
+                }
+            } catch (e) { }
+
+            if (prefix === null) {
+                const code = getClassNumericCode(className);
+                const globalPfx = (settings.idPrefix !== undefined && settings.idPrefix !== null && settings.idPrefix !== '') ? settings.idPrefix : '26';
+                prefix = `${globalPfx}${code}`;
+            }
+
+            return prefix;
+        }
+
+        // Read configured Registration prefix settings from Advance page
+        function getClassRegPrefix(className) {
+            let prefix = null;
+            try {
+                const classRegPrefixes = JSON.parse(localStorage.getItem('school_class_reg_prefixes') || '[]');
+                const code = getClassNumericCode(className);
+                if (Array.isArray(classRegPrefixes)) {
+                    let found = classRegPrefixes.find(p => p && p.class === className);
+                    if (!found) found = classRegPrefixes.find(p => p && getClassNumericCode(p.class) === code);
+                    if (found && typeof found.prefix === 'string' && found.prefix.trim()) prefix = found.prefix.trim();
+                }
+            } catch (e) { }
+
+            if (prefix === null) {
+                try {
+                    const classPrefixes = JSON.parse(localStorage.getItem('school_class_id_prefixes') || '[]');
+                    const code = getClassNumericCode(className);
+                    if (Array.isArray(classPrefixes)) {
+                        let found = classPrefixes.find(p => p && p.class === className);
+                        if (!found) found = classPrefixes.find(p => p && getClassNumericCode(p.class) === code);
+                        if (found && typeof found.regPrefix === 'string' && found.regPrefix.trim()) prefix = found.regPrefix.trim();
+                    }
+                } catch (e) { }
+            }
+
+            if (prefix === null) {
+                let settings = {};
+                try {
+                    const stored = localStorage.getItem('school_id_reg_settings');
+                    if (stored) settings = JSON.parse(stored);
+                } catch (e) { }
+                const code = getClassNumericCode(className);
+                const globalReg = (settings.regPrefix !== undefined && settings.regPrefix !== null && settings.regPrefix !== '') ? settings.regPrefix.replace(/[^0-9a-zA-Z-]/g, '') : new Date().getFullYear().toString();
+                prefix = `${globalReg}${code}`;
+            }
+
+            return prefix;
+        }
+
+        // Format Student ID following Advance settings
+        function formatStudentId(student) {
+            if (!student) return '';
+            if (student.studentId && student.studentId.trim()) return student.studentId.trim();
+
+            const rawClass = student.class || student.studentClass || 'Ten';
+            const prefix = getIdRegPrefix(rawClass);
+            const rollNum = (student.roll || student.id || '1').toString().replace(/\D/g, '');
+            const serialStr = String(rollNum || '1').padStart(3, '0');
+
+            if (student.roll && (student.roll.startsWith(prefix) || student.roll.includes('-'))) {
+                return student.roll;
+            }
+            return `${prefix}${serialStr}`;
+        }
+
+        function loadStudentsFromPortal() {
+            const stored = localStorage.getItem('school_students');
+            let settings = {};
+            try {
+                const s = localStorage.getItem('school_id_reg_settings');
+                if (s) settings = JSON.parse(s);
+            } catch (e) { }
+            const defaultPrefix = settings.idPrefix || 'CMS-';
+
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed.map(s => {
+                            const sid = formatStudentId(s);
+                            const sClass = s.class || s.studentClass || 'Ten';
+                            const sName = (s.nameBn && s.nameBn.trim()) ? s.nameBn.trim() : ((s.name && s.name.trim()) ? s.name.trim() : 'শিক্ষার্থী');
+                            return {
+                                ...s,
+                                roll: sid,
+                                studentId: sid,
+                                name: sName,
+                                studentClass: getClassKey(sClass),
+                                rawClass: sClass
+                            };
+                        });
+                    }
+                } catch (e) {
+                    console.error("Error parsing school_students:", e);
+                }
+            }
+            return [
+                { roll: `${defaultPrefix}101`, studentId: `${defaultPrefix}101`, name: "রাশেদ করিম", studentClass: "Ten", rawClass: "Class 10" },
+                { roll: `${defaultPrefix}102`, studentId: `${defaultPrefix}102`, name: "তানজিম আহমেদ", studentClass: "Nine", rawClass: "Class 9" },
+                { roll: `${defaultPrefix}103`, studentId: `${defaultPrefix}103`, name: "নুসাইবা নাহার", studentClass: "Eight", rawClass: "Class 8" },
+                { roll: `${defaultPrefix}104`, studentId: `${defaultPrefix}104`, name: "সাকিব হাসান", studentClass: "Six", rawClass: "Class 6" },
+                { roll: `${defaultPrefix}105`, studentId: `${defaultPrefix}105`, name: "আরিফ হোসেন", studentClass: "Seven", rawClass: "Class 7" }
+            ];
+        }
+
+        let students = loadStudentsFromPortal();
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'school_students' || e.key === 'school_id_reg_settings' || e.key === 'school_class_id_prefixes') {
+                students = loadStudentsFromPortal();
+                renderStudentList();
+                renderTransactionTable();
+            }
+        });
+
+        // Payment records structure: [{ roll, name, studentClass, feeType, month, amount, date, status }]
+        let payments = JSON.parse(localStorage.getItem('school_payments')) || [
+            { roll: "101", name: "রাশেদ করিম", studentClass: "Ten", feeType: "ভর্তি ফি", month: "জানুয়ারী", amount: 100, date: "2026-01-05", status: "পরিশোধিত" },
+            { roll: "101", name: "রাশেদ করিম", studentClass: "Ten", feeType: "সেশন ফি", month: "জানুয়ারী", amount: 50, date: "2026-01-05", status: "পরিশোধিত" },
+            { roll: "101", name: "রাশেদ করিম", studentClass: "Ten", feeType: "অন্যান্য ফি", month: "জানুয়ারী", amount: 10, date: "2026-01-05", status: "পরিশোধিত" },
+            { roll: "101", name: "রাশেদ করিম", studentClass: "Ten", feeType: "মাসিক বেতন", month: "জানুয়ারী", amount: 50, date: "2026-01-10", status: "পরিশোধিত" },
+            { roll: "101", name: "রাশেদ করিম", studentClass: "Ten", feeType: "মাসিক বেতন", month: "ফেব্রুয়ারী", amount: 50, date: "2026-02-08", status: "পরিশোধিত" },
+            { roll: "102", name: "তানজিম আহমেদ", studentClass: "Nine", feeType: "ভর্তি ফি", month: "জানুয়ারী", amount: 100, date: "2026-01-06", status: "পরিশোধিত" },
+            { roll: "102", name: "তানজিম আহমেদ", studentClass: "Nine", feeType: "মাসিক বেতন", month: "জানুয়ারী", amount: 40, date: "2026-01-12", status: "পরিশোধিত" },
+            { roll: "105", name: "আরিফ হোসেন", studentClass: "Seven", feeType: "ভর্তি ফি", month: "জানুয়ারী", amount: 100, date: "2026-01-08", status: "পরিশোধিত" },
+            { roll: "105", name: "আরিফ হোসেন", studentClass: "Seven", feeType: "মাসিক বেতন", month: "জানুয়ারী", amount: 20, date: "2026-01-15", status: "পরিশোধিত" }
+        ];
+
+        let currentSelectedRoll = null;
+
+        // Set today's date and current month in form by default
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('payDate').valueAsDate = new Date();
+            const currentMonthName = ALL_MONTHS[new Date().getMonth()];
+            const monthSelect = document.getElementById('month');
+            if (monthSelect && currentMonthName) {
+                monthSelect.value = currentMonthName;
+            }
+            renderStudentList();
+            renderTransactionTable();
+            updateSummaryTotals();
+        });
+
+        // Save Data to LocalStorage
+        function saveDataToStorage() {
+            localStorage.setItem('school_students', JSON.stringify(students));
+            localStorage.setItem('school_payments', JSON.stringify(payments));
+        }
+
+        // Bengali Number Converter for Amounts/Amounts display
+        function toBengaliNumber(num) {
+            if (num === null || num === undefined) return '';
+            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return num.toString().replace(/\d/g, d => bnDigits[d]);
+        }
+
+        // English Number Converter for Student IDs
+        function toEnglishNumber(str) {
+            if (str === null || str === undefined) return '';
+            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return str.toString().replace(/[০-৯]/g, d => bnDigits.indexOf(d));
+        }
+
+        // Helper to get formatted Student ID from Student Portal data
+        function getStudentDisplayId(s) {
+            if (!s) return '';
+            return (s.studentId || s.roll || s.id || '').toString();
+        }
+
+        // Calculate and Update Summary Totals (চলতি মাসের আদায় & বকেয়া মাসের আদায়)
+        function updateSummaryTotals() {
+            const selectedMonth = document.getElementById('month').value;
+            const currentMonthName = selectedMonth || ALL_MONTHS[new Date().getMonth()] || 'জানুয়ারী';
+
+            let currentTotal = 0;
+            let dueTotal = 0;
+
+            payments.forEach(p => {
+                const amt = Number(p.amount) || 0;
+                if (p.month === currentMonthName) {
+                    currentTotal += amt;
+                } else {
+                    dueTotal += amt;
+                }
+            });
+
+            const currentElem = document.getElementById('currentMonthTotal');
+            const dueElem = document.getElementById('dueMonthTotal');
+            const labelElem = document.getElementById('currentMonthLabel');
+
+            if (currentElem) currentElem.innerText = `৳ ${toBengaliNumber(currentTotal)}`;
+            if (dueElem) dueElem.innerText = `৳ ${toBengaliNumber(dueTotal)}`;
+            if (labelElem) {
+                labelElem.innerText = selectedMonth ? `${selectedMonth} এর আদায়:` : 'চলতি মাসের আদায়:';
+            }
+        }
+
+        // Render Dynamic Fee Checkboxes inside "আদায়কৃত টাকা (৳):" Box
+        function renderFeeCheckboxes() {
+            const month = document.getElementById('month').value;
+            const studentClass = document.getElementById('studentClass').value || 'Ten';
+            const roll = document.getElementById('rollNo').value.trim();
+
+            updateSummaryTotals();
+
+            const container = document.getElementById('feeCheckboxesContainer');
+            container.innerHTML = '';
+
+            if (!month) {
+                container.innerHTML = `<div style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">মাসের নাম নির্বাচন করলে উক্ত মাসের ফি গুলো টিক বক্স সহ দৃশ্যমান হবে।</div>`;
+                document.getElementById('totalSelectedAmount').innerText = 'সর্বমোট আদায়: ৳ ০';
+                return;
+            }
+
+            const tuitionFee = CLASS_TUITION[studentClass] || 50;
+
+            // Existing payments for this student & month
+            const studentMonthPayments = payments.filter(p => p.roll === roll && p.month === month);
+
+            let feeItemsToDisplay = [];
+
+            // 1. Monthly Tuition Fee (always applicable)
+            feeItemsToDisplay.push({ type: 'মাসিক বেতন', amount: tuitionFee });
+
+            // 2. January Only Fees: Admission Fee, Session Fee, and Other Fee (১০ ৳)
+            if (month === 'জানুয়ারী') {
+                feeItemsToDisplay.push({ type: 'ভর্তি ফি', amount: 100 });
+                feeItemsToDisplay.push({ type: 'সেশন ফি', amount: 50 });
+                feeItemsToDisplay.push({ type: 'অন্যান্য ফি', amount: 10 });
+            }
+
+            feeItemsToDisplay.forEach(item => {
+                const isAlreadyPaid = studentMonthPayments.some(p => p.feeType === item.type);
+                const titleText = `${item.type}: ${toBengaliNumber(item.amount)}`;
+
+                const label = document.createElement('label');
+                label.className = 'fee-checkbox-item';
+                if (isAlreadyPaid) {
+                    label.style.borderColor = 'var(--success)';
+                    label.style.background = 'var(--success-bg)';
+                }
+
+                label.innerHTML = `
+                <input type="checkbox" name="selectedFees" value="${item.type}" data-amount="${item.amount}" ${isAlreadyPaid ? 'disabled checked' : 'checked'} onchange="calculateSelectedTotal()">
+                <div class="fee-info">
+                    <span class="fee-title">${titleText} ${isAlreadyPaid ? '<span style="color:#047857; font-size:11px; font-weight:700;">(পরিশোধিত)</span>' : ''}</span>
+                    <span class="fee-amount">৳ ${toBengaliNumber(item.amount)}</span>
+                </div>
+            `;
+                container.appendChild(label);
+            });
+
+            calculateSelectedTotal();
+        }
+
+        // Calculate sum of selected checkboxes in real-time
+        function calculateSelectedTotal() {
+            const checkboxes = document.querySelectorAll('input[name="selectedFees"]:checked');
+            let total = 0;
+            checkboxes.forEach(cb => {
+                if (!cb.disabled) {
+                    total += Number(cb.getAttribute('data-amount') || 0);
+                }
+            });
+            document.getElementById('totalSelectedAmount').innerText = `সর্বমোট আদায়: ৳ ${total.toLocaleString('bn-BD')}`;
+        }
+
+        // Helper to update active class highlight in student list without re-rendering full list
+        function updateStudentListActiveState() {
+            const items = document.querySelectorAll('#studentListContainer .student-item');
+            items.forEach(item => {
+                if (item.getAttribute('data-roll') === currentSelectedRoll) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Render Left Student List (Poll-proof against background DB syncs)
+        function renderStudentList(filteredList = undefined) {
+            const searchInput = document.getElementById('leftSearchInput');
+            const activeQuery = searchInput ? searchInput.value.trim() : '';
+
+            let list;
+            if (filteredList !== undefined && filteredList !== null) {
+                list = filteredList;
+            } else if (activeQuery !== '') {
+                // Re-apply active search query if called without arguments (e.g. from main.js polling interval or dbSynced)
+                const queryClean = activeQuery.toLowerCase();
+                const queryEng = toEnglishNumber(activeQuery).toLowerCase();
+                const queryBn = toBengaliNumber(activeQuery).toLowerCase();
+
+                const exact = students.filter(s => {
+                    const displayId = getStudentDisplayId(s).toLowerCase();
+                    const displayIdEng = toEnglishNumber(displayId).toLowerCase();
+                    const displayIdBn = toBengaliNumber(displayId).toLowerCase();
+                    const sid = (s.studentId || '').toString().toLowerCase();
+                    const sidEng = toEnglishNumber(sid).toLowerCase();
+                    const sidBn = toBengaliNumber(sid).toLowerCase();
+                    const roll = (s.roll || '').toString().toLowerCase();
+                    const rollEng = toEnglishNumber(roll).toLowerCase();
+                    const rollBn = toBengaliNumber(roll).toLowerCase();
+
+                    return displayId === queryClean || displayIdEng === queryEng || displayIdBn === queryBn ||
+                        sid === queryClean || sidEng === queryEng || sidBn === queryBn ||
+                        roll === queryClean || rollEng === queryEng || rollBn === queryBn;
+                });
+
+                if (exact.length > 0) {
+                    list = exact;
+                } else {
+                    list = students.filter(s => {
+                        const displayId = getStudentDisplayId(s).toLowerCase();
+                        const displayIdEng = toEnglishNumber(displayId).toLowerCase();
+                        const displayIdBn = toBengaliNumber(displayId).toLowerCase();
+                        const sid = (s.studentId || '').toString().toLowerCase();
+                        const sidEng = toEnglishNumber(sid).toLowerCase();
+                        const sName = (s.name || s.nameBn || '').toLowerCase();
+
+                        return displayId.includes(queryClean) || displayIdEng.includes(queryEng) || displayIdBn.includes(queryBn) ||
+                            sid.includes(queryClean) || sidEng.includes(queryEng) ||
+                            sName.includes(queryClean);
+                    });
+                }
+            } else {
+                list = students;
+            }
+
+            const container = document.getElementById('studentListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const badge = document.getElementById('studentTotalBadge');
+            if (badge) badge.innerText = `${toBengaliNumber(list.length)} জন`;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="empty-state">কোনো শিক্ষার্থী পাওয়া যায়নি</div>`;
+                return;
+            }
+
+            // Sort by Class (৬ষ্ঠ -> ১০ম) and then by Student ID
+            const sortedList = [...list].sort((a, b) => {
+                const classA = (typeof CLASS_ORDER !== 'undefined' && CLASS_ORDER[a.studentClass] !== undefined) ? CLASS_ORDER[a.studentClass] : 99;
+                const classB = (typeof CLASS_ORDER !== 'undefined' && CLASS_ORDER[b.studentClass] !== undefined) ? CLASS_ORDER[b.studentClass] : 99;
+                if (classA !== classB) return classA - classB;
+                const rollA = parseInt((a.roll || '').toString().replace(/\D/g, ''), 10) || 0;
+                const rollB = parseInt((b.roll || '').toString().replace(/\D/g, ''), 10) || 0;
+                return rollA - rollB;
+            });
+
+            sortedList.forEach(student => {
+                const displayId = getStudentDisplayId(student);
+                const isActive = displayId === currentSelectedRoll ? 'active' : '';
+                const classLabel = formatClassName(student.rawClass || student.studentClass || student.class);
+
+                const li = document.createElement('li');
+                li.className = `student-item ${isActive}`;
+                li.setAttribute('data-roll', displayId);
+                li.onclick = () => selectStudent(displayId);
+
+                li.innerHTML = `
+                <div class="student-info">
+                    <div class="name">${student.name}</div>
+                    <div class="roll">Student ID: ${displayId} | Class : ${classLabel}</div>
+                </div>
+            `;
+                container.appendChild(li);
+            });
+        }
+
+        // Filter Student List in Left Panel
+        function filterStudentList() {
+            const rawQuery = document.getElementById('leftSearchInput').value.trim();
+            if (!rawQuery) {
+                renderStudentList(students);
+                return;
+            }
+
+            const queryClean = rawQuery.toLowerCase();
+            const queryEng = toEnglishNumber(rawQuery).toLowerCase();
+            const queryBn = toBengaliNumber(rawQuery).toLowerCase();
+
+            // 1. Check for Exact Match by Student ID, Roll Number, or Reg Number
+            const exactMatches = students.filter(s => {
+                const displayId = getStudentDisplayId(s).toLowerCase();
+                const displayIdEng = toEnglishNumber(displayId).toLowerCase();
+                const displayIdBn = toBengaliNumber(displayId).toLowerCase();
+                const sid = (s.studentId || '').toString().toLowerCase();
+                const sidEng = toEnglishNumber(sid).toLowerCase();
+                const sidBn = toBengaliNumber(sid).toLowerCase();
+                const roll = (s.roll || '').toString().toLowerCase();
+                const rollEng = toEnglishNumber(roll).toLowerCase();
+                const rollBn = toBengaliNumber(roll).toLowerCase();
+
+                return displayId === queryClean || displayIdEng === queryEng || displayIdBn === queryBn ||
+                    sid === queryClean || sidEng === queryEng || sidBn === queryBn ||
+                    roll === queryClean || rollEng === queryEng || rollBn === queryBn;
+            });
+
+            if (exactMatches.length > 0) {
+                // Render ONLY the exact matching student(s) - all other students invisible
+                renderStudentList(exactMatches);
+                selectStudent(getStudentDisplayId(exactMatches[0]));
+                return;
+            }
+
+            // 2. Partial Search: Match Student ID or Name
+            const filtered = students.filter(s => {
+                const displayId = getStudentDisplayId(s).toLowerCase();
+                const displayIdEng = toEnglishNumber(displayId).toLowerCase();
+                const displayIdBn = toBengaliNumber(displayId).toLowerCase();
+                const sid = (s.studentId || '').toString().toLowerCase();
+                const sidEng = toEnglishNumber(sid).toLowerCase();
+                const sName = (s.name || s.nameBn || '').toLowerCase();
+
+                return displayId.includes(queryClean) || displayIdEng.includes(queryEng) || displayIdBn.includes(queryBn) ||
+                    sid.includes(queryClean) || sidEng.includes(queryEng) ||
+                    sName.includes(queryClean);
+            });
+
+            // Render ONLY the filtered students - all other non-matching students invisible
+            renderStudentList(filtered);
+
+            if (filtered.length === 1) {
+                selectStudent(getStudentDisplayId(filtered[0]));
+            }
+        }
+
+        // Select Student from Left Panel or Search
+        function selectStudent(rollOrId, updateRollInput = true) {
+            if (!rollOrId) return;
+
+            const student = students.find(s => {
+                const sid = getStudentDisplayId(s);
+                return s.roll === rollOrId ||
+                    s.studentId === rollOrId ||
+                    s.id === rollOrId ||
+                    sid.toLowerCase() === rollOrId.toString().toLowerCase();
+            });
+            if (!student) return;
+
+            const displayId = getStudentDisplayId(student);
+            currentSelectedRoll = displayId;
+
+            // Auto populate form with exact Student List data
+            if (updateRollInput) {
+                document.getElementById('rollNo').value = displayId;
+            }
+            document.getElementById('studentName').value = student.name;
+            const classSelect = document.getElementById('studentClass');
+            if (classSelect) {
+                const targetClass = student.studentClass || getClassKey(student.rawClass || student.class);
+                classSelect.value = targetClass;
+            }
+
+            // Set current month in 'মাসের নাম:' dropdown by default
+            const monthSelect = document.getElementById('month');
+            if (monthSelect && (!monthSelect.value || monthSelect.value === '')) {
+                monthSelect.value = ALL_MONTHS[new Date().getMonth()];
+            }
+
+            // Update left panel highlights without clearing filtered list
+            updateStudentListActiveState();
+
+            // Update right panel 12-month ledger
+            renderRightLedger(student);
+
+            // Update fee checkboxes
+            renderFeeCheckboxes();
+        }
+
+        // Triggered when Roll Input Changes or Search button clicked (Auto-Search on Typing / Click)
+        function onRollInputChange(isButtonClick = false) {
+            let rollInput = document.getElementById('rollNo').value.trim();
+            const monthSelect = document.getElementById('month');
+
+            if (!rollInput) {
+                currentSelectedRoll = null;
+                document.getElementById('studentName').value = '';
+                document.getElementById('summaryStudentName').innerText = 'কোনো শিক্ষার্থী নির্বাচিত হয়নি';
+                document.getElementById('summaryStudentRoll').innerText = 'Student ID দিয়ে সার্চ করুন বা বামপাশ থেকে নির্বাচন করুন';
+                document.getElementById('feeCheckboxesContainer').innerHTML = `<div style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">মাসের নাম নির্বাচন করলে উক্ত মাসের ফি গুলো টিক বক্স সহ দৃশ্যমান হবে।</div>`;
+                document.getElementById('totalSelectedAmount').innerText = 'সর্বমোট আদায়: ৳ ০';
+                document.getElementById('monthsContainer').innerHTML = `<div class="empty-state">শিক্ষার্থীর Student ID দিয়ে সার্চ করলে অথবা বামপাশের তালিকা থেকে নির্বাচন করলে ১২ মাসের ফি স্টেটাস এখানে দেখাবে।</div>`;
+                return;
+            }
+
+            // Always ensure a month is selected by default if unselected
+            if (monthSelect && (!monthSelect.value || monthSelect.value === '')) {
+                monthSelect.value = ALL_MONTHS[new Date().getMonth()];
+            }
+
+            const inputClean = rollInput.toLowerCase().trim();
+            const inputEng = toEnglishNumber(rollInput).toLowerCase().trim();
+            const inputBn = toBengaliNumber(rollInput).toLowerCase().trim();
+
+            // Match student flexibly by ID, Roll, RegNo, Name, etc.
+            const matchedStudent = students.find(s => {
+                const sid = getStudentDisplayId(s).toLowerCase().trim();
+                const sidEng = toEnglishNumber(sid).toLowerCase().trim();
+                const sidBn = toBengaliNumber(sid).toLowerCase().trim();
+
+                const sRoll = (s.roll || '').toString().toLowerCase().trim();
+                const sRollEng = toEnglishNumber(sRoll).toLowerCase().trim();
+                const sRollBn = toBengaliNumber(sRoll).toLowerCase().trim();
+
+                const sStudentId = (s.studentId || '').toString().toLowerCase().trim();
+                const sStudentIdEng = toEnglishNumber(sStudentId).toLowerCase().trim();
+                const sStudentIdBn = toBengaliNumber(sStudentId).toLowerCase().trim();
+
+                const sReg = (s.regNo || '').toString().toLowerCase().trim();
+                const sId = (s.id || '').toString().toLowerCase().trim();
+                const sName = (s.name || s.nameBn || '').toLowerCase().trim();
+
+                return sid === inputClean || sidEng === inputEng || sidBn === inputBn ||
+                    sid.includes(inputClean) || sidEng.includes(inputEng) || sidBn.includes(inputBn) ||
+                    sStudentId === inputClean || sStudentIdEng === inputEng || sStudentIdBn === inputBn ||
+                    sRoll === inputClean || sRollEng === inputEng || sRollBn === inputBn ||
+                    sReg === inputClean || sId === inputClean || sName.includes(inputClean);
+            });
+
+            if (matchedStudent) {
+                selectStudent(getStudentDisplayId(matchedStudent), isButtonClick);
+            } else {
+                // Unmatched ID
+                currentSelectedRoll = null;
+                document.getElementById('studentName').value = '';
+                document.getElementById('summaryStudentName').innerText = 'ভুল Student ID';
+                document.getElementById('summaryStudentRoll').innerText = `Student ID: ${rollInput}`;
+                document.getElementById('feeCheckboxesContainer').innerHTML = `<div style="color: #ef4444; font-size: 14px; grid-column: 1/-1; font-weight: 600;">ভুল Student ID - কোনো ফি তথ্য পাওয়া যায়নি</div>`;
+                document.getElementById('totalSelectedAmount').innerText = 'সর্বমোট আদায়: ৳ ০';
+                document.getElementById('monthsContainer').innerHTML = `<div class="empty-state" style="font-size: 18px; font-weight: 700; color: #ef4444; padding: 60px 15px;">No Data</div>`;
+            }
+        }
+
+        // Render Center Transaction Table (Sorted by Class & Student ID & Filtered by Search)
+        function renderTransactionTable() {
+            updateSummaryTotals();
+            filterTransactionTable();
+        }
+
+        // Save Data to localStorage
+        function saveDataToStorage() {
+            localStorage.setItem('school_payments', JSON.stringify(payments));
+            localStorage.setItem('school_students', JSON.stringify(students));
+        }
+
+        let editingPaymentId = null;
+
+        // Edit Payment Entry
+        function editPayment(payId) {
+            const p = payments.find(rec => rec.id === payId);
+            if (!p) return;
+
+            editingPaymentId = payId;
+
+            // Auto select student and populate form
+            selectStudent(p.roll, true);
+
+            if (p.month) {
+                const mSelect = document.getElementById('month');
+                if (mSelect) mSelect.value = p.month;
+            }
+            if (p.date) {
+                const dInput = document.getElementById('payDate');
+                if (dInput) dInput.value = p.date;
+            }
+
+            renderFeeCheckboxes();
+
+            const submitBtn = document.querySelector('.btn-submit');
+            if (submitBtn) {
+                submitBtn.innerHTML = `<span>✏️</span> পেমেন্ট আপডেট করুন ও সংরক্ষণ করুন`;
+                submitBtn.style.background = 'linear-gradient(135deg, #0284c7, #2563eb)';
+            }
+
+            document.getElementById('feeForm')?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Delete Payment Entry
+        function deletePayment(payId) {
+            const pIndex = payments.findIndex(rec => rec.id === payId);
+            if (pIndex === -1) return;
+
+            const p = payments[pIndex];
+            const studentName = p.name || p.roll || 'শিক্ষার্থী';
+            const feeInfo = `${p.feeType || 'ফি'} (${p.month || ''} - ৳ ${toBengaliNumber(p.amount)})`;
+
+            if (confirm(`আপনি কি নিশ্চিত যে "${studentName}" এর ${feeInfo} জমার এন্ট্রিটি মুছে ফেলতে চান?`)) {
+                payments.splice(pIndex, 1);
+                saveDataToStorage();
+
+                renderTransactionTable();
+
+                if (currentSelectedRoll) {
+                    const s = students.find(st => getStudentDisplayId(st) === currentSelectedRoll);
+                    if (s) {
+                        renderRightLedger(s);
+                        renderFeeCheckboxes();
+                    }
+                }
+            }
+        }
+
+        // Filter Transaction Table by Student ID or Name
+        function filterTransactionTable() {
+            const query = (document.getElementById('tableSearchInput')?.value || '').trim().toLowerCase();
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            if (payments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">কোনো জমা রেকর্ড পাওয়া যায়নি</td></tr>`;
+                return;
+            }
+
+            // Sort by Class (৬ষ্ঠ -> ১০ম) and then by Student ID
+            const sortedPayments = [...payments].sort((a, b) => {
+                const classA = CLASS_ORDER[a.studentClass] || 99;
+                const classB = CLASS_ORDER[b.studentClass] || 99;
+                if (classA !== classB) return classA - classB;
+
+                const rollA = parseInt((a.roll || '').toString().replace(/\D/g, ''), 10) || 0;
+                const rollB = parseInt((b.roll || '').toString().replace(/\D/g, ''), 10) || 0;
+                if (rollA !== rollB) return rollA - rollB;
+
+                return ALL_MONTHS.indexOf(a.month) - ALL_MONTHS.indexOf(b.month);
+            });
+
+            const filteredPayments = sortedPayments.filter(p => {
+                if (!query) return true;
+                const rollStr = (p.roll || '').toString().toLowerCase();
+                const rollEng = toEnglishNumber(p.roll || '').toLowerCase();
+                const nameStr = (p.name || '').toLowerCase();
+                return rollStr.includes(query) || rollEng.includes(query) || nameStr.includes(query);
+            });
+
+            if (filteredPayments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">কোনো রেকর্ড পাওয়া যায়নি</td></tr>`;
+                return;
+            }
+
+            filteredPayments.forEach(p => {
+                if (!p.id) p.id = 'PAY-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+                const matchedStudent = students.find(s => s.roll === p.roll || s.studentId === p.roll || s.id === p.roll);
+                const displayId = matchedStudent ? getStudentDisplayId(matchedStudent) : (p.roll || '');
+                const tr = document.createElement('tr');
+                const statusClass = p.status === 'পরিশোধিত' ? 'paid' : 'partial';
+                const classLabel = formatClassName(matchedStudent ? (matchedStudent.rawClass || matchedStudent.studentClass || matchedStudent.class) : (p.rawClass || p.studentClass || p.class));
+                tr.innerHTML = `
+                <td><strong>${displayId}</strong></td>
+                <td>${matchedStudent ? matchedStudent.name : p.name}</td>
+                <td>${classLabel}</td>
+                <td>${p.feeType || 'মাসিক বেতন'}</td>
+                <td>${p.month}</td>
+                <td>৳ ${toBengaliNumber(p.amount)}</td>
+                <td>${p.date}</td>
+                <td><span class="status-badge ${statusClass}">${p.status}</span></td>
+                <td style="text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 4px;">
+                        <button type="button" onclick="editPayment('${p.id}')" title="সম্পাদনা / আপডেট করুন" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 3px 7px; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                            ✏️ আপডেট
+                        </button>
+                        <button type="button" onclick="deletePayment('${p.id}')" title="রেকর্ড মুছে ফেলুন" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 3px 7px; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                            🗑️ মুছুন
+                        </button>
+                    </div>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Right Panel 12-Month Fee Ledger for Selected Student
+        function renderRightLedger(student) {
+            const displayId = getStudentDisplayId(student);
+            const classLabel = formatClassName(student.rawClass || student.studentClass || student.class);
+            document.getElementById('summaryStudentName').innerText = student.name;
+            document.getElementById('summaryStudentRoll').innerText = `Student ID: ${displayId} | ${classLabel}`;
+
+            const container = document.getElementById('monthsContainer');
+            container.innerHTML = '';
+
+            const studentPayments = payments.filter(p => p.roll === student.roll || p.roll === displayId || p.roll === student.studentId);
+            const tuitionFee = CLASS_TUITION[student.studentClass] || 50;
+
+            ALL_MONTHS.forEach(monthName => {
+                const monthCard = document.createElement('div');
+                monthCard.className = 'month-card';
+
+                const monthPayments = studentPayments.filter(p => p.month === monthName);
+                let monthTotalAmount = 0;
+
+                let feeItemsHTML = '';
+
+                // Default Fee Types for January vs Other Months
+                const defaultFeeTypes = monthName === "জানুয়ারী"
+                    ? [
+                        { type: "মাসিক বেতন", amount: tuitionFee },
+                        { type: "ভর্তি ফি", amount: 100 },
+                        { type: "সেশন ফি", amount: 50 },
+                        { type: "অন্যান্য ফি", amount: 10 }
+                    ]
+                    : [
+                        { type: "মাসিক বেতন", amount: tuitionFee }
+                    ];
+
+                defaultFeeTypes.forEach(fObj => {
+                    const fType = fObj.type;
+                    const payRecord = monthPayments.find(p => p.feeType === fType);
+                    const labelText = `${fType}: ${toBengaliNumber(fObj.amount)}`;
+
+                    if (payRecord) {
+                        monthTotalAmount += Number(payRecord.amount);
+                        feeItemsHTML += `
+                        <div class="fee-item">
+                            <span class="fee-label">${labelText}</span>
+                            <span class="fee-status paid">✓ Paid (৳ ${toBengaliNumber(payRecord.amount)})</span>
+                        </div>
+                    `;
+                    } else {
+                        feeItemsHTML += `
+                        <div class="fee-item">
+                            <span class="fee-label">${labelText}</span>
+                            <span class="fee-status unpaid">বকেয়া</span>
+                        </div>
+                    `;
+                    }
+                });
+
+                const gridStyle = defaultFeeTypes.length > 1 ? 'grid-template-columns: 1fr 1fr;' : 'grid-template-columns: 1fr;';
+
+                monthCard.innerHTML = `
+                <div class="month-header">
+                    <span class="month-name">📅 ${monthName}</span>
+                    <span class="month-total">${monthTotalAmount > 0 ? 'জমা: ৳ ' + toBengaliNumber(monthTotalAmount) : 'জমা: ৳ ০'}</span>
+                </div>
+                <div class="fee-items-grid" style="${gridStyle}">
+                    ${feeItemsHTML}
+                </div>
+            `;
+
+                container.appendChild(monthCard);
+            });
+        }
+
+        // Save Data Function
+        function saveData() {
+            const roll = document.getElementById('rollNo').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            const studentClass = document.getElementById('studentClass').value;
+            const month = document.getElementById('month').value;
+            const date = document.getElementById('payDate').value;
+            const status = document.getElementById('status').value;
+
+            if (!roll || !name || !month || !date) {
+                alert('অনুগ্রহ করে Student ID, নাম, মাসের নাম ও তারিখ পূরণ করুন!');
+                return;
+            }
+
+            const checkedBoxes = Array.from(document.querySelectorAll('input[name="selectedFees"]:checked:not(:disabled)'));
+
+            if (checkedBoxes.length === 0) {
+                alert('অনুগ্রহ করে অন্তত একটি পরিশোধিত ফি নির্বাচন করুন (টিক দিন)!');
+                return;
+            }
+
+            if (editingPaymentId) {
+                payments = payments.filter(rec => rec.id !== editingPaymentId);
+                editingPaymentId = null;
+                const submitBtn = document.querySelector('.btn-submit');
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<span>💾</span> টাকা জমা নিন ও সংরক্ষণ করুন`;
+                    submitBtn.style.background = '#10b981';
+                }
+            }
+
+            // Add to students list if not present
+            let existingStudent = students.find(s => s.roll === roll || s.studentId === roll || getStudentDisplayId(s) === roll);
+            if (!existingStudent) {
+                students.push({ roll, studentId: roll, name, studentClass });
+            } else {
+                existingStudent.name = name;
+                existingStudent.studentClass = studentClass;
+            }
+
+            let savedCount = 0;
+            let grandTotal = 0;
+
+            checkedBoxes.forEach(cb => {
+                const feeType = cb.value;
+                const amount = Number(cb.getAttribute('data-amount') || 0);
+                grandTotal += amount;
+                savedCount++;
+
+                payments.push({
+                    id: 'PAY-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
+                    roll,
+                    name,
+                    studentClass,
+                    feeType,
+                    month,
+                    amount,
+                    date,
+                    status
+                });
+            });
+
+            // Save to storage
+            saveDataToStorage();
+
+            // Refresh UI components
+            currentSelectedRoll = roll;
+            renderStudentList();
+            renderTransactionTable();
+            selectStudent(roll);
+
+            alert(`সফলভাবে ${savedCount} টি ফি (সর্বমোট ৳ ${grandTotal}) এর জমা সংরক্ষণ করা হয়েছে!`);
+            renderFeeCheckboxes();
+        }
+    </script>
+    <script src="main.js?v=4.2"></script>
+
+</body>
+
+</html>

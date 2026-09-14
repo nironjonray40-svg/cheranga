@@ -1,0 +1,2022 @@
+
+
+        function safeJsonParse(key, fallback) {
+
+            try {
+
+                const item = localStorage.getItem(key);
+
+                return item ? JSON.parse(item) : fallback;
+
+            } catch (e) {
+
+                return fallback;
+
+            }
+
+        }
+
+
+
+        function toBnNum(num) {
+
+            const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+            return String(num).replace(/\d/g, d => bn[d]);
+
+        }
+
+
+
+        function getAllStudentsList() {
+
+            let allStudents = [];
+
+            const store = safeJsonParse('school_seat_plans_store', {});
+
+            const savedAlloc = safeJsonParse('school_saved_seat_allocations', null);
+
+
+
+            // 1. PRIMARY SOURCE: Saved Seat Plans Store (school_seat_plans_store)
+
+            if (store && typeof store === 'object' && Object.keys(store).length > 0) {
+
+                Object.keys(store).forEach(planKey => {
+
+                    const plan = store[planKey];
+
+                    if (!plan || !plan.allocations) return;
+
+                    const planExamName = plan.examName || 'বার্ষিক পরীক্ষা ২০২৬';
+
+                    const planShift = plan.shift || 'Morning Shift';
+
+
+
+                    Object.entries(plan.allocations).forEach(([roomId, item]) => {
+
+                        if (item && item.benches && Array.isArray(item.benches)) {
+
+                            const rNo = item.room ? (item.room.number || item.room.name || roomId) : roomId;
+
+                            const bldgName = (item.building && item.building.name && item.building.name.trim()) ? item.building.name.trim() : 'একাডেমিক ভবন-ক';
+
+                            const itemShift = item.shift || planShift;
+
+
+
+                            item.benches.forEach(b => {
+
+                                [b.left, b.right].forEach(st => {
+
+                                    if (st) {
+
+                                        const stId = st.studentId || st.id || st.roll;
+
+                                        if (stId) {
+
+                                            allStudents.push({
+
+                                                id: stId,
+
+                                                studentId: stId,
+
+                                                roll: parseInt(st.roll) || (allStudents.length + 1),
+
+                                                name: st.name || st.nameBn || '',
+
+                                                nameBn: st.nameBn || st.name || '',
+
+                                                class: st.class || 'Nine',
+
+                                                shift: itemShift,
+
+                                                buildingName: bldgName,
+
+                                                roomNo: rNo,
+
+                                                examName: planExamName
+
+                                            });
+
+                                        }
+
+                                    }
+
+                                });
+
+                            });
+
+                        }
+
+                    });
+
+                });
+
+            }
+
+
+
+            // 2. SECONDARY SOURCE: Active Saved Allocations (school_saved_seat_allocations)
+
+            if (allStudents.length === 0 && savedAlloc && typeof savedAlloc === 'object' && Object.keys(savedAlloc).length > 0) {
+
+                Object.entries(savedAlloc).forEach(([roomId, item]) => {
+
+                    if (item && item.benches && Array.isArray(item.benches)) {
+
+                        const rNo = item.room ? (item.room.number || item.room.name || roomId) : roomId;
+
+                        const bldgName = (item.building && item.building.name && item.building.name.trim()) ? item.building.name.trim() : 'একাডেমিক ভবন-ক';
+
+                        const itemShift = item.shift || 'Morning Shift';
+
+
+
+                        item.benches.forEach(b => {
+
+                            [b.left, b.right].forEach(st => {
+
+                                if (st) {
+
+                                    const stId = st.studentId || st.id || st.roll;
+
+                                    if (stId) {
+
+                                        allStudents.push({
+
+                                            id: stId,
+
+                                            studentId: stId,
+
+                                            roll: parseInt(st.roll) || (allStudents.length + 1),
+
+                                            name: st.name || st.nameBn || '',
+
+                                            nameBn: st.nameBn || st.name || '',
+
+                                            class: st.class || 'Nine',
+
+                                            shift: itemShift,
+
+                                            buildingName: bldgName,
+
+                                            roomNo: rNo,
+
+                                            examName: 'বার্ষিক পরীক্ষা ২০২৬'
+
+                                        });
+
+                                    }
+
+                                }
+
+                            });
+
+                        });
+
+                    }
+
+                });
+
+            }
+
+
+
+            // 3. TERTIARY SOURCE: Student Directory Database (school_students)
+
+            if (allStudents.length === 0) {
+
+                const directoryStudents = safeJsonParse('school_students', []);
+
+                if (Array.isArray(directoryStudents) && directoryStudents.length > 0) {
+
+                    directoryStudents.forEach(st => {
+
+                        const stId = st.studentId || st.id || st.regNo;
+
+                        if (stId) {
+
+                            allStudents.push({
+
+                                id: stId,
+
+                                studentId: stId,
+
+                                roll: parseInt(st.roll) || (allStudents.length + 1),
+
+                                name: st.name || st.studentName || st.nameBn || '',
+
+                                nameBn: st.nameBn || st.name || st.studentName || '',
+
+                                class: st.class || st.className || 'Nine',
+
+                                shift: st.shift || 'Morning Shift',
+
+                                buildingName: st.buildingName || st.building || 'একাডেমিক ভবন-ক',
+
+                                roomNo: st.roomNo || '101',
+
+                                examName: st.examName || 'বার্ষিক পরীক্ষা ২০২৬'
+
+                            });
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+
+
+            // 4. FALLBACK MOCK DATASET (If no stored data exists in localStorage)
+
+            if (allStudents.length === 0) {
+
+                allStudents = [
+
+                    { id: '2606001', studentId: '2606001', roll: 1, name: 'Abdullah Al Mamun', nameBn: 'আব্দুল্লাহ আল মামুন', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2606002', studentId: '2606002', roll: 2, name: 'Farjana Akter', nameBn: 'ফারজানা আক্তার', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2606003', studentId: '2606003', roll: 3, name: 'Tanvir Ahmed', nameBn: 'তানভীর আহমেদ', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2606004', studentId: '2606004', roll: 4, name: 'Sadia Sultana', nameBn: 'সাদিয়া সুলতানা', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2606005', studentId: '2606005', roll: 5, name: 'Md. Rafsan Hossain', nameBn: 'মোঃ রাফসান হোসেন', class: 'Nine', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '101', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2610001', studentId: '2610001', roll: 1, name: 'Rakibul Hasan', nameBn: 'রাকিবুল হাসান', class: 'Ten', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '102', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2610002', studentId: '2610002', roll: 2, name: 'Jahanara Begum', nameBn: 'জাহানারা বেগম', class: 'Ten', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '102', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2610003', studentId: '2610003', roll: 3, name: 'Shahadat Hossain', nameBn: 'শাহাদাত হোসেন', class: 'Ten', shift: 'Morning Shift', buildingName: 'একাডেমিক ভবন-ক', roomNo: '102', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2608001', studentId: '2608001', roll: 1, name: 'Mahir Faisel', nameBn: 'মাহির ফয়সাল', class: 'Eight', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '103', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2608002', studentId: '2608002', roll: 2, name: 'Tasnim Jahan', nameBn: 'তাসনিম জাহান', class: 'Eight', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '103', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2607001', studentId: '2607001', roll: 1, name: 'Ahsan Habib', nameBn: 'আহসান হাবীব', class: 'Seven', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '104', examName: 'বার্ষিক পরীক্ষা ২০২৬' },
+
+                    { id: '2607002', studentId: '2607002', roll: 2, name: 'Nabila Karim', nameBn: 'নাবিলা করিম', class: 'Seven', shift: 'Afternoon Shift', buildingName: 'গোলাপী ভবন', roomNo: '104', examName: 'বার্ষিক পরীক্ষা ২০২৬' }
+
+                ];
+
+            }
+
+
+
+            return allStudents;
+
+        }
+
+
+
+        function populateClassFilter() {
+
+            const classSelect = document.getElementById('filter-class');
+
+            if (!classSelect) return;
+
+            const currentSelected = classSelect.value || 'all';
+
+            classSelect.innerHTML = '<option value="all">All Classes</option>';
+
+
+
+            let classesList = [];
+
+            try {
+
+                classesList = JSON.parse(localStorage.getItem('school_classes') || '[]');
+
+            } catch (e) { }
+
+
+
+            if (!Array.isArray(classesList) || classesList.length === 0) {
+
+                classesList = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+
+            }
+
+
+
+            const allSt = getAllStudentsList();
+
+            allSt.forEach(st => {
+
+                if (st.class && !classesList.includes(st.class)) {
+
+                    classesList.push(st.class);
+
+                }
+
+            });
+
+
+
+            classesList.forEach(cls => {
+
+                const opt = document.createElement('option');
+
+                opt.value = cls;
+
+                opt.innerText = cls;
+
+                classSelect.appendChild(opt);
+
+            });
+
+
+
+            if (currentSelected && [...classSelect.options].some(o => o.value === currentSelected)) {
+
+                classSelect.value = currentSelected;
+
+            }
+
+        }
+
+
+
+        function populateExamFilter() {
+
+            const examSelect = document.getElementById('filter-exam');
+
+            if (!examSelect) return;
+
+            const currentSelected = examSelect.value || 'all';
+
+            examSelect.innerHTML = '<option value="all">সকল পরীক্ষা (All Exams / Routine Title)</option>';
+
+
+
+            const examSet = new Set();
+
+            examSet.add('বার্ষিক পরীক্ষা ২০২৬');
+
+            examSet.add('অর্ধ-বার্ষিক পরীক্ষা ২০২৬');
+
+            examSet.add('প্রাক-নির্বাচনী পরীক্ষা ২০২৬');
+
+            examSet.add('নির্বাচনী পরীক্ষা ২০২৬');
+
+
+
+            try {
+
+                const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+
+                const seatPlansStore = JSON.parse(localStorage.getItem('school_seat_plans_store') || '{}');
+
+                const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+
+                
+
+                if (typeof seatPlansStore === 'object') {
+
+                    Object.values(seatPlansStore).forEach(plan => {
+
+                        if (plan && plan.examName && plan.examName.trim()) examSet.add(plan.examName.trim());
+
+                    });
+
+                }
+
+                if (Array.isArray(routines)) {
+
+                    routines.forEach(r => { if (r && r.examName && r.examName.trim()) examSet.add(r.examName.trim()); });
+
+                }
+
+                if (Array.isArray(examTypes)) {
+
+                    examTypes.forEach(t => { if (t && t.name && t.name.trim()) examSet.add(t.name.trim()); });
+
+                }
+
+            } catch (e) {}
+
+
+
+            examSet.forEach(exam => {
+
+                const opt = document.createElement('option');
+
+                opt.value = exam;
+
+                opt.innerText = exam;
+
+                examSelect.appendChild(opt);
+
+            });
+
+
+
+            if (currentSelected && [...examSelect.options].some(o => o.value === currentSelected)) {
+
+                examSelect.value = currentSelected;
+
+            }
+
+        }
+
+
+
+        function populateShiftFilter() {
+
+            const shiftSelect = document.getElementById('filter-shift');
+
+            if (!shiftSelect) return;
+
+            const currentSelected = shiftSelect.value || 'all';
+
+            shiftSelect.innerHTML = '<option value="all">All Shifts</option>';
+
+
+
+            let shiftTimes = [];
+
+            try {
+
+                shiftTimes = JSON.parse(localStorage.getItem('school_shift_times') || '[]');
+
+            } catch (e) {}
+
+
+
+            const shiftsSet = new Set();
+
+            if (Array.isArray(shiftTimes)) {
+
+                shiftTimes.forEach(st => {
+
+                    if (st && st.shift && st.shift.trim()) shiftsSet.add(st.shift.trim());
+
+                });
+
+            }
+
+            shiftsSet.add('Morning Shift');
+
+            shiftsSet.add('Afternoon Shift');
+
+
+
+            shiftsSet.forEach(shift => {
+
+                const opt = document.createElement('option');
+
+                opt.value = shift;
+
+                const bnName = shift === 'Morning Shift' ? 'সকাল' : (shift === 'Afternoon Shift' ? 'বিকাল' : shift);
+
+                opt.innerText = `${shift} (${bnName})`;
+
+                shiftSelect.appendChild(opt);
+
+            });
+
+
+
+            if (currentSelected && [...shiftSelect.options].some(o => o.value === currentSelected)) {
+
+                shiftSelect.value = currentSelected;
+
+            }
+
+        }
+
+
+
+        function updateAttendanceFontSize(val) {
+
+            const valSpan = document.getElementById('font-size-val');
+
+            if (valSpan) valSpan.innerText = val + 'px';
+
+
+
+            const baseSize = parseFloat(val) || 14;
+
+            const studentNameSize = (baseSize * 1.10).toFixed(1);
+
+
+
+            const elements = document.querySelectorAll('table th, table td');
+
+            elements.forEach(el => {
+
+                if (!el.classList.contains('student-name')) {
+
+                    el.style.fontSize = baseSize + 'px';
+
+                }
+
+            });
+
+
+
+            const studentNameEls = document.querySelectorAll('.student-name');
+
+            studentNameEls.forEach(el => {
+
+                el.style.fontSize = studentNameSize + 'px';
+
+            });
+
+        }
+
+
+
+        function getSubjectShortName(nameStr) {
+
+            if (!nameStr) return '';
+
+            const cleanStr = nameStr.toString().trim();
+
+            if (!cleanStr) return '';
+
+
+
+            const lower = cleanStr.toLowerCase();
+
+
+
+            if (/bangla.*1|বাংলা.*১|bangla sahitya|বাংলা সাহিত্য/i.test(lower)) return 'BNG1';
+
+            if (/bangla.*2|বাংলা.*২|bangla.*gram|বাংলা.*ব্যাকরণ|byakaran|নির্মিতি/i.test(lower)) return 'BNG2';
+
+            if (/english.*1|ইংরেজি.*১|english for today/i.test(lower)) return 'ENG1';
+
+            if (/english.*2|ইংরেজি.*২|english.*gram/i.test(lower)) return 'ENG2';
+
+            if (/higher.*math|উচ্চতর.*গণিত/i.test(lower)) return 'H.MATH';
+
+            if (/math|গণিত/i.test(lower)) return 'MATH';
+
+            if (/ict|information|তথ্য ও যোগাযোগ/i.test(lower)) return 'ICT';
+
+            if (/bgs|bangladesh.*global|বাংলাদেশ ও বিশ্ব/i.test(lower)) return 'BGS';
+
+            if (/physics|পদার্থ/i.test(lower)) return 'PHY';
+
+            if (/chemistry|রসায়ন/i.test(lower)) return 'CHE';
+
+            if (/biology|জীববিজ্ঞান|জীব/i.test(lower)) return 'BIO';
+
+            if (/agri|agriculture|কৃষি/i.test(lower)) return 'AGRI';
+
+            // Mixed Hindu & Islam in one single column
+            if (/hindu|হিন্দু|islam|ইসলাম|religion|ধর্ম/i.test(lower)) return 'ISLAM/HINDU';
+            if (/christian|খ্রিস্ট/i.test(lower)) return 'CHRIST';
+            if (/buddh|বৌদ্ধ/i.test(lower)) return 'BUDDHA';
+
+            if (/science|বিজ্ঞান/i.test(lower)) return 'SCI';
+
+            if (/accoun|হিসাব/i.test(lower)) return 'ACC';
+
+            if (/finance|ফিন্যান্স/i.test(lower)) return 'FIN';
+
+            if (/busin|ব্যবসায়/i.test(lower)) return 'BUS';
+
+            if (/geog|ভূগোল/i.test(lower)) return 'GEO';
+
+            if (/econ|অর্থনীতি/i.test(lower)) return 'ECON';
+
+            if (/histor|ইতিহাস/i.test(lower)) return 'HIST';
+
+            if (/civic|পৌরনীতি/i.test(lower)) return 'CIV';
+
+            if (/physical.*ed|শারীরিক/i.test(lower)) return 'PHY.ED';
+
+            if (/work|কর্ম/i.test(lower)) return 'WORK';
+
+            if (/art|চারু/i.test(lower)) return 'ART';
+
+
+
+            if (cleanStr.length <= 7 && !/\s/.test(cleanStr)) {
+
+                return cleanStr.toUpperCase();
+
+            }
+
+
+
+            const words = cleanStr.split(/[\s_\-]+/).filter(Boolean);
+
+            if (words.length > 1) {
+
+                return words.map(w => w[0].toUpperCase()).join('').substring(0, 7);
+
+            }
+
+            return cleanStr.substring(0, 6).toUpperCase();
+        }
+
+        function getSingleSubjectBangla(code, name) {
+            const c = (code || '').toUpperCase();
+            const nl = (name || '').toLowerCase();
+            if (c === 'BNG1' || /bangla.*1|বাংলা.*১/i.test(nl)) return 'বাংলা ১ম';
+            if (c === 'BNG2' || /bangla.*2|বাংলা.*২/i.test(nl)) return 'বাংলা ২য়';
+            if (c === 'ENG1' || /english.*1|ইংরেজি.*১/i.test(nl)) return 'ইংরেজি ১ম';
+            if (c === 'ENG2' || /english.*2|ইংরেজি.*২/i.test(nl)) return 'ইংরেজি ২য়';
+            if (c === 'MATH' || /math|গণিত/i.test(nl)) return 'গণিত';
+            if (c === 'H.MATH' || /higher.*math|উচ্চতর/i.test(nl)) return 'উ:গণিত';
+            if (c === 'ICT' || /ict|information|তথ্য/i.test(nl)) return 'তথ্য প্রযুক্তি';
+            if (c === 'BGS' || /bgs|bangladesh|বাংলাদেশ/i.test(nl)) return 'বাওবি';
+            if (c === 'SCI' || /science|বিজ্ঞান/i.test(nl)) return 'বিজ্ঞান';
+            if (c === 'PHY' || /physics|পদার্থ/i.test(nl)) return 'পদার্থ';
+            if (c === 'CHE' || /chemistry|রসায়ন/i.test(nl)) return 'রসায়ন';
+            if (c === 'BIO' || /biology|জীববিজ্ঞান|জীব/i.test(nl)) return 'জীববিজ্ঞান';
+            if (c === 'AGRI' || /agri|agriculture|কৃষি/i.test(nl)) return 'কৃষি';
+            if (c === 'ACC' || /accoun|হিসাব/i.test(nl)) return 'হিসাব';
+            if (c === 'FIN' || /finance|ফিন্যান্স/i.test(nl)) return 'ফিন্যান্স';
+            if (c === 'BUS' || /busin|ব্যবসায়/i.test(nl)) return 'ব্যবসায়';
+            if (c === 'GEO' || /geog|ভূগোল/i.test(nl)) return 'ভূগোল';
+            if (c === 'ECON' || /econ|অর্থনীতি/i.test(nl)) return 'অর্থনীতি';
+            if (c === 'HIST' || /histor|ইতিহাস/i.test(nl)) return 'ইতিহাস';
+            if (c === 'CIV' || /civic|পৌরনীতি/i.test(nl)) return 'পৌরনীতি';
+            if (c === 'PHY.ED' || /physical.*ed|শারীরিক/i.test(nl)) return 'শারীরিক শিক্ষা';
+            if (c === 'WORK' || /work|কর্ম/i.test(nl)) return 'কর্ম ও জীবন';
+            if (c === 'ART' || /art|চারু/i.test(nl)) return 'চারু ও কারু';
+            if (c === 'GK' || /general.*knowledge|সাধারণ.*জ্ঞান/i.test(nl)) return 'সাধারণ জ্ঞান';
+            if (c === 'CHRIST' || /christian|খ্রিস্ট/i.test(nl)) return 'খ্রিস্টধর্ম';
+            if (c === 'BUDDHA' || /buddh|বৌদ্ধ/i.test(nl)) return 'বৌদ্ধধর্ম';
+            if (c === 'ISLAM/HINDU' || c === 'REL' || /islam|hindu|religion|ধর্ম/i.test(nl)) return 'ধর্ম';
+            return c;
+        }
+
+        function getSubjectHeaderDisplay(subCode, subName, langVal = 'en') {
+            const code = (subCode || getSubjectShortName(subName) || '').trim().toUpperCase();
+            const nameLower = (subName || '').toLowerCase();
+
+            // Combined multi-subject column on same exam date (e.g. Science/Humanities/Business)
+            if (code.includes('/') && code !== 'ISLAM/HINDU') {
+                const parts = code.split('/').map(p => p.trim()).filter(Boolean);
+                if (langVal === 'bn') {
+                    const bnParts = parts.map(p => getSingleSubjectBangla(p, ''));
+                    if (bnParts.length >= 3) {
+                        return bnParts.slice(0, 2).join('/') + '<br>/' + bnParts.slice(2).join('/');
+                    }
+                    return bnParts.join('<br>');
+                } else if (langVal === 'both') {
+                    const enStr = parts.join('/');
+                    const bnStr = parts.map(p => getSingleSubjectBangla(p, '')).join('/');
+                    return `${enStr}<br>${bnStr}`;
+                } else {
+                    // English mode
+                    if (parts.length >= 3) {
+                        return parts.slice(0, 2).join('/') + '<br>/' + parts.slice(2).join('/');
+                    }
+                    return parts.join('<br>');
+                }
+            }
+
+            // Religion (Islam and Hindu mixed in 2 lines)
+            if (/ISLAM|HINDU|RELIGION|ধর্ম|ইসলাম|হিন্দু/i.test(code) || /islam|hindu|religion|ধর্ম/i.test(nameLower)) {
+                if (langVal === 'en' || langVal === 'both') {
+                    return 'ISLAM<br>HINDU';
+                } else {
+                    return 'ইসলাম<br>হিন্দু';
+                }
+            }
+
+            if (langVal === 'bn') {
+                if (code === 'BNG1' || /bangla.*1|বাংলা.*১/i.test(nameLower)) return 'বাংলা<br>১ম';
+                if (code === 'BNG2' || /bangla.*2|বাংলা.*২/i.test(nameLower)) return 'বাংলা<br>২য়';
+                if (code === 'ENG1' || /english.*1|ইংরেজি.*১/i.test(nameLower)) return 'ইংরেজি<br>১ম';
+                if (code === 'ENG2' || /english.*2|ইংরেজি.*২/i.test(nameLower)) return 'ইংরেজি<br>২য়';
+                if (code === 'MATH' || /math|গণিত/i.test(nameLower)) return 'গণিত';
+                if (code === 'H.MATH' || /higher.*math|উচ্চতর.*গণিত/i.test(nameLower)) return 'উচ্চতর<br>গণিত';
+                if (code === 'ICT' || /ict|information|তথ্য ও যোগাযোগ/i.test(nameLower)) return 'তথ্য ও<br>যোগাযোগ';
+                if (code === 'BGS' || /bgs|bangladesh.*global|বাংলাদেশ ও বিশ্ব/i.test(nameLower)) return 'বাংলাদেশ<br>ও বিশ্ব';
+                if (code === 'SCI' || /science|বিজ্ঞান/i.test(nameLower)) return 'বিজ্ঞান';
+                if (code === 'PHY' || /physics|পদার্থ/i.test(nameLower)) return 'পদার্থ';
+                if (code === 'CHE' || /chemistry|রসায়ন/i.test(nameLower)) return 'রসায়ন';
+                if (code === 'BIO' || /biology|জীববিজ্ঞান|জীব/i.test(nameLower)) return 'জীববিজ্ঞান';
+                if (code === 'AGRI' || /agri|agriculture|কৃষি/i.test(nameLower)) return 'কৃষি';
+                if (code === 'ACC' || /accoun|হিসাব/i.test(nameLower)) return 'হিসাববিজ্ঞান';
+                if (code === 'FIN' || /finance|ফিন্যান্স/i.test(nameLower)) return 'ফিন্যান্স';
+                if (code === 'BUS' || /busin|ব্যবসায়/i.test(nameLower)) return 'ব্যবসায়<br>উদ্যোগ';
+                if (code === 'GEO' || /geog|ভূগোল/i.test(nameLower)) return 'ভূগোল';
+                if (code === 'ECON' || /econ|অর্থনীতি/i.test(nameLower)) return 'অর্থনীতি';
+                if (code === 'HIST' || /histor|ইতিহাস/i.test(nameLower)) return 'ইতিহাস';
+                if (code === 'CIV' || /civic|পৌরনীতি/i.test(nameLower)) return 'পৌরনীতি';
+                if (code === 'PHY.ED' || /physical.*ed|শারীরিক/i.test(nameLower)) return 'শারীরিক<br>শিক্ষা';
+                if (code === 'WORK' || /work|কর্ম/i.test(nameLower)) return 'কর্ম ও<br>জীবন';
+                if (code === 'ART' || /art|চারু/i.test(nameLower)) return 'চারু ও<br>কারু';
+                if (code === 'GK' || /general.*knowledge|সাধারণ.*জ্ঞান/i.test(nameLower)) return 'সাধারণ<br>জ্ঞান';
+                if (code === 'CHRIST' || /christian|খ্রিস্ট/i.test(nameLower)) return 'খ্রিস্টধর্ম';
+                if (code === 'BUDDHA' || /buddh|বৌদ্ধ/i.test(nameLower)) return 'বৌদ্ধধর্ম';
+                return getSingleSubjectBangla(code, subName);
+            } else if (langVal === 'both') {
+                if (code === 'BNG1') return 'BNG 1st<br>বাংলা ১ম';
+                if (code === 'BNG2') return 'BNG 2nd<br>বাংলা ২য়';
+                if (code === 'ENG1') return 'ENG 1st<br>ইংরেজি ১ম';
+                if (code === 'ENG2') return 'ENG 2nd<br>ইংরেজি ২য়';
+                if (code === 'MATH') return 'MATH<br>গণিত';
+                if (code === 'H.MATH') return 'H.MATH<br>উ:গণিত';
+                if (code === 'ICT') return 'ICT<br>তথ্য প্রযুক্তি';
+                if (code === 'BGS') return 'BGS<br>বাওবি';
+                if (code === 'SCI') return 'SCI<br>বিজ্ঞান';
+                if (code === 'PHY') return 'PHY<br>পদার্থ';
+                if (code === 'CHE') return 'CHE<br>রসায়ন';
+                if (code === 'BIO') return 'BIO<br>জীব';
+                if (code === 'AGRI') return 'AGRI<br>কৃষি';
+                if (code === 'ACC') return 'ACC<br>হিসাব';
+                if (code === 'FIN') return 'FIN<br>ফিন্যান্স';
+                if (code === 'BUS') return 'BUS<br>ব্যবসায়';
+                if (code === 'GEO') return 'GEO<br>ভূগোল';
+                if (code === 'ECON') return 'ECON<br>অর্থনীতি';
+                if (code === 'HIST') return 'HIST<br>ইতিহাস';
+                if (code === 'CIV') return 'CIV<br>পৌরনীতি';
+                const bn = getSingleSubjectBangla(code, subName);
+                return `${code}<br>${bn}`;
+            }
+
+            return code || subName;
+        }
+
+
+
+        function formatRoutineDateForHeader(dateStr) {
+
+            if (!dateStr) return '';
+
+            const str = dateStr.toString().trim();
+
+            if (!str) return '';
+
+
+
+            const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+
+
+            const matchDDMMM = str.match(/^(\d{1,2})[\-\/\s]([A-Za-z]{3})$/);
+
+            if (matchDDMMM) {
+
+                const day = matchDDMMM[1].padStart(2, '0');
+
+                const m = matchDDMMM[2].toUpperCase();
+
+                return `${day}-${m}`;
+
+            }
+
+
+
+            const matchYYYYMMDD = str.match(/^(\d{4})[\-\/\s](\d{1,2})[\-\/\s](\d{1,2})$/);
+
+            if (matchYYYYMMDD) {
+
+                const day = matchYYYYMMDD[3].padStart(2, '0');
+
+                const mIdx = parseInt(matchYYYYMMDD[2], 10) - 1;
+
+                if (mIdx >= 0 && mIdx < 12) {
+
+                    return `${day}-${monthNames[mIdx]}`;
+
+                }
+
+            }
+
+
+
+            const matchDDMMYYYY = str.match(/^(\d{1,2})[\-\/\s](\d{1,2})[\-\/\s](\d{4})$/);
+
+            if (matchDDMMYYYY) {
+
+                const day = matchDDMMYYYY[1].padStart(2, '0');
+
+                const mIdx = parseInt(matchDDMMYYYY[2], 10) - 1;
+
+                if (mIdx >= 0 && mIdx < 12) {
+
+                    return `${day}-${monthNames[mIdx]}`;
+
+                }
+
+            }
+
+
+
+            try {
+
+                const d = new Date(str);
+
+                if (!isNaN(d.getTime())) {
+
+                    const day = String(d.getDate()).padStart(2, '0');
+
+                    const m = monthNames[d.getMonth()];
+
+                    return `${day}-${m}`;
+
+                }
+
+            } catch (e) {}
+
+
+
+            return str.toUpperCase();
+
+        }
+
+
+
+        function normalizeClassKey(cls) {
+
+            if (!cls) return '';
+
+            const str = cls.toString().toLowerCase().trim();
+
+            if (!str || str === 'all') return 'all';
+
+
+
+            if (/play|প্লে/i.test(str)) return 'play';
+
+            if (/nursery|নার্সারি/i.test(str)) return 'nursery';
+
+            if (/kg|কেজি/i.test(str)) return 'kg';
+
+            if (/one|1|১|প্রথম/i.test(str) && !/10|11|12/.test(str)) return '1';
+
+            if (/two|2|২|দ্বিতীয়/i.test(str)) return '2';
+
+            if (/three|3|৩|তৃতীয়/i.test(str)) return '3';
+
+            if (/four|4|৪|চতুর্থ/i.test(str)) return '4';
+
+            if (/five|5|৫|পঞ্চম/i.test(str)) return '5';
+
+            if (/six|6|৬|ষষ্ঠ/i.test(str)) return '6';
+
+            if (/seven|7|৭|সপ্তম/i.test(str)) return '7';
+
+            if (/eight|8|৮|অষ্টম/i.test(str)) return '8';
+
+            if (/nine|9|৯|নবম/i.test(str)) return '9';
+
+            if (/ten|10|১০|দশম/i.test(str)) return '10';
+
+
+
+            return str.replace(/class/gi, '').trim();
+
+        }
+
+
+
+        function isClassMatch(routineClass, targetClass) {
+
+            const k1 = normalizeClassKey(routineClass);
+
+            const k2 = normalizeClassKey(targetClass);
+
+            if (k1 === 'all' || k2 === 'all') return true;
+
+            return k1 === k2;
+
+        }
+
+
+
+        function expandSubjectItem(sName, sDate) {
+
+            if (!sName) return [];
+
+            const nameStr = sName.toString().trim();
+
+            if (!nameStr) return [];
+
+
+
+            const lower = nameStr.toLowerCase();
+
+
+
+            // Split combined Agriculture & Higher Mathematics into separate H.MATH and AGRI entries
+
+            const hasAgri = /agri|agriculture|কৃষি/i.test(lower);
+
+            const hasHMath = /higher.*math|hmath|h\.math|উচ্চতর/i.test(lower);
+
+            if (hasAgri && hasHMath) {
+
+                return [
+
+                    { name: 'Higher Mathematics', date: sDate },
+
+                    { name: 'Agriculture Studies', date: sDate }
+
+                ];
+
+            }
+
+
+
+            // Combined Hindu & Islam into a single mixed column
+            const hasIslam = /islam|ইসলাম/i.test(lower);
+            const hasHindu = /hindu|হিন্দু/i.test(lower);
+            const hasRel = /religion|ধর্ম/i.test(lower);
+            if ((hasIslam && hasHindu) || ((hasIslam || hasHindu) && hasRel)) {
+                return [
+                    { name: 'Islamic Studies / Hindu Religion Studies', date: sDate }
+                ];
+            }
+
+            // Other slash splits if present (excluding religion/islam/hindu which are mixed together)
+            if (nameStr.includes('/') && !/1st|2nd|১ম|২য়|islam|hindu|ধর্ম/i.test(nameStr)) {
+                const parts = nameStr.split('/').map(p => p.trim()).filter(Boolean);
+                if (parts.length > 1) {
+                    return parts.map(p => ({ name: p, date: sDate }));
+                }
+            }
+
+
+
+            return [{ name: nameStr, date: sDate }];
+
+        }
+
+
+
+        function getDefaultSubjectsForClass(cName) {
+
+            const k = normalizeClassKey(cName);
+
+            if (k === 'play' || k === 'nursery' || k === 'kg') {
+
+                return [
+
+                    { name: 'Bangla', shortName: 'BNG', date: '' },
+
+                    { name: 'English', shortName: 'ENG', date: '' },
+
+                    { name: 'Mathematics', shortName: 'MATH', date: '' }
+
+                ];
+
+            }
+
+            if (k === '1' || k === '2') {
+
+                return [
+
+                    { name: 'Bangla', shortName: 'BNG', date: '' },
+
+                    { name: 'English', shortName: 'ENG', date: '' },
+
+                    { name: 'Mathematics', shortName: 'MATH', date: '' },
+
+                    { name: 'General Knowledge', shortName: 'GK', date: '' }
+
+                ];
+
+            }
+
+            if (k === '3' || k === '4' || k === '5') {
+
+                return [
+
+                    { name: 'Bangla', shortName: 'BNG', date: '' },
+
+                    { name: 'English', shortName: 'ENG', date: '' },
+
+                    { name: 'Mathematics', shortName: 'MATH', date: '' },
+
+                    { name: 'Science', shortName: 'SCI', date: '' },
+
+                    { name: 'BGS', shortName: 'BGS', date: '' },
+
+                    { name: 'Islamic Studies / Hindu Religion Studies', shortName: 'ISLAM/HINDU', date: '' }
+                ];
+            }
+            if (k === '6' || k === '7' || k === '8') {
+                return [
+                    { name: 'Bangla 1st', shortName: 'BNG1', date: '' },
+                    { name: 'Bangla 2nd', shortName: 'BNG2', date: '' },
+                    { name: 'English 1st', shortName: 'ENG1', date: '' },
+                    { name: 'English 2nd', shortName: 'ENG2', date: '' },
+                    { name: 'Mathematics', shortName: 'MATH', date: '' },
+                    { name: 'ICT', shortName: 'ICT', date: '' },
+                    { name: 'BGS', shortName: 'BGS', date: '' },
+                    { name: 'Science', shortName: 'SCI', date: '' },
+                    { name: 'Islamic Studies / Hindu Religion Studies', shortName: 'ISLAM/HINDU', date: '' }
+                ];
+            }
+            return [
+                { name: 'BNG1', shortName: 'BNG1', date: '12-JAN' },
+                { name: 'BNG2', shortName: 'BNG2', date: '13-JAN' },
+                { name: 'ENG1', shortName: 'ENG1', date: '14-JAN' },
+                { name: 'ENG2', shortName: 'ENG2', date: '15-JAN' },
+                { name: 'MATH', shortName: 'MATH', date: '16-JAN' },
+                { name: 'ICT', shortName: 'ICT', date: '17-JAN' },
+                { name: 'BGS', shortName: 'BGS', date: '18-JAN' },
+                { name: 'PHY', shortName: 'PHY', date: '19-JAN' },
+                { name: 'CHE', shortName: 'CHE', date: '20-JAN' },
+                { name: 'BIO', shortName: 'BIO', date: '21-JAN' },
+                { name: 'H.MATH', shortName: 'H.MATH', date: '22-JAN' },
+                { name: 'AGRI', shortName: 'AGRI', date: '23-JAN' },
+                { name: 'Islamic Studies / Hindu Religion Studies', shortName: 'ISLAM/HINDU', date: '24-JAN' }
+            ];
+
+        }
+
+
+
+        function getRoutineSubjectsForAttendanceSheet(examVal = 'all', classVal = 'all') {
+
+            const routineData = safeJsonParse('school_exam_routines', null) ||
+
+                                safeJsonParse('school_exam_schedules', null) ||
+
+                                safeJsonParse('school_exam_routine', null) ||
+
+                                safeJsonParse('school_routines', null) ||
+
+                                safeJsonParse('school_saved_routines', null) ||
+
+                                safeJsonParse('exam_routines', []);
+
+
+
+            let rawSubjects = [];
+
+            if (Array.isArray(routineData) && routineData.length > 0) {
+
+                let filtered = routineData;
+
+                if (examVal && examVal !== 'all') {
+
+                    const exClean = examVal.toLowerCase().trim();
+
+                    filtered = filtered.filter(r => {
+
+                        const rExam = (r.examName || '').toLowerCase().trim();
+
+                        return rExam === exClean || rExam.includes(exClean) || exClean.includes(rExam);
+
+                    });
+
+                }
+
+                if (classVal && classVal !== 'all') {
+
+                    filtered = filtered.filter(r => isClassMatch(r.class || r.className, classVal));
+
+                }
+
+
+
+                if (filtered.length > 0) {
+
+                    filtered.forEach(item => {
+
+                        if (Array.isArray(item.subjects)) {
+
+                            item.subjects.forEach(sub => {
+
+                                const sName = typeof sub === 'string' ? sub : (sub.subjectName || sub.name || sub.code || '');
+
+                                const sDate = typeof sub === 'object' ? (sub.date || sub.examDate || '') : (item.date || '');
+
+                                if (sName) {
+
+                                    const expanded = expandSubjectItem(sName, sDate);
+
+                                    expanded.forEach(exp => rawSubjects.push(exp));
+
+                                }
+
+                            });
+
+                        } else if (item.subject) {
+
+                            const expanded = expandSubjectItem(item.subject, item.date || '');
+
+                            expanded.forEach(exp => rawSubjects.push(exp));
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+
+
+            if (rawSubjects.length === 0) {
+                return getDefaultSubjectsForClass(classVal);
+            }
+
+            // Group subjects by date (same date across Science, Humanities, Business = single combined column)
+            const dateGroups = new Map();
+            rawSubjects.forEach(s => {
+                const dKey = (s.date || '').trim();
+                if (!dateGroups.has(dKey)) {
+                    dateGroups.set(dKey, []);
+                }
+                dateGroups.get(dKey).push(s);
+            });
+
+            // Sort dates chronologically (empty dates at the end)
+            const sortedDates = Array.from(dateGroups.keys()).sort((a, b) => {
+                if (!a) return 1;
+                if (!b) return -1;
+                return a.localeCompare(b);
+            });
+
+            let finalSubjects = [];
+            sortedDates.forEach(dKey => {
+                const groupItems = dateGroups.get(dKey);
+                const seenCodes = new Set();
+                const subCodes = [];
+                const subNames = [];
+
+                groupItems.forEach(item => {
+                    const sc = getSubjectShortName(item.name);
+                    const effectiveCode = (sc === 'ISLAM/HINDU' || /ISLAM|HINDU|RELIGION/i.test(sc)) ? 'REL' : sc;
+                    if (effectiveCode && !seenCodes.has(effectiveCode)) {
+                        seenCodes.add(effectiveCode);
+                        subCodes.push(effectiveCode);
+                        subNames.push(item.name);
+                    }
+                });
+
+                if (subCodes.length > 0) {
+                    const combinedCode = subCodes.join('/');
+                    const combinedName = subNames.join(' / ');
+                    finalSubjects.push({
+                        name: combinedName,
+                        shortName: combinedCode,
+                        date: dKey,
+                        subCodes: subCodes,
+                        subNames: subNames
+                    });
+                }
+            });
+
+            if (finalSubjects.length > 0) return finalSubjects;
+
+            return getDefaultSubjectsForClass(classVal);
+        }
+
+
+
+        function updateAttendanceSheetLive() {
+
+            const settings = safeJsonParse('school_settings', null);
+
+            
+
+            const classVal = document.getElementById('filter-class')?.value || 'all';
+
+            const examVal = document.getElementById('filter-exam')?.value || 'all';
+
+            const shiftVal = document.getElementById('filter-shift')?.value || 'all';
+
+            const langVal = document.getElementById('filter-lang')?.value || 'en';
+
+            const searchVal = (document.getElementById('search-student')?.value || '').trim().toLowerCase();
+
+
+
+            const schoolName = settings?.schoolName || 'আলহেরা এডুকেয়ার হোম উচ্চ বিদ্যালয়';
+
+            const customLogo = localStorage.getItem('school_logo');
+
+            const logoUrl = customLogo || settings?.schoolLogo;
+
+            const logoHtml = logoUrl 
+
+                ? `<img src="${logoUrl}" alt="Logo" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
+
+                : `<span id="site-logo-icon">🎓</span>`;
+
+
+
+            // 1. Get All Students and filter
+
+            let allStudents = getAllStudentsList();
+
+            let filtered = allStudents;
+
+
+
+            // Filter Class
+
+            if (classVal !== 'all') {
+
+                const reqClass = classVal.toLowerCase().trim();
+
+                filtered = filtered.filter(s => {
+
+                    const sc = (s.class || '').toLowerCase().trim();
+
+                    return sc === reqClass || sc.includes(reqClass) || reqClass.includes(sc);
+
+                });
+
+            }
+
+
+
+            // Filter Exam
+
+            if (examVal !== 'all') {
+
+                const reqExam = examVal.toLowerCase().trim();
+
+                filtered = filtered.filter(s => {
+
+                    const se = (s.examName || '').toLowerCase().trim();
+
+                    return se === reqExam || se.includes(reqExam) || reqExam.includes(se);
+
+                });
+
+            }
+
+
+
+            // Filter Shift
+
+            if (shiftVal !== 'all') {
+
+                const reqShift = shiftVal.toLowerCase().trim();
+
+                filtered = filtered.filter(s => {
+
+                    const ss = (s.shift || '').toLowerCase().trim();
+
+                    return ss === reqShift || ss.includes(reqShift) || reqShift.includes(ss);
+
+                });
+
+            }
+
+
+
+            // Filter Search Text
+
+            if (searchVal) {
+
+                filtered = filtered.filter(s => {
+
+                    const stId = String(s.studentId || s.id || '').toLowerCase();
+
+                    const stRoll = String(s.roll || '').toLowerCase();
+
+                    const stNameBn = String(s.nameBn || '').toLowerCase();
+
+                    const stNameEn = String(s.name || s.studentName || '').toLowerCase();
+
+                    const stRoom = String(s.roomNo || '').toLowerCase();
+
+                    const stBldg = String(s.buildingName || '').toLowerCase();
+
+                    return stId.includes(searchVal) || stRoll.includes(searchVal) || stNameBn.includes(searchVal) || stNameEn.includes(searchVal) || stRoom.includes(searchVal) || stBldg.includes(searchVal);
+
+                });
+
+            }
+
+
+
+            const pagesContainer = document.getElementById('pages-container');
+
+            if (!pagesContainer) return;
+
+
+
+            if (filtered.length === 0) {
+
+                pagesContainer.innerHTML = `
+
+                    <div style="background:#fff; padding:35px 20px; margin-top:25px; border-radius:10px; text-align:center; font-weight:700; color:#ef4444; font-size:1.1rem; box-shadow:0 4px 15px rgba(0,0,0,0.08); border: 1.5px solid #fca5a5; max-width:600px;">
+
+                        ⚠️ কোনো তথ্য পাওয়া যায়নি (No matching student attendance sheet data found for selected filters).
+
+                    </div>`;
+
+                return;
+
+            }
+
+
+
+            // 2. Group Students by: (Exam Name + Shift Name + Building Name + Room No + Class Name)
+
+            const pageGroupMap = {};
+
+            filtered.forEach(st => {
+
+                const eName = st.examName || (examVal !== 'all' ? examVal : (settings?.examName || 'বার্ষিক পরীক্ষা ২০২৬'));
+
+                const sName = st.shift || 'Morning Shift';
+
+                const bName = st.buildingName || 'একাডেমিক ভবন-ক';
+
+                const rNo = st.roomNo || '101';
+
+                const cName = st.class || 'Nine';
+
+
+
+                const gKey = eName + '___' + sName + '___' + bName + '___' + rNo + '___' + cName;
+
+                if (!pageGroupMap[gKey]) {
+
+                    pageGroupMap[gKey] = {
+
+                        examName: eName,
+
+                        shiftName: sName,
+
+                        buildingName: bName,
+
+                        roomNo: rNo,
+
+                        className: cName,
+
+                        students: []
+
+                    };
+
+                }
+
+                pageGroupMap[gKey].students.push(st);
+
+            });
+
+
+
+            const groupKeys = Object.keys(pageGroupMap);
+
+
+
+            // Sort group keys logically
+
+            groupKeys.sort((aKey, bKey) => {
+
+                const gA = pageGroupMap[aKey];
+
+                const gB = pageGroupMap[bKey];
+
+
+
+                if (gA.examName !== gB.examName) return gA.examName.localeCompare(gB.examName, 'bn');
+
+
+
+                const isAMorning = /morning|sokal|সকাল|প্রভাতি/i.test(gA.shiftName);
+
+                const isBMorning = /morning|sokal|সকাল|প্রভাতি/i.test(gB.shiftName);
+
+                if (isAMorning && !isBMorning) return -1;
+
+                if (!isAMorning && isBMorning) return 1;
+
+
+
+                if (gA.buildingName !== gB.buildingName) return gA.buildingName.localeCompare(gB.buildingName, 'bn');
+
+
+
+                const roomComp = gA.roomNo.localeCompare(gB.roomNo, undefined, { numeric: true });
+
+                if (roomComp !== 0) return roomComp;
+
+
+
+                return gA.className.localeCompare(gB.className, 'bn');
+
+            });
+
+
+
+            let pagesHtml = '';
+
+            let pageIdx = 1;
+
+
+
+            const ROWS_PER_PAGE_STUDENTS = 10;
+
+
+
+            groupKeys.forEach(gKey => {
+
+                const { examName, shiftName, buildingName, roomNo, className, students } = pageGroupMap[gKey];
+
+
+
+                // Sort students in this page group by roll
+
+                students.sort((a, b) => (parseInt(a.roll) || 0) - (parseInt(b.roll) || 0));
+
+
+
+                const studentChunks = [];
+
+                if (students.length === 0) {
+
+                    studentChunks.push([]);
+
+                } else {
+
+                    for (let i = 0; i < students.length; i += ROWS_PER_PAGE_STUDENTS) {
+
+                        studentChunks.push(students.slice(i, i + ROWS_PER_PAGE_STUDENTS));
+
+                    }
+
+                }
+
+
+
+                studentChunks.forEach((chunkStudents, chunkIdx) => {
+
+                    // Formatted strings
+
+                    let shiftStrBn = 'বিকাল';
+
+                    let shiftStrEn = 'Afternoon';
+
+                    if (/morning|sokal|সকাল|প্রভাতি/i.test(shiftName)) {
+
+                        shiftStrBn = 'সকাল';
+
+                        shiftStrEn = 'Morning';
+
+                    }
+
+
+
+                    let sheetTitleStr = '';
+
+                    if (langVal === 'en') {
+
+                        sheetTitleStr = `Students Attendance Sheet (${shiftStrEn})`;
+
+                    } else if (langVal === 'both') {
+
+                        sheetTitleStr = `পরীক্ষার্থীদের হাজিরা শীট (${shiftStrBn}) / Attendance Sheet (${shiftStrEn})`;
+
+                    } else {
+
+                        sheetTitleStr = `পরীক্ষার্থীদের হাজিরা শীট (${shiftStrBn})`;
+
+                    }
+
+
+
+                    const rmNum = (langVal === 'en') ? roomNo : toBnNum(roomNo);
+
+                    let roomBldgDisplay = '';
+
+                    if (langVal === 'en') {
+
+                        roomBldgDisplay = `Room No : ${rmNum} | Building : ${buildingName}`;
+
+                    } else if (langVal === 'both') {
+
+                        roomBldgDisplay = `রুম নং / Room : ${rmNum} | বিল্ডিং / Building : ${buildingName}`;
+
+                    } else {
+
+                        roomBldgDisplay = `রুম নং : ${rmNum} | বিল্ডিং : ${buildingName}`;
+
+                    }
+
+
+
+                    const cntNum = (langVal === 'en') ? students.length : toBnNum(students.length);
+
+                    let studentCountDisplay = '';
+
+                    if (langVal === 'en') studentCountDisplay = 'Total Students : ' + cntNum;
+
+                    else if (langVal === 'both') studentCountDisplay = 'পরীক্ষার্থীর সংখ্যা / Total : ' + cntNum;
+
+                    else studentCountDisplay = 'পরীক্ষার্থীর সংখ্যা : ' + cntNum;
+
+
+
+                    let classDisplay = '';
+
+                    if (langVal === 'en') classDisplay = 'Class : ' + className;
+
+                    else if (langVal === 'both') classDisplay = 'ক্লাস / Class : ' + className;
+
+                    else classDisplay = 'ক্লাস : ' + className;
+
+
+
+                    // Subjects Header
+
+                    const subjects = getRoutineSubjectsForAttendanceSheet(examName, className);
+
+                    const subColsCount = (Array.isArray(subjects) && subjects.length > 0) ? subjects.length : 1;
+
+
+
+                    let subThHtml = '';
+                    subjects.forEach(sub => {
+                        const subCode = sub.shortName || getSubjectShortName(sub.name);
+                        const displayCode = getSubjectHeaderDisplay(subCode, sub.name, langVal);
+                        const formattedDate = formatRoutineDateForHeader(sub.date);
+                        const subDate = formattedDate ? `<span style="display: block; font-size: 11px; font-weight: normal; line-height: 1; margin-top: 2px;">${formattedDate}</span>` : '';
+                        subThHtml += `<th style="line-height: 1.15; padding: 2px 1px;">${displayCode}${subDate}</th>`;
+                    });
+
+
+
+                    const emptySubTds = '<td></td>'.repeat(subColsCount);
+
+                    const blankSubTds = '<td>&nbsp;</td>'.repeat(subColsCount);
+
+
+
+                    // Table Rows (Exactly 10 student rows + 2 footer rows + 2 header rows = 14 rows total)
+
+                    let tbodyHtml = '';
+
+                    const startSl = chunkIdx * ROWS_PER_PAGE_STUDENTS;
+
+
+
+                    for (let rIdx = 0; rIdx < ROWS_PER_PAGE_STUDENTS; rIdx++) {
+
+                        const st = chunkStudents[rIdx];
+
+                        if (st) {
+
+                            const globalIdx = startSl + rIdx;
+
+                            const slStr = (langVal === 'en') ? (globalIdx + 1) : toBnNum(globalIdx + 1);
+
+                            const stId = st.studentId || st.id || ('2026' + String(st.roll || globalIdx + 1).padStart(4, '0'));
+
+                            
+
+                            let stNameHtml = '';
+
+                            if (langVal === 'both') {
+
+                                const nameBn = st.nameBn || st.name || 'শিক্ষার্থী';
+
+                                const nameEn = (st.name && st.name !== st.nameBn) ? st.name : (st.studentName || '');
+
+                                if (nameEn) {
+
+                                    stNameHtml = `<div style="font-weight: 700; line-height: 1.15;">${nameBn}</div><div style="font-size: 0.85em; color: #334155; font-weight: 600; line-height: 1.1; margin-top: 2px;">${nameEn}</div>`;
+
+                                } else {
+
+                                    stNameHtml = `<div style="font-weight: 700; line-height: 1.15;">${nameBn}</div>`;
+
+                                }
+
+                            } else if (langVal === 'en') {
+
+                                stNameHtml = st.name || st.nameBn || 'Student';
+
+                            } else {
+
+                                stNameHtml = st.nameBn || st.name || 'শিক্ষার্থী';
+
+                            }
+
+
+
+                            tbodyHtml += `
+
+                                <tr>
+
+                                    <td>${slStr}</td>
+
+                                    <td>${stId}</td>
+
+                                    <td class="student-name" style="${langVal === 'both' ? 'padding-top: 3px; padding-bottom: 3px;' : ''}">${stNameHtml}</td>
+
+                                    ${emptySubTds}
+
+                                </tr>
+
+                            `;
+
+                        } else {
+
+                            tbodyHtml += `
+
+                                <tr>
+
+                                    <td>&nbsp;</td>
+
+                                    <td>&nbsp;</td>
+
+                                    <td class="student-name">&nbsp;</td>
+
+                                    ${blankSubTds}
+
+                                </tr>
+
+                            `;
+
+                        }
+
+                    }
+
+
+
+                    // Footer Signature & Count rows (Rows 10 and 11)
+
+                    let presentLabel = 'উপস্থিত পরীক্ষার্থীর সংখ্যা';
+
+                    let invigLabel = 'ইনভিজিলেটরের স্বাক্ষর';
+
+                    if (langVal === 'en') {
+
+                        presentLabel = 'Present Candidates Count';
+
+                        invigLabel = 'Invigilator Signature';
+
+                    } else if (langVal === 'both') {
+
+                        presentLabel = 'উপস্থিত পরীক্ষার্থীর সংখ্যা / Present Count';
+
+                        invigLabel = 'ইনভিজিলেটরের স্বাক্ষর / Invigilator Signature';
+
+                    }
+
+
+
+                    tbodyHtml += `
+
+                        <tr class="present-count-row">
+
+                            <td colspan="3" class="invigilator-label">${presentLabel}</td>
+
+                            ${emptySubTds}
+
+                        </tr>
+
+                        <tr class="invigilator-row">
+
+                            <td colspan="3" class="invigilator-label">${invigLabel}</td>
+
+                            ${emptySubTds}
+
+                        </tr>
+
+                    `;
+
+
+
+                    const sigHeaderLabel = (langVal === 'en') ? 'Candidate Signature' : (langVal === 'both' ? 'পরীক্ষার্থীর স্বাক্ষর / Candidate Signature' : 'পরীক্ষার্থীর স্বাক্ষর');
+
+                    const slHeaderLabel = (langVal === 'en') ? 'SL No.' : (langVal === 'both' ? 'ক্র: (SL)' : 'ক্র: নং');
+
+                    const rollHeaderLabel = (langVal === 'en') ? 'Student ID' : (langVal === 'both' ? 'আইডি (ID)' : 'শিক্ষার্থীর আইডি');
+
+                    const nameHeaderLabel = (langVal === 'en') ? 'Candidate Name' : (langVal === 'both' ? 'পরীক্ষার্থীর নাম / Name' : 'পরীক্ষার্থীর নাম');
+
+
+
+                    let chunkInfoStr = '';
+
+                    if (studentChunks.length > 1) {
+
+                        const startNum = startSl + 1;
+
+                        const endNum = Math.min(startSl + chunkStudents.length, students.length);
+
+                        chunkInfoStr = ` - ক্র: ${toBnNum(startNum)}-${toBnNum(endNum)}`;
+
+                    }
+
+
+
+                    pagesHtml += `
+
+                        <!-- Page Indicator Pill (Screen Preview Only) -->
+
+                        <div class="no-print" style="margin-top: 25px; margin-bottom: 10px; font-weight: 800; font-size: 0.95rem; color: #0284c7; background: #e0f2fe; padding: 6px 20px; border-radius: 20px; border: 1.5px solid #7dd3fc; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15); display: inline-flex; align-items: center; gap: 8px;">
+
+                            <span>📄 পৃষ্ঠা ${pageIdx} (${examName} - ${buildingName} - শ্রেণি ${className} - রুম নং ${roomNo} - ${shiftStrBn} শিফট${chunkInfoStr})</span>
+
+                        </div>
+
+
+
+                        <!-- Single Page Attendance Sheet Container -->
+
+                        <div class="container">
+
+                            <div class="header-section">
+
+                                <div class="header-logo-badge" style="position: absolute; left: 0; top: 0; margin-top: -0.03in; transform: translateY(-0.03in); width: 64px; height: 64px; background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%); color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25); border: 2.5px solid #0284c7; z-index: 5;">
+
+                                    ${logoHtml}
+
+                                </div>
+
+                                <h1 class="school-name">${schoolName}</h1>
+
+                                <div class="exam-row">
+
+                                    <div class="class-placeholder"></div>
+
+                                    <h2 class="exam-name">${examName}</h2>
+
+                                    <div class="class-name">${classDisplay}</div>
+
+                                </div>
+
+                                <div class="title-row">
+
+                                    <div class="room-no">${roomBldgDisplay}</div>
+
+                                    <h3 class="sheet-title">${sheetTitleStr}</h3>
+
+                                    <div class="student-count">${studentCountDisplay}</div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <table>
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th rowspan="2" class="col-sl">${slHeaderLabel}</th>
+
+                                        <th rowspan="2" class="col-roll">${rollHeaderLabel}</th>
+
+                                        <th rowspan="2" class="col-name">${nameHeaderLabel}</th>
+
+                                        <th colspan="${subColsCount}" class="sig-header-cell">${sigHeaderLabel}</th>
+
+                                    </tr>
+
+                                    <tr>
+
+                                        ${subThHtml}
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    ${tbodyHtml}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    `;
+
+
+
+                    pageIdx++;
+
+                });
+
+            });
+
+
+
+            pagesContainer.innerHTML = pagesHtml;
+
+
+
+            const currentFontSize = document.getElementById('font-size-slider')?.value;
+
+            if (currentFontSize) {
+
+                updateAttendanceFontSize(currentFontSize);
+
+            }
+
+        }
+
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            populateClassFilter();
+
+            populateExamFilter();
+
+            populateShiftFilter();
+
+            updateAttendanceSheetLive();
+
+        });
+
+
+
+        function refreshAttendanceSheetData() {
+
+            populateClassFilter();
+
+            populateExamFilter();
+
+            populateShiftFilter();
+
+            updateAttendanceSheetLive();
+
+        }
+
+        window.addEventListener('storage', refreshAttendanceSheetData);
+
+        window.addEventListener('dbSynced', refreshAttendanceSheetData);
+
+
+
+        async function downloadStudentAttendancePDF() {
+
+            const container = document.getElementById('pages-container');
+
+            const pages = container ? container.querySelectorAll('.container') : [];
+
+            if (!container || pages.length === 0) {
+
+                alert('ডাউনলোড করার মতো কোনো তথ্য পাওয়া যায়নি!');
+
+                return;
+
+            }
+
+
+
+            if (document.fonts && document.fonts.ready) {
+
+                try { await document.fonts.ready; } catch (e) { }
+
+            }
+
+
+
+            const examVal = document.getElementById('filter-exam')?.value || 'all';
+
+            const classVal = document.getElementById('filter-class')?.value || 'all';
+
+            const safeExamName = (examVal === 'all' ? 'Attendance_Sheet' : examVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+
+            const safeClassName = (classVal === 'all' ? 'All_Classes' : classVal).replace(/[^a-zA-Z0-9_\u0980-\u09FF-]/g, '_');
+
+            const fileName = `Attendance_Sheet_${safeClassName}_${safeExamName}.pdf`;
+
+
+
+            const btn = document.getElementById('btn-download-pdf');
+
+            const originalBtnText = btn ? btn.innerHTML : '';
+
+            if (btn) {
+
+                btn.innerHTML = '⏳ পিডিএফ প্রস্তুত হচ্ছে...';
+
+                btn.disabled = true;
+
+            }
+
+
+
+            try {
+
+                const JsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+
+                if (JsPDFConstructor && typeof html2canvas !== 'undefined') {
+
+                    const pdf = new JsPDFConstructor({ orientation: 'landscape', unit: 'mm', format: 'legal', compress: true });
+
+
+
+                    for (let i = 0; i < pages.length; i++) {
+
+                        if (btn) {
+
+                            btn.innerHTML = `⏳ পাতা ${i + 1}/${pages.length} তৈরি হচ্ছে...`;
+
+                        }
+
+                        const pageEl = pages[i];
+
+
+
+                        const originalBoxShadow = pageEl.style.boxShadow;
+
+                        const originalMargin = pageEl.style.marginBottom;
+
+
+
+                        pageEl.style.boxShadow = 'none';
+
+                        pageEl.style.marginBottom = '0';
+
+
+
+                        const canvas = await html2canvas(pageEl, {
+
+                            scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0
+
+                        });
+
+
+
+                        pageEl.style.boxShadow = originalBoxShadow;
+
+                        pageEl.style.marginBottom = originalMargin;
+
+
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+                        if (i > 0) {
+
+                            pdf.addPage('legal', 'landscape');
+
+                        }
+
+                        pdf.addImage(imgData, 'JPEG', 0, 0, 355.6, 215.9, undefined, 'FAST');
+
+                    }
+
+
+
+                    pdf.save(fileName);
+
+                    if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+
+                    return;
+
+                }
+
+
+
+                if (typeof html2pdf !== 'undefined') {
+
+                    const opt = {
+
+                        margin: 0, filename: fileName, image: { type: 'jpeg', quality: 0.98 },
+
+                        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' },
+
+                        jsPDF: { unit: 'mm', format: 'legal', orientation: 'landscape' },
+
+                        pagebreak: { mode: ['css', 'legacy'] }
+
+                    };
+
+                    await html2pdf().set(opt).from(container).save();
+
+                    if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+
+                    return;
+
+                }
+
+                throw new Error('PDF Engine not loaded');
+
+            } catch (err) {
+
+                console.error('PDF Generation Error:', err);
+
+                if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+
+                alert('সরাসরি ব্রাউজার প্রিন্ট ডায়ালগ থেকে "Destination: Save as PDF" সিলেক্ট করে সংরক্ষণ করতে পারেন।');
+
+                window.print();
+
+            }
+
+        }
+
+
+
+        window.downloadStudentAttendancePDF = downloadStudentAttendancePDF;
+
+        window.downloadAdmitCardPDF = downloadStudentAttendancePDF;
+
+    

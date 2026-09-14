@@ -1,11 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('cms.html?login=required');
+        }
+    </script>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result Portal - CREATIVE MODEL SCHOOL</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Result Management - Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</title>
+    <link rel="stylesheet" href="style.css?v=4.2">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Alkatra:wght@400;500;600;700&family=Anton&family=Noto+Rashi+Hebrew:wght@100..900&family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@400;600;700&display=swap');
+
+        /* --- Official Marksheet Exact Design --- */
+        .official-marksheet-wrapper {
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .official-marksheet-actions {
+            max-width: 1000px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .official-marksheet-card {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            border: 4px solid #000000;
+            padding: 20px 25px;
+            position: relative;
+            background: #ffffff;
+            color: #000000;
+            font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'Noto Sans Bengali', serif;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
+        }
+
+        .official-marksheet-card * {
+            box-sizing: border-box;
+        }
+
+        .official-marksheet-card .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+        }
+
+        .official-marksheet-card .header-table td {
+            vertical-align: top;
+        }
+
+        .official-marksheet-card .school-info {
+            text-align: center;
+            padding-top: 5px;
+        }
+
+        .official-marksheet-card .school-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: 0.5px;
+        }
+
+        .official-marksheet-card .school-address {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 4px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .school-logo-container {
+            width: 65px;
+            height: 65px;
+            margin: 6px auto 2px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .official-marksheet-card .school-logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .official-marksheet-card .grading-table {
+            width: 200px;
+            border-collapse: collapse;
+            font-size: 11px;
+            text-align: center;
+            float: right;
+        }
+
+        .official-marksheet-card .grading-table th, 
+        .official-marksheet-card .grading-table td {
+            border: 1px solid #000000;
+            padding: 2px 4px;
+        }
+
+        .official-marksheet-card .grading-table th {
+            font-weight: bold;
+            background-color: #f8f8f8;
+            color: #000000;
+        }
+
+        .official-marksheet-card .grading-table td {
+            color: #000000;
+            background-color: #ffffff;
+        }
+
+        .official-marksheet-card .title-container {
+            text-align: center;
+            margin: 10px 0 15px 0;
+            clear: both;
+        }
+
+        .official-marksheet-card .exam-title {
+            display: inline-block;
+            background-color: #fde8d7;
+            border: 1px solid #d0c0b0;
+            border-radius: 12px;
+            padding: 4px 35px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .student-info {
+            width: 100%;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .student-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .official-marksheet-card .student-info td {
+            padding: 2px 0;
+            vertical-align: middle;
+            color: #000000;
+        }
+
+        .official-marksheet-card .info-label {
+            width: 110px;
+        }
+
+        .official-marksheet-card .info-colon {
+            width: 15px;
+        }
+
+        .official-marksheet-card .marksheet-table {
+            width: calc(100% - 1.2in);
+            margin-left: 1.2in;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 13px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .marksheet-table th, 
+        .official-marksheet-card .marksheet-table td {
+            border: 1px solid #000000;
+            padding: 4px;
+            height: 23px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .marksheet-table th {
+            font-weight: bold;
+            background-color: #ffffff;
+            font-size: 13px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .subject-col {
+            text-align: left;
+            padding-left: 8px !important;
+            font-weight: bold;
+            width: 25%;
+        }
+
+        .official-marksheet-card .practical-shaded {
+            background-color: #e0e0e0 !important;
+        }
+
+        .official-marksheet-card .bottom-container {
+            margin-top: 0px;
+            width: 100%;
+        }
+
+        .official-marksheet-card .merit-box {
+            float: left;
+            width: 310px;
+            margin-top: 15px;
+            margin-left: 1.2in;
+        }
+
+        .official-marksheet-card .merit-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+            font-family: 'Alkatra', 'Hind Siliguri', cursive, sans-serif;
+        }
+
+        .official-marksheet-card .merit-table td {
+            border: 1px solid #000000;
+            padding: 6px;
+            color: #000000;
+            font-family: 'Alkatra', 'Hind Siliguri', cursive, sans-serif;
+            font-weight: 700;
+        }
+
+        .official-marksheet-card .summary-table {
+            float: right;
+            width: 180px;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+            margin-top: 0.2in;
+        }
+
+        .official-marksheet-card .summary-table td {
+            border: 1px solid #000000;
+            padding: 3px 6px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .footer-section {
+            clear: both;
+            padding-top: 35px;
+            width: 100%;
+            display: table;
+        }
+
+        .official-marksheet-card .signature-cell {
+            display: table-cell;
+            width: 50%;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .sig-left {
+            text-align: left;
+            vertical-align: bottom;
+        }
+
+        .official-marksheet-card .sig-right {
+            text-align: right;
+            vertical-align: bottom;
+        }
+
+        .official-marksheet-card .sig-line {
+            display: inline-block;
+            border-top: 1px dashed #000000;
+            width: 160px;
+            text-align: center;
+            padding-top: 4px;
+        }
+
+        .official-marksheet-card .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body * {
+                visibility: hidden;
+            }
+            .hero-slider-container, .nav-wrapper, .notice-bar, footer, .result-search-box, .section-title-wrapper, .official-marksheet-actions, .bg-grid-overlay, .blob {
+                display: none !important;
+            }
+            #result-sheet-container, #result-sheet-container * {
+                visibility: visible;
+            }
+            #result-sheet-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .official-marksheet-card {
+                border: 3px solid #000000 !important;
+                box-shadow: none !important;
+                padding: 15px 20px !important;
+                margin: 0 auto !important;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
     <!-- Background decorative grids and blobs -->
@@ -18,30 +333,30 @@
     <header class="hero-slider-container">
         <div class="school-logo-container">
             <svg viewBox="0 0 24 24">
-                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+                <path
+                    d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z" />
             </svg>
         </div>
-        <!-- Default Slide 1 -->
-        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
-        <!-- Default Slide 2 -->
-        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
-        <!-- Default Slide 3 -->
-        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
-
         <div class="hero-overlay"></div>
 
         <!-- Headline Overlay Content -->
         <div class="hero-content">
-            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
-            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+            <h1 class="hero-title" id="school-name">Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</h1>
+            <p class="hero-subtitle">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</p>
+            <p class="hero-gmail" id="school-gmail"></p>
+            <div class="hero-other" id="school-other"></div>
         </div>
 
         <!-- Slider Arrow Controls -->
         <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
         </button>
         <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
         </button>
 
         <!-- Slider Dots -->
@@ -55,8 +370,12 @@
     <!-- STICKY TOP MENU NAVBAR -->
     <div class="nav-wrapper" id="navbar-sticky">
         <div class="container navbar">
-            <a href="index.html" class="nav-brand">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <a href="index.html" class="nav-brand" title="হোম">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
                 <span>Smart Vidyapith</span>
             </a>
 
@@ -68,38 +387,72 @@
             </button>
 
             <ul class="nav-menu" id="nav-menu-list">
-                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item" data-tab="dashboard"><a href="index.html">Dashboard</a></li>
+                <li class="nav-item" data-tab="staff"><a href="staff.html">Staff Management</a></li>
                 <li class="nav-item dropdown" data-tab="student-portal">
-                    <a href="student-portal.html">Student Portal</a>
+                    <a href="student-portal.html?view=list">Student Portal</a>
                     <ul class="dropdown-menu">
                         <li><a href="student-portal.html?view=add">Add Student</a></li>
                         <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=online-admissions">Online Admissions (অনলাইন ভর্তি আবেদন)</a></li>
                         <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
                     </ul>
                 </li>
-                <li class="nav-item" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
-                <li class="nav-item" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
-                <li class="nav-item dropdown" data-tab="exam-portal">
-                    <a href="exam-portal.html">Exam Portal</a>
+                <li class="nav-item dropdown" data-tab="fees">
+                    <a href="fees">Fees & Payments</a>
                     <ul class="dropdown-menu">
-                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
-                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
-                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
-                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
-                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                        <li><a href="Money Collect.html">Money Collect</a></li>
                     </ul>
                 </li>
-                <li class="nav-item active" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
-                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
-                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
-                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
-                <li class="nav-item dropdown" data-tab="advance">
-                    <a href="advance.html">Advance</a>
+                <li class="nav-item dropdown" data-tab="seat-plan">
+                    <a href="seat-plan?view=exam-routine">Seat Plan</a>
                     <ul class="dropdown-menu">
-                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
-                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
-                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
-                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                        <li><a href="seat-plan?view=exam-routine">Exam Routine</a></li>
+                        <li><a href="seat-plan?view=building-mgmt">Building Management</a></li>
+                        <li><a href="seat-plan?view=seat-distribution">Seat Distribution</a></li>
+                        <li><a href="seat-plan?view=seating-details">Seating Details (সামারি ও আসন বিন্যাস)</a></li>
+                        <li><a href="seat-plan?view=room-topshet">Room Seat Topshet (কক্ষের আসন টপশীট)</a></li>
+
+                        <li><a href="seat-plan?view=student-attendance">Student Attendance Sheet (পরীক্ষার্থীদের হাজিরা শীট)</a></li>
+                        <li><a href="seat-plan?view=student-data-topsheet">Student Data Topsheet (শিক্ষার্থীর তথ্য টপশীট)</a></li>
+                        <li><a href="seat-plan?view=find-seat">Seat Plan Report</a></li>
+                        <li><a href="seat-plan?view=exam-document-report">Exam Document Report</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal?view=exam-entry">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal?view=exam-entry">Exam List</a></li>
+                        <li><a href="exam-portal?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown active" data-tab="result-portal">
+                    <a href="result-portal">Result Management</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="result-portal">Result Search</a></li>
+                        <li><a href="Tabulation Sheet.html">Tabulation Sheet</a></li>
+                        <li><a href="Marksheet.html?mode=all">Marksheet</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance">Advance</a>
+                                        <ul class="dropdown-menu">
+                        <li><a href="advance?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance?view=slider-management">Headline & Slider Management</a></li>
+                        <li><a href="advance?view=designation-structure">Staff Designation Structure</a></li>
+                        <li><a href="advance?view=speeches-management">সভাপতির বাণী ও প্রধান শিক্ষকের বাণী</a></li>
+                        <li><a href="advance?view=chat">💬 Active Users & Live Chat</a></li>
+                        <li><a href="advance?view=user-management">👥 শিক্ষক-স্টাফ ইউজার ও পাসওয়ার্ড</a></li>
+                        <li><a href="advance?view=sms-settings">📱 SMS Gateway & API Settings</a></li>
+                        <li><a href="advance?view=cms-portal">🌐 CMS Website & Data Import</a></li>
+                        <li><a href="advance?view=address-structure">📍 ভর্তি ফরমের ঠিকানা কনফিগারেশন</a></li>
                     </ul>
                 </li>
             </ul>
@@ -111,7 +464,8 @@
         <div class="notice-bar-container container">
             <span class="notice-label">নোটিশ / Notice:</span>
             <div class="notice-ticker">
-                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয়
+                    বন্ধ থাকিবে</span>
             </div>
         </div>
     </div>
@@ -119,81 +473,242 @@
     <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
     <main class="container">
 
-        <!-- 6. RESULT PORTAL SECTION -->
+        <!-- 6. RESULT MANAGEMENT SECTION -->
         <section id="result-portal" class="content-section active">
             <div class="section-title-wrapper">
-                <h2 class="section-title">Result Portal</h2>
-                <p class="section-subtitle">Enter your exam roll and registration number to view your marksheet and grades</p>
+                <h2 class="section-title">Result Management</h2>
+                <p class="section-subtitle">Enter your exam roll and registration number to view your marksheet and
+                    grades</p>
             </div>
 
             <!-- Search Form -->
-            <div class="glass-card result-search-box">
-                <h3 class="portal-form-title" style="text-align:center;">Result Search</h3>
-                <div class="form-group">
-                    <label for="result-exam">Select Exam:</label>
-                    <select id="result-exam" class="form-control">
-                        <option value="Annual Examination 2025">Annual Examination 2025</option>
-                        <option value="Half-Yearly Examination 2025">Half-Yearly Examination 2025</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="result-roll">Roll Number:</label>
-                    <input type="number" id="result-roll" class="form-control" placeholder="e.g. 5" required>
-                </div>
-                <div class="form-group">
-                    <label for="result-reg">Registration Number:</label>
-                    <input type="number" id="result-reg" class="form-control" placeholder="e.g. 9234" required>
-                </div>
-                <button class="btn-primary" style="width:100%;" onclick="searchResult()">View Result</button>
-                <p id="result-search-error" style="color:var(--neon-pink); text-align:center; font-size:0.9rem; margin-top:15px; display:none;"></p>
-            </div>
+            <div class="glass-card result-search-box" style="max-width: 650px;">
+                <h3 class="portal-form-title" style="text-align:center;">ফলাফল অনুসন্ধান / Result Search</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="result-exam">পরীক্ষা নির্বাচন করুন (Select Exam):</label>
+                        <select id="result-exam" class="form-control" onchange="onPortalExamChange()">
+                            <option value="অর্ধ-বার্ষিক পরীক্ষা ২০২৫">অর্ধ-বার্ষিক পরীক্ষা ২০২৫</option>
+                            <option value="বার্ষিক পরীক্ষা ২০২৫">বার্ষিক পরীক্ষা ২০২৫</option>
+                            <option value="প্রাক-নির্বাচনী পরীক্ষা ২০২৫">প্রাক-নির্বাচনী পরীক্ষা ২০২৫</option>
+                            <option value="নির্বাচনী পরীক্ষা ২০২৫">নির্বাচনী পরীক্ষা ২০২৫</option>
+                            <option value="১ম সাময়িক পরীক্ষা ২০২৫">১ম সাময়িক পরীক্ষা ২০২৫</option>
+                        </select>
+                    </div>
 
-            <!-- Marksheet display -->
-            <div class="glass-card marksheet-modal" id="result-sheet-container" style="display:none;">
-                <div class="marksheet-header">
-                    <h3 style="font-size:1.4rem; color:#fff;">Academic Transcript</h3>
-                    <p style="font-size:0.9rem; color:var(--neon-cyan);" id="sheet-exam-title">Annual Examination 2025</p>
-                    <p style="font-size:0.8rem; color:var(--muted-text); margin-top:5px;">CREATIVE MODEL SCHOOL</p>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="result-class">শ্রেণি (Class):</label>
+                        <select id="result-class" class="form-control" onchange="onPortalClassChange()">
+                            <option value="Play">Play</option>
+                            <option value="Nursery">Nursery</option>
+                            <option value="KG">KG</option>
+                            <option value="One">One</option>
+                            <option value="Two">Two</option>
+                            <option value="Three">Three</option>
+                            <option value="Four">Four</option>
+                            <option value="Five">Five</option>
+                            <option value="Six">Six</option>
+                            <option value="Seven">Seven</option>
+                            <option value="Eight">Eight</option>
+                            <option value="Nine">Nine</option>
+                            <option value="Ten" selected>Ten</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="result-section">শাখা / গ্রুপ (Section/Group):</label>
+                        <select id="result-section" class="form-control">
+                            <option value="বিজ্ঞান">বিজ্ঞান (Science)</option>
+                            <option value="মানবিক">মানবিক (Humanities)</option>
+                            <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                            <option value="ক">শাখা ক (Section A)</option>
+                            <option value="খ">শাখা খ (Section B)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="result-roll">রোল নম্বর (Roll Number):</label>
+                        <input type="number" id="result-roll" class="form-control" placeholder="যেমন: ১" value="১" required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="result-reg">রেজিস্ট্রেশন নং (ঐচ্ছিক):</label>
+                        <input type="text" id="result-reg" class="form-control" placeholder="যেমন: ৯২৩৪">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn-primary" style="flex: 1; min-width: 160px; font-weight: 700;" onclick="searchResult()">
+                        🔍 ফলাফল দেখুন (View Result)
+                    </button>
+                    <button type="button" class="btn-primary" style="font-weight: 700; padding: 10px 18px; border-radius: 8px; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); border: none; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="generateAllMarksheetsFromPortal()" title="নির্বাচিত পরীক্ষা, শ্রেণি ও শাখার সকল শিক্ষার্থীর মার্কশীট তৈরি করুন">
+                        📑 Marksheet (সকল শিক্ষার্থী)
+                    </button>
+                    <button type="button" class="btn-secondary" style="font-weight: 600; padding: 10px 18px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: #fff; cursor: pointer;" onclick="loadSampleMarksheet()">
+                        📄 নমুনা মার্কশীট
+                    </button>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:0.9rem; border-bottom:1px solid var(--glass-border); padding-bottom:10px;">
-                    <div>
-                        <p>Student Name: <strong style="color:#fff;" id="sheet-student-name">Sabbir Rahman</strong></p>
-                        <p>Class: <strong style="color:#fff;" id="sheet-student-class">Class 8</strong></p>
+                <p id="result-search-error"
+                    style="color:var(--neon-pink); text-align:center; font-size:0.9rem; margin-top:15px; display:none;">
+                </p>
+            </div>
+
+            <!-- Official Marksheet Display Section -->
+            <div class="official-marksheet-wrapper" id="result-sheet-container" style="display:none;">
+                <!-- Action Controls Bar -->
+                <div class="official-marksheet-actions">
+                    <div style="font-size: 0.95rem; color: var(--neon-cyan); font-weight: 600;">
+                        ✓ মার্কশীট প্রস্তুত (Official Marksheet Generated)
                     </div>
-                    <div style="text-align:right;">
-                        <p>Roll Number: <strong style="color:#fff;" id="sheet-student-roll">5</strong></p>
-                        <p>Registration: <strong style="color:#fff;" id="sheet-student-reg">9234</strong></p>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <!-- Template Filter Option -->
+                        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); padding: 4px 12px; border-radius: 8px;">
+                            <label for="portal-template-filter" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin: 0;">Filter:</label>
+                            <select id="portal-template-filter" style="background: var(--bg-dark); color: #fff; border: 1px solid var(--glass-border); border-radius: 6px; padding: 4px 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;" onchange="onPortalTemplateFilterChange(this.value)">
+                                <option value="Marksheet.html" selected>Temp-01</option>
+                                <option value="Marksheet1.html">Temp-02</option>
+                            </select>
+                        </div>
+                        <button onclick="window.print()" class="btn-primary" style="padding: 8px 18px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
+                            🖨️ প্রিন্ট করুন (Print)
+                        </button>
+                        <a id="btn-open-marksheet-file" href="Marksheet.html?mode=all" target="_blank" class="btn-primary" style="padding: 8px 18px; font-size: 0.9rem; background: linear-gradient(135deg, #10b981, #059669); border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            📄 Temp-01 ফাইলে খুলুন
+                        </a>
                     </div>
                 </div>
 
-                <table class="marksheet-table">
-                    <thead>
+                <!-- Exact Marksheet.html Printable Card -->
+                <div class="official-marksheet-card" id="marksheet-card-print">
+                    <!-- Top Header -->
+                    <table class="header-table">
                         <tr>
-                            <th>Subject Code</th>
-                            <th>Subject</th>
-                            <th>Marks Obtained</th>
-                            <th>Letter Grade</th>
-                            <th>Grade Point</th>
+                            <td style="width: 20%;"></td>
+                            <td style="width: 60%;" class="school-info">
+                                <div class="school-name" id="sheet-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</div>
+                                <div class="school-address" id="sheet-school-address">মাথাভাঙ্গা, জলঢাকা, নীলফামারী।</div>
+                                <div class="school-logo-container" id="sheet-school-logo">
+                                    <img id="sheet-logo-img" src="school_logo.svg" alt="School Logo" onerror="this.src='school_logo.svg'">
+                                </div>
+                            </td>
+                            <td style="width: 20%;">
+                                <table class="grading-table">
+                                    <tr>
+                                        <th>Range</th>
+                                        <th>Grade</th>
+                                        <th>GPA</th>
+                                    </tr>
+                                    <tr><td>80-100</td><td>A+</td><td>5.00</td></tr>
+                                    <tr><td>70-79</td><td>A</td><td>4.00</td></tr>
+                                    <tr><td>60-69</td><td>A-</td><td>3.50</td></tr>
+                                    <tr><td>50-59</td><td>B</td><td>3.00</td></tr>
+                                    <tr><td>40-49</td><td>C</td><td>2.00</td></tr>
+                                    <tr><td>33-39</td><td>D</td><td>1.00</td></tr>
+                                </table>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody id="marksheet-rows">
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
+                    </table>
 
-                <div class="marksheet-summary">
-                    <div class="marksheet-summary-item">
-                        <div class="summary-value" id="sheet-total-gpa">4.50</div>
-                        <div style="font-size:0.8rem; color:var(--muted-text);">GPA</div>
+                    <!-- Exam Title Box -->
+                    <div class="title-container">
+                        <div class="exam-title" id="sheet-exam-title">অর্ধ-বার্ষিক পরীক্ষা ২০২৫</div>
                     </div>
-                    <div class="marksheet-summary-item">
-                        <div class="summary-value" id="sheet-total-grade" style="color:var(--neon-green);">A+</div>
-                        <div style="font-size:0.8rem; color:var(--muted-text);">Highest Grade</div>
+
+                    <!-- Student Details -->
+                    <div class="student-info">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="width: 45%;">
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td class="info-label">শিক্ষার্থীর নাম</td>
+                                            <td class="info-colon">:</td>
+                                            <td id="sheet-student-name">মোঃ সাইদুর রহমান</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="info-label">রোল নং</td>
+                                            <td class="info-colon">:</td>
+                                            <td id="sheet-student-roll">১</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="info-label">শ্রেণি</td>
+                                            <td class="info-colon">:</td>
+                                            <td id="sheet-student-class">দশম</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="info-label">ধর্ম (Religion)</td>
+                                            <td class="info-colon">:</td>
+                                            <td id="sheet-student-religion">ইসলাম</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width: 55%; text-align: left; vertical-align: top; padding-bottom: 2px;">
+                                    <div style="margin-left: 40px; line-height: 1.8;">
+                                        <div>শাখা / গ্রুপ = &nbsp;&nbsp;&nbsp;&nbsp;<span id="sheet-student-section" style="font-weight: bold;">বিজ্ঞান</span></div>
+                                        <div id="sheet-optional-row" style="display: none;">ঐচ্ছিক বিষয় = &nbsp;&nbsp;&nbsp;&nbsp;<span id="sheet-student-optional" style="font-weight: bold;">উচ্চতর গণিত</span></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                    <div class="marksheet-summary-item">
-                        <div class="summary-value" id="sheet-status" style="color:var(--neon-cyan);">Passed</div>
-                        <div style="font-size:0.8rem; color:var(--muted-text);">Result</div>
+
+                    <!-- Main Marksheet Table -->
+                    <table class="marksheet-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">বিষয়</th>
+                                <th style="width: 11%;">বহুনির্বাচনি</th>
+                                <th style="width: 11%;">লিখিত</th>
+                                <th style="width: 11%;">ব্যবহারিক</th>
+                                <th style="width: 9%;">মোট</th>
+                                <th style="width: 11%;">সর্বমোট</th>
+                                <th style="width: 11%;">গ্রেড</th>
+                                <th style="width: 11%;">পয়েন্ট</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marksheet-rows-tbody">
+                            <!-- Filled dynamically by JavaScript -->
+                        </tbody>
+                    </table>
+
+                    <!-- Bottom Tables -->
+                    <div class="bottom-container clearfix">
+                        <div class="merit-box">
+                            <table class="merit-table">
+                                <tr>
+                                    <td style="width: 40%;">স্থান</td>
+                                    <td style="width: 60%;" id="sheet-merit-position">১</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <table class="summary-table">
+                            <tr>
+                                <td style="width: 50%;">সর্বমোট</td>
+                                <td style="width: 50%;" id="sheet-grand-total">৮২০</td>
+                            </tr>
+                            <tr>
+                                <td>পয়েন্ট</td>
+                                <td id="sheet-gpa">৫.০০</td>
+                            </tr>
+                            <tr>
+                                <td>গ্রেড</td>
+                                <td id="sheet-grade">A+</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Signatures -->
+                    <div class="footer-section">
+                        <div class="signature-cell sig-left">
+                            <div class="sig-line">Signature Guardian</div>
+                        </div>
+                        <div class="signature-cell sig-right">
+                            <div class="sig-line">Signature Head Master</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -204,70 +719,860 @@
     <!-- FOOTER -->
     <footer>
         <div class="container">
-            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
-            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <p>© 2026 Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School. All rights reserved.</p>
             <div class="footer-socials">
                 <a href="#" class="social-icon" aria-label="Facebook">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z" />
+                    </svg>
                 </a>
                 <a href="#" class="social-icon" aria-label="YouTube">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
                 </a>
                 <a href="#" class="social-icon" aria-label="Twitter">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z" />
+                    </svg>
                 </a>
             </div>
         </div>
     </footer>
 
     <!-- Shared & Page-specific JS -->
-    <script src="main.js"></script>
+    <script src="main.js?v=4.2"></script>
     <script>
-        // --- RESULT PORTAL SEARCH LOGIC ---
-        // Dummy marks database
-        const dummyResultDatabase = {
-            "5-9234": {
-                name: "Sabbir Rahman",
-                class: "Class 8",
-                subjects: [
-                    { code: "101", name: "Bangla", marks: 82, grade: "A+", gp: 5.0 },
-                    { code: "102", name: "English", marks: 74, grade: "A-", gp: 3.5 },
-                    { code: "107", name: "Mathematics", marks: 88, grade: "A+", gp: 5.0 },
-                    { code: "112", name: "Science", marks: 80, grade: "A+", gp: 5.0 },
-                    { code: "115", name: "History & Social Sciences", marks: 79, grade: "A", gp: 4.0 }
-                ],
-                gpa: "4.50",
-                maxGrade: "A+",
-                status: "Passed"
-            },
-            "1-8899": {
-                name: "Nusrat Jahan",
-                class: "Class 9",
-                subjects: [
-                    { code: "101", name: "Bangla", marks: 91, grade: "A+", gp: 5.0 },
-                    { code: "102", name: "English", marks: 85, grade: "A+", gp: 5.0 },
-                    { code: "107", name: "Mathematics", marks: 95, grade: "A+", gp: 5.0 },
-                    { code: "112", name: "Science", marks: 89, grade: "A+", gp: 5.0 },
-                    { code: "115", name: "History & Social Sciences", marks: 84, grade: "A+", gp: 5.0 }
-                ],
-                gpa: "5.00",
-                maxGrade: "A+",
-                status: "Passed (Golden GPA-5)"
-            }
-        };
+        // --- BENGALI NUMBER CONVERTER ---
+        function toBnDigits(num) {
+            if (num === null || num === undefined || num === '') return '';
+            const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return num.toString().replace(/\d/g, d => bnDigits[d]);
+        }
 
+        function toEnDigits(str) {
+            if (!str) return '';
+            const bnDigits = {'০':'0', '১':'1', '২':'2', '৩':'3', '৪':'4', '৫':'5', '৬':'6', '৭':'7', '৮':'8', '৯':'9'};
+            return str.toString().replace(/[০-৯]/g, d => bnDigits[d] || d);
+        }
+
+        // Calculate Grade and Point based on 100-mark scale
+        function getGradeAndGP(marks) {
+            const m = parseFloat(marks) || 0;
+            if (m >= 80) return { grade: 'A+', gp: 5.0 };
+            if (m >= 70) return { grade: 'A',  gp: 4.0 };
+            if (m >= 60) return { grade: 'A-', gp: 3.5 };
+            if (m >= 50) return { grade: 'B',  gp: 3.0 };
+            if (m >= 40) return { grade: 'C',  gp: 2.0 };
+            if (m >= 33) return { grade: 'D',  gp: 1.0 };
+            return { grade: 'F', gp: 0.0 };
+        }
+
+        // Dynamic School Identity Sync
+        function updateSchoolIdentity() {
+            try {
+                const customLogo = localStorage.getItem('school_logo');
+                let rawSettings = localStorage.getItem('school_settings');
+                let settings = null;
+                if (rawSettings) {
+                    try { settings = JSON.parse(rawSettings); } catch(e) {}
+                }
+
+                const logoImg = document.getElementById('sheet-logo-img');
+                if (logoImg) {
+                    const targetLogo = customLogo || (settings && settings.schoolLogo) || 'school_logo.svg';
+                    if (logoImg.getAttribute('src') !== targetLogo) {
+                        logoImg.src = targetLogo;
+                    }
+                }
+
+                if (settings) {
+                    if (settings.schoolName) {
+                        const nameEl = document.getElementById('sheet-school-name');
+                        if (nameEl) nameEl.textContent = settings.schoolName;
+                    }
+                    if (settings.schoolAddress || settings.schoolSubtitle) {
+                        const addrEl = document.getElementById('sheet-school-address');
+                        if (addrEl) addrEl.textContent = settings.schoolAddress || settings.schoolSubtitle;
+                    }
+                }
+            } catch (e) {
+                console.error("Error updating school identity:", e);
+            }
+        }
+
+        // Cascading helpers for portal
+        function normalizeClassString(str) {
+            if (!str) return '';
+            const s = String(str).toLowerCase().trim();
+            if (s.includes('দশম') || s.includes('ten') || s === '10' || s === '১০') return '10';
+            if (s.includes('নবম') || s.includes('nine') || s === '9' || s === '৯') return '9';
+            if (s.includes('অষ্টম') || s.includes('eight') || s === '8' || s === '৮') return '8';
+            if (s.includes('সপ্তম') || s.includes('seven') || s === '7' || s === '৭') return '7';
+            if (s.includes('ষষ্ঠ') || s.includes('six') || s === '6' || s === '৬') return '6';
+            if (s.includes('পঞ্চম') || s.includes('five') || s === '5' || s === '৫') return '5';
+            if (s.includes('চতুর্থ') || s.includes('four') || s === '4' || s === '৪') return '4';
+            if (s.includes('তৃতীয়') || s.includes('three') || s === '3' || s === '৩') return '3';
+            if (s.includes('দ্বিতীয়') || s.includes('two') || s === '2' || s === '২') return '2';
+            if (s.includes('প্রথম') || s.includes('one') || s === '1' || s === '১') return '1';
+            return s;
+        }
+
+        function onPortalExamChange() {
+            const examSelect = document.getElementById('result-exam');
+            const classSelect = document.getElementById('result-class');
+            if (!examSelect || !classSelect) return;
+
+            const examName = examSelect.value;
+            const classSet = new Set();
+
+            try {
+                const rawRoutines = localStorage.getItem('school_exam_routines');
+                if (rawRoutines) {
+                    const parsed = JSON.parse(rawRoutines);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(r => {
+                            if (r && (r.examName === examName || !examName) && (r.className || r.class)) {
+                                classSet.add(formatClassNameDisplay(r.className || r.class));
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const parsed = JSON.parse(rawSchedules);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && (s.term === examName || s.examName === examName || !examName) && (s.className || s.class)) {
+                                classSet.add(formatClassNameDisplay(s.className || s.class));
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            if (classSet.size === 0) {
+                try {
+                    const rawClasses = localStorage.getItem('school_classes');
+                    if (rawClasses) {
+                        const parsed = JSON.parse(rawClasses);
+                        if (Array.isArray(parsed)) {
+                            parsed.forEach(c => { if (typeof c === 'string' && c.trim()) classSet.add(formatClassNameDisplay(c)); });
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            const defaultClasses = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+            if (classSet.size === 0) defaultClasses.forEach(c => classSet.add(c));
+
+            const classList = sortClassesSequential(classSet);
+            const currentClass = classSelect.value;
+            classSelect.innerHTML = classList.map(c => `<option value="${c}">${c}</option>`).join('');
+            const matchedOpt = classList.find(c => normalizeClassString(c) === normalizeClassString(currentClass));
+            if (matchedOpt) {
+                classSelect.value = matchedOpt;
+            } else if (classList.length > 0) {
+                classSelect.selectedIndex = 0;
+            }
+
+            onPortalClassChange();
+        }
+
+        function onPortalClassChange() {
+            const classSelect = document.getElementById('result-class');
+            const sectionSelect = document.getElementById('result-section');
+            if (!classSelect || !sectionSelect) return;
+
+            const selectedClass = classSelect.value;
+            const normC = normalizeClassString(selectedClass);
+            const isSecondary = ['9', '10'].includes(normC);
+
+            const sectionSet = new Set();
+            try {
+                const rawStudents = localStorage.getItem('school_students');
+                if (rawStudents) {
+                    const parsed = JSON.parse(rawStudents);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && normalizeClassString(s.class || s.className) === normC) {
+                                if (isSecondary) {
+                                    if (s.group && s.group !== '(প্রযোজ্য না)') sectionSet.add(s.group.trim());
+                                    if (s.section && s.section !== '(প্রযোজ্য না)' && !['ক','খ','গ','A','B','C'].includes(s.section)) sectionSet.add(s.section.trim());
+                                } else {
+                                    if (s.section && s.section !== '(প্রযোজ্য না)') sectionSet.add(s.section.trim());
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            if (sectionSet.size === 0) {
+                if (isSecondary) {
+                    ["বিজ্ঞান", "মানবিক", "ব্যবসায় শিক্ষা"].forEach(s => sectionSet.add(s));
+                } else {
+                    ["ক", "খ", "গ"].forEach(s => sectionSet.add(s));
+                }
+            }
+
+            const currentSec = sectionSelect.value;
+            const secList = Array.from(sectionSet);
+            sectionSelect.innerHTML = secList.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (currentSec && secList.includes(currentSec)) {
+                sectionSelect.value = currentSec;
+            } else if (secList.length > 0) {
+                sectionSelect.selectedIndex = 0;
+            }
+        }
+
+        // Populate dropdown options from localStorage dynamically
+        function initSearchDropdowns() {
+            try {
+                // Populate Exam Types
+                const storedExams = localStorage.getItem('school_exam_types');
+                if (storedExams) {
+                    const parsedExams = JSON.parse(storedExams);
+                    if (Array.isArray(parsedExams) && parsedExams.length > 0) {
+                        const examSelect = document.getElementById('result-exam');
+                        const currentVal = examSelect.value;
+                        let opts = '';
+                        parsedExams.forEach(ex => {
+                            const name = ex.name || ex.title || ex;
+                            opts += `<option value="${name}">${name}</option>`;
+                        });
+                        examSelect.innerHTML = opts;
+                        if (currentVal) examSelect.value = currentVal;
+                    }
+                }
+
+                onPortalExamChange();
+            } catch (e) {
+                console.error("Error initializing dropdowns:", e);
+            }
+        }
+
+        function normalizeClassString(cls) {
+            if (!cls) return '10';
+            const c = cls.toString().toLowerCase().trim();
+            if (c.includes('দশম') || c.includes('ten') || /\b10\b/.test(c) || c === '10' || c === '10th' || c.includes('১০')) return '10';
+            if (c.includes('নবম') || c.includes('nine') || /\b9\b/.test(c) || c === '9' || c === '9th' || c.includes('৯')) return '9';
+            if (c.includes('অষ্টম') || c.includes('eight') || /\b8\b/.test(c) || c === '8' || c === '8th' || c.includes('৮')) return '8';
+            if (c.includes('সপ্তম') || c.includes('seven') || /\b7\b/.test(c) || c === '7' || c === '7th' || c.includes('৭')) return '7';
+            if (c.includes('ষষ্ঠ') || c.includes('six') || /\b6\b/.test(c) || c === '6' || c === '6th' || c.includes('৬')) return '6';
+            if (c.includes('পঞ্চম') || c.includes('five') || /\b5\b/.test(c) || c === '5' || c === '5th' || c.includes('৫')) return '5';
+            if (c.includes('চতুর্থ') || c.includes('four') || /\b4\b/.test(c) || c === '4' || c === '4th' || c.includes('৪')) return '4';
+            if (c.includes('তৃতীয়') || c.includes('তৃতীয়') || c.includes('three') || /\b3\b/.test(c) || c === '3' || c === '3rd' || c.includes('৩')) return '3';
+            if (c.includes('দ্বিতীয়') || c.includes('দ্বিতীয়') || c.includes('two') || /\b2\b/.test(c) || c === '2' || c === '2nd' || c.includes('২')) return '2';
+            if (c.includes('প্রথম') || c.includes('one') || /\b1\b/.test(c) || c === '1' || c === '1st' || c.includes('১')) return '1';
+            if (c.includes('কেজি') || c.includes('kg')) return 'kg';
+            if (c.includes('নার্সারি') || c.includes('nursery')) return 'nursery';
+            if (c.includes('প্লে') || c.includes('play')) return 'play';
+            return c;
+        }
+
+        function formatClassNameDisplay(c) {
+            if (!c) return '';
+            const norm = normalizeClassString(c);
+            const map = {
+                'play': 'Play',
+                'nursery': 'Nursery',
+                'kg': 'KG',
+                '1': 'One',
+                '2': 'Two',
+                '3': 'Three',
+                '4': 'Four',
+                '5': 'Five',
+                '6': 'Six',
+                '7': 'Seven',
+                '8': 'Eight',
+                '9': 'Nine',
+                '10': 'Ten'
+            };
+            if (map[norm]) return map[norm];
+            return c.replace(/^class\s*/i, '').replace(/শ্রেণি|শ্রেণী/g, '').trim() || c;
+        }
+
+        function sortClassesSequential(classes) {
+            const classOrderMap = {
+                'play': 1,
+                'nursery': 2,
+                'kg': 3,
+                '1': 4,
+                '2': 5,
+                '3': 6,
+                '4': 7,
+                '5': 8,
+                '6': 9,
+                '7': 10,
+                '8': 11,
+                '9': 12,
+                '10': 13
+            };
+            return Array.from(classes).sort((a, b) => {
+                const oa = classOrderMap[normalizeClassString(a)] || 99;
+                const ob = classOrderMap[normalizeClassString(b)] || 99;
+                return oa - ob;
+            });
+        }
+
+        function normalizeSectionString(sec) {
+            if (!sec) return '';
+            const s = sec.toString().toLowerCase().trim();
+            if (s.includes('science') || s.includes('বিজ্ঞান') || s.includes('sci')) return 'science';
+            if (s.includes('humanities') || s.includes('মানবিক') || s.includes('hum') || s.includes('arts')) return 'humanities';
+            if (s.includes('business') || s.includes('ব্যবসায়') || s.includes('বাণিজ্য') || s.includes('com') || s.includes('bus')) return 'business';
+            return s;
+        }
+
+        function getSubjectNameBangla(sub) {
+            if (!sub) return '';
+            if (typeof sub === 'string') sub = { name: sub };
+            if (sub.nameBn && sub.nameBn.trim()) {
+                const b = sub.nameBn.trim();
+                if (b === 'বাংলা ১ম পত্র' || b === 'বাংলা ১ম' || b.includes('বাংলা সাহিত্য')) return 'বাংলা সাহিত্য';
+                if (b === 'বাংলা ২য় পত্র' || b === 'বাংলা ২য়' || b.includes('ব্যাকরণ')) return 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি';
+                if (b === 'ইংরেজি ১ম পত্র' || b === 'ইংরেজি ১ম') return 'ইংরেজি ১ম পত্র';
+                if (b === 'ইংরেজি ২য় পত্র' || b === 'ইংরেজি ২য়') return 'ইংরেজি ২য় পত্র';
+                return b;
+            }
+
+            const raw = (sub.name || sub.subject || '').trim();
+            const short = (sub.shortName || '').trim().toLowerCase();
+            const cleanLower = raw.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+
+            const dictionary = {
+                'bangla sahitya': 'বাংলা সাহিত্য',
+                'bangla 1st': 'বাংলা সাহিত্য',
+                'bangla 1st paper': 'বাংলা সাহিত্য',
+                'bangla first paper': 'বাংলা সাহিত্য',
+                'bangla bhashar byakaran and nirmiti': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla bhashar byakaran o nirmiti': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla 2nd': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla 2nd paper': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla second paper': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla grammar': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'english for today': 'ইংরেজি ১ম পত্র',
+                'english 1st': 'ইংরেজি ১ম পত্র',
+                'english 1st paper': 'ইংরেজি ১ম পত্র',
+                'english first paper': 'ইংরেজি ১ম পত্র',
+                'english grammar and composition': 'ইংরেজি ২য় পত্র',
+                'english 2nd': 'ইংরেজি ২য় পত্র',
+                'english 2nd paper': 'ইংরেজি ২য় পত্র',
+                'english second paper': 'ইংরেজি ২য় পত্র',
+                'english grammar': 'ইংরেজি ২য় পত্র',
+                'mathematics': 'গণিত',
+                'math': 'গণিত',
+                'general mathematics': 'সাধারণ গণিত',
+                'higher mathematics': 'উচ্চতর গণিত',
+                'higher math': 'উচ্চতর গণিত',
+                'general science': 'সাধারণ বিজ্ঞান',
+                'science': 'বিজ্ঞান',
+                'physics': 'পদার্থবিজ্ঞান',
+                'chemistry': 'রসায়ন',
+                'biology': 'জীববিজ্ঞান',
+                'bangladesh and global studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'bangladesh & global studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'bgs': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'information and communication technology': 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+                'information & communication technology': 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+                'ict': 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+                'agriculture studies': 'কৃষি শিক্ষা',
+                'agricultural studies': 'কৃষি শিক্ষা',
+                'agriculture': 'কৃষি শিক্ষা',
+                'islamic studies': 'ইসলাম ও নৈতিক শিক্ষা',
+                'islam and moral education': 'ইসলাম ও নৈতিক শিক্ষা',
+                'islam & moral education': 'ইসলাম ও নৈতিক শিক্ষা',
+                'islam': 'ইসলাম ও নৈতিক শিক্ষা',
+                'hindu religion studies': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion and moral education': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion & moral education': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'christian religion and moral education': 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা',
+                'buddhist religion and moral education': 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা',
+                'home science': 'গার্হস্থ্য বিজ্ঞান',
+                'physical education and health': 'শারীরিক শিক্ষা ও স্বাস্থ্য',
+                'physical education': 'শারীরিক শিক্ষা ও স্বাস্থ্য',
+                'arts and crafts': 'চারু ও কারুকলা',
+                'fine arts': 'চারু ও কারুকলা',
+                'accounting': 'হিসাববিজ্ঞান',
+                'finance and banking': 'ফিন্যান্স ও ব্যাংকিং',
+                'finance & banking': 'ফিন্যান্স ও ব্যাংকিং',
+                'finance': 'ফিন্যান্স ও ব্যাংকিং',
+                'business entrepreneurship': 'ব্যবসায় উদ্যোগ',
+                'business studies': 'ব্যবসায় উদ্যোগ',
+                'geography and environment': 'ভূগোল ও পরিবেশ',
+                'geography & environment': 'ভূগোল ও পরিবেশ',
+                'geography': 'ভূগোল ও পরিবেশ',
+                'history of bangladesh and world civilization': 'ইতিহাস ও সামাজিক বিজ্ঞান',
+                'history': 'ইতিহাস ও সামাজিক বিজ্ঞান',
+                'civics and citizenship': 'পৌরনীতি ও নাগরিকতা',
+                'civics': 'পৌরনীতি ও নাগরিকতা',
+                'economics': 'অর্থনীতি'
+            };
+
+            if (short && dictionary[short]) return dictionary[short];
+            if (dictionary[cleanLower]) return dictionary[cleanLower];
+
+            for (let key in dictionary) {
+                if (cleanLower.includes(key)) {
+                    return dictionary[key];
+                }
+            }
+
+            return raw || 'বিষয়';
+        }
+
+        function getSubjectSortRank(sub) {
+            const raw = (typeof sub === 'string' ? sub : (sub.nameBn || sub.name || '')).trim();
+            const isOpt = typeof sub === 'object' && (sub.isOptional || sub.group === 'optional');
+            if (isOpt) return 999; // Optional Subject always at the very bottom row!
+
+            if (raw.includes('বাংলা সাহিত্য') || raw.includes('বাংলা ১ম') || raw.toLowerCase().includes('bangla 1st')) return 1;
+            if (raw.includes('বাংলা ভাষার ব্যাকরণ') || raw.includes('বাংলা ২য়') || raw.toLowerCase().includes('bangla 2nd') || raw.includes('ব্যাকরণ')) return 2;
+            if (raw.includes('ইংরেজি ১ম') || raw.toLowerCase().includes('english 1st') || raw.toLowerCase().includes('english for today')) return 3;
+            if (raw.includes('ইংরেজি ২য়') || raw.toLowerCase().includes('english 2nd') || raw.toLowerCase().includes('grammar and composition')) return 4;
+            if (raw === 'গণিত' || raw === 'সাধারণ গণিত' || raw.toLowerCase() === 'mathematics' || raw.toLowerCase() === 'math') return 5;
+            if (raw.includes('তথ্য ও যোগাযোগ') || raw.includes('ICT') || raw.includes('আইসিটি')) return 6;
+            if (raw.includes('ইসলাম') || raw.includes('হিন্দু') || raw.includes('বৌদ্ধ') || raw.includes('খ্রিস্ট') || raw.includes('ধর্ম')) return 7;
+            if (raw.includes('বাংলাদেশ ও বিশ্বপরিচয়') || raw === 'বিজ্ঞান' || raw === 'সাধারণ বিজ্ঞান') return 8;
+            if (raw.includes('পদার্থবিজ্ঞান') || raw.includes('পৌরনীতি') || raw.includes('হিসাববিজ্ঞান')) return 9;
+            if (raw.includes('রসায়ন') || raw.includes('রসায়ন') || raw.includes('ইতিহাস') || raw.includes('ব্যবসায় উদ্যোগ') || raw.includes('ব্যবসায় উদ্যোগ')) return 10;
+            if (raw.includes('জীববিজ্ঞান') || raw.includes('ভূগোল') || raw.includes('ফিন্যান্স')) return 11;
+            if (raw.includes('অর্থনীতি') || raw.includes('চারু')) return 12;
+            if (raw.includes('শারীরিক')) return 13;
+            return 50;
+        }
+
+        function getStudentReligionInfo(student) {
+            const r = String(student?.religion || student?.religionBn || 'Islam').toLowerCase();
+            if (r.includes('hindu') || r.includes('হিন্দু') || r.includes('সনাতন')) {
+                return {
+                    name: 'Hindu Religion Studies',
+                    nameBn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                    display: 'হিন্দু (সনাতন)'
+                };
+            } else if (r.includes('buddh') || r.includes('বৌদ্ধ')) {
+                return {
+                    name: 'Buddhist Religion Studies',
+                    nameBn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা',
+                    display: 'বৌদ্ধ'
+                };
+            } else if (r.includes('christ') || r.includes('খ্রিস্ট') || r.includes('ঈসায়ী')) {
+                return {
+                    name: 'Christian Religion Studies',
+                    nameBn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা',
+                    display: 'খ্রিস্টান'
+                };
+            }
+            return {
+                name: 'Islamic Studies',
+                nameBn: 'ইসলাম ও নৈতিক শিক্ষা',
+                display: 'ইসলাম'
+            };
+        }
+
+        function getStudentOptionalSubjectInfo(student, normS) {
+            let raw = student ? (student.optionalSubject || student.optional_subject || student.fourthSubject || student.optional || '') : '';
+            let optBn = '';
+            if (raw) {
+                optBn = getSubjectNameBangla(raw);
+            }
+            if (!optBn || optBn === 'বিষয়') {
+                if (normS === 'science') {
+                    optBn = 'উচ্চতর গণিত';
+                    raw = 'Higher Mathematics';
+                } else if (normS === 'humanities') {
+                    optBn = 'কৃষি শিক্ষা';
+                    raw = 'Agriculture Studies';
+                } else if (normS === 'business') {
+                    optBn = 'কৃষি শিক্ষা';
+                    raw = 'Agriculture Studies';
+                } else {
+                    optBn = 'কৃষি শিক্ষা';
+                    raw = 'Agriculture Studies';
+                }
+            }
+            return {
+                name: raw || optBn,
+                nameBn: optBn
+            };
+        }
+
+        // Dynamic Subjects generator based on Exam Portal (school_subjects, school_exam_schedules)
+        function getDefaultSubjectRows(className = 'দশম', group = 'বিজ্ঞান', exam = '', student = null) {
+            const normC = normalizeClassString(className);
+            const normS = normalizeSectionString(group);
+            const isSci = normS === 'science' || group.includes('বিজ্ঞান') || group.toLowerCase().includes('science');
+            const isHum = normS === 'humanities' || group.includes('মানবিক') || group.toLowerCase().includes('humanities');
+            const isBus = normS === 'business' || group.includes('ব্যবসায়') || group.toLowerCase().includes('business');
+            const isSecondary = ['9', '10'].includes(normC);
+            const isJunior = ['6', '7', '8'].includes(normC);
+            const isPrimary = ['play', 'nursery', 'kg', '1', '2', '3', '4', '5'].includes(normC);
+
+            const relInfo = getStudentReligionInfo(student);
+            const optInfo = getStudentOptionalSubjectInfo(student, normS);
+
+            let rawList = [];
+
+            try {
+                const rawSubjectsMap = localStorage.getItem('school_subjects');
+                if (rawSubjectsMap) {
+                    const subMap = JSON.parse(rawSubjectsMap);
+                    if (typeof subMap === 'object' && subMap !== null) {
+                        const classKeys = Object.keys(subMap);
+                        const matchedKey = classKeys.find(k => normalizeClassString(k) === normC || k.toLowerCase().trim() === (className || '').toLowerCase().trim());
+                        if (matchedKey && Array.isArray(subMap[matchedKey]) && subMap[matchedKey].length > 0) {
+                            const candidateSubs = subMap[matchedKey];
+                            candidateSubs.forEach(s => {
+                                if (!s) return;
+                                const sec = (s.section || 'All').toString().trim().toLowerCase();
+                                const sBnName = getSubjectNameBangla(s);
+                                const isOpt = !!s.isOptional;
+
+                                // Filter out non-matching religions
+                                const isRelSub = sBnName.includes('ইসলাম') || sBnName.includes('হিন্দু') || sBnName.includes('বৌদ্ধ') || sBnName.includes('খ্রিস্ট') || sBnName.includes('ধর্ম');
+                                if (isRelSub && !sBnName.includes(relInfo.display) && !sBnName.includes('ধর্ম ও নৈতিক')) {
+                                    return;
+                                }
+
+                                if (sec === 'all' || sec === '') {
+                                    if (isSecondary) {
+                                        const isGeneralSci = sBnName === 'বিজ্ঞান' || sBnName === 'সাধারণ বিজ্ঞান';
+                                        const isBGS = sBnName.includes('বাংলাদেশ ও বিশ্বপরিচয়');
+                                        if (isSci && isGeneralSci && !isBGS) return;
+                                        if (!isSci && isBGS && !isGeneralSci) return;
+                                    }
+                                    rawList.push({
+                                        name: s.name || sBnName,
+                                        nameBn: isRelSub ? relInfo.nameBn : sBnName,
+                                        code: s.code || '',
+                                        isOptional: isOpt
+                                    });
+                                } else if (isSecondary) {
+                                    let matchesGroup = false;
+                                    if (isSci && (sec.includes('বিজ্ঞান') || sec.includes('sci') || sec.includes('a'))) matchesGroup = true;
+                                    else if (isHum && (sec.includes('মানবিক') || sec.includes('hum') || sec.includes('b'))) matchesGroup = true;
+                                    else if (isBus && (sec.includes('ব্যবসায়') || sec.includes('bus') || sec.includes('c'))) matchesGroup = true;
+                                    if (matchesGroup) {
+                                        rawList.push({
+                                            name: s.name || sBnName,
+                                            nameBn: isRelSub ? relInfo.nameBn : sBnName,
+                                            code: s.code || '',
+                                            isOptional: isOpt
+                                        });
+                                    }
+                                } else {
+                                    rawList.push({
+                                        name: s.name || sBnName,
+                                        nameBn: isRelSub ? relInfo.nameBn : sBnName,
+                                        code: s.code || '',
+                                        isOptional: isOpt
+                                    });
+                                }
+                            });
+
+                            if (isSecondary) {
+                                const hasPhysics = rawList.some(r => r.nameBn.includes('পদার্থ') || (r.name || '').toLowerCase().includes('phys'));
+                                const hasAcc = rawList.some(r => r.nameBn.includes('হিসাব') || (r.name || '').toLowerCase().includes('acc'));
+                                const hasCivics = rawList.some(r => r.nameBn.includes('পৌরনীতি') || (r.name || '').toLowerCase().includes('civic'));
+
+                                if (isSci && !hasPhysics) {
+                                    rawList.push({ name: 'Physics', nameBn: 'পদার্থবিজ্ঞান', group: 'elective' });
+                                    rawList.push({ name: 'Chemistry', nameBn: 'রসায়ন', group: 'elective' });
+                                    rawList.push({ name: 'Biology', nameBn: 'জীববিজ্ঞান', group: 'elective' });
+                                    rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                                } else if (isHum && !hasCivics) {
+                                    rawList.push({ name: 'Civics', nameBn: 'পৌরনীতি ও নাগরিকতা', group: 'elective' });
+                                    rawList.push({ name: 'History', nameBn: 'ইতিহাস ও সামাজিক বিজ্ঞান', group: 'elective' });
+                                    rawList.push({ name: 'Geography', nameBn: 'ভূগোল ও পরিবেশ', group: 'elective' });
+                                    rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                                } else if (isBus && !hasAcc) {
+                                    rawList.push({ name: 'Accounting', nameBn: 'হিসাববিজ্ঞান', group: 'elective' });
+                                    rawList.push({ name: 'Business Ent', nameBn: 'ব্যবসায় উদ্যোগ', group: 'elective' });
+                                    rawList.push({ name: 'Finance', nameBn: 'ফিন্যান্স ও ব্যাংকিং', group: 'elective' });
+                                    rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(e) {}
+
+            if (rawList.length === 0) {
+                if (isPrimary) {
+                    rawList = [
+                        { name: 'বাংলা', nameBn: 'বাংলা' },
+                        { name: 'ইংরেজি', nameBn: 'ইংরেজি' },
+                        { name: 'গণিত', nameBn: 'গণিত' },
+                        { name: 'পরিবেশ পরিচিতি / সাধারণ বিজ্ঞান', nameBn: 'পরিবেশ পরিচিতি / সাধারণ বিজ্ঞান' },
+                        { name: relInfo.name, nameBn: relInfo.nameBn }
+                    ];
+                } else if (isJunior) {
+                    rawList = [
+                        { name: 'বাংলা সাহিত্য', nameBn: 'বাংলা সাহিত্য' },
+                        { name: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', nameBn: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি' },
+                        { name: 'ইংরেজি ১ম পত্র', nameBn: 'ইংরেজি ১ম পত্র' },
+                        { name: 'ইংরেজি ২য় পত্র', nameBn: 'ইংরেজি ২য় পত্র' },
+                        { name: 'গণিত', nameBn: 'গণিত' },
+                        { name: 'বিজ্ঞান', nameBn: 'বিজ্ঞান' },
+                        { name: 'বাংলাদেশ ও বিশ্বপরিচয়', nameBn: 'বাংলাদেশ ও বিশ্বপরিচয়' },
+                        { name: relInfo.name, nameBn: relInfo.nameBn },
+                        { name: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', nameBn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)' },
+                        { name: 'কৃষি শিক্ষা / গার্হস্থ্য বিজ্ঞান', nameBn: 'কৃষি শিক্ষা / গার্হস্থ্য বিজ্ঞান' }
+                    ];
+                } else {
+                    rawList = [
+                        { name: 'বাংলা সাহিত্য', nameBn: 'বাংলা সাহিত্য', group: 'compulsory' },
+                        { name: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', nameBn: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', group: 'compulsory' },
+                        { name: 'ইংরেজি ১ম পত্র', nameBn: 'ইংরেজি ১ম পত্র', group: 'compulsory' },
+                        { name: 'ইংরেজি ২য় পত্র', nameBn: 'ইংরেজি ২য় পত্র', group: 'compulsory' },
+                        { name: 'গণিত', nameBn: 'গণিত', group: 'compulsory' },
+                        { name: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', nameBn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', group: 'compulsory' },
+                        { name: relInfo.name, nameBn: relInfo.nameBn, group: 'compulsory' },
+                        { name: isSci ? 'বাংলাদেশ ও বিশ্বপরিচয়' : 'সাধারণ বিজ্ঞান', nameBn: isSci ? 'বাংলাদেশ ও বিশ্বপরিচয়' : 'সাধারণ বিজ্ঞান', group: 'compulsory' }
+                    ];
+
+                    if (isSci) {
+                        rawList.push({ name: 'পদার্থবিজ্ঞান', nameBn: 'পদার্থবিজ্ঞান', group: 'elective' });
+                        rawList.push({ name: 'রসায়ন', nameBn: 'রসায়ন', group: 'elective' });
+                        rawList.push({ name: 'জীববিজ্ঞান', nameBn: 'জীববিজ্ঞান', group: 'elective' });
+                        rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                    } else if (isHum) {
+                        rawList.push({ name: 'পৌরনীতি ও নাগরিকতা', nameBn: 'পৌরনীতি ও নাগরিকতা', group: 'elective' });
+                        rawList.push({ name: 'ইতিহাস ও সামাজিক বিজ্ঞান', nameBn: 'ইতিহাস ও সামাজিক বিজ্ঞান', group: 'elective' });
+                        rawList.push({ name: 'ভূগোল ও পরিবেশ', nameBn: 'ভূগোল ও পরিবেশ', group: 'elective' });
+                        rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                    } else {
+                        rawList.push({ name: 'হিসাববিজ্ঞান', nameBn: 'হিসাববিজ্ঞান', group: 'elective' });
+                        rawList.push({ name: 'ব্যবসায় উদ্যোগ', nameBn: 'ব্যবসায় উদ্যোগ', group: 'elective' });
+                        rawList.push({ name: 'ফিন্যান্স ও ব্যাংকিং', nameBn: 'ফিন্যান্স ও ব্যাংকিং', group: 'elective' });
+                        rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                    }
+                }
+            }
+
+            // Ensure religion subject is strictly present and matches student
+            const hasReligionInRaw = rawList.some(r => {
+                const b = (r.nameBn || '').trim();
+                return b.includes('ইসলাম') || b.includes('হিন্দু') || b.includes('বৌদ্ধ') || b.includes('খ্রিস্ট') || b.includes('ধর্ম');
+            });
+            if (!hasReligionInRaw) {
+                rawList.push({ name: relInfo.name, nameBn: relInfo.nameBn, group: 'compulsory' });
+            }
+
+            // If Class 9/10, ensure the optional subject is present and named correctly
+            if (isSecondary) {
+                let optItem = rawList.find(r => r.group === 'optional' || r.isOptional || (r.nameBn && (r.nameBn.includes('উচ্চতর') || r.nameBn.includes('কৃষি') || r.nameBn.includes('গার্হস্থ্য'))));
+                if (optItem) {
+                    optItem.name = optInfo.name;
+                    optItem.nameBn = optInfo.nameBn;
+                    optItem.group = 'optional';
+                    optItem.isOptional = true;
+                } else {
+                    rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, group: 'optional', isOptional: true });
+                }
+            }
+
+            // Sort rawList strictly by curriculum hierarchy rank (Optional subject always last)
+            rawList.sort((a, b) => getSubjectSortRank(a) - getSubjectSortRank(b));
+
+            if (rawList.length > 0) {
+                const rows = [];
+                const pairedIndices = new Set();
+
+                for (let i = 0; i < rawList.length; i++) {
+                    if (pairedIndices.has(i)) continue;
+                    const cur = rawList[i];
+                    let curName = (cur.nameBn || getSubjectNameBangla(cur) || cur.name || '').trim();
+
+                    let isFirst = false;
+                    let pIdx = -1;
+                    if (curName.includes('বাংলা সাহিত্য') || curName.includes('বাংলা ১ম') || curName.toLowerCase().includes('bangla 1st')) {
+                        curName = 'বাংলা সাহিত্য';
+                        pIdx = rawList.findIndex((item, idx) => {
+                            if (idx === i || pairedIndices.has(idx)) return false;
+                            const iName = (item.nameBn || getSubjectNameBangla(item) || item.name || '').trim();
+                            return iName.includes('বাংলা ভাষার ব্যাকরণ') || iName.includes('বাংলা ২য়') || iName.includes('ব্যাকরণ') || iName.toLowerCase().includes('bangla 2nd');
+                        });
+                        if (pIdx !== -1) isFirst = true;
+                    } else if (curName.includes('ইংরেজি ১ম') || curName.toLowerCase().includes('english 1st') || curName.toLowerCase().includes('english for today')) {
+                        curName = 'ইংরেজি ১ম পত্র';
+                        pIdx = rawList.findIndex((item, idx) => {
+                            if (idx === i || pairedIndices.has(idx)) return false;
+                            const iName = (item.nameBn || getSubjectNameBangla(item) || item.name || '').trim();
+                            return iName.includes('ইংরেজি ২য়') || iName.toLowerCase().includes('english 2nd') || iName.toLowerCase().includes('grammar');
+                        });
+                        if (pIdx !== -1) isFirst = true;
+                    }
+
+                    let rollSeed = 1;
+                    if (student && student.roll) {
+                        const parsedRoll = parseInt(toEnDigits(student.roll), 10);
+                        if (!isNaN(parsedRoll) && parsedRoll > 0) rollSeed = parsedRoll;
+                    }
+                    const rankDecr = Math.min(22, (rollSeed - 1) * 2.2);
+
+                    const isICT = curName.includes('আইসিটি') || curName.includes('ICT') || curName.includes('তথ্য ও যোগাযোগ');
+                    const hasPr = isICT || curName.includes('বিজ্ঞান') || curName.includes('রসায়ন') || curName.includes('রসায়ন') || curName.includes('পদার্থ') || curName.includes('জীব') || curName.includes('কৃষি') || curName.includes('Physics') || curName.includes('Chemistry') || curName.includes('Biology');
+
+                    const mcq = isICT ? 24 : (hasPr ? 22 : (curName.includes('ইংরেজি') ? '' : 28));
+                    const cq = isICT ? '' : (hasPr ? 43 : (curName.includes('ইংরেজি') ? 82 : 58));
+                    const pr = hasPr ? 24 : '';
+
+                    let groupType = cur.group || (cur.isOptional ? 'optional' : 'compulsory');
+
+                    if (isFirst && pIdx !== -1) {
+                        pairedIndices.add(i);
+                        pairedIndices.add(pIdx);
+                        const pItem = rawList[pIdx];
+                        let pName = (pItem.nameBn || getSubjectNameBangla(pItem) || pItem.name || '').trim();
+                        if (curName === 'বাংলা সাহিত্য') pName = 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি';
+                        if (curName === 'ইংরেজি ১ম পত্র') pName = 'ইংরেজি ২য় পত্র';
+
+                        rows.push({
+                            name: curName,
+                            mcq: mcq,
+                            cq: cq,
+                            practical: pr,
+                            isCombined: true,
+                            pairWith: pName,
+                            pairMcq: pName.includes('ইংরেজি') ? '' : 26,
+                            pairCq: pName.includes('ইংরেজি') ? 78 : 60,
+                            pairPractical: '',
+                            group: groupType,
+                            isOptional: false
+                        });
+                    } else {
+                        pairedIndices.add(i);
+                        rows.push({
+                            name: curName,
+                            mcq: mcq,
+                            cq: cq,
+                            practical: pr,
+                            isCombined: false,
+                            group: groupType,
+                            isOptional: cur.isOptional || groupType === 'optional'
+                        });
+                    }
+                }
+
+                // For Class 9 and 10, explicitly ensure that Optional Subject is strictly in the bottom (last) row
+                if (isSecondary) {
+                    const optIdx = rows.findIndex(r => r.group === 'optional' || r.isOptional);
+                    if (optIdx !== -1 && optIdx !== rows.length - 1) {
+                        const optRow = rows.splice(optIdx, 1)[0];
+                        rows.push(optRow);
+                    }
+                }
+
+                return rows;
+            }
+
+            return [];
+        }
+
+        // Render standard Marksheet.html rows
+        function renderMarksheetRows(subjectList) {
+            const tbody = document.getElementById('marksheet-rows-tbody');
+            if (!tbody) return { grandTotal: 0, gpa: '0.00', grade: 'F' };
+
+            let html = '';
+            let grandTotal = 0;
+            let totalGps = 0;
+            let subjectCount = 0;
+            let hasFailed = false;
+
+            subjectList.forEach(sub => {
+                if (sub.isCombined) {
+                    // Combined Subject (e.g. Bangla 1st & 2nd, English 1st & 2nd)
+                    const m1 = (sub.mcq || 0) + (sub.cq || 0) + (sub.practical || 0);
+                    const m2 = (sub.pairMcq || 0) + (sub.pairCq || 0) + (sub.pairPractical || 0);
+                    const combTotal = m1 + m2;
+                    const avg100 = combTotal / 2;
+                    const res = getGradeAndGP(avg100);
+
+                    grandTotal += combTotal;
+                    totalGps += res.gp;
+                    subjectCount++;
+                    if (res.gp === 0) hasFailed = true;
+
+                    html += `
+                        <tr>
+                            <td class="subject-col">${sub.name}</td>
+                            ${sub.isEng ? `<td colspan="2">${sub.cq !== '' ? toBnDigits(sub.cq) : '-'}</td>` : `<td>${sub.mcq !== '' ? toBnDigits(sub.mcq) : ''}</td><td>${sub.cq !== '' ? toBnDigits(sub.cq) : ''}</td>`}
+                            <td>${sub.practical !== '' ? toBnDigits(sub.practical) : ''}</td>
+                            <td>${m1 > 0 ? toBnDigits(m1) : ''}</td>
+                            <td rowspan="2" style="font-weight:bold; font-size:14px; vertical-align:middle;">${toBnDigits(combTotal)}</td>
+                            <td rowspan="2" style="font-weight:bold; font-size:15px; vertical-align:middle;">${res.grade}</td>
+                            <td rowspan="2" style="font-weight:bold; vertical-align:middle;">${toBnDigits(res.gp.toFixed(2))}</td>
+                        </tr>
+                        <tr>
+                            <td class="subject-col">${sub.pairWith}</td>
+                            ${sub.isEng ? `<td colspan="2">${sub.pairCq !== '' ? toBnDigits(sub.pairCq) : '-'}</td>` : `<td>${sub.pairMcq !== '' ? toBnDigits(sub.pairMcq) : ''}</td><td>${sub.pairCq !== '' ? toBnDigits(sub.pairCq) : ''}</td>`}
+                            <td>${sub.pairPractical !== '' ? toBnDigits(sub.pairPractical) : ''}</td>
+                            <td>${m2 > 0 ? toBnDigits(m2) : ''}</td>
+                        </tr>
+                    `;
+                } else {
+                    // Single Subject
+                    const mcqVal = (sub.mcq !== undefined && sub.mcq !== '') ? parseInt(sub.mcq) || 0 : 0;
+                    const cqVal = (sub.cq !== undefined && sub.cq !== '') ? parseInt(sub.cq) || 0 : 0;
+                    const pracVal = (sub.practical !== undefined && sub.practical !== '') ? parseInt(sub.practical) || 0 : 0;
+                    const subTotal = mcqVal + cqVal + pracVal;
+                    const res = getGradeAndGP(subTotal);
+
+                    grandTotal += subTotal;
+                    totalGps += res.gp;
+                    subjectCount++;
+                    if (res.gp === 0) hasFailed = true;
+
+                    const pracClass = (sub.practical !== '' && sub.practical !== undefined) ? 'practical-shaded' : '';
+
+                    html += `
+                        <tr>
+                            <td class="subject-col">${sub.name}</td>
+                            <td>${sub.mcq !== '' && sub.mcq !== undefined ? toBnDigits(sub.mcq) : ''}</td>
+                            <td>${sub.cq !== '' && sub.cq !== undefined ? toBnDigits(sub.cq) : ''}</td>
+                            <td class="${pracClass}">${sub.practical !== '' && sub.practical !== undefined ? toBnDigits(sub.practical) : ''}</td>
+                            <td>${subTotal > 0 ? toBnDigits(subTotal) : '০'}</td>
+                            <td></td>
+                            <td style="font-weight: bold; font-size: 15px;">${res.grade}</td>
+                            <td>${toBnDigits(res.gp.toFixed(2))}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tbody.innerHTML = html;
+
+            const finalGpa = hasFailed || subjectCount === 0 ? 0.0 : Math.min(5.0, (totalGps / subjectCount));
+            const overallGrade = hasFailed ? 'F' : (finalGpa >= 5.0 ? 'A+' : (finalGpa >= 4.0 ? 'A' : (finalGpa >= 3.5 ? 'A-' : (finalGpa >= 3.0 ? 'B' : (finalGpa >= 2.0 ? 'C' : (finalGpa >= 1.0 ? 'D' : 'F'))))));
+
+            return {
+                grandTotal: grandTotal,
+                gpa: finalGpa.toFixed(2),
+                grade: overallGrade
+            };
+        }
+
+        // Main Result Search Function
         function searchResult() {
-            const roll = document.getElementById('result-roll').value;
-            const reg = document.getElementById('result-reg').value;
-            const exam = document.getElementById('result-exam').value;
+            const exam = document.getElementById('result-exam').value || 'অর্ধ-বার্ষিক পরীক্ষা ২০২৫';
+            const className = document.getElementById('result-class').value || 'দশম';
+            const section = document.getElementById('result-section').value || 'বিজ্ঞান';
+            const rollInput = document.getElementById('result-roll').value.trim();
+            const regInput = document.getElementById('result-reg').value.trim();
             const errorElement = document.getElementById('result-search-error');
             const sheetContainer = document.getElementById('result-sheet-container');
 
-            const key = roll + "-" + reg;
-            const studentData = dummyResultDatabase[key];
-
-            if (!studentData) {
-                errorElement.innerText = "Result not found! Please check with Roll: 5 and Reg: 9234, or Roll: 1 and Reg: 8899.";
+            if (!rollInput) {
+                errorElement.innerText = "দয়া করে রোল নম্বরটি লিখুন।";
                 errorElement.style.display = "block";
                 sheetContainer.style.display = "none";
                 return;
@@ -276,45 +1581,160 @@
             errorElement.style.display = "none";
             sheetContainer.style.display = "block";
 
-            // Fill header info
-            document.getElementById('sheet-exam-title').innerText = exam;
-            document.getElementById('sheet-student-name').innerText = studentData.name;
-            document.getElementById('sheet-student-class').innerText = studentData.class;
-            document.getElementById('sheet-student-roll').innerText = roll;
-            document.getElementById('sheet-student-reg').innerText = reg;
+            // Search database for student
+            let matchedStudent = null;
+            try {
+                const students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                const enRoll = toEnDigits(rollInput);
+                const enReg = toEnDigits(regInput);
 
-            // Generate subject rows
-            let rowsHTML = "";
-            studentData.subjects.forEach(sub => {
-                rowsHTML += `
-                    <tr>
-                        <td>${sub.code}</td>
-                        <td style="text-align:left;">${sub.name}</td>
-                        <td>${sub.marks}</td>
-                        <td><span style="color:${sub.marks >= 80 ? 'var(--neon-green)' : 'var(--neon-cyan)'}; font-weight:bold;">${sub.grade}</span></td>
-                        <td>${sub.gp.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-            document.getElementById('marksheet-rows').innerHTML = rowsHTML;
+                matchedStudent = students.find(s => {
+                    const sRoll = toEnDigits(s.roll || s.rollNo || s.id || '');
+                    const sReg = toEnDigits(s.registration || s.reg || s.studentId || '');
+                    const sClass = (s.class || s.className || '').toLowerCase();
+                    const reqClass = className.toLowerCase();
 
-            // Summary values
-            document.getElementById('sheet-total-gpa').innerText = studentData.gpa;
-            document.getElementById('sheet-total-grade').innerText = studentData.maxGrade;
-            
-            const statusEl = document.getElementById('sheet-status');
-            statusEl.innerText = studentData.status;
-            if (studentData.gpa === "5.00") {
-                statusEl.style.color = "var(--neon-pink)";
-            } else {
-                statusEl.style.color = "var(--neon-cyan)";
+                    const rollMatch = (sRoll === enRoll || sRoll === rollInput);
+                    const classMatch = !className || sClass.includes(reqClass) || reqClass.includes(sClass);
+                    const regMatch = !enReg || (sReg === enReg);
+
+                    return rollMatch && classMatch && regMatch;
+                });
+            } catch (e) {
+                console.error("Error finding student in DB:", e);
             }
 
-            // Scroll to transcript container smoothly
+            const studentName = matchedStudent ? (matchedStudent.nameBn || matchedStudent.name || 'শিক্ষার্থী') : (rollInput === '১' || rollInput === '1' ? 'মোঃ সাইদুর রহমান' : (rollInput === '৫' || rollInput === '5' ? 'সাব্বির রহমান' : 'শিক্ষার্থী ' + rollInput));
+            const studentRoll = toBnDigits(rollInput);
+            const studentClass = matchedStudent && matchedStudent.class ? matchedStudent.class : className;
+            const studentSection = matchedStudent && (matchedStudent.section || matchedStudent.group) ? (matchedStudent.section || matchedStudent.group) : section;
+
+            // Populate Student Card Details
+            document.getElementById('sheet-exam-title').innerText = exam;
+            document.getElementById('sheet-student-name').innerText = studentName;
+            document.getElementById('sheet-student-roll').innerText = studentRoll;
+            document.getElementById('sheet-student-class').innerText = studentClass;
+            document.getElementById('sheet-student-section').innerText = studentSection;
+
+            const normC = normalizeClassString(studentClass);
+            const normS = normalizeSectionString(studentSection);
+            const isSecondary = ['9', '10'].includes(normC);
+            const relInfo = getStudentReligionInfo(matchedStudent);
+            const optInfo = getStudentOptionalSubjectInfo(matchedStudent, normS);
+
+            const relEl = document.getElementById('sheet-student-religion');
+            if (relEl) relEl.innerText = relInfo.display;
+
+            const optRow = document.getElementById('sheet-optional-row');
+            const optEl = document.getElementById('sheet-student-optional');
+            if (optRow) {
+                if (isSecondary) {
+                    optRow.style.display = 'block';
+                    if (optEl) optEl.innerText = optInfo.nameBn;
+                } else {
+                    optRow.style.display = 'none';
+                }
+            }
+
+            // Render Subjects and Calculate Marks
+            const subjects = getDefaultSubjectRows(studentClass, studentSection, exam, matchedStudent);
+            const summary = renderMarksheetRows(subjects);
+
+            // Populate Summary and Merit
+            document.getElementById('sheet-grand-total').innerText = toBnDigits(summary.grandTotal);
+            document.getElementById('sheet-gpa').innerText = toBnDigits(summary.gpa);
+            document.getElementById('sheet-grade').innerText = summary.grade;
+            const rankVal = matchedStudent && (matchedStudent.roll || matchedStudent.rollNo) ? matchedStudent.roll : (rollInput || (summary.gpa === '5.00' ? '1' : (summary.gpa >= '4.00' ? '2' : '3')));
+            document.getElementById('sheet-merit-position').innerText = toBnDigits(rankVal);
+
+            // Update school identity & logo
+            updateSchoolIdentity();
+
+            // Store active search for Marksheet.html direct view
+            try {
+                localStorage.setItem('current_marksheet_data', JSON.stringify({
+                    exam: exam,
+                    name: studentName,
+                    roll: rollInput,
+                    class: studentClass,
+                    section: studentSection,
+                    grandTotal: summary.grandTotal,
+                    gpa: summary.gpa,
+                    grade: summary.grade
+                }));
+            } catch(e) {}
+
+            // Update Marksheet.html Link with Query Parameters
+            const marksheetLink = document.getElementById('btn-open-marksheet-file');
+            const templateVal = document.getElementById('portal-template-filter') ? document.getElementById('portal-template-filter').value : 'Marksheet.html';
+            if (marksheetLink) {
+                marksheetLink.href = `${templateVal}?roll=${encodeURIComponent(rollInput)}&class=${encodeURIComponent(studentClass)}&exam=${encodeURIComponent(exam)}&name=${encodeURIComponent(studentName)}&section=${encodeURIComponent(studentSection)}&mode=all`;
+            }
+
+            // Smooth scroll to marksheet
             setTimeout(() => {
-                sheetContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                sheetContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
+
+        function onPortalTemplateFilterChange(templateFile) {
+            const btn = document.getElementById('btn-open-marksheet-file');
+            const exam = document.getElementById('result-exam')?.value || 'অর্ধ-বার্ষিক পরীক্ষা ২০২৫';
+            const className = document.getElementById('result-class')?.value || 'দশম';
+            const section = document.getElementById('result-section')?.value || 'বিজ্ঞান';
+            const roll = document.getElementById('result-roll')?.value || '১';
+            const templateText = templateFile === 'Marksheet1.html' ? 'Temp-02' : 'Temp-01';
+
+            if (btn) {
+                btn.href = `${templateFile}?class=${encodeURIComponent(className)}&section=${encodeURIComponent(section)}&exam=${encodeURIComponent(exam)}&roll=${encodeURIComponent(roll)}&mode=all`;
+                btn.innerHTML = `📄 ${templateText} ফাইলে খুলুন`;
+            }
+        }
+
+        // Generate All Marksheets for Selected Filter Section Options
+        function generateAllMarksheetsFromPortal() {
+            const exam = document.getElementById('result-exam')?.value || 'অর্ধ-বার্ষিক পরীক্ষা ২০২৫';
+            const className = document.getElementById('result-class')?.value || 'দশম';
+            const section = document.getElementById('result-section')?.value || 'বিজ্ঞান';
+            const templateFile = document.getElementById('portal-template-filter')?.value || 'Marksheet.html';
+
+            // Save to localStorage for instant sync
+            localStorage.setItem('school_marksheet_exam', exam);
+            localStorage.setItem('school_marksheet_class', className);
+            localStorage.setItem('school_marksheet_section', section);
+
+            // Open Marksheet template in all-students mode
+            const targetUrl = `${templateFile}?class=${encodeURIComponent(className)}&section=${encodeURIComponent(section)}&exam=${encodeURIComponent(exam)}&mode=all`;
+            window.location.href = targetUrl;
+        }
+
+        // Quick Sample Marksheet loader
+        function loadSampleMarksheet() {
+            document.getElementById('result-roll').value = '১';
+            document.getElementById('result-class').value = 'দশম';
+            document.getElementById('result-section').value = 'বিজ্ঞান';
+            searchResult();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initSearchDropdowns();
+            updateSchoolIdentity();
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'school_logo' || e.key === 'school_settings') {
+                updateSchoolIdentity();
+            }
+            if (e.key === 'school_exam_types' || e.key === 'school_classes') {
+                initSearchDropdowns();
+            }
+        });
+
+        window.addEventListener('dbSynced', () => {
+            updateSchoolIdentity();
+            initSearchDropdowns();
+        });
     </script>
 </body>
 </html>

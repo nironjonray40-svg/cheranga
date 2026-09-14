@@ -1,0 +1,22 @@
+[
+  {
+    "benchNo": 1,
+    "left": null,
+    "right": null
+  },
+  {
+    "benchNo": 2,
+    "left": null,
+    "right": null
+  },
+  {
+    "benchNo": 3,
+    "left": null,
+    "right": null
+  },
+  {
+    "benchNo": 4,
+    "left": null,
+    "right": null
+  }
+]

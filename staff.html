@@ -1,0 +1,3534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('cms.html?login=required');
+        }
+    </script>
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School - Smart Portal</title>
+    <link rel="stylesheet" href="style.css?v=4.2">
+    <!-- Google Fonts for Bengali Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@500;600;700;800&family=Hind+Siliguri:wght@500;600;700;800&family=Noto+Serif+Bengali:wght@600;700;800&family=Tiro+Bangla:ital@0;1&family=Alkatra:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        #home .section-title {
+            background: none !important;
+            -webkit-text-fill-color: #0000ff !important;
+            color: #0000ff !important;
+        }
+
+        #staff-directory-card .fee-list-table {
+            font-size: 24px !important;
+            border-collapse: separate !important;
+            border-spacing: 10px 7.2px !important;
+            zoom: 0.85 !important;
+        }
+
+        main.container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+        }
+
+        #staff-directory-card {
+            background: #ffffff !important;
+            color: #120b29 !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08) !important;
+            border: 1px solid rgba(37, 99, 235, 0.5) !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-radius: 0px !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 20px 15px !important;
+        }
+
+        #staff-directory-card .portal-form-title {
+            color: #4f46e5 !important;
+            font-size: 2.18rem !important;
+            font-weight: normal !important;
+            letter-spacing: normal;
+            text-shadow: none !important;
+        }
+
+        #staff-directory-card .fee-list-table th {
+            background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%) !important;
+            color: #4f46e5 !important;
+            border: 1px solid rgba(16, 185, 129, 0.3) !important;
+            border-bottom: 3px solid rgba(16, 185, 129, 0.6) !important;
+            border-radius: 8px !important;
+            font-weight: 700;
+            padding: 2.5px 10px !important;
+            box-shadow: inset 1px 1px 0px #ffffff, 1px 2px 4px rgba(0, 0, 0, 0.06) !important;
+            text-align: center;
+            opacity: 1 !important;
+        }
+
+        #staff-directory-card .fee-list-table tr {
+            background: transparent !important;
+            border-bottom: none !important;
+            opacity: 1 !important;
+        }
+
+        #staff-directory-card .fee-list-table td {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid rgba(16, 185, 129, 0.25) !important;
+            border-bottom: 3px solid rgba(16, 185, 129, 0.5) !important;
+            border-radius: 8px !important;
+            padding: 2.5px 10px !important;
+            box-shadow: inset 1px 1px 0px #ffffff, 1px 2px 4px rgba(0, 0, 0, 0.04) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            opacity: 1 !important;
+        }
+
+        #staff-directory-card .fee-list-table td.staff-name {
+            color: #000000 !important;
+            opacity: 1 !important;
+        }
+
+        #staff-directory-card .fee-list-table td.staff-id {
+            color: #2563eb !important;
+            opacity: 1 !important;
+        }
+
+        #staff-directory-card .fee-list-table tr:hover td {
+            transform: translateY(-3px) scale(1.01);
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            border-bottom-width: 4px !important;
+            box-shadow: inset 1px 1px 0px #ffffff, 2px 6px 12px rgba(16, 185, 129, 0.25) !important;
+        }
+
+        #staff-directory-card .pagination-btn {
+            background: #ffffff;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #1f2937;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #staff-directory-card .pagination-btn:hover:not(:disabled) {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        #staff-directory-card .pagination-btn.active {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+            font-weight: bold;
+        }
+
+        #staff-directory-card .pagination-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            background: #f3f4f6;
+            color: #9ca3af;
+            border-color: #e5e7eb;
+        }
+
+        #staff-directory-card .action-icons-wrapper {
+            opacity: 1;
+            display: inline-flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .action-icon-btn {
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            padding: 6px;
+            cursor: pointer;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .action-icon-btn:hover {
+            color: #ffffff !important;
+            transform: scale(1.1);
+        }
+
+        .action-icon-btn.view-btn:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .action-icon-btn.edit-btn:hover {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+
+        .action-icon-btn.delete-btn:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* --- MODERN STAFF MODAL STYLES --- */
+        #modal-title {
+            font-family: 'Hind Siliguri', 'Tiro Bangla', 'Anek Bangla', 'Noto Serif Bengali', sans-serif !important;
+            font-size: 1.7rem !important;
+            font-weight: 700 !important;
+            color: #1e1b4b !important;
+            border-left: 5px solid #4f46e5 !important;
+            padding-left: 14px !important;
+            letter-spacing: 0.3px;
+            line-height: 1.35;
+        }
+
+        .staff-form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 640px) {
+            .staff-form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .staff-form-grid-3 {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+            .staff-form-grid-4 {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+        }
+
+        .staff-media-column {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .staff-photo-box,
+        .staff-signature-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border: 1.5px dashed rgba(79, 70, 229, 0.4);
+            border-radius: 12px;
+            padding: 12px 10px;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .staff-photo-box:hover,
+        .staff-signature-box:hover {
+            border-color: #4f46e5;
+            background: #f1f5f9;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+        }
+
+        .staff-photo-upload-container {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .staff-photo-upload-container:hover {
+            border-color: #4f46e5;
+        }
+
+        .staff-photo-upload-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .staff-signature-upload-container {
+            width: 210px;
+            height: 58px;
+            position: relative;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .staff-signature-upload-container:hover {
+            border-color: #059669;
+        }
+
+        .staff-signature-upload-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .media-remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+        }
+
+        .media-remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .staff-photo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            border: 2px dashed rgba(79, 70, 229, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .staff-photo-section:hover {
+            border-color: #4f46e5;
+            background: #f3f4f6;
+        }
+
+        .passport-photo-container {
+            width: 4cm;
+            height: 5cm;
+            position: relative;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .passport-photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .passport-photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.8rem;
+            padding: 10px;
+        }
+
+        .passport-photo-placeholder svg {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 8px;
+            fill: #cbd5e1;
+        }
+
+        /* Section Card & Input Enhancements */
+        .staff-form-section-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s ease;
+        }
+
+        .staff-form-section-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+
+        .staff-section-badge {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eef2ff;
+        }
+
+        .staff-section-badge .badge-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .staff-section-badge .badge-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #e0e7ff;
+            color: #4338ca;
+            font-size: 0.95rem;
+        }
+
+        .staff-section-badge .badge-tag {
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .staff-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .staff-input-group label {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 2px;
+        }
+
+        .staff-input-group label .lbl-text {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .staff-input-group label .req-star {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .staff-input-group label .hint-pill {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #4f46e5;
+            background: #eef2ff;
+            padding: 2px 7px;
+            border-radius: 12px;
+        }
+
+        .staff-input-group input,
+        .staff-input-group select,
+        .staff-input-group textarea {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1.5px solid #cbd5e1;
+            height: 44px;
+            border-radius: 8px;
+            padding: 0 14px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            box-sizing: border-box;
+        }
+
+        .staff-input-group textarea {
+            height: 85px;
+            padding: 10px 14px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .staff-input-group input:focus,
+        .staff-input-group select:focus,
+        .staff-input-group textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.15);
+            background: #ffffff;
+        }
+
+        .staff-input-group input::placeholder,
+        .staff-input-group textarea::placeholder {
+            color: #94a3b8;
+            font-size: 0.84rem;
+            font-weight: 400;
+        }
+
+        /* Detail cards styling */
+        .staff-details-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            text-align: left;
+        }
+
+        @media (min-width: 600px) {
+            .staff-details-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .detail-item {
+            background: rgba(0, 0, 0, 0.025);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid #4f46e5;
+        }
+
+        .detail-item-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item-value {
+            font-size: 0.92rem;
+            color: #111827;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Fullscreen modal styling */
+        .modal-content.fullscreen {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 100vh !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Print Styles for Digital CV */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #view-staff-modal,
+            #view-staff-modal * {
+                visibility: visible;
+            }
+
+            #view-staff-modal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .cv-paper {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 0.3in;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z" />
+            </svg>
+        </div>
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</h1>
+            <p class="hero-subtitle">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</p>
+            <p class="hero-gmail" id="school-gmail"></p>
+            <div class="hero-other" id="school-other"></div>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand" title="হোম">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="dashboard"><a href="index.html">Dashboard</a></li>
+                <li class="nav-item active" data-tab="staff"><a href="staff.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html?view=list">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=online-admissions">Online Admissions (অনলাইন ভর্তি আবেদন)</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="fees">
+                    <a href="fees">Fees & Payments</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="Money Collect.html">Money Collect</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="seat-plan">
+                    <a href="seat-plan?view=exam-routine">Seat Plan</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="seat-plan?view=exam-routine">Exam Routine</a></li>
+                        <li><a href="seat-plan?view=building-mgmt">Building Management</a></li>
+                        <li><a href="seat-plan?view=seat-distribution">Seat Distribution</a></li>
+                        <li><a href="seat-plan?view=seating-details">Seating Details (সামারি ও আসন বিন্যাস)</a></li>
+                        <li><a href="seat-plan?view=room-topshet">Room Seat Topshet (কক্ষের আসন টপশীট)</a></li>
+
+                        <li><a href="seat-plan?view=student-attendance">Student Attendance Sheet (পরীক্ষার্থীদের হাজিরা শীট)</a></li>
+                        <li><a href="seat-plan?view=student-data-topsheet">Student Data Topsheet (শিক্ষার্থীর তথ্য টপশীট)</a></li>
+                        <li><a href="seat-plan?view=find-seat">Seat Plan Report</a></li>
+                        <li><a href="seat-plan?view=exam-document-report">Exam Document Report</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal?view=exam-entry">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal?view=exam-entry">Exam List</a></li>
+                        <li><a href="exam-portal?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown" data-tab="result-portal">
+                    <a href="result-portal">Result Management</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="result-portal">Result Search</a></li>
+                        <li><a href="Tabulation Sheet.html">Tabulation Sheet</a></li>
+                        <li><a href="Marksheet.html">Marksheet</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance">Advance</a>
+                                        <ul class="dropdown-menu">
+                        <li><a href="advance?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance?view=slider-management">Headline & Slider Management</a></li>
+                        <li><a href="advance?view=designation-structure">Staff Designation Structure</a></li>
+                        <li><a href="advance?view=speeches-management">সভাপতির বাণী ও প্রধান শিক্ষকের বাণী</a></li>
+                        <li><a href="advance?view=chat">💬 Active Users & Live Chat</a></li>
+                        <li><a href="advance?view=user-management">👥 শিক্ষক-স্টাফ ইউজার ও পাসওয়ার্ড</a></li>
+                        <li><a href="advance?view=sms-settings">📱 SMS Gateway & API Settings</a></li>
+                        <li><a href="advance?view=cms-portal">🌐 CMS Website & Data Import</a></li>
+                        <li><a href="advance?view=address-structure">📍 ভর্তি ফরমের ঠিকানা কনফিগারেশন</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">বার্ষিক ক্রীড়া প্রতিযোগিতা ২০২৪ — আগামী ২৫ জুলাই ২০২৪ তারিখে বিদ্যালয়
+                    প্রাঙ্গণে বার্ষিক ক্রীড়া প্রতিযোগিতা অনুষ্ঠিত হইবে। সকল ছাত্র-ছাত্রীকে সময়মতো উপস্থিত থাকার অনুরোধ
+                    করা হচ্ছে। ★ গ্রীষ্মকালীন ছুটি সংক্রান্ত বিজ্ঞপ্তি — এতদ্বারা সকল শিক্ষক ও শিক্ষার্থীদের অবগতির জন্য
+                    জানানো যাচ্ছে যে, আগামী ১৫ জুলাই থেকে গ্রীষ্মকালীন ছুটি শুরু হতে যাচ্ছে। ★ বিজ্ঞান মেলা এবং
+                    প্রদর্শনী — বিদ্যালয় প্রাঙ্গণে অনুষ্ঠিত হতে যাচ্ছে বার্ষিক বিজ্ঞান মেলা। প্রজেক্ট সাবমিশনের শেষ
+                    তারিখ ১০ জুলাই ২০২৪।</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- 1. STAFF MANAGEMENT SECTION -->
+        <section id="home" class="content-section active">
+            <div class="section-title-wrapper" style="display: none;">
+                <h2 class="section-title">Staff Management Portal</h2>
+                <p class="section-subtitle" style="color: #4b5563;">Manage school teachers, office workers, and staff
+                    directory</p>
+            </div>
+
+            <div class="home-grid" style="display: block;">
+                <!-- Staff List Table -->
+                <div class="glass-card" id="staff-directory-card" style="display: flex; flex-direction: column;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid rgba(16, 185, 129, 0.5); padding-bottom: 10px; flex-wrap: wrap; gap: 15px;">
+                        <h3 class="portal-form-title"
+                            style="margin: 0; border: none; padding: 0; font-family: 'Li Shohid Shafkat Samir Unicode', sans-serif !important; font-size: 2.18rem !important; font-weight: normal !important; text-shadow: none !important;">
+                            শিক্ষক ও কর্মচারী
+                            তালিকা (Staff Directory)</h3>
+
+                        <!-- Summary Table -->
+                        <div class="staff-summary-container"
+                            style="display: flex; align-items: center; justify-content: center;">
+                            <table class="staff-summary-table"
+                                style="border-collapse: collapse; font-size: 0.85rem; font-weight: 600; text-align: center; background: #ffffff; border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <thead>
+                                    <tr
+                                        style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #ffffff;">
+                                        <th
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(255,255,255,0.2); font-weight: 700;">
+                                            পদবী</th>
+                                        <th
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(255,255,255,0.2); font-weight: 700;">
+                                            মোট</th>
+                                        <th
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(255,255,255,0.2); font-weight: 700;">
+                                            পুরুষ</th>
+                                        <th
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(255,255,255,0.2); font-weight: 700;">
+                                            মহিলা</th>
+                                        <th style="padding: 2px 11.5px; font-weight: 700;">MPO স্ট্যাটাস</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid rgba(16, 185, 129, 0.2); color: #1f2937;">
+                                        <td
+                                            style="padding: 2px 11.5px; font-weight: 700; background: #f9fafb; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            শিক্ষক</td>
+                                        <td id="sum-teacher-total"
+                                            style="padding: 2px 11.5px; font-weight: 700; color: #4f46e5; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            0</td>
+                                        <td id="sum-teacher-male"
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            0</td>
+                                        <td id="sum-teacher-female"
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            0</td>
+                                        <td id="sum-teacher-mpo" style="padding: 2px 11.5px;">0</td>
+                                    </tr>
+                                    <tr style="color: #1f2937;">
+                                        <td
+                                            style="padding: 2px 11.5px; font-weight: 700; background: #f9fafb; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            কর্মচারী</td>
+                                        <td id="sum-staff-total"
+                                            style="padding: 2px 11.5px; font-weight: 700; color: #4f46e5; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            0</td>
+                                        <td id="sum-staff-male"
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            0</td>
+                                        <td id="sum-staff-female"
+                                            style="padding: 2px 11.5px; border-right: 1px solid rgba(16, 185, 129, 0.2);">
+                                            0</td>
+                                        <td id="sum-staff-mpo" style="padding: 2px 11.5px;">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <a href="Teacher Report.html" class="btn-primary"
+                                style="height: 38px; padding: 0 16px; margin: 0; font-size: 0.85rem; font-weight: 700; background: #059669; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: 8px; color: #ffffff; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);">
+                                <span>📄 Teacher Report</span>
+                            </a>
+                            <button class="btn-primary" onclick="openAddStaffModal()"
+                                style="height: 38px; padding: 0 16px; margin: 0; font-size: 0.85rem; font-weight: 700; background: #4f46e5; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; cursor: pointer;">
+                                <span>➕ Add Staff</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Staff Search & Filter Bar -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; background: #f8fafc; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 10px 15px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-grow: 1; max-width: 850px;">
+                            <!-- Search Input -->
+                            <div style="position: relative; flex-grow: 1; min-width: 250px;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6b7280; font-size: 0.95rem; pointer-events: none;">🔍</span>
+                                <input type="text" id="staff-search-input" placeholder="শিক্ষক/কর্মচারীর নাম, পদবী, বিষয়, আইডি বা মোবাইল নং দিয়ে খুঁজুন..." oninput="onStaffSearchInput()" style="width: 100%; height: 38px; padding: 0 34px 0 36px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; color: #111827; background: #ffffff; outline: none; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                <button type="button" id="staff-search-clear-btn" onclick="clearStaffSearch()" style="display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1rem; color: #9ca3af; cursor: pointer; padding: 2px 6px; border-radius: 50%;" title="সার্চ মুছুন">✖</button>
+                            </div>
+
+                            <!-- Category Filter Dropdown -->
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <label for="staff-search-category" style="font-size: 0.85rem; font-weight: 600; color: #374151; white-space: nowrap;">ক্যাটাগরি:</label>
+                                <select id="staff-search-category" onchange="onStaffSearchInput()" style="height: 38px; font-size: 0.85rem; font-weight: 600; padding: 0 8px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #111827; cursor: pointer; outline: none;">
+                                    <option value="all">সকল (All)</option>
+                                    <option value="Teacher">শিক্ষক (Teacher)</option>
+                                    <option value="Staff">কর্মচারী (Staff)</option>
+                                </select>
+                            </div>
+
+                            <!-- MPO Filter Dropdown -->
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <label for="staff-search-mpo" style="font-size: 0.85rem; font-weight: 600; color: #374151; white-space: nowrap;">MPO:</label>
+                                <select id="staff-search-mpo" onchange="onStaffSearchInput()" style="height: 38px; font-size: 0.85rem; font-weight: 600; padding: 0 8px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #111827; cursor: pointer; outline: none;">
+                                    <option value="all">সকল (All)</option>
+                                    <option value="MPO">MPO</option>
+                                    <option value="Non-MPO">Non-MPO</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Search Summary & Reset Button -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="staff-search-count-badge" style="display: none; background: #e0e7ff; color: #3730a3; padding: 5px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700;">
+                                খুঁজে পাওয়া গেছে: <b id="staff-search-count-val" style="color: #4f46e5;">0</b> জন
+                            </span>
+                            <button type="button" id="staff-search-reset-btn" onclick="clearStaffSearch()" style="display: none; height: 34px; padding: 0 12px; font-size: 0.82rem; font-weight: 600; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                                🔄 রিসেট
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto; flex-grow: 1;">
+                        <table class="fee-list-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%; text-align: center;">SL</th>
+                                    <th style="width: 5.1%; text-align: center; padding: 3.5px 7px !important;">Photo
+                                    </th>
+                                    <th style="width: 10%;">Staff ID/Index</th>
+                                    <th style="width: 39.9%;">Employee Name</th>
+                                    <th style="width: 25%;">Mobile No</th>
+                                    <th style="width: 15%; text-align: center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-list-tbody">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination & Bulk Excel Controls -->
+                    <div id="staff-pagination-container"
+                        style="display: flex; justify-content: space-between; align-items: center; padding: 15px 10px 5px; border-top: 1px solid rgba(16, 185, 129, 0.3); flex-wrap: wrap; gap: 12px; margin-top: 10px;">
+                        <!-- Left Side: Items & Page count info -->
+                        <div style="font-size: 0.95rem; color: #374151; font-weight: 600;">
+                            <span id="staff-pagination-info">মোট: ০ জন | পাতা: ১ এর ১</span>
+                        </div>
+
+                        <!-- Right Side: Pagination buttons & Browsing/Template Controls -->
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <!-- Pagination buttons -->
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <button class="pagination-btn" id="staff-page-first" onclick="goToStaffPage(1)"
+                                    title="প্রথম পাতা (First Page)">⏮</button>
+                                <button class="pagination-btn" id="staff-page-prev" onclick="changeStaffPage(-1)"
+                                    title="পূর্ববর্তী পাতা (Previous Page)">◀</button>
+                                <span id="staff-page-numbers" style="display: flex; gap: 4px; align-items: center;"></span>
+                                <button class="pagination-btn" id="staff-page-next" onclick="changeStaffPage(1)"
+                                    title="পরবর্তী পাতা (Next Page)">▶</button>
+                                <button class="pagination-btn" id="staff-page-last" onclick="goToStaffPage('last')"
+                                    title="শেষ পাতা (Last Page)">⏭</button>
+                            </div>
+
+                            <!-- Divider -->
+                            <div style="width: 1.5px; height: 26px; background: rgba(16, 185, 129, 0.4); margin: 0 4px;"></div>
+
+                            <!-- Template Download Button -->
+                            <button type="button" class="btn-primary" onclick="downloadStaffTemplate()"
+                                title="শিক্ষক ও কর্মচারীর তথ্যের এক্সেল (.xlsx) টেমপ্লেট ডাউনলোড করুন"
+                                style="height: 36px; padding: 0 13px; margin: 0; font-size: 0.85rem; font-weight: 700; background: #0284c7; color: #ffffff; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); cursor: pointer; transition: all 0.2s ease;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>📥 Template</span>
+                            </button>
+
+                            <!-- Browsing / Excel Upload Button -->
+                            <button type="button" class="btn-primary" onclick="triggerStaffImportFile()"
+                                title="এক্সেল ফাইল ব্রাউজ করে শিক্ষক ও কর্মচারীর তথ্য ইমপোর্ট ও প্রিভিউ করুন"
+                                style="height: 36px; padding: 0 15px; margin: 0; font-size: 0.85rem; font-weight: 700; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35); cursor: pointer; transition: all 0.2s ease;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                                <span>📂 Browsing</span>
+                            </button>
+                            <input type="file" id="staff-import-file-input" accept=".xlsx,.xls" style="display: none;" onchange="handleStaffFileSelect(this)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- STAFF MODAL DIALOG -->
+    <div id="staff-modal" class="modal"
+        style="display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(8px);">
+        <div class="modal-content glass-card fullscreen"
+            style="margin: 0; padding: 25px 35px 50px 35px; width: 100%; max-width: 100%; min-height: 100vh; position: relative; background: #ffffff; color: #120b29; border: none; box-shadow: none; border-radius: 0; box-sizing: border-box;">
+            
+            <div style="max-width: 1350px; margin: 0 auto; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(79, 70, 229, 0.2); padding-bottom: 12px; margin-bottom: 22px;">
+                    <div>
+                        <h3 id="modal-title" class="portal-form-title"
+                            style="margin: 0; border-left-color: #4f46e5; color: #120b29 !important;">নতুন শিক্ষক ও কর্মচারী যুক্ত করুন (Add New Teacher / Staff)</h3>
+                        <p style="margin: 3px 0 0; font-size: 0.86rem; color: #64748b;">শিক্ষক/কর্মচারীর ব্যক্তিগত, প্রাতিষ্ঠানিক ও যোগাযোগের পূর্ণাঙ্গ তথ্য এন্ট্রি করুন</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="fullscreen-btn" onclick="toggleStaffModalFullscreen()"
+                            style="font-size: 18px; font-weight: bold; cursor: pointer; color: #120b29; user-select: none; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; display: inline-flex; align-items: center; justify-content: center;"
+                            title="Restore Size">🗗</span>
+                        <span class="close-btn" onclick="closeStaffModal()"
+                            style="font-size: 24px; font-weight: bold; cursor: pointer; color: #ef4444; user-select: none; padding: 2px 10px; border-radius: 8px; border: 1px solid #fca5a5; background: #fee2e2; display: inline-flex; align-items: center; justify-content: center;"
+                            title="Close">&times;</span>
+                    </div>
+                </div>
+
+                <form id="staff-modal-form" onsubmit="saveStaffModal(event)">
+                    <input type="hidden" id="staff-edit-index" value="">
+
+                    <!-- 1. PHOTO, SIGNATURE & PRIMARY CONTACT CARD -->
+                    <div class="staff-form-section-card" style="background: #f8fafc; border: 1.5px solid #e0e7ff;">
+                        <div class="staff-section-badge">
+                            <div class="badge-title">
+                                <span class="badge-icon">📸</span>
+                                <span>ছবি, স্বাক্ষর ও প্রাথমিক তথ্য (Photo, Signature & Primary Info)</span>
+                            </div>
+                            <span class="badge-tag">আবশ্যক ফিল্ডে লাল তারকা (*) চিহ্নিত</span>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
+                            <!-- Media container column (Photo & Signature) -->
+                            <div class="staff-media-column" style="flex: 1.1; min-width: 290px;">
+                                <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                                    <!-- Photo Upload Box (300px * 300px, 300 DPI, max 250 KB) -->
+                                    <div class="staff-photo-box" style="flex: 1; min-width: 140px;">
+                                        <button type="button" id="modal-photo-remove-btn" class="media-remove-btn" onclick="removeModalStaffPhoto(event)" title="ছবি মুছে ফেলুন">✕</button>
+                                        <div style="text-align: center; margin-bottom: 6px;">
+                                            <span style="font-weight: 700; color: #1e293b; font-size: 0.84rem; display: block;">📷 পাসপোর্ট ছবি (Photo)</span>
+                                            <span style="font-size: 0.72rem; color: #4f46e5; font-weight: 600; display: block; margin-top: 1px;">৩০০×৩০০ px | ২৫০ KB</span>
+                                        </div>
+                                        <div class="staff-photo-upload-container" title="ছবি নির্বাচন করতে ক্লিক করুন">
+                                            <div id="modal-photo-placeholder" class="passport-photo-placeholder" style="padding: 6px;">
+                                                <svg viewBox="0 0 24 24" style="width: 26px; height: 26px; fill: #4f46e5; margin-bottom: 4px;">
+                                                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                                </svg>
+                                                <p style="font-weight: 700; font-size: 0.72rem; color: #4f46e5; margin: 0; line-height: 1.2;">ছবি আপলোড করুন<br><span style="font-size: 0.68rem; font-weight: normal; color: #6366f1;">(Upload Photo)</span></p>
+                                            </div>
+                                            <img id="modal-photo-preview" src="" alt="Preview" style="display: none;">
+                                            <input type="file" id="modal-photo-input" accept="image/jpeg,image/png,image/webp,image/jpg"
+                                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
+                                                onchange="previewModalStaffPhoto(this)">
+                                        </div>
+                                    </div>
+
+                                    <!-- Signature Upload Box (300px * 80px, 300 DPI, max 150 KB PNG) -->
+                                    <div class="staff-signature-box" style="flex: 1.4; min-width: 170px;">
+                                        <button type="button" id="modal-signature-remove-btn" class="media-remove-btn" onclick="removeModalStaffSignature(event)" title="স্বাক্ষর মুছে ফেলুন">✕</button>
+                                        <div style="text-align: center; margin-bottom: 6px;">
+                                            <span style="font-weight: 700; color: #1e293b; font-size: 0.84rem; display: block;">✍️ ডিজিটাল স্বাক্ষর (Signature)</span>
+                                            <span style="font-size: 0.72rem; color: #059669; font-weight: 600; display: block; margin-top: 1px;">৩০০×৮০ px | ১৫০ KB (PNG)</span>
+                                        </div>
+                                        <div class="staff-signature-upload-container" title="স্বাক্ষর নির্বাচন করতে ক্লিক করুন">
+                                            <div id="modal-signature-placeholder" class="passport-photo-placeholder" style="padding: 4px;">
+                                                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #059669; margin-bottom: 2px;">
+                                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                                </svg>
+                                                <p style="font-weight: 700; font-size: 0.72rem; color: #059669; margin: 0; line-height: 1.1;">স্বাক্ষর আপলোড করুন<br><span style="font-size: 0.68rem; font-weight: normal; color: #059669;">(Upload Signature)</span></p>
+                                            </div>
+                                            <img id="modal-signature-preview" src="" alt="Signature Preview" style="display: none;">
+                                            <input type="file" id="modal-signature-input" accept="image/png"
+                                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
+                                                onchange="previewModalStaffSignature(this)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Basic details column -->
+                            <div style="flex: 2; min-width: 320px; display: flex; flex-direction: column; justify-content: center;">
+                                <div class="staff-form-grid" style="margin-bottom: 0;">
+                                    <div class="staff-input-group">
+                                        <label for="modal-staff-id">
+                                            <span class="lbl-text">🆔 স্টাফ আইডি / ইনডেক্স <span class="req-star">*</span></span>
+                                            <span class="hint-pill">অটো জেনারেটেড</span>
+                                        </label>
+                                        <input type="text" id="modal-staff-id"
+                                            placeholder="জন্ম তারিখ দিলে অটো তৈরি হবে অথবা লিখুন" required
+                                            style="background: #ffffff; cursor: text;">
+                                    </div>
+                                    <div class="staff-input-group">
+                                        <label for="modal-staff-mobile">
+                                            <span class="lbl-text">📱 মোবাইল নম্বর (Mobile No.) <span class="req-star">*</span></span>
+                                            <span class="hint-pill">১১ ডিজিট</span>
+                                        </label>
+                                        <input type="tel" id="modal-staff-mobile" placeholder="যেমন: 017XXXXXXXX" required>
+                                    </div>
+                                    <div class="staff-input-group">
+                                        <label for="modal-staff-name">
+                                            <span class="lbl-text">👤 পূর্ণ নাম ইংরেজিতে (Name in English) <span class="req-star">*</span></span>
+                                        </label>
+                                        <input type="text" id="modal-staff-name" placeholder="যেমন: MD. RAFIQUL ISLAM" required>
+                                    </div>
+                                    <div class="staff-input-group">
+                                        <label for="modal-staff-name-bn">
+                                            <span class="lbl-text">📝 পূর্ণ নাম বাংলায় (Name in Bengali)</span>
+                                        </label>
+                                        <input type="text" id="modal-staff-name-bn" placeholder="যেমন: মো: রফিকুল ইসলাম">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. INSTITUTIONAL & EMPLOYMENT DETAILS CARD -->
+                    <div class="staff-form-section-card">
+                        <div class="staff-section-badge">
+                            <div class="badge-title">
+                                <span class="badge-icon">💼</span>
+                                <span>প্রাতিষ্ঠানিক ও চাকুরির বিবরণ (Institutional & Service Details)</span>
+                            </div>
+                            <span class="badge-tag">পদবী ও দায়িত্ব</span>
+                        </div>
+                        <div class="staff-form-grid staff-form-grid-3 staff-form-grid-4">
+                            <div class="staff-input-group">
+                                <label for="modal-staff-category">
+                                    <span class="lbl-text">👥 স্টাফ ক্যাটাগরি / ধরন <span class="req-star">*</span></span>
+                                </label>
+                                <select id="modal-staff-category" onchange="toggleSubjectField(); populateDesignationDropdown();" required>
+                                    <option value="" disabled selected>ক্যাটাগরি নির্বাচন করুন</option>
+                                    <option value="Teacher">শিক্ষক (Teacher)</option>
+                                    <option value="Staff">কর্মচারী (Staff)</option>
+                                </select>
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-designation">
+                                    <span class="lbl-text">🏷️ পদবী (Designation) <span class="req-star">*</span></span>
+                                </label>
+                                <select id="modal-staff-designation" required>
+                                    <option value="" disabled selected>প্রথমে ক্যাটাগরি সিলেক্ট করুন</option>
+                                </select>
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-department">
+                                    <span class="lbl-text">🏢 বিভাগ (Department)</span>
+                                </label>
+                                <select id="modal-staff-department" onchange="populateDesignationDropdown();">
+                                    <option value="">নির্বাচন করুন (Select)</option>
+                                    <option value="Primary Level">Primary Level (প্রাথমিক স্তর / শাখা)</option>
+                                    <option value="High Level">High Level (উচ্চ বিদ্যালয় / মাধ্যমিক স্তর)</option>
+                                </select>
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-mpo">
+                                    <span class="lbl-text">🏛️ MPO স্ট্যাটাস (MPO Status)</span>
+                                </label>
+                                <select id="modal-staff-mpo">
+                                    <option value="">নির্বাচন করুন (Select)</option>
+                                    <option value="MPO">MPO (এমপিওভুক্ত)</option>
+                                    <option value="Non MPO">Non MPO (নন-এমপিও)</option>
+                                </select>
+                            </div>
+                            <div class="staff-input-group" id="subject-field-container" style="display: none;">
+                                <label for="modal-staff-subject">
+                                    <span class="lbl-text">📚 বিষয় (Teaching Subject)</span>
+                                    <span class="hint-pill">শিক্ষকদের জন্য</span>
+                                </label>
+                                <input type="text" id="modal-staff-subject" placeholder="যেমন: গণিত, ইংরেজি, বাংলা">
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-joining">
+                                    <span class="lbl-text">📅 যোগদানের তারিখ (Joining Date)</span>
+                                </label>
+                                <input type="date" id="modal-staff-joining">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. PERSONAL & ACADEMIC DETAILS CARD -->
+                    <div class="staff-form-section-card">
+                        <div class="staff-section-badge">
+                            <div class="badge-title">
+                                <span class="badge-icon">🎓</span>
+                                <span>ব্যক্তিগত ও শিক্ষাগত বিবরণ (Personal & Academic Info)</span>
+                            </div>
+                            <span class="badge-tag">ব্যক্তিগত পরিচিতি</span>
+                        </div>
+                        <div class="staff-form-grid staff-form-grid-3 staff-form-grid-4">
+                            <div class="staff-input-group">
+                                <label for="modal-staff-dob">
+                                    <span class="lbl-text">🎂 জন্ম তারিখ (Date of Birth) <span class="req-star">*</span></span>
+                                    <span class="hint-pill">আইডি জেনারেট হবে</span>
+                                </label>
+                                <input type="date" id="modal-staff-dob" onchange="generateAutoStaffId()" required>
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-gender">
+                                    <span class="lbl-text">⚧️ লিঙ্গ (Gender) <span class="req-star">*</span></span>
+                                </label>
+                                <select id="modal-staff-gender" required>
+                                    <option value="" disabled selected>লিঙ্গ নির্বাচন করুন</option>
+                                    <option value="Male">পুরুষ (Male)</option>
+                                    <option value="Female">নারী (Female)</option>
+                                    <option value="Other">অন্যান্য (Other)</option>
+                                </select>
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-blood">
+                                    <span class="lbl-text">🩸 রক্তের গ্রুপ (Blood Group)</span>
+                                </label>
+                                <select id="modal-staff-blood">
+                                    <option value="">গ্রুপ নির্বাচন করুন</option>
+                                    <option value="A+">A+ (পজিটিভ)</option>
+                                    <option value="A-">A- (নেগেটিভ)</option>
+                                    <option value="B+">B+ (পজিটিভ)</option>
+                                    <option value="B-">B- (নেগেটিভ)</option>
+                                    <option value="AB+">AB+ (পজিটিভ)</option>
+                                    <option value="AB-">AB- (নেগেটিভ)</option>
+                                    <option value="O+">O+ (পজিটিভ)</option>
+                                    <option value="O-">O- (নেগেটিভ)</option>
+                                </select>
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-nid">
+                                    <span class="lbl-text">🪪 জাতীয় পরিচয়পত্র (NID Number)</span>
+                                </label>
+                                <input type="text" id="modal-staff-nid" placeholder="১০, ১৩ বা ১৭ ডিজিটের NID নম্বর">
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-qualification">
+                                    <span class="lbl-text">📜 শিক্ষাগত যোগ্যতা (Qualification)</span>
+                                </label>
+                                <input type="text" id="modal-staff-qualification" placeholder="যেমন: বিএসসি (অনার্স), এমএসসি, বিএড">
+                            </div>
+                            <div class="staff-input-group">
+                                <label for="modal-staff-email">
+                                    <span class="lbl-text">📧 ইমেইল ঠিকানা (Email Address)</span>
+                                </label>
+                                <input type="email" id="modal-staff-email" placeholder="যেমন: teacher@school.edu.bd">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. ADDRESS DETAILS CARD -->
+                    <div class="staff-form-section-card">
+                        <div class="staff-section-badge">
+                            <div class="badge-title">
+                                <span class="badge-icon">🏠</span>
+                                <span>ঠিকানার বিবরণ (Address Information)</span>
+                            </div>
+                            <span class="badge-tag">যোগাযোগের ঠিকানা</span>
+                        </div>
+                        <div class="staff-form-grid">
+                            <div class="staff-input-group">
+                                <label for="modal-staff-present-addr">
+                                    <span class="lbl-text">🏡 বর্তমান ঠিকানা (Present Address)</span>
+                                </label>
+                                <textarea id="modal-staff-present-addr" placeholder="গ্রাম/বাড়ি নং, ডাকঘর, উপজেলা/থানা, জেলা..."></textarea>
+                            </div>
+                            <div class="staff-input-group">
+                                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 2px;">
+                                    <label for="modal-staff-permanent-addr" style="margin: 0; font-weight: 600; color: #1e293b; font-size: 0.88rem;">
+                                        <span class="lbl-text">🏛️ স্থায়ী ঠিকানা (Permanent Address)</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: #4f46e5; margin: 0; background: #eef2ff; padding: 3px 10px; border-radius: 20px; border: 1px solid #c7d2fe;">
+                                        <input type="checkbox" id="modal-staff-same-address" onchange="copyAddress()" style="width: 15px; height: 15px; margin: 0; cursor: pointer; box-shadow: none; accent-color: #4f46e5;">
+                                        <span>বর্তমান ঠিকানার মতো (Same as Present)</span>
+                                    </label>
+                                </div>
+                                <textarea id="modal-staff-permanent-addr" placeholder="স্থায়ী ঠিকানা লিখুন..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. ACTION FOOTER BAR -->
+                    <div style="display: flex; gap: 16px; margin-top: 10px; padding-top: 15px; border-top: 1.5px solid #e2e8f0;">
+                        <button type="button" class="btn-primary" onclick="closeStaffModal()"
+                            style="flex: 1; background: #f1f5f9; color: #475569; height: 50px; border-radius: 10px; font-weight: 700; cursor: pointer; border: 1.5px solid #cbd5e1; font-size: 0.96rem; transition: all 0.2s ease;">
+                            ✕ বাতিল করুন (Cancel)
+                        </button>
+                        <button type="submit" class="btn-primary"
+                            style="flex: 2; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); height: 50px; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; font-size: 1rem; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); transition: all 0.2s ease;">
+                            💾 তথ্য সংরক্ষণ করুন (Save Staff Information)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW STAFF DETAILS MODAL (DIGITAL CV) -->
+    <div id="view-staff-modal" class="modal"
+        style="display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px); padding: 30px 10px;">
+
+        <!-- Controls (Print & Close) -->
+        <div class="no-print"
+            style="max-width: 210mm; margin: 0 auto 12px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="window.print()"
+                style="background: #10b981; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25); font-size: 0.95rem; transition: all 0.2s ease;">
+                🖨️ প্রিন্ট করুন (Print)
+            </button>
+            <button onclick="closeViewStaffModal()"
+                style="background: #ef4444; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25); font-size: 0.95rem; transition: all 0.2s ease;">
+                ❌ বন্ধ করুন (Close)
+            </button>
+        </div>
+
+        <!-- A4 Page Container -->
+        <div class="modal-content cv-paper"
+            style="margin: 0 auto 40px; padding: 0.3in; width: 95%; max-width: 210mm; background: #ffffff; color: #000000; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border-radius: 12px; font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', 'SolaimanLipi', serif; position: relative; box-sizing: border-box; border: 1.5px solid #cbd5e1; text-align: left;">
+
+            <!-- Header Grid: Logo & Text -->
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px; gap: 15px;">
+                <!-- Logo -->
+                <div id="view-school-logo"
+                    style="width: 75px; height: 75px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 50%; border: 1px solid #e2e8f0; background: #f8fafc; flex-shrink: 0;">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <!-- School Info -->
+                <div style="flex: 1; text-align: center;">
+                    <h1 id="view-school-name"
+                        style="margin: 0; font-size: 1.7rem; font-weight: 800; color: #1e3a8a; letter-spacing: 0.5px; text-transform: uppercase;">
+                        Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School</h1>
+                    <p id="view-school-address"
+                        style="margin: 5px 0 0; font-size: 0.88rem; color: #000000; font-weight: 600;">Sector-10,
+                        Uttara, Dhaka-1230, Bangladesh</p>
+                    <div id="view-title-label"
+                        style="display: inline-block; background: #f0fdf4; color: #15803d; font-size: 1.15rem; font-weight: 800; padding: 6px 28px; border-radius: 50px; border: 2px solid #15803d; margin-top: 12px; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(21, 128, 61, 0.08);">
+                        শিক্ষকের প্রোফাইল
+                    </div>
+                </div>
+
+                <!-- Spacer for layout balance -->
+                <div style="width: 75px; flex-shrink: 0;"></div>
+            </div>
+
+            <!-- Profile Overview (Details & Photo) -->
+            <div style="display: flex; gap: 30px; margin-bottom: 25px; align-items: flex-start;">
+                <!-- Details Grid -->
+                <div style="flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 20px;">
+                    <div style="grid-column: span 2;">
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">শিক্ষক/কর্মচারীর
+                            নাম (Full Name)</span>
+                        <div id="view-cv-name"
+                            style="font-size: 1.35rem; font-weight: 800; color: #1e3a8a; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">পদবী
+                            (Designation)</span>
+                        <div id="view-cv-designation"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">স্টাফ
+                            আইডি (Staff ID/Index)</span>
+                        <div id="view-cv-staff-id"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">স্টাফ
+                            ক্যাটাগরি (Category)</span>
+                        <div id="view-cv-category"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div id="view-cv-department-row">
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">বিভাগ
+                            (Department)</span>
+                        <div id="view-cv-department"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div id="view-cv-subject-row">
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">বিষয়
+                            (Subject)</span>
+                        <div id="view-cv-subject"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">যোগদানের
+                            তারিখ (Joining Date)</span>
+                        <div id="view-cv-joining"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.78rem; color: #000000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">MPO
+                            স্ট্যাটাস
+                            (MPO / Non MPO)</span>
+                        <div id="view-cv-mpo"
+                            style="font-size: 1rem; font-weight: 700; color: #000000; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 4px; margin-top: 2px;">
+                            -</div>
+                    </div>
+                </div>
+
+                <!-- Passport Photo (4cm x 5cm) -->
+                <div
+                    style="width: 4cm; height: 5cm; border: 2px solid #1e3a8a; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; flex-shrink: 0; background: #f8fafc; border-radius: 6px;">
+                    <img id="view-cv-photo" src="" alt="Staff Photo"
+                        style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+            </div>
+
+            <!-- Personal Details Section -->
+            <div style="margin-bottom: 25px;">
+                <h3
+                    style="font-size: 1.15rem; color: #1e3a8a; border-bottom: 1.5px solid #1e3a8a; margin: 0 0 12px 0; padding-bottom: 6px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
+                    ব্যক্তিগত ও যোগাযোগ বিবরণ (Personal & Contact Details)</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 25px;">
+                    <div style="display: flex; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        <span style="font-weight: 700; color: #000000; font-size: 0.88rem; width: 180px;">মোবাইল নম্বর
+                            (Mobile No):</span>
+                        <span id="view-cv-mobile" style="font-weight: 600; color: #000000; font-size: 0.92rem;">-</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        <span style="font-weight: 700; color: #000000; font-size: 0.88rem; width: 180px;">ইমেইল ঠিকানা
+                            (Email Address):</span>
+                        <span id="view-cv-email" style="font-weight: 600; color: #000000; font-size: 0.92rem;">-</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        <span style="font-weight: 700; color: #000000; font-size: 0.88rem; width: 180px;">এনআইডি নম্বর
+                            (NID No):</span>
+                        <span id="view-cv-nid" style="font-weight: 600; color: #000000; font-size: 0.92rem;">-</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        <span style="font-weight: 700; color: #000000; font-size: 0.88rem; width: 180px;">জন্ম তারিখ
+                            (Date of Birth):</span>
+                        <span id="view-cv-dob" style="font-weight: 600; color: #000000; font-size: 0.92rem;">-</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        <span style="font-weight: 700; color: #000000; font-size: 0.88rem; width: 180px;">রক্তের গ্রুপ
+                            (Blood Group):</span>
+                        <span id="view-cv-blood" style="font-weight: 600; color: #000000; font-size: 0.92rem;">-</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        <span style="font-weight: 700; color: #000000; font-size: 0.88rem; width: 180px;">লিঙ্গ
+                            (Gender):</span>
+                        <span id="view-cv-gender" style="font-weight: 600; color: #000000; font-size: 0.92rem;">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Qualification Section -->
+            <div style="margin-bottom: 25px;">
+                <h3
+                    style="font-size: 1.15rem; color: #1e3a8a; border-bottom: 1.5px solid #1e3a8a; margin: 0 0 12px 0; padding-bottom: 6px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
+                    শিক্ষাগত যোগ্যতা (Educational Qualification)</h3>
+                <div id="view-cv-qualification"
+                    style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 18px; border-radius: 8px; font-weight: 600; color: #000000; font-size: 0.95rem; line-height: 1.6;">
+                    -
+                </div>
+            </div>
+
+            <!-- Addresses Section -->
+            <div style="margin-bottom: 50px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px;">
+                <div>
+                    <h3
+                        style="font-size: 1.15rem; color: #1e3a8a; border-bottom: 1.5px solid #1e3a8a; margin: 0 0 12px 0; padding-bottom: 6px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
+                        বর্তমান ঠিকানা (Present Address)</h3>
+                    <div id="view-cv-present"
+                        style="font-size: 0.92rem; color: #000000; font-weight: 600; line-height: 1.6; padding: 4px 0;">
+                        -
+                    </div>
+                </div>
+                <div>
+                    <h3
+                        style="font-size: 1.15rem; color: #1e3a8a; border-bottom: 1.5px solid #1e3a8a; margin: 0 0 12px 0; padding-bottom: 6px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">
+                        স্থায়ী ঠিকানা (Permanent Address)</h3>
+                    <div id="view-cv-permanent"
+                        style="font-size: 0.92rem; color: #000000; font-weight: 600; line-height: 1.6; padding: 4px 0;">
+                        -
+                    </div>
+                </div>
+            </div>
+
+            <!-- CV Footer (Signature Block) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px; padding: 0 15px;">
+                <div style="text-align: center; width: 220px;">
+                    <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 6px;">
+                        <img id="view-cv-signature" src="" alt="Teacher Signature" style="max-height: 50px; max-width: 180px; display: none; object-fit: contain;">
+                    </div>
+                    <div style="border-top: 1.5px dotted #000000; margin-bottom: 8px; width: 100%;"></div>
+                    <span style="font-size: 0.95rem; font-weight: bold; color: #000000;">শিক্ষক/কর্মচারীর স্বাক্ষর</span>
+                </div>
+                <div style="text-align: center; width: 220px;">
+                    <div style="height: 55px; margin-bottom: 6px;"></div>
+                    <div style="border-top: 1.5px dotted #000000; margin-bottom: 8px; width: 100%;"></div>
+                    <span style="font-size: 0.95rem; font-weight: bold; color: #000000;">অধ্যক্ষ/প্রধান শিক্ষকের স্বাক্ষর</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- STAFF IMPORT PREVIEW MODAL -->
+    <div id="staff-import-preview-modal" class="modal"
+        style="display: none; position: fixed; z-index: 210; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px);">
+        <div class="modal-content glass-card"
+            style="margin: 2% auto; padding: 25px; width: 95%; max-width: 1200px; position: relative; background: #ffffff; color: #120b29; border: 2px solid rgba(79, 70, 229, 0.6); box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4); border-radius: 16px; display: flex; flex-direction: column; max-height: 94vh;">
+
+            <!-- Controls (Fullscreen & Close) -->
+            <span class="fullscreen-btn" onclick="toggleStaffImportFullscreen()"
+                style="position: absolute; right: 55px; top: 17px; font-size: 20px; font-weight: bold; cursor: pointer; color: #120b29; user-select: none;"
+                title="Full Screen">⛶</span>
+            <span class="close-btn" onclick="closeStaffImportPreviewModal()"
+                style="position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #120b29; user-select: none;"
+                title="Close">&times;</span>
+
+            <!-- Modal Title Header -->
+            <div
+                style="border-bottom: 2px solid rgba(79, 70, 229, 0.25); padding-bottom: 12px; margin-bottom: 15px; padding-right: 80px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="portal-form-title"
+                            style="margin: 0; font-size: 1.6rem !important; color: #1e1b4b !important; font-weight: 700; line-height: 1.2;">
+                            শিক্ষক ও কর্মচারী এক্সেল প্রিভিউ ও ইমপোর্ট
+                        </h3>
+                        <p style="margin: 3px 0 0; font-size: 0.85rem; color: #6b7280; font-weight: 500;">
+                            ফাইল থেকে লোডকৃত তথ্য পর্যালোচনা করুন এবং তালিকায় যুক্ত করার জন্য কনফার্ম করুন
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats & Counters Badge Bar -->
+            <div
+                style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 15px; margin-bottom: 15px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                    <span
+                        style="background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 5px;">
+                        📋 মোট রেকর্ড: <b id="preview-stat-total" style="color: #4f46e5; font-size: 0.95rem;">0</b> জন
+                    </span>
+                    <span
+                        style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 5px;">
+                        👨‍🏫 শিক্ষক: <b id="preview-stat-teachers" style="color: #15803d; font-size: 0.95rem;">0</b> জন
+                    </span>
+                    <span
+                        style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 5px;">
+                        💼 কর্মচারী: <b id="preview-stat-staff" style="color: #b45309; font-size: 0.95rem;">0</b> জন
+                    </span>
+                    <span
+                        style="background: #ccfbf1; color: #115e59; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 5px;">
+                        🎖️ এমপিও: <b id="preview-stat-mpo" style="color: #0f766e; font-size: 0.95rem;">0</b> জন
+                    </span>
+                    <span id="preview-duplicate-badge"
+                        style="display: none; background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; align-items: center; gap: 5px;">
+                        ⚠️ বিদ্যমান আইডি: <b id="preview-stat-dups" style="color: #dc2626; font-size: 0.95rem;">0</b> টি
+                    </span>
+                    <span
+                        style="background: #f1f5f9; color: #334155; border: 1px dashed #94a3b8; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 5px;"
+                        title="স্টাফ আইডি শর্ত: চলতি বছরের শেষ ২ ডিজিট + জন্ম সালের শেষ ২ ডিজিট + ২ ডিজিটের ক্রমিক নম্বর (যেমন: 268501)">
+                        🆔 শর্ত: <b style="color: #4f46e5;">চলতি বছর + জন্ম সাল + ক্রমিক</b>
+                    </span>
+                </div>
+
+                <!-- Duplicate Strategy Selector -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label for="import-dup-strategy"
+                        style="font-size: 0.82rem; font-weight: 700; color: #374151; white-space: nowrap;">
+                        ডুপ্লিকেট সমাধান:
+                    </label>
+                    <select id="import-dup-strategy" onchange="handleDupStrategyChange()"
+                        style="height: 32px; font-size: 0.82rem; font-weight: 600; padding: 0 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #111827; cursor: pointer;">
+                        <option value="skip">বিদ্যমান আইডি স্কিপ করুন (Skip Existing)</option>
+                        <option value="overwrite">বিদ্যমান তথ্য আপডেট করুন (Update/Overwrite)</option>
+                        <option value="auto_new">নতুন ইউনিক আইডি দিন (Auto-generate New ID)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table Filter Toolbar -->
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: #374151;">ক্যাটাগরি:</label>
+                    <select id="import-filter-category" onchange="filterImportPreview()"
+                        style="height: 32px; font-size: 0.82rem; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; padding: 0 8px; background: #ffffff;">
+                        <option value="all">সকল ক্যাটাগরি (All)</option>
+                        <option value="Teacher">শুধুমাত্র শিক্ষক (Teachers)</option>
+                        <option value="Staff">শুধুমাত্র কর্মচারী (Staff)</option>
+                    </select>
+                    <input type="text" id="import-preview-search" placeholder="নাম, পদবী বা আইডি দিয়ে খুঁজুন..."
+                        oninput="filterImportPreview()"
+                        style="height: 32px; width: 230px; font-size: 0.82rem; border-radius: 6px; border: 1px solid #cbd5e1; padding: 0 10px; background: #ffffff;">
+                </div>
+                <div style="font-size: 0.88rem; color: #4f46e5; font-weight: 700;">
+                    ইমপোর্টের জন্য সিলেক্টেড: <span id="import-selected-count">0</span> জন
+                </div>
+            </div>
+
+            <!-- Scrollable Interactive Table -->
+            <div
+                style="overflow-x: auto; overflow-y: auto; flex: 1; min-height: 250px; max-height: 52vh; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                    <thead
+                        style="position: sticky; top: 0; background: #f1f5f9; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                        <tr style="border-bottom: 2px solid #cbd5e1; color: #1e293b;">
+                            <th style="width: 38px; text-align: center; padding: 8px 6px;">
+                                <input type="checkbox" id="import-select-all" checked
+                                    onchange="toggleAllImportCheckboxes(this)"
+                                    style="cursor: pointer; width: 16px; height: 16px;">
+                            </th>
+                            <th style="width: 45px; text-align: center; padding: 8px 6px;">SL</th>
+                            <th style="width: 110px; padding: 8px 10px;">Staff ID</th>
+                            <th style="min-width: 160px; padding: 8px 10px;">নাম (Employee Name)</th>
+                            <th style="width: 90px; padding: 8px 10px; text-align: center;">ক্যাটাগরি</th>
+                            <th style="min-width: 120px; padding: 8px 10px;">পদবী (Designation)</th>
+                            <th style="min-width: 95px; padding: 8px 8px;">বিভাগ</th>
+                            <th style="width: 85px; padding: 8px 8px; text-align: center;">MPO</th>
+                            <th style="min-width: 90px; padding: 8px 8px;">বিষয়</th>
+                            <th style="width: 110px; padding: 8px 8px;">মোবাইল নম্বর</th>
+                            <th style="width: 70px; padding: 8px 8px; text-align: center;">লিঙ্গ</th>
+                            <th style="width: 95px; padding: 8px 8px;">যোগদান</th>
+                            <th style="width: 50px; text-align: center; padding: 8px 6px;">মুছুন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-import-preview-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Action Footer -->
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                <button type="button" class="btn-primary" onclick="triggerStaffImportFile()"
+                    style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; height: 40px; padding: 0 16px; font-weight: 700; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    🔄 অন্য ফাইল নির্বাচন (Browse Another)
+                </button>
+
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button type="button" class="btn-primary" onclick="closeStaffImportPreviewModal()"
+                        style="background: #e5e7eb; color: #374151; border: 1px solid #d1d5db; height: 40px; padding: 0 18px; font-weight: 700; border-radius: 8px; cursor: pointer;">
+                        ❌ বাতিল (Cancel)
+                    </button>
+                    <button type="button" class="btn-primary" id="btn-confirm-import" onclick="confirmAndSaveStaffImport()"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; height: 40px; padding: 0 24px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 8px;">
+                        💾 নিশ্চিত ও ইমপোর্ট করুন (Confirm & Import)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School. All rights reserved.</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z" />
+                    </svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shared JS -->
+    <script src="main.js?v=4.2"></script>
+    <script>
+        // --- STAFF MANAGEMENT DATABASE SYSTEM ---
+        let currentStaffPhotoBase64 = "";
+        let currentStaffPage = 1;
+        const staffPerPage = 10;
+
+        // Image helper: Square crop & resize to 300x300 (1:1 ratio) with 300 DPI target
+        function resizeImageToSquare300(img) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+
+            const minSide = Math.min(img.width, img.height);
+            const sx = (img.width - minSide) / 2;
+            const sy = (img.height - minSide) / 2;
+            ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, 300, 300);
+            return canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        // Signature helper: Resize/fit to 300x80 canvas with transparency preserved (PNG)
+        function resizeImageToSignature(img) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 80;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 300, 80);
+
+            const hRatio = 300 / img.width;
+            const vRatio = 80 / img.height;
+            const ratio = Math.min(hRatio, vRatio, 1);
+            const drawW = img.width * ratio;
+            const drawH = img.height * ratio;
+            const offsetX = (300 - drawW) / 2;
+            const offsetY = (80 - drawH) / 2;
+
+            ctx.drawImage(img, 0, 0, img.width, img.height, offsetX, offsetY, drawW, drawH);
+            return canvas.toDataURL('image/png');
+        }
+
+        // Backward compatibility helper
+        function resizeImageToPassport(img) {
+            return resizeImageToSquare300(img);
+        }
+
+        function previewStaffPhoto(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert("Please select a valid image file.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    currentStaffPhotoBase64 = resizeImageToPassport(img);
+
+                    // Show preview UI
+                    if (document.getElementById('staff-photo-placeholder')) {
+                        document.getElementById('staff-photo-placeholder').style.display = 'none';
+                    }
+                    const previewImg = document.getElementById('staff-photo-preview');
+                    if (previewImg) {
+                        previewImg.src = currentStaffPhotoBase64;
+                        previewImg.style.display = 'block';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadStaffList() {
+            const stored = localStorage.getItem('school_staff');
+            if (!stored) {
+                return [];
+            }
+            try {
+                const list = JSON.parse(stored);
+                let updated = false;
+                list.forEach(staff => {
+                    if (!staff.joining) {
+                        staff.joining = "2024-01-01";
+                        updated = true;
+                    }
+                });
+                if (updated) {
+                    localStorage.setItem('school_staff', JSON.stringify(list));
+                }
+                return list;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function formatJoiningDate(joiningStr) {
+            if (!joiningStr || String(joiningStr).trim() === '') return '01-01-2024';
+            const parts = String(joiningStr).split('-');
+            if (parts.length === 3 && parts[0].length === 4) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return joiningStr;
+        }
+
+        function updateStaffSummaryTable(list) {
+            let teacherTotal = 0, teacherMale = 0, teacherFemale = 0, teacherMpo = 0;
+            let staffTotal = 0, staffMale = 0, staffFemale = 0, staffMpo = 0;
+
+            (list || []).forEach(item => {
+                const isTeacher = (item.category === 'Teacher' || item.category === 'শিক্ষক');
+                const isMale = (item.gender === 'Male' || item.gender === 'পুরুষ');
+                const isFemale = (item.gender === 'Female' || item.gender === 'মহিলা');
+                const isMpo = ((item.mpoStatus || item.mpo) === 'MPO');
+
+                if (isTeacher) {
+                    teacherTotal++;
+                    if (isMale) teacherMale++;
+                    else if (isFemale) teacherFemale++;
+                    if (isMpo) teacherMpo++;
+                } else {
+                    staffTotal++;
+                    if (isMale) staffMale++;
+                    else if (isFemale) staffFemale++;
+                    if (isMpo) staffMpo++;
+                }
+            });
+
+            const tTot = document.getElementById('sum-teacher-total');
+            const tMal = document.getElementById('sum-teacher-male');
+            const tFem = document.getElementById('sum-teacher-female');
+            const tMpo = document.getElementById('sum-teacher-mpo');
+            const sTot = document.getElementById('sum-staff-total');
+            const sMal = document.getElementById('sum-staff-male');
+            const sFem = document.getElementById('sum-staff-female');
+            const sMpo = document.getElementById('sum-staff-mpo');
+
+            if (tTot) tTot.innerText = teacherTotal;
+            if (tMal) tMal.innerText = teacherMale;
+            if (tFem) tFem.innerText = teacherFemale;
+            if (tMpo) tMpo.innerText = teacherMpo;
+            if (sTot) sTot.innerText = staffTotal;
+            if (sMal) sMal.innerText = staffMale;
+            if (sFem) sFem.innerText = staffFemale;
+            if (sMpo) sMpo.innerText = staffMpo;
+        }
+
+        function onStaffSearchInput() {
+            const searchInput = document.getElementById('staff-search-input');
+            const clearBtn = document.getElementById('staff-search-clear-btn');
+            if (searchInput && clearBtn) {
+                clearBtn.style.display = searchInput.value.trim() !== '' ? 'block' : 'none';
+            }
+            currentStaffPage = 1;
+            renderStaffList();
+        }
+
+        function clearStaffSearch() {
+            const searchInput = document.getElementById('staff-search-input');
+            const categorySelect = document.getElementById('staff-search-category');
+            const mpoSelect = document.getElementById('staff-search-mpo');
+            const clearBtn = document.getElementById('staff-search-clear-btn');
+
+            if (searchInput) searchInput.value = '';
+            if (categorySelect) categorySelect.value = 'all';
+            if (mpoSelect) mpoSelect.value = 'all';
+            if (clearBtn) clearBtn.style.display = 'none';
+
+            currentStaffPage = 1;
+            renderStaffList();
+        }
+
+        function getFilteredStaffList() {
+            const fullList = loadStaffList();
+            const searchInput = document.getElementById('staff-search-input');
+            const categorySelect = document.getElementById('staff-search-category');
+            const mpoSelect = document.getElementById('staff-search-mpo');
+
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const categoryFilter = categorySelect ? categorySelect.value : 'all';
+            const mpoFilter = mpoSelect ? mpoSelect.value : 'all';
+
+            const isFilteringActive = (searchTerm !== '' || categoryFilter !== 'all' || mpoFilter !== 'all');
+
+            const countBadge = document.getElementById('staff-search-count-badge');
+            const countVal = document.getElementById('staff-search-count-val');
+            const resetBtn = document.getElementById('staff-search-reset-btn');
+
+            const filteredList = fullList.filter(staff => {
+                // Category filter
+                if (categoryFilter !== 'all') {
+                    const isTeacher = (staff.category === 'Teacher' || staff.category === 'শিক্ষক');
+                    if (categoryFilter === 'Teacher' && !isTeacher) return false;
+                    if (categoryFilter === 'Staff' && isTeacher) return false;
+                }
+
+                // MPO filter
+                if (mpoFilter !== 'all') {
+                    const isMpo = ((staff.mpoStatus || staff.mpo) === 'MPO');
+                    if (mpoFilter === 'MPO' && !isMpo) return false;
+                    if (mpoFilter === 'Non-MPO' && isMpo) return false;
+                }
+
+                // Search query
+                if (searchTerm) {
+                    const fieldsToSearch = [
+                        staff.staffId,
+                        staff.name,
+                        staff.nameBn,
+                        staff.designation,
+                        staff.department,
+                        staff.subject,
+                        staff.mobile,
+                        staff.email,
+                        staff.nid,
+                        staff.category,
+                        staff.mpoStatus || staff.mpo,
+                        staff.gender,
+                        staff.qualification,
+                        staff.presentAddr,
+                        staff.permanentAddr
+                    ];
+                    const match = fieldsToSearch.some(field => field && String(field).toLowerCase().includes(searchTerm));
+                    if (!match) return false;
+                }
+
+                return true;
+            });
+
+            if (countBadge && countVal) {
+                if (isFilteringActive) {
+                    countBadge.style.display = 'inline-block';
+                    countVal.innerText = filteredList.length;
+                } else {
+                    countBadge.style.display = 'none';
+                }
+            }
+            if (resetBtn) {
+                resetBtn.style.display = isFilteringActive ? 'inline-block' : 'none';
+            }
+
+            return { fullList: fullList, filteredList: filteredList, isFilteringActive: isFilteringActive };
+        }
+
+        function renderStaffList() {
+            const tbody = document.getElementById('staff-list-tbody');
+            if (!tbody) return;
+
+            const { fullList, filteredList, isFilteringActive } = getFilteredStaffList();
+            updateStaffSummaryTable(fullList);
+
+            const totalItems = filteredList.length;
+
+            if (totalItems === 0) {
+                const searchInput = document.getElementById('staff-search-input');
+                const queryVal = searchInput ? searchInput.value.trim() : '';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px 20px; color: #4b5563;">
+                            <div style="font-size: 2.2rem; margin-bottom: 8px;">🔍</div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: #1f2937;">কোনো শিক্ষক বা কর্মচারীর তথ্য পাওয়া যায়নি</div>
+                            ${queryVal ? `<div style="font-size: 0.9rem; color: #6b7280; margin-top: 4px;">"${queryVal}"-এর সাথে মেলে এমন কোনো তথ্য তালিকায় নেই।</div>` : ''}
+                            <button type="button" onclick="clearStaffSearch()" style="margin-top: 15px; padding: 8px 18px; font-size: 0.88rem; font-weight: 700; background: #4f46e5; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(79,70,229,0.3);">
+                                🔄 সকল তালিকা দেখুন (Reset Search)
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                const infoEl = document.getElementById('staff-pagination-info');
+                if (infoEl) infoEl.innerText = isFilteringActive ? "মোট: ০ জন (ফিল্টারকৃত) | পাতা: ০ এর ০" : "মোট: ০ জন | পাতা: ০ এর ০";
+                updateStaffPaginationButtons(0, 0);
+                return;
+            }
+
+            const totalPages = Math.ceil(totalItems / staffPerPage) || 1;
+            if (currentStaffPage > totalPages) {
+                currentStaffPage = totalPages;
+            }
+            if (currentStaffPage < 1) {
+                currentStaffPage = 1;
+            }
+
+            const startIndex = (currentStaffPage - 1) * staffPerPage;
+            const endIndex = Math.min(startIndex + staffPerPage, totalItems);
+            const paginatedList = filteredList.slice(startIndex, endIndex);
+
+            let html = '';
+            paginatedList.forEach((staff, pIndex) => {
+                const actualIndex = fullList.indexOf(staff);
+                const photoHtml = staff.photo
+                    ? `<img src="${staff.photo}" style="width: 51px; height: 64px; border-radius: 4px; object-fit: cover; display: block; margin: 0 auto; border: 1.5px solid var(--neon-cyan); box-shadow: var(--cyan-glow);">`
+                    : `<div style="width: 51px; height: 64px; border-radius: 4px; background: rgba(0,0,0,0.05); border: 1px dashed rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto; color: var(--muted-text);"><svg viewBox="0 0 24 24" style="width: 23px; height: 23px; fill: currentColor;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`;
+
+                const formattedJoining = formatJoiningDate(staff.joining || staff.joiningDate || staff.joinDate);
+
+                html += `
+                    <tr style="border-bottom: 1px solid var(--glass-border); opacity: 1;">
+                        <td style="text-align: center; font-weight: 700; padding: 3.5px 10px; color: #000000;">${startIndex + pIndex + 1}</td>
+                        <td style="padding: 3.5px 7px;">${photoHtml}</td>
+                        <td class="staff-id" style="font-weight: 600; padding: 3.5px 10px; color: #2563eb;">${staff.staffId}</td>
+                        <td class="staff-name" style="padding: 3.5px 10px; color: #000000;">
+                            <div style="font-weight: 700; line-height: 1.15; color: #000000; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <span>${staff.name}</span>
+                                ${staff.nameBn ? `<span style="font-size: 0.85rem; color: #4b5563; font-weight: 600;">(${staff.nameBn})</span>` : ''}
+                                ${(staff.mpoStatus || staff.mpo) ? `<span style="font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; background: ${(staff.mpoStatus || staff.mpo) === 'MPO' ? '#10b981' : '#f59e0b'}; color: #fff; font-weight: 700;">${staff.mpoStatus || staff.mpo}</span>` : ''}
+                            </div>
+                            <div style="font-size: 1rem; color: #111827; font-weight: 600; margin-top: 1px; line-height: 1.15;">
+                                ${staff.designation || ''}
+                            </div>
+                        </td>
+                        <td style="padding: 3.5px 10px; color: #000000;">
+                            <div style="font-weight: 600; line-height: 1.15; color: #000000;">${staff.mobile || '-'}</div>
+                            <div style="font-size: 1rem; color: #111827; font-weight: 600; margin-top: 1px; line-height: 1.15;">
+                                Join: ${formattedJoining}
+                            </div>
+                        </td>
+                        <td style="text-align: center; padding: 3.5px 10px;">
+                            <div class="action-icons-wrapper">
+                                <button class="action-icon-btn view-btn" data-perm="staff_view" onclick="viewStaffDetails(${actualIndex})" title="View Details">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                                <button class="action-icon-btn edit-btn" data-perm="staff_edit" onclick="openEditStaffModal(${actualIndex})" title="Update Info">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                                <button class="action-icon-btn delete-btn" data-perm="staff_delete" onclick="deleteStaffMember(${actualIndex})" title="Delete Staff">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+
+            const infoEl = document.getElementById('staff-pagination-info');
+            if (infoEl) {
+                infoEl.innerText = isFilteringActive
+                    ? `মোট: ${totalItems} জন (ফিল্টারকৃত) | পাতা: ${currentStaffPage} এর ${totalPages}`
+                    : `মোট: ${totalItems} জন | পাতা: ${currentStaffPage} এর ${totalPages}`;
+            }
+            updateStaffPaginationButtons(currentStaffPage, totalPages);
+
+            if (typeof window.applyUserPermissionsUI === 'function') {
+                window.applyUserPermissionsUI();
+            }
+        }
+
+        function updateStaffPaginationButtons(currentPage, totalPages) {
+            const firstBtn = document.getElementById('staff-page-first');
+            const prevBtn = document.getElementById('staff-page-prev');
+            const nextBtn = document.getElementById('staff-page-next');
+            const lastBtn = document.getElementById('staff-page-last');
+            const numbersContainer = document.getElementById('staff-page-numbers');
+
+            if (firstBtn) firstBtn.disabled = (currentPage <= 1 || totalPages <= 1);
+            if (prevBtn) prevBtn.disabled = (currentPage <= 1 || totalPages <= 1);
+            if (nextBtn) nextBtn.disabled = (currentPage >= totalPages || totalPages <= 1);
+            if (lastBtn) lastBtn.disabled = (currentPage >= totalPages || totalPages <= 1);
+
+            if (numbersContainer) {
+                let numHtml = '';
+                if (totalPages > 1) {
+                    let startPage = Math.max(1, currentPage - 2);
+                    let endPage = Math.min(totalPages, startPage + 4);
+                    if (endPage - startPage < 4) {
+                        startPage = Math.max(1, endPage - 4);
+                    }
+                    for (let p = startPage; p <= endPage; p++) {
+                        numHtml += `<button class="pagination-btn ${p === currentPage ? 'active' : ''}" onclick="goToStaffPage(${p})">${p}</button>`;
+                    }
+                }
+                numbersContainer.innerHTML = numHtml;
+            }
+        }
+
+        function changeStaffPage(delta) {
+            const { filteredList } = getFilteredStaffList();
+            const totalPages = Math.ceil(filteredList.length / staffPerPage) || 1;
+            const target = currentStaffPage + delta;
+            if (target >= 1 && target <= totalPages) {
+                currentStaffPage = target;
+                renderStaffList();
+            }
+        }
+
+        function goToStaffPage(page) {
+            const { filteredList } = getFilteredStaffList();
+            const totalPages = Math.ceil(filteredList.length / staffPerPage) || 1;
+            if (page === 'last') page = totalPages;
+            if (page >= 1 && page <= totalPages) {
+                currentStaffPage = page;
+                renderStaffList();
+            }
+        }
+
+        function deleteStaffMember(index) {
+            const list = loadStaffList();
+            const staff = list[index];
+            if (!staff) return;
+
+            const displayName = staff.nameBn ? `${staff.name} (${staff.nameBn})` : (staff.name || staff.staffId);
+            if (confirm(`আপনি কি নিশ্চিত যে "${displayName}"-এর তথ্য তালিকা থেকে মুছে ফেলতে চান?`)) {
+                list.splice(index, 1);
+
+                if (typeof lastLocalWrites === 'object') {
+                    lastLocalWrites['school_staff'] = Date.now();
+                }
+                localStorage.setItem('school_staff', JSON.stringify(list));
+
+                // Adjust pagination if needed
+                const totalPages = Math.ceil(list.length / staffPerPage) || 1;
+                if (currentStaffPage > totalPages) {
+                    currentStaffPage = totalPages;
+                }
+
+                renderStaffList();
+                alert("শিক্ষক/কর্মচারীর তথ্য সফলভাবে মুছে ফেলা হয়েছে!");
+            }
+        }
+
+        // --- STAFF MODAL DIALOG CONTROLLERS ---
+        let currentModalPhotoBase64 = "";
+        let currentModalSignatureBase64 = "";
+
+        function toggleSubjectField() {
+            const category = document.getElementById('modal-staff-category').value;
+            const container = document.getElementById('subject-field-container');
+            if (category === 'Teacher') {
+                container.style.display = 'flex';
+            } else {
+                container.style.display = 'none';
+                document.getElementById('modal-staff-subject').value = '';
+            }
+        }
+
+        function generateAutoStaffIdByDob(dobVal, list = []) {
+            const currentYearStr = new Date().getFullYear().toString().slice(-2);
+            let birthYearStr = "90";
+
+            if (dobVal) {
+                const d = new Date(dobVal);
+                if (!isNaN(d.getTime())) {
+                    birthYearStr = d.getFullYear().toString().slice(-2);
+                } else if (typeof dobVal === 'string' && /^\d{4}/.test(dobVal)) {
+                    birthYearStr = dobVal.slice(2, 4);
+                }
+            }
+
+            const prefix = currentYearStr + birthYearStr;
+
+            let maxSerial = 0;
+            list.forEach(staff => {
+                if (staff && staff.staffId) {
+                    const idStr = String(staff.staffId).trim();
+                    if (idStr.startsWith(prefix) && idStr.length === 6) {
+                        const serialStr = idStr.slice(-2);
+                        const serialNum = parseInt(serialStr, 10);
+                        if (!isNaN(serialNum) && serialNum > maxSerial) {
+                            maxSerial = serialNum;
+                        }
+                    }
+                }
+            });
+
+            const nextSerial = maxSerial + 1;
+            return prefix + nextSerial.toString().padStart(2, '0');
+        }
+
+        function generateAutoStaffId() {
+            const dobVal = document.getElementById('modal-staff-dob').value;
+            if (!dobVal) return;
+
+            const editIndex = document.getElementById('staff-edit-index').value;
+            if (editIndex !== "") return; // Don't overwrite existing staff ID when editing
+
+            const list = loadStaffList();
+            document.getElementById('modal-staff-id').value = generateAutoStaffIdByDob(dobVal, list);
+        }
+
+        function copyAddress() {
+            const checkbox = document.getElementById('modal-staff-same-address');
+            const present = document.getElementById('modal-staff-present-addr');
+            const permanent = document.getElementById('modal-staff-permanent-addr');
+            if (checkbox.checked) {
+                permanent.value = present.value;
+                permanent.setAttribute('readonly', 'true');
+                present.addEventListener('input', updatePermanentAddress);
+            } else {
+                permanent.removeAttribute('readonly');
+                present.removeEventListener('input', updatePermanentAddress);
+            }
+        }
+
+        function updatePermanentAddress() {
+            const checkbox = document.getElementById('modal-staff-same-address');
+            if (checkbox && checkbox.checked) {
+                document.getElementById('modal-staff-permanent-addr').value = document.getElementById('modal-staff-present-addr').value;
+            }
+        }
+
+        function toggleStaffModalFullscreen() {
+            const modalContent = document.querySelector('#staff-modal .modal-content');
+            const btn = document.querySelector('#staff-modal .fullscreen-btn');
+            if (modalContent.classList.contains('fullscreen')) {
+                modalContent.classList.remove('fullscreen');
+                btn.innerText = "⛶";
+                btn.title = "Full Screen";
+            } else {
+                modalContent.classList.add('fullscreen');
+                btn.innerText = "🗗";
+                btn.title = "Restore Size";
+            }
+        }
+
+        // Helper to check if designation represents Headmaster / Head Teacher
+        function isHeadmasterDesignation(designation) {
+            if (!designation) return false;
+            const des = String(designation).trim().toLowerCase();
+            if (des.includes('সহকারী') || des.includes('সহ:') || des.includes('উপাধ্যক্ষ') || des.includes('assistant') || des.includes('asst') || des.includes('vice') || des.includes('deputy')) {
+                return false;
+            }
+            return des.includes('প্রধান শিক্ষক') || 
+                   des.includes('প্রধান শিক্ষিকা') ||
+                   des.includes('headmaster') || 
+                   des.includes('head master') || 
+                   des.includes('headteacher') || 
+                   des.includes('head teacher') || 
+                   des.includes('principal') || 
+                   des.includes('অধ্যক্ষ') || 
+                   des.includes('সুপারিনটেনডেন্ট') || 
+                   des.includes('superintendent');
+        }
+        window.isHeadmasterDesignation = isHeadmasterDesignation;
+
+        function loadDesignationList() {
+            const stored = localStorage.getItem('school_designations');
+            if (!stored) {
+                const defaults = [
+                    { name: "প্রধান শিক্ষক (Headmaster)", category: "Teacher" },
+                    { name: "সহকারী প্রধান শিক্ষক (Assistant Headmaster)", category: "Teacher" },
+                    { name: "সিনিয়র শিক্ষক (Senior Teacher)", category: "Teacher" },
+                    { name: "সহকারী শিক্ষক (Assistant Teacher)", category: "Teacher" },
+                    { name: "জুনিয়র শিক্ষক (Junior Teacher)", category: "Teacher" },
+                    { name: "ট্রেড ইন্সট্রাক্টর (Trade Instructor)", category: "Teacher" },
+                    { name: "কম্পিউটার ডেমোনস্ট্রেটর (Computer Demonstrator)", category: "Teacher" },
+                    { name: "অফিস সহকারী কাম কম্পিউটার অপারেটর", category: "Staff" },
+                    { name: "হিসাব সহকারী (Accounts Assistant)", category: "Staff" },
+                    { name: "গ্রন্থাগারিক / লাইব্রেরিয়ান (Librarian)", category: "Staff" },
+                    { name: "অফিস সহায়ক / পিয়ন (MLSS / Peon)", category: "Staff" },
+                    { name: "নিরাপত্তাকর্মী (Security Guard)", category: "Staff" },
+                    { name: "পরিচ্ছন্নতাকর্মী (Cleaner)", category: "Staff" },
+                    { name: "আয়া (Aya)", category: "Staff" }
+                ];
+                localStorage.setItem('school_designations', JSON.stringify(defaults));
+                return defaults;
+            }
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && !parsed.some(d => isHeadmasterDesignation(d.name))) {
+                    parsed.unshift({ name: "প্রধান শিক্ষক (Headmaster)", category: "Teacher" });
+                }
+                return parsed;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function populateDesignationDropdown() {
+            const category = document.getElementById('modal-staff-category').value;
+            const department = document.getElementById('modal-staff-department') ? document.getElementById('modal-staff-department').value : '';
+            const selectEl = document.getElementById('modal-staff-designation');
+            if (!selectEl) return;
+
+            const previousValue = selectEl.value;
+
+            const list = loadDesignationList();
+            const staffList = loadStaffList();
+            const editIndexVal = document.getElementById('staff-edit-index') ? document.getElementById('staff-edit-index').value : '';
+            const currentEditIdx = editIndexVal !== '' ? parseInt(editIndexVal, 10) : -1;
+
+            // Check if there is already an existing headmaster for Primary Level and High Level (excluding current editing staff)
+            const primaryHm = staffList.find((s, idx) => idx !== currentEditIdx && isHeadmasterDesignation(s.designation) && (s.department || s.dept || '').toLowerCase() === 'primary level');
+            const highHm = staffList.find((s, idx) => idx !== currentEditIdx && isHeadmasterDesignation(s.designation) && (s.department || s.dept || '').toLowerCase() === 'high level');
+
+            // Filter by category if one is selected
+            const filtered = list.filter(item => !category || item.category === category);
+
+            let html = '<option value="" disabled selected>পদবী নির্বাচন করুন (Select Designation)</option>';
+            filtered.forEach(item => {
+                const isHead = isHeadmasterDesignation(item.name);
+                if (isHead) {
+                    if (department === 'Primary Level' && primaryHm) {
+                        const hmName = primaryHm.nameBn ? `${primaryHm.name} (${primaryHm.nameBn})` : (primaryHm.name || primaryHm.staffId);
+                        html += `<option value="${item.name}" disabled style="color: #9ca3af; background: #f3f4f6;">${item.name} (Primary Level-এ ইতিমধ্যে যুক্ত: ${hmName})</option>`;
+                    } else if (department === 'High Level' && highHm) {
+                        const hmName = highHm.nameBn ? `${highHm.name} (${highHm.nameBn})` : (highHm.name || highHm.staffId);
+                        html += `<option value="${item.name}" disabled style="color: #9ca3af; background: #f3f4f6;">${item.name} (High Level-এ ইতিমধ্যে যুক্ত: ${hmName})</option>`;
+                    } else if (!department && primaryHm && highHm) {
+                        html += `<option value="${item.name}" disabled style="color: #9ca3af; background: #f3f4f6;">${item.name} (উভয় বিভাগে ২ জন প্রধান শিক্ষক বিদ্যমান)</option>`;
+                    } else {
+                        html += `<option value="${item.name}">${item.name}</option>`;
+                    }
+                } else {
+                    html += `<option value="${item.name}">${item.name}</option>`;
+                }
+            });
+
+            selectEl.innerHTML = html;
+            if (previousValue && selectEl.querySelector(`option[value="${previousValue}"]:not([disabled])`)) {
+                selectEl.value = previousValue;
+            }
+        }
+
+        function openAddStaffModal() {
+            document.getElementById('modal-title').innerText = "নতুন শিক্ষক ও কর্মচারী যুক্ত করুন (Add New Teacher / Staff)";
+            document.getElementById('staff-edit-index').value = "";
+            document.getElementById('staff-modal-form').reset();
+            if (document.getElementById('modal-staff-mpo')) document.getElementById('modal-staff-mpo').value = "";
+            if (document.getElementById('modal-staff-department')) document.getElementById('modal-staff-department').value = "";
+            
+            // Reset photo
+            currentModalPhotoBase64 = "";
+            document.getElementById('modal-photo-placeholder').style.display = 'flex';
+            document.getElementById('modal-photo-preview').src = "";
+            document.getElementById('modal-photo-preview').style.display = 'none';
+            if (document.getElementById('modal-photo-input')) document.getElementById('modal-photo-input').value = "";
+            if (document.getElementById('modal-photo-remove-btn')) document.getElementById('modal-photo-remove-btn').style.display = 'none';
+
+            // Reset signature
+            currentModalSignatureBase64 = "";
+            if (document.getElementById('modal-signature-placeholder')) document.getElementById('modal-signature-placeholder').style.display = 'flex';
+            if (document.getElementById('modal-signature-preview')) {
+                document.getElementById('modal-signature-preview').src = "";
+                document.getElementById('modal-signature-preview').style.display = 'none';
+            }
+            if (document.getElementById('modal-signature-input')) document.getElementById('modal-signature-input').value = "";
+            if (document.getElementById('modal-signature-remove-btn')) document.getElementById('modal-signature-remove-btn').style.display = 'none';
+
+            // Reset nameBn field
+            if (document.getElementById('modal-staff-name-bn')) {
+                document.getElementById('modal-staff-name-bn').value = "";
+            }
+
+            // Populate designation dropdown after reset
+            populateDesignationDropdown();
+            document.getElementById('subject-field-container').style.display = 'none';
+
+            // Set fullscreen state by default
+            const modalContent = document.querySelector('#staff-modal .modal-content');
+            if (modalContent) modalContent.classList.add('fullscreen');
+            const fullscreenBtn = document.querySelector('#staff-modal .fullscreen-btn');
+            if (fullscreenBtn) {
+                fullscreenBtn.innerText = "🗗";
+                fullscreenBtn.title = "Restore Size";
+            }
+
+            // Reset address checkbox and state
+            document.getElementById('modal-staff-same-address').checked = false;
+            document.getElementById('modal-staff-permanent-addr').removeAttribute('readonly');
+            document.getElementById('modal-staff-present-addr').removeEventListener('input', updatePermanentAddress);
+
+            document.getElementById('staff-modal').style.display = 'block';
+        }
+
+        function openEditStaffModal(index) {
+            const list = loadStaffList();
+            const staff = list[index];
+            if (!staff) return;
+
+            // Set fullscreen state by default
+            const modalContent = document.querySelector('#staff-modal .modal-content');
+            if (modalContent) modalContent.classList.add('fullscreen');
+            const fullscreenBtn = document.querySelector('#staff-modal .fullscreen-btn');
+            if (fullscreenBtn) {
+                fullscreenBtn.innerText = "🗗";
+                fullscreenBtn.title = "Restore Size";
+            }
+
+            document.getElementById('modal-title').innerText = "তথ্য আপডেট করুন (Update Staff)";
+            document.getElementById('staff-edit-index').value = index;
+            document.getElementById('modal-staff-id').value = staff.staffId || "";
+            document.getElementById('modal-staff-name').value = staff.name || "";
+            if (document.getElementById('modal-staff-name-bn')) {
+                document.getElementById('modal-staff-name-bn').value = staff.nameBn || staff.name_bn || "";
+            }
+            document.getElementById('modal-staff-mobile').value = staff.mobile || "";
+
+            document.getElementById('modal-staff-category').value = staff.category || "";
+            populateDesignationDropdown();
+            document.getElementById('modal-staff-designation').value = staff.designation || "";
+            if (document.getElementById('modal-staff-department')) document.getElementById('modal-staff-department').value = staff.department || staff.dept || "";
+            if (document.getElementById('modal-staff-mpo')) document.getElementById('modal-staff-mpo').value = staff.mpoStatus || staff.mpo || "";
+            document.getElementById('modal-staff-subject').value = staff.subject || "";
+            document.getElementById('modal-staff-gender').value = staff.gender || "";
+            document.getElementById('modal-staff-dob').value = staff.dob || "";
+            document.getElementById('modal-staff-blood').value = staff.blood || "";
+            document.getElementById('modal-staff-email').value = staff.email || "";
+            document.getElementById('modal-staff-nid').value = staff.nid || "";
+            document.getElementById('modal-staff-joining').value = staff.joining || "";
+            document.getElementById('modal-staff-qualification').value = staff.qualification || "";
+            document.getElementById('modal-staff-present-addr').value = staff.presentAddr || "";
+            document.getElementById('modal-staff-permanent-addr').value = staff.permanentAddr || "";
+
+            toggleSubjectField();
+
+            // Set address checkbox and state based on saved values
+            const sameAddrCheckbox = document.getElementById('modal-staff-same-address');
+            const presentAddr = staff.presentAddr || "";
+            const permanentAddr = staff.permanentAddr || "";
+            if (presentAddr && permanentAddr && presentAddr === permanentAddr) {
+                sameAddrCheckbox.checked = true;
+                document.getElementById('modal-staff-permanent-addr').setAttribute('readonly', 'true');
+                document.getElementById('modal-staff-present-addr').addEventListener('input', updatePermanentAddress);
+            } else {
+                sameAddrCheckbox.checked = false;
+                document.getElementById('modal-staff-permanent-addr').removeAttribute('readonly');
+                document.getElementById('modal-staff-present-addr').removeEventListener('input', updatePermanentAddress);
+            }
+
+            // Photo preview setup
+            currentModalPhotoBase64 = staff.photo || "";
+            if (currentModalPhotoBase64) {
+                document.getElementById('modal-photo-placeholder').style.display = 'none';
+                const previewImg = document.getElementById('modal-photo-preview');
+                previewImg.src = currentModalPhotoBase64;
+                previewImg.style.display = 'block';
+                if (document.getElementById('modal-photo-remove-btn')) document.getElementById('modal-photo-remove-btn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('modal-photo-placeholder').style.display = 'flex';
+                document.getElementById('modal-photo-preview').style.display = 'none';
+                if (document.getElementById('modal-photo-remove-btn')) document.getElementById('modal-photo-remove-btn').style.display = 'none';
+            }
+
+            // Signature preview setup
+            currentModalSignatureBase64 = staff.signature || "";
+            if (currentModalSignatureBase64) {
+                if (document.getElementById('modal-signature-placeholder')) document.getElementById('modal-signature-placeholder').style.display = 'none';
+                const sigPreviewImg = document.getElementById('modal-signature-preview');
+                if (sigPreviewImg) {
+                    sigPreviewImg.src = currentModalSignatureBase64;
+                    sigPreviewImg.style.display = 'block';
+                }
+                if (document.getElementById('modal-signature-remove-btn')) document.getElementById('modal-signature-remove-btn').style.display = 'inline-flex';
+            } else {
+                if (document.getElementById('modal-signature-placeholder')) document.getElementById('modal-signature-placeholder').style.display = 'flex';
+                if (document.getElementById('modal-signature-preview')) document.getElementById('modal-signature-preview').style.display = 'none';
+                if (document.getElementById('modal-signature-remove-btn')) document.getElementById('modal-signature-remove-btn').style.display = 'none';
+            }
+
+            document.getElementById('staff-modal').style.display = 'block';
+        }
+
+        function viewStaffDetails(index) {
+            const list = loadStaffList();
+            const staff = list[index];
+            if (!staff) return;
+
+            // Fetch dynamic school settings
+            let settings = localStorage.getItem('school_settings');
+            try {
+                settings = settings ? JSON.parse(settings) : {};
+            } catch (e) {
+                settings = {};
+            }
+            const schoolName = settings.schoolName || "Al-haj Mobarak Hossain Anirban Bydda Tirtha M,l High School";
+            const schoolAddress = settings.schoolAddress || "Sector-10, Uttara, Dhaka-1230, Bangladesh";
+
+            // Update School Info on CV Header
+            document.getElementById('view-school-name').innerText = schoolName;
+            document.getElementById('view-school-address').innerText = schoolAddress;
+
+            // Update Logo on CV Header
+            const logoContainer = document.getElementById('view-school-logo');
+            const customLogo = localStorage.getItem('school_logo');
+            if (customLogo) {
+                logoContainer.innerHTML = `<img src="${customLogo}" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+            } else {
+                logoContainer.innerHTML = `
+                    <svg viewBox="0 0 24 24" style="width: 70%; height: 70%; fill: #1e3a8a;">
+                        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+                    </svg>
+                `;
+            }
+
+            // Category specific label
+            const titleLabel = document.getElementById('view-title-label');
+            if (staff.category === 'Teacher') {
+                titleLabel.innerText = "শিক্ষকের প্রোফাইল";
+            } else {
+                titleLabel.innerText = "কর্মচারীর প্রোফাইল";
+            }
+
+            // Populate CV fields
+            const cvNameDisplay = staff.nameBn ? `${staff.name || "-"} (${staff.nameBn})` : (staff.name || "-");
+            document.getElementById('view-cv-name').innerText = cvNameDisplay;
+            document.getElementById('view-cv-designation').innerText = staff.designation || "-";
+            document.getElementById('view-cv-staff-id').innerText = staff.staffId || "-";
+            document.getElementById('view-cv-category').innerText = staff.category === "Teacher" ? "শিক্ষক (Teacher)" : "কর্মচারী (Staff)";
+            if (document.getElementById('view-cv-department')) document.getElementById('view-cv-department').innerText = staff.department || staff.dept || "-";
+            document.getElementById('view-cv-joining').innerText = staff.joining || "-";
+            if (document.getElementById('view-cv-mpo')) document.getElementById('view-cv-mpo').innerText = staff.mpoStatus || staff.mpo || "-";
+
+            // Subject Row visibility
+            const subjectRow = document.getElementById('view-cv-subject-row');
+            const subjectVal = document.getElementById('view-cv-subject');
+            if (staff.category === 'Teacher') {
+                subjectRow.style.display = 'block';
+                subjectVal.innerText = staff.subject || "-";
+            } else {
+                subjectRow.style.display = 'none';
+            }
+
+            // Contact & Personal details
+            document.getElementById('view-cv-mobile').innerText = staff.mobile || "-";
+            document.getElementById('view-cv-email').innerText = staff.email || "-";
+            document.getElementById('view-cv-nid').innerText = staff.nid || "-";
+            document.getElementById('view-cv-dob').innerText = staff.dob || "-";
+            document.getElementById('view-cv-blood').innerText = staff.blood || "-";
+            document.getElementById('view-cv-gender').innerText = staff.gender === "Male" ? "পুরুষ (Male)" : (staff.gender === "Female" ? "মহিলা (Female)" : (staff.gender === "Other" ? "অন্যান্য (Other)" : "-"));
+
+            // Qualification
+            document.getElementById('view-cv-qualification').innerText = staff.qualification || "-";
+
+            // Addresses
+            document.getElementById('view-cv-present').innerText = staff.presentAddr || "-";
+            document.getElementById('view-cv-permanent').innerText = staff.permanentAddr || "-";
+
+            // Photo
+            const photoEl = document.getElementById('view-cv-photo');
+            if (staff.photo) {
+                photoEl.src = staff.photo;
+            } else {
+                photoEl.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
+            }
+
+            // Signature
+            const sigEl = document.getElementById('view-cv-signature');
+            if (sigEl) {
+                if (staff.signature) {
+                    sigEl.src = staff.signature;
+                    sigEl.style.display = 'block';
+                } else {
+                    sigEl.src = '';
+                    sigEl.style.display = 'none';
+                }
+            }
+
+            document.getElementById('view-staff-modal').style.display = 'block';
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staff-modal').style.display = 'none';
+        }
+
+        function closeViewStaffModal() {
+            document.getElementById('view-staff-modal').style.display = 'none';
+        }
+
+        function previewModalStaffPhoto(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert("দয়া করে একটি সঠিক ইমেজ ফাইল নির্বাচন করুন। (Please select a valid image file)");
+                input.value = '';
+                return;
+            }
+
+            // Max file size 250 KB check
+            const maxPhotoBytes = 250 * 1024;
+            if (file.size > maxPhotoBytes) {
+                const fileSizeKB = (file.size / 1024).toFixed(1);
+                alert(`❌ ছবির সাইজ অতিরিক্ত বড়!\n\nছবির সাইজ সর্বোচ্চ 250 KB হতে পারবে। আপনার ফাইলের সাইজ: ${fileSizeKB} KB।\nঅনুগ্রহ করে ২৫০ কেবি বা তার চেয়ে কম সাইজের ছবি নির্বাচন করুন।`);
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    // Resize to 300px * 300px (1:1 ratio)
+                    currentModalPhotoBase64 = resizeImageToSquare300(img);
+
+                    document.getElementById('modal-photo-placeholder').style.display = 'none';
+                    const previewImg = document.getElementById('modal-photo-preview');
+                    previewImg.src = currentModalPhotoBase64;
+                    previewImg.style.display = 'block';
+                    if (document.getElementById('modal-photo-remove-btn')) {
+                        document.getElementById('modal-photo-remove-btn').style.display = 'inline-flex';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function previewModalStaffSignature(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // PNG format check
+            const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+            if (!isPng) {
+                alert("❌ ফরম্যাট ত্রুটি: স্বাক্ষর শুধুমাত্র PNG (.png) ফরম্যাটে আপলোড করা যাবে!\n(Signature must be in PNG format)");
+                input.value = '';
+                return;
+            }
+
+            // Max file size 150 KB check
+            const maxSigBytes = 150 * 1024;
+            if (file.size > maxSigBytes) {
+                const fileSizeKB = (file.size / 1024).toFixed(1);
+                alert(`❌ স্বাক্ষরের সাইজ অতিরিক্ত বড়!\n\nস্বাক্ষরের সাইজ সর্বোচ্চ 150 KB হতে পারবে। আপনার ফাইলের সাইজ: ${fileSizeKB} KB।\nঅনুগ্রহ করে ১৫০ কেবি বা তার চেয়ে কম সাইজের পিএনজি (PNG) ফাইল নির্বাচন করুন।`);
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    // Resize to 300px * 80px PNG format
+                    currentModalSignatureBase64 = resizeImageToSignature(img);
+
+                    if (document.getElementById('modal-signature-placeholder')) {
+                        document.getElementById('modal-signature-placeholder').style.display = 'none';
+                    }
+                    const previewImg = document.getElementById('modal-signature-preview');
+                    if (previewImg) {
+                        previewImg.src = currentModalSignatureBase64;
+                        previewImg.style.display = 'block';
+                    }
+                    if (document.getElementById('modal-signature-remove-btn')) {
+                        document.getElementById('modal-signature-remove-btn').style.display = 'inline-flex';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeModalStaffPhoto(e) {
+            if (e) e.stopPropagation();
+            currentModalPhotoBase64 = "";
+            const input = document.getElementById('modal-photo-input');
+            if (input) input.value = "";
+            const previewImg = document.getElementById('modal-photo-preview');
+            if (previewImg) {
+                previewImg.src = "";
+                previewImg.style.display = 'none';
+            }
+            const placeholder = document.getElementById('modal-photo-placeholder');
+            if (placeholder) placeholder.style.display = 'flex';
+            const removeBtn = document.getElementById('modal-photo-remove-btn');
+            if (removeBtn) removeBtn.style.display = 'none';
+        }
+
+        function removeModalStaffSignature(e) {
+            if (e) e.stopPropagation();
+            currentModalSignatureBase64 = "";
+            const input = document.getElementById('modal-signature-input');
+            if (input) input.value = "";
+            const previewImg = document.getElementById('modal-signature-preview');
+            if (previewImg) {
+                previewImg.src = "";
+                previewImg.style.display = 'none';
+            }
+            const placeholder = document.getElementById('modal-signature-placeholder');
+            if (placeholder) placeholder.style.display = 'flex';
+            const removeBtn = document.getElementById('modal-signature-remove-btn');
+            if (removeBtn) removeBtn.style.display = 'none';
+        }
+
+        function saveStaffModal(event) {
+            event.preventDefault();
+            const editIndex = document.getElementById('staff-edit-index').value;
+            const staffId = document.getElementById('modal-staff-id').value.trim();
+            const name = document.getElementById('modal-staff-name').value.trim();
+            const nameBn = document.getElementById('modal-staff-name-bn') ? document.getElementById('modal-staff-name-bn').value.trim() : '';
+            const mobile = document.getElementById('modal-staff-mobile').value.trim();
+
+            const category = document.getElementById('modal-staff-category').value;
+            const designation = document.getElementById('modal-staff-designation').value.trim();
+            const department = document.getElementById('modal-staff-department') ? document.getElementById('modal-staff-department').value.trim() : '';
+            const mpoStatus = document.getElementById('modal-staff-mpo') ? document.getElementById('modal-staff-mpo').value : '';
+            const subject = document.getElementById('modal-staff-subject').value.trim();
+            const gender = document.getElementById('modal-staff-gender').value;
+            const dob = document.getElementById('modal-staff-dob').value;
+            const blood = document.getElementById('modal-staff-blood').value;
+            const email = document.getElementById('modal-staff-email').value.trim();
+            const nid = document.getElementById('modal-staff-nid').value.trim();
+            const joining = document.getElementById('modal-staff-joining').value;
+            const qualification = document.getElementById('modal-staff-qualification').value.trim();
+            const presentAddr = document.getElementById('modal-staff-present-addr').value.trim();
+            const permanentAddr = document.getElementById('modal-staff-permanent-addr').value.trim();
+
+            if (!staffId || !name || !mobile || !category || !designation || !gender || !dob) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            const list = loadStaffList();
+
+            // Validate Head Teacher rule per department (Primary Level & High Level, max 1 each)
+            if (isHeadmasterDesignation(designation)) {
+                if (!department) {
+                    alert("❌ 'প্রধান শিক্ষক' পদবী নির্বাচনের জন্য অনুগ্রহ করে 'বিভাগ (Department)' থেকে 'Primary Level' অথবা 'High Level' নির্বাচন করুন।");
+                    return;
+                }
+                const currentIdx = editIndex !== "" ? parseInt(editIndex, 10) : -1;
+                const existingDeptHeadmaster = list.find((s, idx) => 
+                    idx !== currentIdx && 
+                    isHeadmasterDesignation(s.designation) && 
+                    (s.department || s.dept || '').toLowerCase() === department.toLowerCase()
+                );
+                if (existingDeptHeadmaster) {
+                    const hmName = existingDeptHeadmaster.nameBn ? `${existingDeptHeadmaster.name} (${existingDeptHeadmaster.nameBn})` : (existingDeptHeadmaster.name || existingDeptHeadmaster.staffId);
+                    alert(`❌ "${department}" বিভাগে ইতিমধ্যে একজন প্রধান শিক্ষক তালিকাভুক্ত রয়েছেন (${hmName})।\n\nপ্রতিটি বিভাগে (Primary Level ও High Level) সর্বোচ্চ ১ জন করে মোট ২ জন প্রধান শিক্ষক যুক্ত করা যাবে।`);
+                    return;
+                }
+            }
+
+            const staffObj = {
+                staffId,
+                name,
+                nameBn,
+                mobile,
+                photo: currentModalPhotoBase64,
+                signature: currentModalSignatureBase64,
+                category,
+                designation,
+                department,
+                mpoStatus,
+                subject,
+                gender,
+                dob,
+                blood,
+                email,
+                nid,
+                joining,
+                qualification,
+                presentAddr,
+                permanentAddr,
+                userApproved: editIndex !== "" && list[parseInt(editIndex)]?.userApproved !== undefined ? list[parseInt(editIndex)].userApproved : false
+            };
+
+            if (editIndex === "") {
+                if (list.some(s => s.staffId.toLowerCase() === staffId.toLowerCase())) {
+                    alert("This Staff ID already exists!");
+                    return;
+                }
+                list.push(staffObj);
+            } else {
+                const idx = parseInt(editIndex);
+                if (list.some((s, i) => i !== idx && s.staffId.toLowerCase() === staffId.toLowerCase())) {
+                    alert("This Staff ID is already used by another employee!");
+                    return;
+                }
+                list[idx] = staffObj;
+            }
+
+            if (typeof lastLocalWrites === 'object') {
+                lastLocalWrites['school_staff'] = Date.now();
+            }
+            localStorage.setItem('school_staff', JSON.stringify(list));
+
+            // Sync to server DB
+            try {
+                fetch('/api/db/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: 'school_staff',
+                        value: JSON.stringify(list)
+                    })
+                }).catch(() => {});
+            } catch(e) {}
+
+            if (editIndex === "") {
+                currentStaffPage = Math.ceil(list.length / staffPerPage) || 1;
+            }
+
+            closeStaffModal();
+            renderStaffList();
+            alert(editIndex === "" 
+                ? "✅ নতুন শিক্ষক/স্টাফ প্রোফাইল সফলভাবে যুক্ত হয়েছে!\n\n💡 এই শিক্ষকের ওয়েবসাইট ইউজার অ্যাকাউন্ট ও লগইন সক্রিয় করতে Advance অপশনের 'Staff Users & Login' সেকশনে গিয়ে Approve (অনুমোদন) করুন।" 
+                : "তথ্য সফলভাবে আপডেট করা হয়েছে!");
+        }
+
+        // --- STAFF EXCEL TEMPLATE & BULK IMPORT SYSTEM ---
+        let tempImportedStaff = [];
+
+        function downloadStaffTemplate() {
+            if (typeof XLSX === 'undefined') {
+                alert("XLSX লাইব্রেরি লোড হচ্ছে, অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।");
+                return;
+            }
+
+            const excelHeaders = [
+                "স্টাফ আইডি (Staff ID/Index)",
+                "পূর্ণ নাম (Employee Name)",
+                "পূর্ণ নাম (Bangla)",
+                "মোবাইল নম্বর (Mobile No)",
+                "ক্যাটাগরি (Category)",
+                "পদবী (Designation)",
+                "বিভাগ (Department)",
+                "MPO স্ট্যাটাস (MPO / Non MPO)",
+                "বিষয় (Subject)",
+                "লিঙ্গ (Gender)",
+                "জন্ম তারিখ (Date of Birth)",
+                "রক্তের গ্রুপ (Blood Group)",
+                "ইমেইল ঠিকানা (Email Address)",
+                "এনআইডি নম্বর (NID Number)",
+                "যোগদানের তারিখ (Joining Date)",
+                "সর্বশেষ শিক্ষাগত যোগ্যতা (Qualification)",
+                "বর্তমান ঠিকানা (Present Address)",
+                "স্থায়ী ঠিকানা (Permanent Address)"
+            ];
+
+            const sampleRows = [
+                {
+                    "স্টাফ আইডি (Staff ID/Index)": "268501",
+                    "পূর্ণ নাম (Employee Name)": "Md. Rafiqul Islam",
+                    "পূর্ণ নাম (Bangla)": "মো: রফিকুল ইসলাম",
+                    "মোবাইল নম্বর (Mobile No)": "01712345678",
+                    "ক্যাটাগরি (Category)": "Teacher",
+                    "পদবী (Designation)": "সিনিয়র শিক্ষক",
+                    "বিভাগ (Department)": "High Level",
+                    "MPO স্ট্যাটাস (MPO / Non MPO)": "MPO",
+                    "বিষয় (Subject)": "গণিত",
+                    "লিঙ্গ (Gender)": "Male",
+                    "জন্ম তারিখ (Date of Birth)": "1985-05-15",
+                    "রক্তের গ্রুপ (Blood Group)": "A+",
+                    "ইমেইল ঠিকানা (Email Address)": "rafiqul@school.edu.bd",
+                    "এনআইডি নম্বর (NID Number)": "19852612345678901",
+                    "যোগদানের তারিখ (Joining Date)": "2018-01-01",
+                    "সর্বশেষ শিক্ষাগত যোগ্যতা (Qualification)": "M.Sc in Mathematics, B.Ed",
+                    "বর্তমান ঠিকানা (Present Address)": "সেক্টর-১০, উত্তরা, ঢাকা-১২৩০",
+                    "স্থায়ী ঠিকানা (Permanent Address)": "জলঢাকা, নীলফামারী"
+                },
+                {
+                    "স্টাফ আইডি (Staff ID/Index)": "269201",
+                    "পূর্ণ নাম (Employee Name)": "Mst. Fatema Begum",
+                    "পূর্ণ নাম (Bangla)": "মোসাম্মৎ ফাতেমা বেগম",
+                    "মোবাইল নম্বর (Mobile No)": "01812345679",
+                    "ক্যাটাগরি (Category)": "Staff",
+                    "পদবী (Designation)": "সহকারী শিক্ষক",
+                    "বিভাগ (Department)": "Primary Level",
+                    "MPO স্ট্যাটাস (MPO / Non MPO)": "Non MPO",
+                    "বিষয় (Subject)": "",
+                    "লিঙ্গ (Gender)": "Female",
+                    "জন্ম তারিখ (Date of Birth)": "1992-08-20",
+                    "রক্তের গ্রুপ (Blood Group)": "B+",
+                    "ইমেইল ঠিকানা (Email Address)": "fatema@school.edu.bd",
+                    "এনআইডি নম্বর (NID Number)": "19922612345678902",
+                    "যোগদানের তারিখ (Joining Date)": "2020-03-15",
+                    "সর্বশেষ শিক্ষাগত যোগ্যতা (Qualification)": "B.A (Honours)",
+                    "বর্তমান ঠিকানা (Present Address)": "মিরপুর-১০, ঢাকা",
+                    "স্থায়ী ঠিকানা (Permanent Address)": "বরিশাল সদর, বরিশাল"
+                }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(sampleRows, { header: excelHeaders });
+
+            // Optimal column widths
+            ws['!cols'] = [
+                { wch: 20 }, // Staff ID
+                { wch: 26 }, // Name (English)
+                { wch: 26 }, // Name (Bangla)
+                { wch: 18 }, // Mobile
+                { wch: 15 }, // Category
+                { wch: 22 }, // Designation
+                { wch: 18 }, // Department
+                { wch: 18 }, // MPO Status
+                { wch: 18 }, // Subject
+                { wch: 12 }, // Gender
+                { wch: 16 }, // DOB
+                { wch: 12 }, // Blood
+                { wch: 26 }, // Email
+                { wch: 22 }, // NID
+                { wch: 16 }, // Joining
+                { wch: 28 }, // Qualification
+                { wch: 30 }, // Present Addr
+                { wch: 30 }  // Permanent Addr
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "Staff Directory Template");
+            XLSX.writeFile(wb, "creative_model_school_staff_template.xlsx");
+        }
+
+        function triggerStaffImportFile() {
+            const input = document.getElementById('staff-import-file-input');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        }
+
+        function parseExcelStaffDate(val) {
+            if (!val) return '';
+            if (typeof val === 'number') {
+                const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+                if (!isNaN(date.getTime())) {
+                    const y = date.getUTCFullYear();
+                    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+                    const d = String(date.getUTCDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+            }
+            const str = String(val).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+            if (/^\d{2}-\d{2}-\d{4}$/.test(str)) {
+                const p = str.split('-');
+                return `${p[2]}-${p[1]}-${p[0]}`;
+            }
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+                const p = str.split('/');
+                return `${p[2]}-${p[1]}-${p[0]}`;
+            }
+            if (/^\d{4}\/\d{2}\/\d{2}$/.test(str)) {
+                const p = str.split('/');
+                return `${p[0]}-${p[1]}-${p[2]}`;
+            }
+            return str;
+        }
+
+        function handleStaffFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            if (fileExt !== 'xlsx' && fileExt !== 'xls') {
+                alert("ত্রুটি: দয়া করে শুধুমাত্র এক্সেল (.xlsx বা .xls) ফরম্যাটের ফাইল নির্বাচন করুন।");
+                input.value = '';
+                return;
+            }
+
+            if (typeof XLSX === 'undefined') {
+                alert("XLSX লাইব্রেরি এখনও প্রস্তুত নয়, দয়া করে আবার চেষ্টা করুন।");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    if (!rawRows || rawRows.length === 0) {
+                        alert("ফাইলটিতে কোনো শিক্ষক বা কর্মচারীর তথ্য পাওয়া যায়নি।");
+                        input.value = '';
+                        return;
+                    }
+
+                    const headerMap = {
+                        // Staff ID
+                        "স্টাফ আইডি (Staff ID/Index)": "staffId",
+                        "স্টাফ আইডি": "staffId",
+                        "আইডি": "staffId",
+                        "Staff ID": "staffId",
+                        "StaffID": "staffId",
+                        "ID": "staffId",
+                        "Index": "staffId",
+                        "ইন্ডেক্স": "staffId",
+
+                        // Name (English)
+                        "পূর্ণ নাম (Employee Name)": "name",
+                        "পূর্ণ নাম": "name",
+                        "Employee Name": "name",
+                        "Name": "name",
+                        "Teacher Name": "name",
+                        "Staff Name": "name",
+
+                        // Name (Bangla)
+                        "পূর্ণ নাম (Bangla)": "nameBn",
+                        "পূর্ণ নাম (বাংলা)": "nameBn",
+                        "পূর্ণ নাম (বাংলায়)": "nameBn",
+                        "নাম (বাংলা)": "nameBn",
+                        "নাম (বাংলায়)": "nameBn",
+                        "বাংলা নাম": "nameBn",
+                        "Name in Bangla": "nameBn",
+                        "Name (Bangla)": "nameBn",
+                        "NameBn": "nameBn",
+                        "nameBn": "nameBn",
+                        "শিক্ষকের নাম": "nameBn",
+                        "কর্মচারীর নাম": "nameBn",
+
+                        // Mobile
+                        "মোবাইল নম্বর (Mobile No)": "mobile",
+                        "মোবাইল নম্বর": "mobile",
+                        "মোবাইল": "mobile",
+                        "Mobile No": "mobile",
+                        "Mobile": "mobile",
+                        "Mobile Number": "mobile",
+                        "Phone": "mobile",
+                        "ফোন": "mobile",
+
+                        // Category
+                        "ক্যাটাগরি (Category)": "category",
+                        "স্টাফ ক্যাটাগরি": "category",
+                        "ক্যাটাগরি": "category",
+                        "Category": "category",
+                        "Type": "category",
+                        "ধরন": "category",
+
+                        // Designation
+                        "পদবী (Designation)": "designation",
+                        "পদবী": "designation",
+                        "পদবি": "designation",
+                        "Designation": "designation",
+                        "Post": "designation",
+
+                        // Department
+                        "বিভাগ (Department)": "department",
+                        "বিভাগ": "department",
+                        "Department": "department",
+                        "Dept": "department",
+
+                        // MPO
+                        "MPO স্ট্যাটাস (MPO / Non MPO)": "mpoStatus",
+                        "MPO স্ট্যাটাস": "mpoStatus",
+                        "এমপিও স্ট্যাটাস": "mpoStatus",
+                        "MPO Status": "mpoStatus",
+                        "MPO": "mpoStatus",
+                        "এমপিও": "mpoStatus",
+
+                        // Subject
+                        "বিষয় (Subject)": "subject",
+                        "বিষয়": "subject",
+                        "বিষয়": "subject",
+                        "Subject": "subject",
+
+                        // Gender
+                        "লিঙ্গ (Gender)": "gender",
+                        "লিঙ্গ": "gender",
+                        "Gender": "gender",
+                        "Sex": "gender",
+
+                        // DOB
+                        "জন্ম তারিখ (Date of Birth)": "dob",
+                        "জন্ম তারিখ": "dob",
+                        "Date of Birth": "dob",
+                        "DOB": "dob",
+
+                        // Blood Group
+                        "রক্তের গ্রুপ (Blood Group)": "blood",
+                        "রক্তের গ্রুপ": "blood",
+                        "Blood Group": "blood",
+                        "Blood": "blood",
+
+                        // Email
+                        "ইমেইল ঠিকানা (Email Address)": "email",
+                        "ইমেইল ঠিকানা": "email",
+                        "ইমেল": "email",
+                        "ইমেইল": "email",
+                        "Email": "email",
+                        "Email Address": "email",
+
+                        // NID
+                        "এনআইডি নম্বর (NID Number)": "nid",
+                        "এনআইডি নম্বর": "nid",
+                        "এনআইডি": "nid",
+                        "NID Number": "nid",
+                        "NID": "nid",
+                        "National ID": "nid",
+
+                        // Joining Date
+                        "যোগদানের তারিখ (Joining Date)": "joining",
+                        "যোগদানের তারিখ": "joining",
+                        "Joining Date": "joining",
+                        "Join Date": "joining",
+
+                        // Qualification
+                        "সর্বশেষ শিক্ষাগত যোগ্যতা (Qualification)": "qualification",
+                        "সর্বশেষ শিক্ষাগত যোগ্যতা": "qualification",
+                        "শিক্ষাগত যোগ্যতা": "qualification",
+                        "Qualification": "qualification",
+                        "Education": "qualification",
+
+                        // Present Address
+                        "বর্তমান ঠিকানা (Present Address)": "presentAddr",
+                        "বর্তমান ঠিকানা": "presentAddr",
+                        "Present Address": "presentAddr",
+                        "Address": "presentAddr",
+                        "ঠিকানা": "presentAddr",
+
+                        // Permanent Address
+                        "স্থায়ী ঠিকানা (Permanent Address)": "permanentAddr",
+                        "স্থায়ী ঠিকানা": "permanentAddr",
+                        "Permanent Address": "permanentAddr"
+                    };
+
+                    const existingList = loadStaffList();
+                    const existingIds = new Set(existingList.map(s => String(s.staffId || '').trim().toLowerCase()));
+
+                    tempImportedStaff = [];
+                    let autoIdCounter = 1;
+
+                    rawRows.forEach((row, idx) => {
+                        const item = {
+                            staffId: '',
+                            name: '',
+                            nameBn: '',
+                            mobile: '',
+                            category: '',
+                            designation: '',
+                            department: '',
+                            mpoStatus: '',
+                            subject: '',
+                            gender: '',
+                            dob: '',
+                            blood: '',
+                            email: '',
+                            nid: '',
+                            joining: '',
+                            qualification: '',
+                            presentAddr: '',
+                            permanentAddr: '',
+                            photo: '',
+                            signature: '',
+                            selected: true,
+                            isDuplicate: false,
+                            rawIndex: idx
+                        };
+
+                        Object.keys(row).forEach(header => {
+                            const cleanH = header.trim();
+                            const targetKey = headerMap[cleanH];
+                            if (targetKey) {
+                                item[targetKey] = String(row[header]).trim();
+                            }
+                        });
+
+                        // Skip completely blank rows
+                        if (!item.name && !item.nameBn && !item.mobile && !item.staffId) {
+                            return;
+                        }
+
+                        // If English name is empty but Bangla name exists
+                        if (!item.name && item.nameBn) {
+                            item.name = item.nameBn;
+                        }
+
+                        // Normalization
+                        const catLower = item.category.toLowerCase();
+                        if (catLower.includes('teacher') || catLower.includes('শিক্ষক') || item.designation.includes('শিক্ষক') || item.designation.includes('Teacher') || item.designation.includes('Principal') || item.designation.includes('অধ্যক্ষ')) {
+                            item.category = 'Teacher';
+                        } else if (catLower.includes('staff') || catLower.includes('কর্মচারী')) {
+                            item.category = 'Staff';
+                        } else {
+                            item.category = 'Teacher';
+                        }
+
+                        const genLower = item.gender.toLowerCase();
+                        if (genLower.includes('female') || genLower.includes('মহিলা') || genLower.includes('নারী') || genLower.includes('মেয়ে')) {
+                            item.gender = 'Female';
+                        } else if (genLower.includes('other') || genLower.includes('অন্যান্য')) {
+                            item.gender = 'Other';
+                        } else {
+                            item.gender = 'Male';
+                        }
+
+                        const mpoLower = item.mpoStatus.toLowerCase();
+                        if (mpoLower.includes('non') || mpoLower.includes('নন')) {
+                            item.mpoStatus = 'Non MPO';
+                        } else if (mpoLower.includes('mpo') || mpoLower.includes('এমপিও')) {
+                            item.mpoStatus = 'MPO';
+                        } else {
+                            item.mpoStatus = item.mpoStatus ? item.mpoStatus : 'MPO';
+                        }
+
+                        item.dob = parseExcelStaffDate(item.dob) || '1990-01-01';
+                        item.joining = parseExcelStaffDate(item.joining) || '2024-01-01';
+                        if (!item.blood) item.blood = 'A+';
+
+                        // Staff ID/Index Generation Rule:
+                        // If Staff ID is missing in Excel, generate using system rule:
+                        // Current Year 2-digits + DOB Year 2-digits + 2-digit Serial Number (e.g., 268501)
+                        if (!item.staffId) {
+                            const allCurrentStaff = [...existingList, ...tempImportedStaff];
+                            item.staffId = generateAutoStaffIdByDob(item.dob, allCurrentStaff);
+                            item.isAutoGenerated = true;
+                        }
+
+                        if (existingIds.has(item.staffId.toLowerCase())) {
+                            item.isDuplicate = true;
+                        }
+
+                        tempImportedStaff.push(item);
+                    });
+
+                    if (tempImportedStaff.length === 0) {
+                        alert("ফাইলে বৈধ কোনো শিক্ষকের তথ্য পাওয়া যায়নি। কলাম শিরোনামগুলো সঠিকভাবে আছে কিনা চেক করুন।");
+                        input.value = '';
+                        return;
+                    }
+
+                    openStaffImportPreviewModal();
+                    input.value = '';
+                } catch (err) {
+                    console.error("Error parsing staff xlsx file:", err);
+                    alert("ত্রুটি: এক্সেল ফাইলটি পড়া সম্ভব হয়নি। অনুগ্রহ করে ফাইলটির ফরম্যাট চেক করুন।");
+                    input.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openStaffImportPreviewModal() {
+            const modal = document.getElementById('staff-import-preview-modal');
+            if (!modal) return;
+
+            const searchInput = document.getElementById('import-preview-search');
+            if (searchInput) searchInput.value = '';
+            const catSelect = document.getElementById('import-filter-category');
+            if (catSelect) catSelect.value = 'all';
+
+            renderStaffImportPreview();
+            modal.style.display = 'block';
+        }
+
+        function closeStaffImportPreviewModal() {
+            const modal = document.getElementById('staff-import-preview-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function toggleStaffImportFullscreen() {
+            const modalContent = document.querySelector('#staff-import-preview-modal .modal-content');
+            const btn = document.querySelector('#staff-import-preview-modal .fullscreen-btn');
+            if (!modalContent) return;
+
+            if (modalContent.classList.contains('fullscreen')) {
+                modalContent.classList.remove('fullscreen');
+                if (btn) {
+                    btn.innerText = "⛶";
+                    btn.title = "Full Screen";
+                }
+            } else {
+                modalContent.classList.add('fullscreen');
+                if (btn) {
+                    btn.innerText = "🗗";
+                    btn.title = "Restore Size";
+                }
+            }
+        }
+
+        function filterImportPreview() {
+            renderStaffImportPreview();
+        }
+
+        function handleDupStrategyChange() {
+            renderStaffImportPreview();
+        }
+
+        function renderStaffImportPreview() {
+            const tbody = document.getElementById('staff-import-preview-tbody');
+            if (!tbody) return;
+
+            const catFilter = document.getElementById('import-filter-category') ? document.getElementById('import-filter-category').value : 'all';
+            const keyword = document.getElementById('import-preview-search') ? document.getElementById('import-preview-search').value.trim().toLowerCase() : '';
+
+            let totalCount = tempImportedStaff.length;
+            let teacherCount = 0;
+            let staffCount = 0;
+            let mpoCount = 0;
+            let dupCount = 0;
+            let selectedCount = 0;
+
+            tempImportedStaff.forEach(s => {
+                if (s.category === 'Teacher') teacherCount++;
+                else staffCount++;
+                if (s.mpoStatus === 'MPO') mpoCount++;
+                if (s.isDuplicate) dupCount++;
+                if (s.selected) selectedCount++;
+            });
+
+            const tEl = document.getElementById('preview-stat-total');
+            const teEl = document.getElementById('preview-stat-teachers');
+            const sEl = document.getElementById('preview-stat-staff');
+            const mEl = document.getElementById('preview-stat-mpo');
+            const dEl = document.getElementById('preview-stat-dups');
+            const dBadge = document.getElementById('preview-duplicate-badge');
+            const selCountEl = document.getElementById('import-selected-count');
+
+            if (tEl) tEl.innerText = totalCount;
+            if (teEl) teEl.innerText = teacherCount;
+            if (sEl) sEl.innerText = staffCount;
+            if (mEl) mEl.innerText = mpoCount;
+            if (dEl) dEl.innerText = dupCount;
+            if (dBadge) dBadge.style.display = dupCount > 0 ? 'inline-flex' : 'none';
+            if (selCountEl) selCountEl.innerText = selectedCount;
+
+            const filtered = tempImportedStaff.filter(item => {
+                if (catFilter !== 'all' && item.category !== catFilter) return false;
+                if (keyword) {
+                    const matchName = item.name.toLowerCase().includes(keyword);
+                    const matchId = item.staffId.toLowerCase().includes(keyword);
+                    const matchDesig = item.designation.toLowerCase().includes(keyword);
+                    const matchPhone = item.mobile.toLowerCase().includes(keyword);
+                    const matchSub = (item.subject || '').toLowerCase().includes(keyword);
+                    if (!matchName && !matchId && !matchDesig && !matchPhone && !matchSub) return false;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="13" style="text-align: center; padding: 30px; color: #6b7280; font-style: italic;">
+                            কোনো তথ্য মেলেনি। (No matching preview records)
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((staff, idx) => {
+                const origIndex = tempImportedStaff.indexOf(staff);
+                const dupBadge = staff.isDuplicate
+                    ? `<span style="font-size: 0.7rem; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 1px 5px; border-radius: 4px; font-weight: 700; margin-left: 4px;" title="This Staff ID already exists in system">বিদ্যমান</span>`
+                    : '';
+
+                const autoBadge = staff.isAutoGenerated
+                    ? `<span style="font-size: 0.68rem; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 1px 5px; border-radius: 4px; font-weight: 700; margin-left: 4px;" title="সিস্টেম শর্তানুসারে স্বয়ংক্রিয়ভাবে তৈরি হয়েছে">অটো</span>`
+                    : '';
+
+                const catBadge = staff.category === 'Teacher'
+                    ? `<span style="background: #e0e7ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 0.76rem;">শিক্ষক</span>`
+                    : `<span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 0.76rem;">কর্মচারী</span>`;
+
+                const mpoBadge = staff.mpoStatus === 'MPO'
+                    ? `<span style="background: #dcfce7; color: #15803d; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 0.76rem;">MPO</span>`
+                    : `<span style="background: #f3f4f6; color: #4b5563; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 0.76rem;">Non MPO</span>`;
+
+                html += `
+                    <tr style="border-bottom: 1px solid #e2e8f0; background: ${staff.selected ? (staff.isDuplicate ? '#fff7ed' : '#ffffff') : '#f8fafc'}; opacity: ${staff.selected ? 1 : 0.6}; transition: all 0.2s;">
+                        <td style="text-align: center; padding: 8px 6px;">
+                            <input type="checkbox" ${staff.selected ? 'checked' : ''} onchange="toggleImportRowSelect(${origIndex}, this.checked)" style="cursor: pointer; width: 16px; height: 16px;">
+                        </td>
+                        <td style="text-align: center; font-weight: 700; color: #64748b; padding: 8px 6px;">${idx + 1}</td>
+                        <td style="padding: 8px 10px; font-weight: 700; color: #2563eb;">
+                            <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                                <span>${staff.staffId}</span>
+                                ${autoBadge}
+                                ${dupBadge}
+                            </div>
+                        </td>
+                        <td style="padding: 8px 10px; font-weight: 700; color: #0f172a;">
+                            <div>${staff.name}</div>
+                            ${staff.nameBn ? `<div style="font-size: 0.8rem; color: #64748b; font-weight: 600; margin-top: 1px;">(${staff.nameBn})</div>` : ''}
+                        </td>
+                        <td style="padding: 8px 10px; text-align: center;">${catBadge}</td>
+                        <td style="padding: 8px 10px; color: #334155; font-weight: 600;">${staff.designation || '-'}</td>
+                        <td style="padding: 8px 8px; color: #334155; font-weight: 500;">${staff.department || '-'}</td>
+                        <td style="padding: 8px 8px; text-align: center;">${mpoBadge}</td>
+                        <td style="padding: 8px 8px; color: #475569; font-weight: 500;">${staff.subject || '-'}</td>
+                        <td style="padding: 8px 8px; font-weight: 600; color: #0284c7;">${staff.mobile || '-'}</td>
+                        <td style="padding: 8px 8px; text-align: center; color: #475569; font-weight: 600;">${staff.gender === 'Male' ? 'পুরুষ' : (staff.gender === 'Female' ? 'মহিলা' : staff.gender)}</td>
+                        <td style="padding: 8px 8px; color: #475569;">${staff.joining || '-'}</td>
+                        <td style="text-align: center; padding: 8px 6px;">
+                            <button type="button" onclick="deleteImportPreviewRow(${origIndex})" title="তালিকা থেকে বাদ দিন"
+                                style="background: transparent; border: 1px solid #fca5a5; color: #dc2626; border-radius: 4px; width: 26px; height: 26px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                                &times;
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function toggleImportRowSelect(index, isChecked) {
+            if (tempImportedStaff[index]) {
+                tempImportedStaff[index].selected = isChecked;
+                renderStaffImportPreview();
+            }
+        }
+
+        function toggleAllImportCheckboxes(masterCheckbox) {
+            const isChecked = masterCheckbox.checked;
+            tempImportedStaff.forEach(s => s.selected = isChecked);
+            renderStaffImportPreview();
+        }
+
+        function deleteImportPreviewRow(index) {
+            if (tempImportedStaff[index]) {
+                tempImportedStaff.splice(index, 1);
+                renderStaffImportPreview();
+            }
+        }
+
+        function confirmAndSaveStaffImport() {
+            const selected = tempImportedStaff.filter(s => s.selected);
+            if (selected.length === 0) {
+                alert("দয়া করে ইমপোর্ট করার জন্য অন্তত একজন শিক্ষক বা কর্মচারীকে সিলেক্ট করুন।");
+                return;
+            }
+
+            const dupStrategy = document.getElementById('import-dup-strategy') ? document.getElementById('import-dup-strategy').value : 'skip';
+            let currentList = loadStaffList();
+
+            // Validate Head Teacher rule per department (Primary Level & High Level, max 1 each)
+            const existingPrimaryHm = currentList.find(s => isHeadmasterDesignation(s.designation) && (s.department || s.dept || '').toLowerCase() === 'primary level');
+            const existingHighHm = currentList.find(s => isHeadmasterDesignation(s.designation) && (s.department || s.dept || '').toLowerCase() === 'high level');
+            let importPrimaryHmCount = 0;
+            let importHighHmCount = 0;
+
+            for (const item of selected) {
+                if (isHeadmasterDesignation(item.designation)) {
+                    const itemDept = (item.department || '').toLowerCase();
+                    if (itemDept === 'primary level') {
+                        importPrimaryHmCount++;
+                        const existingIdx = currentList.findIndex(s => s.staffId && s.staffId.toLowerCase() === item.staffId.toLowerCase());
+                        const isOverwritingExistingHm = (existingIdx >= 0 && isHeadmasterDesignation(currentList[existingIdx].designation) && (currentList[existingIdx].department || '').toLowerCase() === 'primary level');
+
+                        if (existingPrimaryHm && !isOverwritingExistingHm && (existingIdx < 0 || dupStrategy !== 'overwrite')) {
+                            const hmName = existingPrimaryHm.nameBn ? `${existingPrimaryHm.name} (${existingPrimaryHm.nameBn})` : (existingPrimaryHm.name || existingPrimaryHm.staffId);
+                            alert(`❌ ইমপোর্ট ত্রুটি: 'Primary Level' বিভাগে ইতিমধ্যে একজন প্রধান শিক্ষক তালিকাভুক্ত রয়েছেন (${hmName})।\n\nঅতিরিক্ত ব্যক্তি (${item.nameBn || item.name})-কে Primary Level-এর প্রধান শিক্ষক হিসেবে ইমপোর্ট করা যাবে না।`);
+                            return;
+                        }
+                        if (importPrimaryHmCount > 1) {
+                            alert(`❌ ইমপোর্ট ত্রুটি: নির্বাচিত এক্সেল ফাইলে 'Primary Level' বিভাগে একাধিক প্রধান শিক্ষক দেওয়া হয়েছে। প্রতি বিভাগে সর্বোচ্চ ১ জন প্রধান শিক্ষক রাখা যাবে।`);
+                            return;
+                        }
+                    } else if (itemDept === 'high level') {
+                        importHighHmCount++;
+                        const existingIdx = currentList.findIndex(s => s.staffId && s.staffId.toLowerCase() === item.staffId.toLowerCase());
+                        const isOverwritingExistingHm = (existingIdx >= 0 && isHeadmasterDesignation(currentList[existingIdx].designation) && (currentList[existingIdx].department || '').toLowerCase() === 'high level');
+
+                        if (existingHighHm && !isOverwritingExistingHm && (existingIdx < 0 || dupStrategy !== 'overwrite')) {
+                            const hmName = existingHighHm.nameBn ? `${existingHighHm.name} (${existingHighHm.nameBn})` : (existingHighHm.name || existingHighHm.staffId);
+                            alert(`❌ ইমপোর্ট ত্রুটি: 'High Level' বিভাগে ইতিমধ্যে একজন প্রধান শিক্ষক তালিকাভুক্ত রয়েছেন (${hmName})।\n\nঅতিরিক্ত ব্যক্তি (${item.nameBn || item.name})-কে High Level-এর প্রধান শিক্ষক হিসেবে ইমপোর্ট করা যাবে না।`);
+                            return;
+                        }
+                        if (importHighHmCount > 1) {
+                            alert(`❌ ইমপোর্ট ত্রুটি: নির্বাচিত এক্সেল ফাইলে 'High Level' বিভাগে একাধিক প্রধান শিক্ষক দেওয়া হয়েছে। প্রতি বিভাগে সর্বোচ্চ ১ জন প্রধান শিক্ষক রাখা যাবে।`);
+                            return;
+                        }
+                    } else {
+                        alert(`❌ ইমপোর্ট ত্রুটি: (${item.nameBn || item.name})-কে প্রধান শিক্ষক হিসেবে যুক্ত করার জন্য বিভাগ 'Primary Level' বা 'High Level' নির্দিষ্ট থাকতে হবে।`);
+                        return;
+                    }
+                }
+            }
+
+            let addedCount = 0;
+            let updatedCount = 0;
+            let skippedCount = 0;
+
+            selected.forEach(newItem => {
+                const existingIdx = currentList.findIndex(s => s.staffId && s.staffId.toLowerCase() === newItem.staffId.trim().toLowerCase());
+                const existingStaff = existingIdx >= 0 ? currentList[existingIdx] : null;
+
+                const staffObj = {
+                    staffId: newItem.staffId.trim(),
+                    name: newItem.name.trim(),
+                    nameBn: newItem.nameBn ? newItem.nameBn.trim() : '',
+                    mobile: newItem.mobile.trim(),
+                    photo: newItem.photo || (existingStaff ? (existingStaff.photo || '') : ''),
+                    signature: newItem.signature || (existingStaff ? (existingStaff.signature || '') : ''),
+                    category: newItem.category || 'Teacher',
+                    designation: newItem.designation.trim() || (newItem.category === 'Teacher' ? 'Assistant Teacher' : 'Office Assistant'),
+                    department: newItem.department ? newItem.department.trim() : (existingStaff ? (existingStaff.department || '') : ''),
+                    mpoStatus: newItem.mpoStatus || 'MPO',
+                    subject: newItem.subject ? newItem.subject.trim() : '',
+                    gender: newItem.gender || 'Male',
+                    dob: newItem.dob || '1990-01-01',
+                    blood: newItem.blood || 'A+',
+                    email: newItem.email ? newItem.email.trim() : '',
+                    nid: newItem.nid ? newItem.nid.trim() : '',
+                    joining: newItem.joining || '2024-01-01',
+                    qualification: newItem.qualification ? newItem.qualification.trim() : '',
+                    presentAddr: newItem.presentAddr ? newItem.presentAddr.trim() : '',
+                    permanentAddr: newItem.permanentAddr ? newItem.permanentAddr.trim() : '',
+                    userApproved: existingStaff && existingStaff.userApproved !== undefined ? existingStaff.userApproved : false
+                };
+
+                if (existingIdx >= 0) {
+                    if (dupStrategy === 'overwrite') {
+                        currentList[existingIdx] = staffObj;
+                        updatedCount++;
+                    } else if (dupStrategy === 'auto_new') {
+                        // Generate new unique ID following system rule: Current Year 2 digits + DOB Year 2 digits + Next Serial
+                        staffObj.staffId = generateAutoStaffIdByDob(staffObj.dob, currentList);
+                        currentList.push(staffObj);
+                        addedCount++;
+                    } else {
+                        skippedCount++;
+                    }
+                } else {
+                    currentList.push(staffObj);
+                    addedCount++;
+                }
+            });
+
+            if (typeof lastLocalWrites === 'object') {
+                lastLocalWrites['school_staff'] = Date.now();
+            }
+            localStorage.setItem('school_staff', JSON.stringify(currentList));
+
+            // Sync to server DB
+            try {
+                fetch('/api/db/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: 'school_staff',
+                        value: JSON.stringify(currentList)
+                    })
+                }).catch(() => {});
+            } catch(e) {}
+
+            closeStaffImportPreviewModal();
+            renderStaffList();
+
+            let summaryMsg = `সফলভাবে ইমপোর্ট সম্পন্ন হয়েছে!\n\nনতুন যুক্ত: ${addedCount} জন`;
+            if (updatedCount > 0) summaryMsg += `\nআপডেট করা হয়েছে: ${updatedCount} জন`;
+            if (skippedCount > 0) summaryMsg += `\nবিদ্যমান স্কিপ: ${skippedCount} জন`;
+            if (addedCount > 0) summaryMsg += `\n\n💡 নতুন যুক্ত হওয়া শিক্ষকদের ইউজার একাউন্ট ও লগইন সক্রিয় করতে Advance অপশনের 'Staff Users & Login' সেকশনে গিয়ে Approve (অনুমোদন) করুন।`;
+
+            alert(summaryMsg);
+        }
+
+        // Close modals on clicking outside window
+        window.addEventListener('click', (event) => {
+            const addModal = document.getElementById('staff-modal');
+            const viewModal = document.getElementById('view-staff-modal');
+            const previewModal = document.getElementById('staff-import-preview-modal');
+            if (event.target === addModal) {
+                closeStaffModal();
+            }
+            if (event.target === viewModal) {
+                closeViewStaffModal();
+            }
+            if (event.target === previewModal) {
+                closeStaffImportPreviewModal();
+            }
+        });
+
+        // Initialize lists on load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStaffList();
+        });
+
+        // Listen for database sync updates
+        window.addEventListener('dbSynced', () => {
+            renderStaffList();
+        });
+    </script>
+</body>
+
+</html>
