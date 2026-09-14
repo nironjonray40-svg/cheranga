@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - CREATIVE MODEL SCHOOL</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Sub-views layout */
+        .portal-sub-view {
+            display: none;
+            animation: fadeInSection 0.5s ease-out forwards;
+        }
+        .portal-sub-view.active {
+            display: block;
+        }
+        
+        /* Table styles */
+        .student-list-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .student-list-table th, .student-list-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .student-list-table th {
+            color: var(--neon-cyan);
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .student-list-photo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-pink);
+            box-shadow: var(--pink-glow);
+        }
+        .student-list-photo-placeholder {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px dashed var(--glass-border);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--muted-text);
+        }
+        .student-list-photo-placeholder svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+        
+        /* Small action buttons */
+        .action-btn-sm {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-view-card {
+            background: var(--primary-grad);
+            color: #fff;
+            box-shadow: var(--purple-glow);
+            margin-right: 8px;
+        }
+        .btn-view-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+        .btn-delete-student {
+            background: var(--secondary-grad);
+            color: #fff;
+            box-shadow: var(--pink-glow);
+        }
+        .btn-delete-student:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+        }
+        
+        /* Checkbox styling */
+        .chk-control {
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: var(--neon-cyan);
+        }
+        
+        /* Modal overlay styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 7, 30, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeInSection 0.3s ease-out forwards;
+        }
+        .modal-container {
+            background: rgba(26, 15, 48, 0.98);
+            border: 1px solid var(--glass-border);
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+            position: relative;
+            backdrop-filter: blur(25px);
+            max-width: 450px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--muted-text);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .modal-close-btn:hover {
+            color: #fff;
+        }
+        
+        /* Controls layout for views */
+        .list-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .search-box-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        /* Modern form sections */
+        .admission-form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .form-section-card {
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-inset);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            color: #f3f4f6;
+        }
+        .form-section-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: var(--glass-card-hover);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .form-section-header {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+        }
+        .form-section-header svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--neon-cyan);
+            filter: drop-shadow(0 0 5px var(--neon-cyan));
+        }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        @media (max-width: 576px) {
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Auto generated inputs */
+        .form-control-readonly {
+            background: rgba(6, 182, 212, 0.05) !important;
+            border-color: rgba(6, 182, 212, 0.25) !important;
+            color: var(--neon-cyan) !important;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+        
+        /* Custom upload zone */
+        .photo-upload-zone {
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+        }
+        .photo-upload-zone:hover, .photo-upload-zone.dragover {
+            border-color: var(--neon-cyan);
+            background: rgba(6, 182, 212, 0.05);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+        }
+        .photo-upload-icon {
+            font-size: 2rem;
+            color: var(--muted-text);
+            margin-bottom: 8px;
+            transition: var(--transition-smooth);
+        }
+        .photo-upload-zone:hover .photo-upload-icon {
+            color: var(--neon-cyan);
+            transform: scale(1.1);
+        }
+        .photo-upload-text {
+            font-size: 0.85rem;
+            color: var(--muted-text);
+        }
+        .photo-upload-text span {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+        
+        /* Passport size avatar preview inside form */
+        .avatar-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 0;
+        }
+        .form-avatar-preview {
+            width: 140px;
+            height: 180px;
+            border-radius: 8px;
+            border: 2px solid var(--neon-pink);
+            object-fit: cover;
+            box-shadow: var(--pink-glow);
+            display: none;
+        }
+        .form-avatar-placeholder {
+            width: 140px;
+            height: 180px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1.5px dashed var(--glass-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--muted-text);
+        }
+        
+        /* Profile Modal details */
+        .profile-modal-container {
+            max-width: 680px;
+            width: 95%;
+            background: rgba(15, 9, 36, 0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            position: relative;
+            backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+        }
+        .profile-slip {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 15px;
+            position: relative;
+        }
+        .profile-slip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--neon-cyan);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .profile-slip-logo {
+            width: 60px;
+            height: 60px;
+        }
+        .profile-slip-school-info {
+            text-align: right;
+        }
+        .profile-slip-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+        .profile-slip-subtitle {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+        }
+        .profile-slip-body {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 25px;
+            align-items: start;
+        }
+        .profile-slip-photo {
+            width: 120px;
+            height: 150px;
+            border: 2px solid var(--neon-pink);
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: var(--pink-glow);
+        }
+        .profile-details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .profile-details-table tr {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .profile-details-table td {
+            padding: 8px 5px;
+            font-size: 0.9rem;
+        }
+        .profile-details-label {
+            color: var(--muted-text);
+            font-weight: 500;
+            width: 35%;
+        }
+        .profile-details-value {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .profile-slip, .profile-slip * {
+                visibility: visible;
+            }
+            .profile-slip {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                background: #fff !important;
+                color: #000 !important;
+            }
+            .profile-slip-title {
+                color: #1e1b4b !important;
+            }
+            .profile-details-value {
+                color: #000 !important;
+            }
+            .profile-details-label {
+                color: #4b5563 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+            </svg>
+        </div>
+        <!-- Default Slide 1 -->
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 2 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 3 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
+            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item dropdown active" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
+                <li class="nav-item" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal.html">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
+                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- 2. STUDENT PORTAL SECTION -->
+        <section id="student-portal" class="content-section active">
+            <div class="section-title-wrapper">
+                <h2 class="section-title" id="portal-title">Student Portal - Add Student</h2>
+                <p class="section-subtitle" id="portal-subtitle">Session- 2026</p>
+            </div>
+            
+            <!-- SUB-VIEW 1: ADD STUDENT -->
+            <div id="subview-add" class="portal-sub-view active">
+                <div class="admission-form-container">
+                    <!-- Admission Form -->
+                    <form id="id-card-form" onsubmit="generateIDCard(event)">
+                        <!-- Section 1: Academic Details (একাডেমিক তথ্য) -->
+                        <div class="form-section-card">
+                            <div class="form-section-header">
+                                <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                                <span>একাডেমিক তথ্য (Academic Details)</span>
+                            </div>
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="student-class">শ্রেণী (Class):</label>
+                                    <select id="student-class" class="form-control" required onchange="handleClassSelectChange(); updateIdRegPreviews();">
+                                        <!-- Loaded dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-section">শাখা (Section):</label>
+                                    <select id="student-section" class="form-control" required>
+                                        <option value="A">Section A</option>
+                                        <option value="B">Section B</option>
+                                        <option value="C">Section C</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="group-select-container">
+                                    <label for="student-roll">Group (Science, Humanities, Business Studies):</label>
+                                    <select id="student-roll" class="form-control" required onchange="updateCardPreview()">
+                                        <option value="" disabled selected>Select Group</option>
+                                        <option value="General" style="display: none;">General</option>
+                                        <option value="Science">Science</option>
+                                        <option value="Humanities">Humanities</option>
+                                        <option value="Business Studies">Business Studies</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="optional-subject-container" style="display: none;">
+                                    <label for="student-optional-subject">ঐচ্ছিক বিষয় (Optional Subject):</label>
+                                    <select id="student-optional-subject" class="form-control">
+                                        <!-- Loaded dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-session">শিক্ষাবর্ষ (Session):</label>
+                                    <input type="text" id="student-session" class="form-control" value="2026" required oninput="updateCardPreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-id-preview">স্টুডেন্ট আইডি (Student ID - Auto from Advance):</label>
+                                    <input type="text" id="student-id-preview" class="form-control form-control-readonly" readonly value="-">
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-reg-preview">রেজিস্ট্রেশন নম্বর (Registration No):</label>
+                                    <input type="text" id="student-reg-preview" class="form-control form-control-readonly" readonly value="-">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Personal Details (ব্যক্তিগত বিবরণ) -->
+                        <div class="form-section-card">
+                            <div class="form-section-header">
+                                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                <span>ব্যক্তিগত বিবরণ (Personal Details)</span>
+                            </div>
+
+                            <!-- Custom Photo Upload Dropzone (Passport Size) -->
+                            <div class="photo-upload-row" style="display: flex; flex-direction: column; gap: 12px; align-items: flex-start; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--glass-border);">
+                                <div class="avatar-preview-container">
+                                    <div id="form-avatar-placeholder" class="form-avatar-placeholder">
+                                        <svg viewBox="0 0 24 24" style="width:36px; height:36px; fill:currentColor;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                    </div>
+                                    <img id="form-avatar-img" class="form-avatar-preview" src="" alt="Preview">
+                                </div>
+                                <div id="dropzone" style="position: relative; display: inline-block;">
+                                    <button type="button" class="btn-primary" style="background: var(--accent-grad); box-shadow: var(--cyan-glow); padding: 12px 24px; border-radius: 10px; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; pointer-events: none;">
+                                        <span>📷 ছবি নির্বাচন করুন (Browse Photo)</span>
+                                    </button>
+                                    <input type="file" id="student-photo" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;" onchange="previewStudentPhoto(this)">
+                                    <span style="display: none;" id="upload-status-text">কোনো ছবি নির্বাচন করা হয়নি (পাসপোর্ট সাইজ ছবি আবশ্যক)</span>
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="student-name">শিক্ষার্থীর নাম (Name in English):</label>
+                                    <input type="text" id="student-name" class="form-control" placeholder="e.g. Rafi Ahmed" required oninput="updateCardPreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-name-bn">শিক্ষার্থীর নাম (বাংলায়):</label>
+                                    <input type="text" id="student-name-bn" class="form-control" placeholder="যেমন: রাফি আহমেদ" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-dob">জন্ম তারিখ (Date of Birth):</label>
+                                    <input type="date" id="student-dob" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-gender">লিঙ্গ (Gender):</label>
+                                    <select id="student-gender" class="form-control" required>
+                                        <option value="Male">Male (পুরুষ)</option>
+                                        <option value="Female">Female (মহিলা)</option>
+                                        <option value="Other">Other (অন্যান্য)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-religion">ধর্ম (Religion):</label>
+                                    <select id="student-religion" class="form-control" required>
+                                        <option value="Islam">Islam (ইসলাম)</option>
+                                        <option value="Hinduism">Hinduism (हिंदू)</option>
+                                        <option value="Buddhism">Buddhism (বৌদ্ধ)</option>
+                                        <option value="Christianity">Christianity (খ্রিস্টান)</option>
+                                        <option value="Others">Others (অন্যান্য)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-blood">রক্তের গ্রুপ (Blood Group):</label>
+                                    <select id="student-blood" class="form-control" onchange="updateCardPreview()">
+                                        <option value="A+">A+ (Positive)</option>
+                                        <option value="B+">B+ (Positive)</option>
+                                        <option value="O+">O+ (Positive)</option>
+                                        <option value="AB+">AB+ (Positive)</option>
+                                        <option value="A-">A- (Negative)</option>
+                                        <option value="B-">B- (Negative)</option>
+                                        <option value="O-">O- (Negative)</option>
+                                        <option value="AB-">AB- (Negative)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Guardian & Contact & Address details -->
+                        <div class="form-section-card">
+                            <div class="form-section-header">
+                                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                                <span>অভিভাবক ও ঠিকানা (Parents & Contact)</span>
+                            </div>
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="father-name">পিতার নাম (Father's Name):</label>
+                                    <input type="text" id="father-name" class="form-control" placeholder="পিতার নাম লিখুন" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="father-occupation">পিতার পেশা (Occupation):</label>
+                                    <input type="text" id="father-occupation" class="form-control" placeholder="যেমন: ব্যবসা, চাকুরিজীবী" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mother-name">মাতার নাম (Mother's Name):</label>
+                                    <input type="text" id="mother-name" class="form-control" placeholder="মাতার নাম লিখুন" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mother-occupation">মাতার পেশা (Occupation):</label>
+                                    <input type="text" id="mother-occupation" class="form-control" placeholder="যেমন: গৃহিণী, চাকুরিজীবী" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-phone">অভিভাবকের মোবাইল নম্বর (Guardian's Phone):</label>
+                                    <input type="tel" id="student-phone" class="form-control" placeholder="e.g. 017XXXXXXXX" required oninput="updateCardPreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-email">ইমেইল ঠিকানা (Email Address - Optional):</label>
+                                    <input type="email" id="student-email" class="form-control" placeholder="e.g. rafi@example.com">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="present-address">বর্তমান ঠিকানা (Present Address):</label>
+                                <textarea id="present-address" class="form-control" rows="2" placeholder="বর্তমান ঠিকানা লিখুন" required oninput="syncAddress()"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted-text); font-size: 0.9rem;">
+                                    <input type="checkbox" id="same-address-chk" style="transform: scale(1.2);" onchange="handleAddressSyncToggle(this.checked)">
+                                    বর্তমান ও স্থায়ী ঠিকানা একই (Same as Present Address)
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="permanent-address">স্থায়ী ঠিকানা (Permanent Address):</label>
+                                <textarea id="permanent-address" class="form-control" rows="2" placeholder="স্থায়ী ঠিকানা লিখুন" required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Form Submission -->
+                        <div style="display: flex; gap: 15px; margin-bottom: 40px;">
+                            <button type="submit" class="btn-primary" style="flex: 2; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                                <span>💾 ভর্তি তথ্য সংরক্ষণ করুন</span>
+                            </button>
+                            <button type="button" class="btn-danger" style="flex: 1;" onclick="resetAdmissionForm()">
+                                <span>Reset Form</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: STUDENT LIST -->
+            <div id="subview-list" class="portal-sub-view">
+                <div class="glass-card">
+                    <div class="list-controls">
+                        <h3 class="portal-form-title" style="margin:0;">Registered Student Roster</h3>
+                        <div class="search-box-wrapper">
+                            <input type="text" id="student-search-input" class="form-control" placeholder="Search by name, class or group..." oninput="renderStudentList()">
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x:auto;">
+                        <table class="student-list-table">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Class & Section</th>
+                                    <th>Group</th>
+                                    <th>Reg No</th>
+                                    <th>Emergency Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list-rows">
+                                <!-- Filled dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 3: PROMOTION & DEMOTION -->
+            <div id="subview-promote" class="portal-sub-view">
+                <div class="glass-card">
+                    <h3 class="portal-form-title">Student Promotion & Demotion Panel</h3>
+                    <p style="font-size: 0.85rem; color: var(--muted-text); margin-bottom: 20px;">
+                        Select a class below to view its students. Check the students you want to promote or demote, then click the appropriate action button.
+                    </p>
+                    
+                    <div class="list-controls" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <label for="promote-class-select" style="color: #fff; font-weight:600;">Select Class:</label>
+                            <select id="promote-class-select" class="form-control" style="width: 180px;" onchange="renderPromotionList()">
+                                <option value="Class 6">Class 6</option>
+                                <option value="Class 7">Class 7</option>
+                                <option value="Class 8">Class 8</option>
+                                <option value="Class 9">Class 9</option>
+                                <option value="Class 10">Class 10</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-primary" style="background: var(--accent-grad); box-shadow: var(--cyan-glow);" onclick="handlePromotion(1)">
+                                Promote Checked (Class +1)
+                            </button>
+                            <button class="btn-danger" onclick="handlePromotion(-1)">
+                                Demote Checked (Class -1)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto; margin-top: 20px;">
+                        <table class="student-list-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">
+                                        <input type="checkbox" id="select-all-promotions" class="chk-control" onchange="toggleSelectAllPromotions(this.checked)">
+                                    </th>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>Current Class</th>
+                                    <th>Group</th>
+                                    <th>Blood Group</th>
+                                </tr>
+                            </thead>
+                            <tbody id="promote-list-rows">
+                                <!-- Filled dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal Overlay for displaying ID Card -->
+    <div id="id-card-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeModal(event)">×</button>
+            <div id="modal-card-placeholder">
+                <!-- ID Card will be cloned here -->
+            </div>
+            <button class="btn-primary" style="margin-top:25px; width:100%; background: var(--accent-grad); box-shadow: var(--cyan-glow);" onclick="printModalIDCard()">Print ID Card</button>
+        </div>
+    </div>
+
+    <!-- Modal Overlay for displaying Student Profile -->
+    <div id="student-profile-modal" class="modal-overlay" onclick="closeProfileModal(event)">
+        <div class="profile-modal-container" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeProfileModal(event)">×</button>
+            <div id="modal-profile-placeholder">
+                <!-- Profile details will be loaded here -->
+            </div>
+            <div style="display: flex; gap: 15px; width: 100%; margin-top: 25px;">
+                <button class="btn-primary" style="flex: 1; background: var(--accent-grad); box-shadow: var(--cyan-glow);" onclick="printModalProfile()">Print Profile</button>
+                <button class="btn-danger" style="flex: 1;" onclick="closeProfileModal(event)">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
+            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shared & Page-specific JS -->
+    <script src="main.js"></script>
+    <script>
+        // --- DYNAMIC STUDENT DATABASE & PORTAL LOGIC ---
+        let uploadedStudentPhotoData = "";
+
+        // Safe JSON parser to prevent errors from empty database or null storage values
+        function safeJsonParse(key, defaultValue) {
+            try {
+                const stored = localStorage.getItem(key);
+                if (stored && stored !== 'null' && stored !== 'undefined') {
+                    const parsed = JSON.parse(stored);
+                    if (parsed !== null && parsed !== undefined) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.error(`Error parsing ${key} from localStorage:`, e);
+            }
+            return defaultValue;
+        }
+
+        // Preview uploaded photo for ID Card and Form avatar
+        function previewStudentPhoto(obj) {
+            console.log("previewStudentPhoto triggered", obj);
+            let file = null;
+            
+            // 1. Direct lookup in input files
+            const fileInput = document.getElementById('student-photo');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                file = fileInput.files[0];
+            }
+            // 2. Fallbacks based on passed object type
+            else if (obj instanceof File) {
+                file = obj;
+            } else if (obj && obj.target && obj.target.files && obj.target.files[0]) {
+                file = obj.target.files[0];
+            } else if (obj && obj.files && obj.files[0]) {
+                file = obj.files[0];
+            }
+            
+            console.log("File detected:", file);
+            if (file) {
+                // Instantly generate and assign native Object URL for synchronous preview
+                const objectURL = URL.createObjectURL(file);
+                
+                const formImg = document.getElementById('form-avatar-img');
+                const formPlaceholder = document.getElementById('form-avatar-placeholder');
+                const statusText = document.getElementById('upload-status-text');
+                
+                if (formImg) {
+                    console.log("Setting formImg source and showing it instantly");
+                    formImg.src = objectURL;
+                    formImg.style.display = "block";
+                }
+                if (formPlaceholder) {
+                    console.log("Hiding formPlaceholder");
+                    formPlaceholder.style.display = "none";
+                }
+                if (statusText) {
+                    statusText.innerText = "ছবি সফলভাবে লোড হয়েছে";
+                    statusText.style.color = "var(--neon-green)";
+                }
+                
+                // Read as Data URL in the background to preserve data for localStorage saving
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    console.log("FileReader loaded result successfully in background");
+                    uploadedStudentPhotoData = e.target.result || reader.result;
+                    
+                    // ID Card Display (for modal previews)
+                    const img = document.getElementById('id-card-photo');
+                    const placeholder = document.getElementById('id-card-photo-placeholder');
+                    if (img) {
+                        img.src = uploadedStudentPhotoData;
+                        img.style.display = "block";
+                    }
+                    if (placeholder) {
+                        placeholder.style.display = "none";
+                    }
+                };
+                reader.onerror = function(err) {
+                    console.error("FileReader error in background:", err);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                console.error("No file detected in previewStudentPhoto");
+            }
+        }
+
+        function loadClassSections() {
+            const defaultSections = [
+                { class: "Class 6", section: "A", capacity: 50 },
+                { class: "Class 6", section: "B", capacity: 50 },
+                { class: "Class 7", section: "A", capacity: 50 },
+                { class: "Class 7", section: "B", capacity: 50 },
+                { class: "Class 8", section: "A", capacity: 45 },
+                { class: "Class 8", section: "B", capacity: 45 },
+                { class: "Class 9", section: "A", capacity: 45 },
+                { class: "Class 9", section: "B", capacity: 45 },
+                { class: "Class 9", section: "C", capacity: 45 },
+                { class: "Class 10", section: "A", capacity: 40 },
+                { class: "Class 10", section: "B", capacity: 40 }
+            ];
+            const parsed = safeJsonParse('school_class_sections', null);
+            if (Array.isArray(parsed)) {
+                const filtered = parsed.filter(s => s && typeof s === 'object' && s.class && s.section);
+                if (filtered.length > 0) {
+                    return filtered;
+                }
+            }
+            return defaultSections;
+        }
+
+        function populateStudentPortalSectionDropdown(className) {
+            const sectionSelect = document.getElementById('student-section');
+            if (!sectionSelect) return;
+            
+            const sections = loadClassSections();
+            const classSections = sections.filter(s => s.class === className);
+            
+            if (classSections.length === 0) {
+                sectionSelect.innerHTML = '<option value="">No Section Available</option>';
+            } else {
+                const currentVal = sectionSelect.value;
+                sectionSelect.innerHTML = classSections.map(s => `<option value="${s.section}">Section ${s.section}</option>`).join('');
+                if (currentVal && classSections.some(s => s.section === currentVal)) {
+                    sectionSelect.value = currentVal;
+                } else if (classSections.length > 0) {
+                    sectionSelect.value = classSections[0].section;
+                }
+            }
+        }
+
+        // Auto assign roll number if configured
+        function handleClassSelectChange() {
+            const classVal = document.getElementById('student-class').value;
+            
+            // Populate sections for this class dynamically
+            populateStudentPortalSectionDropdown(classVal);
+
+            // Show/Hide Group option based on Class (only for Nine and Ten)
+            const groupContainer = document.getElementById('group-select-container');
+            const groupSelect = document.getElementById('student-roll');
+            if (groupContainer && groupSelect) {
+                if (classVal === "Nine" || classVal === "Ten" || classVal === "Class 9" || classVal === "Class 10") {
+                    groupContainer.style.display = "block";
+                    groupSelect.required = true;
+                    if (groupSelect.value === "General" || groupSelect.value === "N/A") {
+                        groupSelect.value = "";
+                    }
+                } else {
+                    groupContainer.style.display = "none";
+                    groupSelect.required = false;
+                    groupSelect.value = "General";
+                }
+            }
+
+            // Show/Hide Optional Subject option based on Class (only for Nine and Ten)
+            const optionalContainer = document.getElementById('optional-subject-container');
+            const optionalSelect = document.getElementById('student-optional-subject');
+            if (optionalContainer && optionalSelect) {
+                if (classVal === "Nine" || classVal === "Ten" || classVal === "Class 9" || classVal === "Class 10") {
+                    optionalContainer.style.display = "block";
+                    optionalSelect.required = true;
+                    populateOptionalSubjects(classVal);
+                } else {
+                    optionalContainer.style.display = "none";
+                    optionalSelect.required = false;
+                    optionalSelect.value = "";
+                    optionalSelect.innerHTML = '<option value="">No Optional Subject</option>';
+                }
+            }
+
+            // Update live card preview values
+            updateCardPreview();
+        }
+
+        // Apply ID card glow theme on load
+        function applyIdCardTheme() {
+            const idRegSettings = safeJsonParse('school_id_reg_settings', {});
+            const theme = idRegSettings.idTheme || 'cyan';
+            const cardEl = document.getElementById('printable-id-card');
+            if (cardEl) {
+                cardEl.style.borderColor = `var(--neon-${theme})`;
+                cardEl.style.boxShadow = `0 0 20px var(--neon-${theme})`;
+            }
+        }
+
+        // Update ID Card display dynamically in real time
+        function updateCardPreview() {
+            const name = document.getElementById('student-name').value || "Student Name";
+            const className = document.getElementById('student-class').value || "-";
+            const roll = document.getElementById('student-roll').value || "-";
+            const blood = document.getElementById('student-blood').value || "-";
+            const phone = document.getElementById('student-phone').value || "-";
+
+            const nameEl = document.getElementById('card-display-name');
+            if (nameEl) nameEl.innerText = name;
+            const classEl = document.getElementById('card-display-class');
+            if (classEl) classEl.innerText = className;
+            const rollEl = document.getElementById('card-display-roll');
+            if (rollEl) rollEl.innerText = roll;
+            const bloodEl = document.getElementById('card-display-blood');
+            if (bloodEl) bloodEl.innerText = blood;
+            const phoneEl = document.getElementById('card-display-phone');
+            if (phoneEl) phoneEl.innerText = phone;
+        }
+
+        // Update Student ID & Registration preview inputs in real time
+        function updateIdRegPreviews() {
+            const className = document.getElementById('student-class').value;
+            const students = loadStudents();
+
+            const idRegSettings = safeJsonParse('school_id_reg_settings', {});
+            const classPrefixes = safeJsonParse('school_class_id_prefixes', []);
+            
+            let prefix = idRegSettings.idPrefix || 'CMS-';
+            if (Array.isArray(classPrefixes)) {
+                const found = classPrefixes.find(p => p.class === className);
+                if (found) prefix = found.prefix;
+            } else {
+                if (classPrefixes[className]) prefix = classPrefixes[className];
+            }
+            
+            // Calculate class-specific serial number
+            const classStudents = students.filter(s => s.class === className);
+            let maxSerial = 0;
+            classStudents.forEach(s => {
+                if (s.studentId && s.studentId.startsWith(prefix)) {
+                    const suffix = s.studentId.slice(prefix.length);
+                    const serial = parseInt(suffix, 10);
+                    if (!isNaN(serial) && serial > maxSerial) {
+                        maxSerial = serial;
+                    }
+                }
+            });
+            const nextSerial = maxSerial > 0 ? maxSerial + 1 : classStudents.length + 1;
+            const serialStr = String(nextSerial).padStart(3, '0');
+            const studentIdNumber = `${prefix}${serialStr}`;
+
+            // Calculate global/general registration serial number
+            const regPrefix = idRegSettings.regPrefix || 'REG2026-';
+            let maxRegSerial = 0;
+            students.forEach(s => {
+                if (s.regNo && s.regNo.startsWith(regPrefix)) {
+                    const suffix = s.regNo.slice(regPrefix.length);
+                    if (/^\d{4}$/.test(suffix)) {
+                        const serial = parseInt(suffix, 10);
+                        if (!isNaN(serial) && serial > maxRegSerial) {
+                            maxRegSerial = serial;
+                        }
+                    }
+                }
+            });
+            const nextRegSerial = maxRegSerial > 0 ? maxRegSerial + 1 : 1;
+            const regSerialStr = String(nextRegSerial).padStart(4, '0');
+            const registrationNumber = `${regPrefix}${regSerialStr}`;
+
+            const idField = document.getElementById('student-id-preview');
+            if (idField) idField.value = studentIdNumber;
+            const regField = document.getElementById('student-reg-preview');
+            if (regField) regField.value = registrationNumber;
+
+            const cardId = document.getElementById('card-display-id');
+            if (cardId) cardId.innerText = studentIdNumber;
+            const cardReg = document.getElementById('card-display-reg');
+            if (cardReg) cardReg.innerText = registrationNumber;
+        }
+
+        // Synchronize Address elements
+        function handleAddressSyncToggle(checked) {
+            const present = document.getElementById('present-address').value;
+            const permField = document.getElementById('permanent-address');
+            if (checked) {
+                permField.value = present;
+                permField.readOnly = true;
+                permField.style.opacity = "0.7";
+            } else {
+                permField.readOnly = false;
+                permField.style.opacity = "1";
+            }
+        }
+
+        function syncAddress() {
+            const isSame = document.getElementById('same-address-chk').checked;
+            if (isSame) {
+                document.getElementById('permanent-address').value = document.getElementById('present-address').value;
+            }
+        }
+
+        // Trigger hidden input click
+        function triggerFileInput() {
+            document.getElementById('student-photo').click();
+        }
+
+        // Reset Admission form and preview values
+        function resetAdmissionForm() {
+            document.getElementById('id-card-form').reset();
+            uploadedStudentPhotoData = "";
+            
+            // Reset photo previews
+            const img = document.getElementById('id-card-photo');
+            const placeholder = document.getElementById('id-card-photo-placeholder');
+            if (img) {
+                img.src = "";
+                img.style.display = "none";
+            }
+            if (placeholder) {
+                placeholder.style.display = "block";
+            }
+
+            const formImg = document.getElementById('form-avatar-img');
+            const formPlaceholder = document.getElementById('form-avatar-placeholder');
+            const statusText = document.getElementById('upload-status-text');
+            if (formImg) {
+                formImg.src = "";
+                formImg.style.display = "none";
+            }
+            if (formPlaceholder) {
+                formPlaceholder.style.display = "flex";
+            }
+            if (statusText) {
+                statusText.innerText = "কোনো ছবি নির্বাচন করা হয়নি";
+                statusText.style.color = "var(--muted-text)";
+            }
+
+            // Reset address readOnly
+            const permField = document.getElementById('permanent-address');
+            if (permField) {
+                permField.readOnly = false;
+                permField.style.opacity = "1";
+            }
+
+            // Re-load defaults & ID/Reg previews
+            handleClassSelectChange();
+            updateIdRegPreviews();
+            updateCardPreview();
+        }
+
+        // Generate ID Card and save student to database
+        function generateIDCard(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('student-name').value;
+            const nameBn = document.getElementById('student-name-bn').value;
+            const className = document.getElementById('student-class').value;
+            const section = document.getElementById('student-section').value;
+            const roll = document.getElementById('student-roll').value;
+            const session = document.getElementById('student-session').value;
+            const dob = document.getElementById('student-dob').value;
+            const gender = document.getElementById('student-gender').value;
+            const religion = document.getElementById('student-religion').value;
+            const blood = document.getElementById('student-blood').value;
+            const phone = document.getElementById('student-phone').value;
+            const email = document.getElementById('student-email').value;
+            const fatherName = document.getElementById('father-name').value;
+            const fatherOccup = document.getElementById('father-occupation').value;
+            const motherName = document.getElementById('mother-name').value;
+            const motherOccup = document.getElementById('mother-occupation').value;
+            const presentAddress = document.getElementById('present-address').value;
+            const permanentAddress = document.getElementById('permanent-address').value;
+
+            // Load settings & check photo constraint
+            const idRegSettings = safeJsonParse('school_id_reg_settings', {});
+            if (idRegSettings.requirePhoto && !uploadedStudentPhotoData) {
+                alert("ত্রুটি: ভর্তি ফরমটি জমা দিতে শিক্ষার্থীর ছবি আপলোড করা আবশ্যক।");
+                return;
+            }
+
+            const classPrefixes = safeJsonParse('school_class_id_prefixes', []);
+            let prefix = idRegSettings.idPrefix || 'CMS-';
+            if (Array.isArray(classPrefixes)) {
+                const found = classPrefixes.find(p => p.class === className);
+                if (found) prefix = found.prefix;
+            } else {
+                if (classPrefixes[className]) prefix = classPrefixes[className];
+            }
+            
+            // Calculate class-specific serial number
+            const students = loadStudents();
+            const classStudents = students.filter(s => s.class === className);
+            let maxSerial = 0;
+            classStudents.forEach(s => {
+                if (s.studentId && s.studentId.startsWith(prefix)) {
+                    const suffix = s.studentId.slice(prefix.length);
+                    const serial = parseInt(suffix, 10);
+                    if (!isNaN(serial) && serial > maxSerial) {
+                        maxSerial = serial;
+                    }
+                }
+            });
+            const nextSerial = maxSerial > 0 ? maxSerial + 1 : classStudents.length + 1;
+            const serialStr = String(nextSerial).padStart(3, '0');
+            const studentIdNumber = `${prefix}${serialStr}`;
+
+            // Calculate global/general registration serial number
+            const regPrefix = idRegSettings.regPrefix || 'REG2026-';
+            let maxRegSerial = 0;
+            students.forEach(s => {
+                if (s.regNo && s.regNo.startsWith(regPrefix)) {
+                    const suffix = s.regNo.slice(regPrefix.length);
+                    if (/^\d{4}$/.test(suffix)) {
+                        const serial = parseInt(suffix, 10);
+                        if (!isNaN(serial) && serial > maxRegSerial) {
+                            maxRegSerial = serial;
+                        }
+                    }
+                }
+            });
+            const nextRegSerial = maxRegSerial > 0 ? maxRegSerial + 1 : 1;
+            const regSerialStr = String(nextRegSerial).padStart(4, '0');
+            const registrationNumber = `${regPrefix}${regSerialStr}`;
+
+            // Save student in Local Database
+            const newStudent = {
+                id: Date.now().toString(),
+                studentId: studentIdNumber,
+                regNo: registrationNumber,
+                name: name,
+                nameBn: nameBn,
+                class: className,
+                section: section,
+                roll: roll,
+                session: session,
+                dob: dob,
+                gender: gender,
+                religion: religion,
+                blood: blood,
+                phone: phone,
+                email: email,
+                fatherName: fatherName,
+                fatherOccup: fatherOccup,
+                motherName: motherName,
+                motherOccup: motherOccup,
+                presentAddress: presentAddress,
+                permanentAddress: permanentAddress,
+                photo: uploadedStudentPhotoData || "",
+                optionalSubject: (className === "Nine" || className === "Ten" || className === "Class 9" || className === "Class 10") 
+                    ? (document.getElementById('student-optional-subject') ? document.getElementById('student-optional-subject').value : "") 
+                    : ""
+            };
+
+            students.push(newStudent);
+            localStorage.setItem('school_students', JSON.stringify(students));
+
+            // Smooth effect
+            const card = document.getElementById('printable-id-card');
+            if (card) {
+                card.style.transform = "scale(1.05)";
+                setTimeout(() => card.style.transform = "scale(1)", 300);
+            }
+
+            // Reset Form (but keep photo variables clean)
+            resetAdmissionForm();
+            
+            alert(`শিক্ষার্থী "${name}" এর ভর্তি প্রক্রিয়া সফলভাবে সম্পন্ন হয়েছে!`);
+
+            // Re-render sub-lists in case user switches views
+            renderStudentList();
+            renderPromotionList();
+
+            // Redirect automatically to Student List
+            window.history.pushState({}, '', '?view=list');
+            switchPortalView('list');
+        }
+
+        // Database helpers
+        function loadStudents() {
+            const students = safeJsonParse('school_students', []);
+            return Array.isArray(students) ? students : [];
+        }
+
+        // --- SUBVIEWS SWITHING MECHANISM ---
+        function switchPortalView(viewName) {
+            // Hide all sub-views
+            const subviews = document.querySelectorAll('.portal-sub-view');
+            subviews.forEach(view => view.classList.remove('active'));
+
+            // Toggle target sub-view
+            const targetView = document.getElementById('subview-' + viewName);
+            if (targetView) {
+                targetView.classList.add('active');
+            }
+
+            // Update page headings based on subview
+            const titleEl = document.getElementById('portal-title');
+            const subtitleEl = document.getElementById('portal-subtitle');
+
+            if (viewName === 'add') {
+                titleEl.textContent = "Student Portal - Admission Form";
+                subtitleEl.textContent = `Session- ${new Date().getFullYear()}`;
+                updateIdRegPreviews();
+                updateCardPreview();
+            } else if (viewName === 'list') {
+                titleEl.textContent = "Student Portal - Student Roster";
+                subtitleEl.textContent = "View, manage, and print student profiles & dynamic ID cards stored in the database";
+                renderStudentList();
+            } else if (viewName === 'promote') {
+                titleEl.textContent = "Student Portal - Promotion & Demotion";
+                subtitleEl.textContent = "Manage mass student promotions and class adjustments";
+                renderPromotionList();
+            }
+        }
+
+        // --- STUDENT ROSTER LIST RENDERING ---
+        function renderStudentList() {
+            const searchVal = document.getElementById('student-search-input').value.toLowerCase();
+            const container = document.getElementById('student-list-rows');
+            if (!container) return;
+
+            const students = loadStudents();
+            const filtered = students.filter(s => 
+                s.name.toLowerCase().includes(searchVal) ||
+                (s.studentId && s.studentId.toLowerCase().includes(searchVal)) ||
+                s.class.toLowerCase().includes(searchVal) ||
+                s.roll.toString().includes(searchVal)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center; color: var(--muted-text); font-style:italic;">
+                            No students found matching current search filter.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(s => {
+                const photoHTML = s.photo 
+                    ? `<img src="${s.photo}" class="student-list-photo" alt="Photo">`
+                    : `<div class="student-list-photo-placeholder"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`;
+                
+                const studentId = s.studentId || '-';
+                const sectionDisplay = s.section ? ` - ${s.section}` : '';
+                const regNo = s.regNo || '-';
+                
+                html += `
+                    <tr>
+                        <td>${photoHTML}</td>
+                        <td style="color:var(--neon-cyan); font-weight:600; font-family: monospace;">${studentId}</td>
+                        <td style="color:#fff; font-weight:600;">${s.name}</td>
+                        <td>${s.class}${sectionDisplay}</td>
+                        <td>${s.roll}</td>
+                        <td style="font-family: monospace;">${regNo}</td>
+                        <td>${s.phone}</td>
+                        <td>
+                            <button class="action-btn-sm btn-view-card" onclick="viewModalCard('${s.id}')">ID Card</button>
+                            <button class="action-btn-sm btn-view-profile" style="background:var(--accent-grad); color:#fff; box-shadow:var(--cyan-glow); margin-right:8px;" onclick="viewModalProfile('${s.id}')">Profile</button>
+                            <button class="action-btn-sm btn-delete-student" onclick="deleteStudent('${s.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Delete Student
+        function deleteStudent(id) {
+            const students = loadStudents();
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+
+            if (confirm(`Are you sure you want to delete student "${student.name}"?`)) {
+                const updated = students.filter(s => s.id !== id);
+                localStorage.setItem('school_students', JSON.stringify(updated));
+                renderStudentList();
+                renderPromotionList();
+            }
+        }
+
+        // --- ID CARD MODAL DISPLAY ---
+        function viewModalCard(id) {
+            const students = loadStudents();
+            const s = students.find(s => s.id === id);
+            if (!s) return;
+
+            const modal = document.getElementById('id-card-modal');
+            const placeholder = document.getElementById('modal-card-placeholder');
+
+            const photoHTML = s.photo 
+                ? `<img src="${s.photo}" alt="Student Photo">`
+                : `<svg viewBox="0 0 24 24" style="width: 50px; height: 50px; fill: var(--muted-text);"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+
+            const idRegSettings = safeJsonParse('school_id_reg_settings', {});
+            const theme = idRegSettings.idTheme || 'cyan';
+            const studentId = s.studentId || `CMS-${1000 + students.indexOf(s) + 1}`;
+            const regNo = s.regNo || `REG2026-${1000 + students.indexOf(s) + 1}`;
+
+            placeholder.innerHTML = `
+                <div class="id-card" style="margin: 0 auto; transform: scale(1.1); margin-bottom: 20px; border-color: var(--neon-${theme}); box-shadow: 0 0 20px var(--neon-${theme});">
+                    <div class="id-photo-container">
+                        ${photoHTML}
+                    </div>
+                    <div class="id-details">
+                        <div class="id-school-name">CREATIVE MODEL SCHOOL</div>
+                        <div class="id-name">${s.name}</div>
+                        <div class="id-meta">Student ID: <strong>${studentId}</strong></div>
+                        <div class="id-meta">Reg No: <strong>${regNo}</strong></div>
+                        <div class="id-meta">Class: <strong>${s.class}</strong></div>
+                        <div class="id-meta">Group: <strong>${s.roll}</strong></div>
+                        <div class="id-meta">Blood Group: <strong>${s.blood}</strong></div>
+                        <div class="id-meta">Emergency Contact: <strong>${s.phone}</strong></div>
+                    </div>
+                    <div class="id-barcode"></div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            document.getElementById('id-card-modal').style.display = 'none';
+        }
+
+        function printModalIDCard() {
+            const cardHTML = document.querySelector('#modal-card-placeholder').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Student ID Card</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }
+                        .id-card {
+                            width: 380px;
+                            height: 220px;
+                            border-radius: 16px;
+                            background: linear-gradient(135deg, #1e1145 0%, #0d0822 100%);
+                            border: 2px solid #22d3ee;
+                            box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+                            position: relative;
+                            overflow: hidden;
+                            padding: 20px;
+                            display: grid;
+                            grid-template-columns: 1fr 2fr;
+                            align-items: center;
+                            gap: 15px;
+                            color: #fff;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .id-photo-container {
+                            width: 90px;
+                            height: 110px;
+                            border: 2px solid #f472b6;
+                            border-radius: 8px;
+                            overflow: hidden;
+                            background: rgba(255,255,255,0.05);
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        }
+                        .id-photo-container img { width: 100%; height: 100%; object-fit: cover; }
+                        .id-school-name { font-size: 0.95rem; font-weight: 700; color: #22d3ee; margin-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 4px; }
+                        .id-name { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; }
+                        .id-meta { font-size: 0.8rem; color: #a1a1aa; margin-bottom: 3px; }
+                        .id-meta strong { color: #fff; }
+                        .id-barcode { position: absolute; bottom: 12px; right: 20px; height: 25px; width: 120px; background: repeating-linear-gradient(90deg, #fff 0px, #fff 2px, transparent 2px, transparent 5px, #fff 5px, #fff 6px, transparent 6px, transparent 10px); opacity: 0.7; }
+                    </style>
+                </head>
+                <body>
+                    ${cardHTML}
+                    <script>
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // --- STUDENT PROFILE SLIP MODAL ---
+        function viewModalProfile(id) {
+            const students = loadStudents();
+            const s = students.find(s => s.id === id);
+            if (!s) return;
+
+            const modal = document.getElementById('student-profile-modal');
+            const placeholder = document.getElementById('modal-profile-placeholder');
+
+            const photoHTML = s.photo 
+                ? `<img src="${s.photo}" class="profile-slip-photo" alt="Student Photo">`
+                : `<div class="profile-slip-photo" style="display:flex; justify-content:center; align-items:center; background:rgba(255,255,255,0.05);"><svg viewBox="0 0 24 24" style="width: 60px; height: 60px; fill: var(--muted-text);"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`;
+
+            const schoolSettings = safeJsonParse('school_settings', {});
+            const schoolName = schoolSettings.schoolName || "CREATIVE MODEL SCHOOL";
+            const schoolSubtitle = schoolSettings.schoolSubtitle || "Pioneer of Digital & Smart Education";
+
+            // Fallback for optional fields
+            const nameBn = s.nameBn || s.name || '-';
+            const dob = s.dob || '-';
+            const gender = s.gender || '-';
+            const religion = s.religion || '-';
+            const email = s.email || '-';
+            const section = s.section || '-';
+            const session = s.session || '2026';
+            const fatherName = s.fatherName || '-';
+            const fatherOccup = s.fatherOccup || '-';
+            const motherName = s.motherName || '-';
+            const motherOccup = s.motherOccup || '-';
+            const presentAddress = s.presentAddress || '-';
+            const permanentAddress = s.permanentAddress || '-';
+
+            placeholder.innerHTML = `
+                <div class="profile-slip">
+                    <div class="profile-slip-header">
+                        <div class="profile-slip-logo">
+                            <div class="school-logo-container" style="position:static; width:60px; height:60px; padding:6px; box-shadow:none;">
+                                <!-- Logo loaded by JS -->
+                            </div>
+                        </div>
+                        <div class="profile-slip-school-info">
+                            <div class="profile-slip-title">${schoolName}</div>
+                            <div class="profile-slip-subtitle">${schoolSubtitle}</div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="text-align:center; color:var(--neon-cyan); margin-bottom:20px; border-bottom:1px dashed var(--glass-border); padding-bottom:8px;">STUDENT ADMISSION PROFILE</h3>
+                    
+                    <div class="profile-slip-body">
+                        <div>
+                            ${photoHTML}
+                        </div>
+                        <div>
+                            <table class="profile-details-table">
+                                <tr>
+                                    <td class="profile-details-label">Student ID</td>
+                                    <td class="profile-details-value" style="color:var(--neon-cyan); font-family: monospace;">${s.studentId || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Registration No</td>
+                                    <td class="profile-details-value" style="font-family: monospace;">${s.regNo || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Name (English)</td>
+                                    <td class="profile-details-value">${s.name}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">নাম (বাংলা)</td>
+                                    <td class="profile-details-value">${nameBn}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Class & Section</td>
+                                    <td class="profile-details-value">${s.class} (${section})</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Group</td>
+                                    <td class="profile-details-value">${s.roll}</td>
+                                </tr>
+                                ${(s.class === "Nine" || s.class === "Ten" || s.class === "Class 9" || s.class === "Class 10") ? `
+                                <tr>
+                                    <td class="profile-details-label">Optional Subject</td>
+                                    <td class="profile-details-value" style="color:var(--neon-cyan); font-weight:600;">${s.optionalSubject || '-'}</td>
+                                </tr>
+                                ` : ''}
+                                <tr>
+                                    <td class="profile-details-label">Session</td>
+                                    <td class="profile-details-value">${session}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Date of Birth</td>
+                                    <td class="profile-details-value">${dob}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Gender & Religion</td>
+                                    <td class="profile-details-value">${gender} | ${religion}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Blood Group</td>
+                                    <td class="profile-details-value" style="color:var(--neon-pink);">${s.blood}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Guardian Phone</td>
+                                    <td class="profile-details-value">${s.phone}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Email Address</td>
+                                    <td class="profile-details-value">${email}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Father Name</td>
+                                    <td class="profile-details-value">${fatherName} (${fatherOccup})</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Mother Name</td>
+                                    <td class="profile-details-value">${motherName} (${motherOccup})</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Present Address</td>
+                                    <td class="profile-details-value">${presentAddress}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-details-label">Permanent Address</td>
+                                    <td class="profile-details-value">${permanentAddress}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Load school logo in the preview slip
+            const customLogo = localStorage.getItem('school_logo');
+            const logoContainer = placeholder.querySelector('.school-logo-container');
+            if (logoContainer) {
+                if (customLogo) {
+                    logoContainer.innerHTML = `<img src="${customLogo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
+                } else {
+                    logoContainer.innerHTML = `
+                        <svg viewBox="0 0 24 24" style="fill: var(--neon-cyan); width:100%; height:100%;">
+                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+                        </svg>
+                    `;
+                }
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeProfileModal(event) {
+            document.getElementById('student-profile-modal').style.display = 'none';
+        }
+
+        function printModalProfile() {
+            const slipHTML = document.querySelector('#modal-profile-placeholder').innerHTML;
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Student Admission Profile - Print</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 40px;
+                            background: #fff;
+                            color: #000;
+                        }
+                        .profile-slip {
+                            border: 2px solid #ccc;
+                            border-radius: 12px;
+                            padding: 30px;
+                            max-width: 800px;
+                            margin: 0 auto;
+                        }
+                        .profile-slip-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border-bottom: 3px solid #1e3a8a;
+                            padding-bottom: 15px;
+                            margin-bottom: 25px;
+                        }
+                        .profile-slip-logo {
+                            width: 70px;
+                            height: 70px;
+                        }
+                        .profile-slip-logo img, .profile-slip-logo svg {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            border-radius: 50%;
+                        }
+                        .profile-slip-school-info {
+                            text-align: right;
+                        }
+                        .profile-slip-title {
+                            font-size: 1.6rem;
+                            font-weight: 700;
+                            color: #1e3a8a;
+                            margin: 0;
+                        }
+                        .profile-slip-subtitle {
+                            font-size: 0.9rem;
+                            color: #4b5563;
+                            margin: 5px 0 0 0;
+                        }
+                        .profile-slip-body {
+                            display: grid;
+                            grid-template-columns: 1fr 3fr;
+                            gap: 30px;
+                            align-items: start;
+                        }
+                        .profile-slip-photo {
+                            width: 130px;
+                            height: 160px;
+                            border: 2px solid #1e3a8a;
+                            border-radius: 8px;
+                            object-fit: cover;
+                        }
+                        .profile-details-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .profile-details-table tr {
+                            border-bottom: 1px solid #e5e7eb;
+                        }
+                        .profile-details-table td {
+                            padding: 10px 5px;
+                            font-size: 0.95rem;
+                            vertical-align: top;
+                        }
+                        .profile-details-label {
+                            color: #4b5563;
+                            font-weight: 600;
+                            width: 35%;
+                        }
+                        .profile-details-value {
+                            color: #000;
+                            font-weight: 700;
+                        }
+                        @media print {
+                            body { margin: 0; }
+                            .profile-slip { border: none; padding: 0; }
+                            button { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${slipHTML}
+                    <script>
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // --- PROMOTION & DEMOTION PANEL LOGIC ---
+        function renderPromotionList() {
+            const classVal = document.getElementById('promote-class-select').value;
+            const container = document.getElementById('promote-list-rows');
+            if (!container) return;
+
+            // Reset Select All
+            document.getElementById('select-all-promotions').checked = false;
+
+            const students = loadStudents();
+            const filtered = students.filter(s => s.class === classVal);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center; color: var(--muted-text); font-style:italic;">
+                            No students registered in ${classVal} yet.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(s => {
+                const photoHTML = s.photo 
+                    ? `<img src="${s.photo}" class="student-list-photo" alt="Photo">`
+                    : `<div class="student-list-photo-placeholder"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`;
+                
+                html += `
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="chk-control promote-student-chk" value="${s.id}">
+                        </td>
+                        <td>${photoHTML}</td>
+                        <td style="color:#fff; font-weight:600;">${s.name}</td>
+                        <td>${s.class}</td>
+                        <td>${s.roll}</td>
+                        <td><span style="color:var(--neon-pink);">${s.blood}</span></td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleSelectAllPromotions(checked) {
+            const checkboxes = document.querySelectorAll('.promote-student-chk');
+            checkboxes.forEach(chk => chk.checked = checked);
+        }
+
+        function loadSubjects() {
+            const parsed = safeJsonParse('school_subjects', {});
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        }
+
+        function populateOptionalSubjects(classVal) {
+            const optionalSelect = document.getElementById('student-optional-subject');
+            if (!optionalSelect) return;
+
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+            const optionalSubjects = classSubjects.filter(sub => sub.isOptional === true);
+
+            if (optionalSubjects.length === 0) {
+                // Fallback default optional subjects for Nine and Ten if none in DB
+                if (classVal === "Nine" || classVal === "Ten" || classVal === "Class 9" || classVal === "Class 10") {
+                    optionalSelect.innerHTML = `
+                        <option value="" disabled selected>Select Optional Subject</option>
+                        <option value="Higher Mathematics">Higher Mathematics</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Agriculture Studies">Agriculture Studies</option>
+                        <option value="Home Science">Home Science</option>
+                    `;
+                } else {
+                    optionalSelect.innerHTML = '<option value="">No Optional Subject</option>';
+                }
+            } else {
+                optionalSelect.innerHTML = `
+                    <option value="" disabled selected>Select Optional Subject</option>
+                    ${optionalSubjects.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join('')}
+                `;
+            }
+        }
+
+        function loadClasses() {
+            const defaultClasses = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+            const parsed = safeJsonParse('school_classes', null);
+            if (Array.isArray(parsed)) {
+                const filtered = parsed.filter(c => c && typeof c === 'string' && c.trim() !== '');
+                if (filtered.length > 0) {
+                    return filtered;
+                }
+            }
+            return defaultClasses;
+        }
+
+        function populateStudentPortalClassDropdowns() {
+            const classes = loadClasses();
+            
+            const studentClassSelect = document.getElementById('student-class');
+            if (studentClassSelect) {
+                const currentVal = studentClassSelect.value;
+                studentClassSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (currentVal && classes.includes(currentVal)) {
+                    studentClassSelect.value = currentVal;
+                }
+            }
+
+            const promoteClassSelect = document.getElementById('promote-class-select');
+            if (promoteClassSelect) {
+                const currentVal = promoteClassSelect.value;
+                promoteClassSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (currentVal && classes.includes(currentVal)) {
+                    promoteClassSelect.value = currentVal;
+                }
+            }
+        }
+
+        // Handle mass promotion or demotion
+        function handlePromotion(direction) {
+            const checkedBoxes = document.querySelectorAll('.promote-student-chk:checked');
+            if (checkedBoxes.length === 0) {
+                alert("Please select at least one student first.");
+                return;
+            }
+
+            const studentIds = Array.from(checkedBoxes).map(cb => cb.value);
+            const students = loadStudents();
+
+            const classesOrder = [...loadClasses(), "Alumni"];
+
+            let affectedCount = 0;
+            students.forEach(s => {
+                if (studentIds.includes(s.id)) {
+                    const currentIdx = classesOrder.indexOf(s.class);
+                    if (currentIdx !== -1) {
+                        let newIdx = currentIdx + direction;
+                        if (newIdx >= 0 && newIdx < classesOrder.length) {
+                            s.class = classesOrder[newIdx];
+                            affectedCount++;
+                        }
+                    }
+                }
+            });
+
+            localStorage.setItem('school_students', JSON.stringify(students));
+            alert(`Successfully updated the class of ${affectedCount} student(s)!`);
+            
+            // Re-render
+            renderPromotionList();
+            renderStudentList();
+        }
+
+        // Check view param in url on DOM load
+        function checkURLParameters() {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view') || 'add';
+            switchPortalView(view);
+        }
+
+        // Sync class and section changes from the server database
+        window.addEventListener('dbSynced', () => {
+            populateStudentPortalClassDropdowns();
+            handleClassSelectChange();
+            updateIdRegPreviews();
+        });
+
+        // Intercept dropdown clicks dynamically
+        document.addEventListener('DOMContentLoaded', () => {
+            populateStudentPortalClassDropdowns();
+            checkURLParameters();
+            applyIdCardTheme();
+            handleClassSelectChange();
+            updateIdRegPreviews();
+            updateCardPreview();
+            
+            // Recheck if URL hash or search parameters change without reloading (for dynamic browser clicks)
+            window.addEventListener('popstate', checkURLParameters);
+
+            // Drag and drop photo uploads
+            const dropzone = document.getElementById('dropzone');
+            if (dropzone) {
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('dragover');
+                });
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.classList.remove('dragover');
+                });
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        const input = document.getElementById('student-photo');
+                        if (input) {
+                            input.files = e.dataTransfer.files;
+                            previewStudentPhoto(file);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

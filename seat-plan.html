@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Seat Allocation - CREATIVE MODEL SCHOOL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+            </svg>
+        </div>
+        <!-- Default Slide 1 -->
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 2 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 3 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
+            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
+                <li class="nav-item active" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal.html">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
+                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- 4. SEAT PLAN SECTION -->
+        <section id="seat-plan" class="content-section active">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">Exam Seat Allocation</h2>
+                <p class="section-subtitle">Search for exam classroom and seat number using your roll number</p>
+            </div>
+
+            <div class="glass-card" style="max-width:600px; margin: 0 auto 30px;">
+                <h3 class="portal-form-title" style="text-align:center;">Find Seat</h3>
+                <div style="display:flex; gap:15px; margin-bottom:15px;">
+                    <select id="seat-search-class" class="form-control" style="flex:1;">
+                        <option value="Class 6">Class 6</option>
+                        <option value="Class 7">Class 7</option>
+                        <option value="Class 8">Class 8</option>
+                        <option value="Class 9">Class 9</option>
+                        <option value="Class 10">Class 10</option>
+                    </select>
+                    <input type="number" id="seat-search-roll" class="form-control" style="flex:1.5;" placeholder="Enter roll number (e.g. 1 - 30)" min="1" max="30">
+                    <button class="btn-primary" onclick="searchSeatPlan()">Search</button>
+                </div>
+                <p id="seat-search-error" style="color:var(--neon-pink); text-align:center; font-size:0.9rem; display:none;"></p>
+            </div>
+
+            <!-- Layout of Classroom seats (Shown when searched) -->
+            <div class="glass-card seat-plan-layout" id="seat-plan-result" style="display:none;">
+                <div class="glass-card" style="display:flex; flex-direction:column; justify-content:center;">
+                    <h3 class="portal-form-title" style="color:var(--neon-cyan);">Seat & Room Details</h3>
+                    <div style="margin-bottom:15px;">Room Number: <strong style="color:#fff; font-size:1.2rem;" id="seat-room-no">304 (3rd Floor)</strong></div>
+                    <div style="margin-bottom:15px;">Building Name: <strong style="color:#fff;" id="seat-building-name">Science Building</strong></div>
+                    <div style="margin-bottom:15px;">Class: <strong style="color:#fff;" id="seat-class-lbl">Class 6</strong></div>
+                    <div style="margin-bottom:15px;">Roll Number: <strong style="color:#fff;" id="seat-roll-lbl">12</strong></div>
+                    <div style="border-top:1px solid var(--glass-border); padding-top:15px; color:var(--neon-pink); font-weight:600;">
+                        * The pink marked seat on the grid is your seat.
+                    </div>
+                </div>
+
+                <div class="seat-grid-container">
+                    <div class="classroom-board"></div>
+                    
+                    <!-- 5 Rows of Benches, each has Left & Right seat -->
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-1">1</div>
+                        <div style="width:30px;"></div> <!-- Passage -->
+                        <div class="seat-box" id="seat-2">2</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-3">3</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-4">4</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-5">5</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-6">6</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-7">7</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-8">8</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-9">9</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-10">10</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-11">11</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-12">12</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-13">13</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-14">14</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-15">15</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-16">16</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-17">17</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-18">18</div>
+                    </div>
+                    <div class="bench-row">
+                        <div class="seat-box" id="seat-19">19</div>
+                        <div style="width:30px;"></div>
+                        <div class="seat-box" id="seat-20">20</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
+            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shared & Page-specific JS -->
+    <script src="main.js"></script>
+    <script>
+        // --- EXAM SEAT PLAN SEARCH SYSTEM ---
+        function searchSeatPlan() {
+            const className = document.getElementById('seat-search-class').value;
+            const roll = parseInt(document.getElementById('seat-search-roll').value);
+            const errorElement = document.getElementById('seat-search-error');
+            const resultElement = document.getElementById('seat-plan-result');
+
+            if (!roll || roll < 1 || roll > 30) {
+                errorElement.innerText = "Please enter a valid roll number between 1 and 30.";
+                errorElement.style.display = "block";
+                resultElement.style.display = "none";
+                return;
+            }
+
+            errorElement.style.display = "none";
+            resultElement.style.display = "grid";
+
+            // Logic to calculate classroom, building, seat
+            let roomNo = "304 (3rd Floor)";
+            let building = "Science Building";
+            if (className === "Class 6" || className === "Class 7") {
+                roomNo = "203 (2nd Floor)";
+                building = "Main Academic Building";
+            } else if (className === "Class 10") {
+                roomNo = "401 (4th Floor)";
+                building = "ICT Building";
+            }
+
+            // Fill text labels
+            document.getElementById('seat-room-no').innerText = roomNo;
+            document.getElementById('seat-building-name').innerText = building;
+            document.getElementById('seat-class-lbl').innerText = className;
+            document.getElementById('seat-roll-lbl').innerText = roll;
+
+            // Highlight seat logic
+            const seatIndex = ((roll - 1) % 20) + 1;
+            
+            // Clear previous highlight
+            for (let i = 1; i <= 20; i++) {
+                const seatBox = document.getElementById('seat-' + i);
+                if (seatBox) seatBox.classList.remove('found');
+            }
+
+            // Add highlight to specific seat box
+            const targetSeat = document.getElementById('seat-' + seatIndex);
+            if (targetSeat) {
+                targetSeat.classList.add('found');
+            }
+        }
+    </script>
+</body>
+</html>

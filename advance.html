@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Settings & Database Manager - CREATIVE MODEL SCHOOL</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Sub-views layout */
+        .portal-sub-view {
+            display: none;
+            animation: fadeInSection 0.5s ease-out forwards;
+        }
+        .portal-sub-view.active {
+            display: block;
+        }
+
+        .storage-indicator-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin: 10px 0 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .storage-indicator-fill {
+            height: 100%;
+            width: 2%; /* Default visual base */
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            transition: width 0.5s ease;
+        }
+        .db-action-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-outline:hover {
+            background: var(--neon-cyan);
+            color: #0c0f1d;
+            box-shadow: var(--cyan-glow);
+        }
+        .btn-danger {
+            background: transparent;
+            border: 1.5px solid var(--neon-pink);
+            color: var(--neon-pink);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-danger:hover {
+            background: var(--neon-pink);
+            color: #0c0f1d;
+            box-shadow: var(--pink-glow);
+        }
+        .inbox-list {
+            margin-top: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .inbox-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 10px 15px;
+        }
+        .inbox-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--neon-cyan);
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+            </svg>
+        </div>
+        <!-- Default Slide 1 -->
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 2 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 3 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
+            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
+                <li class="nav-item" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal.html">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
+                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown active" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- ADVANCED SETTINGS SECTION -->
+        <section id="advance" class="content-section active">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">Advanced Panel & Local Storage</h2>
+                <p class="section-subtitle">Manage site settings, inspect browser database collections, and export JSON database logs</p>
+            </div>
+
+            <!-- SUB-VIEW 1: GENERAL & DATABASE MANAGER -->
+            <div id="subview-general" class="portal-sub-view active">
+                <div class="contact-grid">
+                    <!-- Left: School Information Editor -->
+                    <div class="glass-card">
+                        <h3 class="portal-form-title">Edit School Information</h3>
+                        <form id="settings-editor-form" onsubmit="saveSchoolSettings(event)">
+                            <div class="form-group">
+                                <label for="set-school-name">School Name:</label>
+                                <input type="text" id="set-school-name" class="form-control" placeholder="e.g. CREATIVE MODEL SCHOOL" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-school-email">Contact Email Address:</label>
+                                <input type="email" id="set-school-email" class="form-control" placeholder="e.g. info@creativemodelschool.edu" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-school-phone">Contact Phone Number:</label>
+                                <input type="text" id="set-school-phone" class="form-control" placeholder="e.g. +88 02-9876543" required>
+                            </div>
+                            <button type="submit" class="btn-primary" style="margin-top: 10px;">Save Settings</button>
+                        </form>
+                        
+                        <h3 class="portal-form-title" style="margin-top: 35px; color: var(--neon-cyan);">Visitor Contact Inbox (Database Log)</h3>
+                        <p style="font-size: 0.8rem; color: var(--muted-text);">Latest messages sent by visitors through the contact form:</p>
+                        
+                        <div class="inbox-list" id="inbox-messages-container">
+                            <!-- Filled by JS -->
+                            <div style="text-align: center; padding: 20px; color: var(--muted-text); font-style: italic; font-size: 0.85rem;">
+                                No messages in the database.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Database & Backup Management -->
+                    <div class="glass-card">
+                        <h3 class="portal-form-title" style="color: var(--neon-pink);">Local Database Manager</h3>
+                        <p style="font-size: 0.85rem; color: var(--muted-text);">
+                            This site uses the browser's <code>localStorage</code> database to store settings, custom notices, and contact messages. It simulates a `.db` file system.
+                        </p>
+
+                        <div style="margin-top: 25px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #fff;">
+                                <span>Database Space Used:</span>
+                                <span id="db-usage-text">0 Bytes / 5 MB</span>
+                            </div>
+                            <div class="storage-indicator-bar">
+                                <div class="storage-indicator-fill" id="db-usage-indicator"></div>
+                            </div>
+                        </div>
+
+                        <div class="db-action-btn-group">
+                            <!-- Export Database -->
+                            <button class="btn-outline" onclick="exportDatabase()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Export Database File (.json)</span>
+                            </button>
+                            
+                            <!-- Import Database File -->
+                            <label for="db-import-input" class="btn-outline" style="margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <span>Import Database Backup</span>
+                            </label>
+                            <input type="file" id="db-import-input" accept=".json" style="display:none;" onchange="importDatabase(event)">
+                            
+                            <!-- Wipe database -->
+                            <button class="btn-danger" onclick="wipeDatabase()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                <span>Wipe & Reset Database</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: CLASS FEE STRUCTURE -->
+            <div id="subview-fee-structure" class="portal-sub-view">
+                <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 class="portal-form-title">Customize Class Fee Structure</h3>
+                    <p style="font-size: 0.85rem; color: var(--muted-text); margin-bottom: 20px;">Configure the tuition fees, admission fees, and session fees for students in each class level. These rates will be automatically applied inside the Fees & Payments invoice calculator.</p>
+                    <form id="fee-structure-form" onsubmit="saveFeeStructure(event)">
+                        <div style="overflow-x: auto; margin-bottom: 20px;">
+                            <table class="student-list-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; padding: 10px; font-weight: bold; color: var(--neon-cyan);">Class Level</th>
+                                        <th style="padding: 10px; font-weight: bold; color: var(--neon-cyan);">Tuition Fee (BDT)</th>
+                                        <th style="padding: 10px; font-weight: bold; color: var(--neon-cyan);">Admission Fee (BDT)</th>
+                                        <th style="padding: 10px; font-weight: bold; color: var(--neon-cyan);">Session Fee (BDT)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dynamic-fee-rows">
+                                    <!-- Filled dynamically by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top: 10px; width: 100%;">Save Fee Structure</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 3: STUDENT ID & REGISTRATION STRUCTURE -->
+            <div id="subview-id-reg-structure" class="portal-sub-view">
+                <div class="glass-card">
+                    <h3 class="portal-form-title">Student ID & Registration Configuration</h3>
+                    <p style="font-size: 0.85rem; color: var(--muted-text); margin-bottom: 20px;">Manage ID Card naming rules, class-specific prefixes, layout customization, and Registration Database structure details.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;">
+                        <!-- Left Panel: Forms to configure settings -->
+                        <div>
+                            <!-- Global Settings Form -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 20px;">
+                                <h4 style="color: var(--neon-cyan); margin-bottom: 12px; font-size: 1rem;">Global Branding & Registration Settings</h4>
+                                <form id="id-reg-structure-form" onsubmit="saveIdRegStructure(event)">
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="id-card-prefix">Global Student ID Prefix:</label>
+                                        <input type="text" id="id-card-prefix" class="form-control" required placeholder="e.g. CMS-">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="student-reg-prefix">Registration Prefix/Number:</label>
+                                        <input type="text" id="student-reg-prefix" class="form-control" required placeholder="e.g. REG2026-">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="id-card-theme">ID Card Theme Glow:</label>
+                                        <select id="id-card-theme" class="form-control">
+                                            <option value="cyan">Neon Cyan (Default)</option>
+                                            <option value="pink">Neon Pink</option>
+                                            <option value="purple">Neon Purple</option>
+                                            <option value="green">Neon Emerald</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--muted-text); font-size: 0.9rem; margin-bottom: 8px;">
+                                            <input type="checkbox" id="require-student-photo" style="transform: scale(1.2);">
+                                            Require Profile Photo for ID Card printing
+                                        </label>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--muted-text); font-size: 0.9rem;">
+                                            <input type="checkbox" id="auto-assign-roll" style="transform: scale(1.2);">
+                                            Auto-increment next roll number
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn-primary" style="width: 100%; padding: 8px 16px; font-size: 0.9rem; margin-top: 10px;">Save Global Settings</button>
+                                </form>
+                            </div>
+
+                            <!-- Class-wise ID prefix form -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                <h4 style="color: var(--neon-pink); margin-bottom: 12px; font-size: 1rem;">Set Class-specific ID Prefix</h4>
+                                <form id="class-id-prefix-form" onsubmit="saveClassIdPrefix(event)">
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="prefix-class-select">Select Class:</label>
+                                        <select id="prefix-class-select" class="form-control" required>
+                                            <!-- Filled dynamically from school_classes -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="class-prefix-input">ID Prefix for Class:</label>
+                                        <input type="text" id="class-prefix-input" class="form-control" required placeholder="e.g. CMS-C6-">
+                                    </div>
+                                    <button type="submit" class="btn-primary" style="width: 100%; padding: 8px 16px; font-size: 0.9rem;">Save Class ID Prefix</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: List of Configured Class ID prefixes -->
+                        <div>
+                            <h4 style="color: var(--neon-cyan); margin-bottom: 12px; font-size: 1rem;">Configured Class ID Prefixes</h4>
+                            <div id="class-id-prefix-list" style="max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 4: CLASS & SECTION STRUCTURE -->
+            <div id="subview-class-section-structure" class="portal-sub-view">
+                <div class="glass-card">
+                    <h3 class="portal-form-title">Class & Section Structure</h3>
+                    <p style="font-size: 0.85rem; color: var(--muted-text); margin-bottom: 20px;">Manage class levels, define sections, and configure student seat capacities.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;">
+                        <!-- Left Panel: Forms to add Class and Section -->
+                        <div>
+                            <!-- Form 1: Add New Class -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 20px;">
+                                <h4 style="color: var(--neon-cyan); margin-bottom: 12px; font-size: 1rem;">Add New Class</h4>
+                                <form id="add-class-form" onsubmit="addNewClass(event)">
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="class-name-input">Class Name:</label>
+                                        <input type="text" id="class-name-input" class="form-control" required placeholder="e.g. Class 11, Nursery, Play">
+                                    </div>
+                                    <button type="submit" class="btn-primary" style="width: 100%; padding: 8px 16px; font-size: 0.9rem;">Add Class</button>
+                                </form>
+                            </div>
+
+                            <!-- Form 2: Add New Section -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                <h4 style="color: var(--neon-pink); margin-bottom: 12px; font-size: 1rem;">Add Section to Class</h4>
+                                <form id="class-section-form" onsubmit="saveClassSection(event)">
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="section-class-select">Select Class:</label>
+                                        <select id="section-class-select" class="form-control" required>
+                                            <!-- Filled dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="section-name-input">Section Name:</label>
+                                        <input type="text" id="section-name-input" class="form-control" required placeholder="e.g. A, B, Padma, Meghna, Rose">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="section-capacity-input">Seat Capacity:</label>
+                                        <input type="number" id="section-capacity-input" class="form-control" required min="1" max="150" placeholder="e.g. 50" value="50">
+                                    </div>
+                                    <button type="submit" class="btn-primary" style="width: 100%; padding: 8px 16px; font-size: 0.9rem;">Add / Update Section</button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Panel: Structured Grouped List -->
+                        <div>
+                            <h4 style="color: var(--neon-cyan); margin-bottom: 12px; font-size: 1rem;">Current Class & Section Structure</h4>
+                            <div id="class-section-grouped-list" style="max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
+                                <!-- Populated dynamically as class cards with nested lists of sections -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 5: HEADLINE & SLIDER MANAGEMENT -->
+            <div id="subview-slider-management" class="portal-sub-view">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                    <!-- Left Column: Logo & Text Management -->
+                    <div class="glass-card">
+                        <h3 class="portal-form-title">Header Identity (Logo & Headline)</h3>
+                        
+                        <!-- Logo Upload/Remove -->
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--glass-border);">
+                            <div id="mgr-logo-preview" class="school-logo-container" style="position: static; flex-shrink: 0; width: 100px; height: 100px; padding: 10px;">
+                                <!-- Logo preview filled by JS -->
+                            </div>
+                            <div style="flex-grow: 1;">
+                                <label for="logo-uploader-input-mgr" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 14px; font-size: 0.85rem;">
+                                    <span>Upload Custom Logo</span>
+                                </label>
+                                <input type="file" id="logo-uploader-input-mgr" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                                <button class="btn-danger" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 0.85rem; margin-top: 8px; width: 100%; justify-content: center;" onclick="removeCustomLogo()">
+                                    <span>Remove Custom Logo</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Headline & Subtitle Edit Form -->
+                        <form id="headline-editor-form" onsubmit="saveHeadlineSettings(event)">
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label for="mgr-school-name">Headline (School Name):</label>
+                                <input type="text" id="mgr-school-name" class="form-control" required placeholder="e.g. CREATIVE MODEL SCHOOL">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label for="mgr-school-subtitle">Subtitle:</label>
+                                <input type="text" id="mgr-school-subtitle" class="form-control" required placeholder="e.g. Pioneer of Digital & Smart Education">
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="btn-primary" style="flex: 1; font-size: 0.90rem; padding: 10px 14px;">Update Text</button>
+                                <button type="button" class="btn-danger" style="flex: 1; font-size: 0.90rem; padding: 10px 14px;" onclick="resetHeadlineDefaults()">Reset to Defaults</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Upload Box for Slider Images -->
+                    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: center;">
+                        <h3 class="portal-form-title">Upload Slideshow Images</h3>
+                        <p style="font-size: 0.85rem; color: var(--muted-text); margin-bottom: 20px;">
+                            Select one or multiple images to add to the hero slideshow container. Files are compressed dynamically.
+                        </p>
+                        <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 12px; border: 1.5px dashed var(--glass-border); text-align: center;">
+                            <label for="slider-mgr-upload" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <span>Upload New Slides (Multiple)</span>
+                            </label>
+                            <input type="file" id="slider-mgr-upload" multiple accept="image/*" style="display: none;" onchange="handleSliderMgrUpload(event)">
+                            <p style="font-size: 0.75rem; color: var(--muted-text); margin-top: 10px;">Supported formats: JPG, PNG, WEBP. Images will be optimized automatically.</p>
+                        </div>
+                </div>
+
+                <!-- NOTICE TICKER MANAGER -->
+                <div class="glass-card" style="margin-bottom: 30px;">
+                    <h3 class="portal-form-title">টিকার নোটিশ ব্যবস্থাপনা (Scrolling Notice Ticker Manager)</h3>
+                    <p style="font-size: 0.85rem; color: var(--muted-text); margin-bottom: 20px;">
+                        এখানে আপনি টিকার নোটিশ বা স্লাইডিং ঘোষণা যুক্ত করতে পারেন। একাধিক নোটিশ যুক্ত করা হলে তা একের পর এক স্ক্রল করবে।
+                    </p>
+                    
+                    <!-- Notice Add Form -->
+                    <form id="ticker-notice-form" onsubmit="addTickerNotice(event)" style="display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-end;">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label for="new-ticker-notice">নতুন নোটিশ লিখুন (Add New Notice):</label>
+                            <input type="text" id="new-ticker-notice" class="form-control" required placeholder="যেমন: সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে...">
+                        </div>
+                        <button type="submit" class="btn-primary" style="height: 45px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>➕ যুক্ত করুন (Add)</span>
+                        </button>
+                    </form>
+
+                    <!-- Notice List Table -->
+                    <div style="overflow-x:auto;">
+                        <table class="fee-list-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">#</th>
+                                    <th>নোটিশ (Notice Text)</th>
+                                    <th style="width: 20%; text-align: center;">অ্যাকশন (Actions)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticker-notice-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bottom Row: Slides Gallery -->
+                <div class="glass-card">
+                    <h4 style="color: var(--neon-cyan); margin-bottom: 15px; font-size: 1.1rem;">Current Active Slides</h4>
+                    <div id="slider-mgr-gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
+                        <!-- Filled dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
+            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shared JS -->
+    <script src="main.js"></script>
+    <script>
+        // --- SUBVIEWS SWITHING MECHANISM ---
+        function switchAdvanceView(viewName) {
+            // Hide all subviews
+            const subviews = document.querySelectorAll('.portal-sub-view');
+            subviews.forEach(view => view.classList.remove('active'));
+
+            // Show selected view
+            const targetView = document.getElementById('subview-' + viewName);
+            if (targetView) {
+                targetView.classList.add('active');
+            }
+
+            // Update title and subtitle
+            const titleEl = document.querySelector('.section-title');
+            const subtitleEl = document.querySelector('.section-subtitle');
+
+            if (viewName === 'general') {
+                titleEl.textContent = "Advanced Settings & Database Manager";
+                subtitleEl.textContent = "Manage site settings, inspect browser database collections, and export JSON database logs";
+            } else if (viewName === 'fee-structure') {
+                titleEl.textContent = "Class Fee Structure";
+                subtitleEl.textContent = "Configure and customize monthly tuition fees";
+                loadClassFeesForm();
+            } else if (viewName === 'id-reg-structure') {
+                titleEl.textContent = "Student ID & Registration Structure";
+                subtitleEl.textContent = "Customize student ID prefixes, neon theme layouts, and registration rules";
+                loadIdRegForm();
+            } else if (viewName === 'class-section-structure') {
+                titleEl.textContent = "Class & Section Structure";
+                subtitleEl.textContent = "Define sections, seat capacity limits, and class distribution settings";
+                populateClassDropdown();
+                renderClassSectionList();
+            } else if (viewName === 'slider-management') {
+                titleEl.textContent = "Hero Slider Management";
+                subtitleEl.textContent = "Upload, preview, and remove images displayed in the main slideshow";
+                renderSliderManagement();
+                renderLogoPreview();
+                loadHeadlineSettings(true);
+                renderTickerNotices();
+            }
+        }
+
+        // --- 1. SETTINGS EDITOR FUNCTIONS (GENERAL) ---
+        function loadCurrentSettings() {
+            // Do not overwrite if user is actively editing the settings form
+            const activeEl = document.activeElement;
+            if (activeEl && activeEl.closest('#settings-editor-form')) {
+                return;
+            }
+
+            // Read settings
+            let settings = localStorage.getItem('school_settings');
+            if (settings) {
+                try {
+                    settings = JSON.parse(settings);
+                    document.getElementById('set-school-name').value = settings.schoolName;
+                    document.getElementById('set-school-email').value = settings.schoolEmail;
+                    document.getElementById('set-school-phone').value = settings.schoolPhone;
+                } catch (e) {
+                    console.error("Error parsing settings", e);
+                }
+            } else {
+                document.getElementById('set-school-name').value = "CREATIVE MODEL SCHOOL";
+                document.getElementById('set-school-email').value = "info@creativemodelschool.edu";
+                document.getElementById('set-school-phone').value = "+88 02-9876543";
+            }
+
+            // Update stats
+            updateDatabaseStats();
+
+            // Load inbox messages
+            loadInboxMessages();
+        }
+
+        function saveSchoolSettings(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('set-school-name').value;
+            const email = document.getElementById('set-school-email').value;
+            const phone = document.getElementById('set-school-phone').value;
+
+            let settings = {};
+            const stored = localStorage.getItem('school_settings');
+            if (stored) {
+                try {
+                    settings = JSON.parse(stored);
+                } catch (e) {
+                    settings = {};
+                }
+            }
+
+            settings.schoolName = name;
+            settings.schoolEmail = email;
+            settings.schoolPhone = phone;
+
+            if (typeof lastLocalWrites === 'object') {
+                lastLocalWrites['school_settings'] = Date.now();
+            }
+            localStorage.setItem('school_settings', JSON.stringify(settings));
+            
+            // Reapply locally
+            applySchoolSettings();
+
+            alert("Settings saved successfully! School profile updated site-wide.");
+            updateDatabaseStats();
+        }
+
+        // --- 2. CLASS FEE STRUCTURE FUNCTIONS ---
+        function loadClassFeesForm() {
+            // Do not overwrite if user is actively editing the fee structure form
+            const activeEl = document.activeElement;
+            if (activeEl && activeEl.closest('#fee-structure-form')) {
+                return;
+            }
+
+            const classes = loadClasses();
+            const defaultFees = {
+                "Class 6": { tuition: 700, admission: 1000, session: 1500 },
+                "Class 7": { tuition: 700, admission: 1000, session: 1500 },
+                "Class 8": { tuition: 800, admission: 1200, session: 1800 },
+                "Class 9": { tuition: 1000, admission: 1500, session: 2000 },
+                "Class 10": { tuition: 1000, admission: 1500, session: 2000 }
+            };
+            const stored = localStorage.getItem('school_class_fees');
+            let fees = {};
+            if (stored) {
+                try {
+                    fees = JSON.parse(stored);
+                } catch (e) {
+                    console.error("Error parsing school_class_fees", e);
+                }
+            }
+
+            const tbody = document.getElementById('dynamic-fee-rows');
+            if (!tbody) return;
+
+            let html = '';
+            classes.forEach(c => {
+                let cFees = fees[c] || defaultFees[c] || defaultFees[c.replace("Class ", "")] || { tuition: 0, admission: 0, session: 0 };
+                
+                // Backwards compatibility with old flat format where fees[c] is just a number
+                if (typeof cFees !== 'object') {
+                    cFees = {
+                        tuition: parseInt(cFees) || 0,
+                        admission: 0,
+                        session: 0
+                    };
+                }
+
+                // If class key was short (e.g. "6" instead of "Class 6")
+                const shortKey = c.replace("Class ", "");
+                if (fees[shortKey] !== undefined && (fees[c] === undefined)) {
+                    const shortCFees = fees[shortKey];
+                    if (typeof shortCFees === 'object') {
+                        cFees = shortCFees;
+                    } else {
+                        cFees = {
+                            tuition: parseInt(shortCFees) || 0,
+                            admission: 0,
+                            session: 0
+                        };
+                    }
+                }
+
+                html += `
+                    <tr>
+                        <td style="padding: 10px; font-weight: bold; color: #fff; vertical-align: middle;">${c}</td>
+                        <td style="padding: 10px;">
+                            <input type="number" data-class="${c}" data-type="tuition" class="form-control fee-input" min="0" value="${cFees.tuition}" required style="width: 100%;">
+                        </td>
+                        <td style="padding: 10px;">
+                            <input type="number" data-class="${c}" data-type="admission" class="form-control fee-input" min="0" value="${cFees.admission}" required style="width: 100%;">
+                        </td>
+                        <td style="padding: 10px;">
+                            <input type="number" data-class="${c}" data-type="session" class="form-control fee-input" min="0" value="${cFees.session}" required style="width: 100%;">
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (classes.length === 0) {
+                html = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--muted-text); font-style: italic;">
+                            No classes configured. Please add a class in Class & Section Structure.
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function saveFeeStructure(event) {
+            event.preventDefault();
+            const inputs = document.querySelectorAll('.fee-input');
+            const fees = {};
+
+            inputs.forEach(input => {
+                const className = input.getAttribute('data-class');
+                const feeType = input.getAttribute('data-type');
+                const value = parseInt(input.value) || 0;
+
+                if (!fees[className]) {
+                    fees[className] = { tuition: 0, admission: 0, session: 0 };
+                }
+                fees[className][feeType] = value;
+            });
+
+            localStorage.setItem('school_class_fees', JSON.stringify(fees));
+            alert("Fee structure saved successfully! Rates updated in Billing calculator.");
+            updateDatabaseStats();
+        }
+
+        // --- 3. STUDENT ID & REGISTRATION STRUCTURE FUNCTIONS ---
+        function loadIdRegForm() {
+            const activeEl = document.activeElement;
+            const isEditingGlobal = activeEl && activeEl.closest('#id-reg-structure-form');
+            const isEditingClassPrefix = activeEl && activeEl.closest('#class-id-prefix-form');
+
+            const defaultSettings = {
+                idPrefix: "CMS-",
+                idTheme: "cyan",
+                regPrefix: "REG2026-",
+                requirePhoto: false,
+                autoRoll: false
+            };
+            const stored = localStorage.getItem('school_id_reg_settings');
+            let settings = defaultSettings;
+            if (stored) {
+                try {
+                    settings = JSON.parse(stored);
+                } catch (e) {
+                    console.error("Error parsing school_id_reg_settings", e);
+                }
+            }
+            
+            if (!isEditingGlobal) {
+                document.getElementById('id-card-prefix').value = settings.idPrefix || "CMS-";
+                document.getElementById('id-card-theme').value = settings.idTheme || "cyan";
+                document.getElementById('student-reg-prefix').value = settings.regPrefix || "REG2026-";
+                document.getElementById('require-student-photo').checked = !!settings.requirePhoto;
+                document.getElementById('auto-assign-roll').checked = !!settings.autoRoll;
+            }
+
+            // Populate class dropdown and render class prefixes list
+            if (!isEditingClassPrefix) {
+                populateIdRegClassDropdown();
+            }
+            renderClassIdPrefixList();
+        }
+
+        function saveIdRegStructure(event) {
+            event.preventDefault();
+            const settings = {
+                idPrefix: document.getElementById('id-card-prefix').value,
+                idTheme: document.getElementById('id-card-theme').value,
+                regPrefix: document.getElementById('student-reg-prefix').value,
+                requirePhoto: document.getElementById('require-student-photo').checked,
+                autoRoll: document.getElementById('auto-assign-roll').checked
+            };
+            localStorage.setItem('school_id_reg_settings', JSON.stringify(settings));
+            alert("Global Student ID & Registration settings saved successfully!");
+            updateDatabaseStats();
+        }
+
+        function populateIdRegClassDropdown() {
+            const classes = loadClasses();
+            const selectEl = document.getElementById('prefix-class-select');
+            if (selectEl) {
+                const currentVal = selectEl.value;
+                selectEl.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (currentVal && classes.includes(currentVal)) {
+                    selectEl.value = currentVal;
+                }
+            }
+        }
+
+        function loadClassIdPrefixes() {
+            const stored = localStorage.getItem('school_class_id_prefixes');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    } else if (typeof parsed === 'object' && parsed !== null) {
+                        // Convert old object structure to new array structure for ordering
+                        const arr = Object.keys(parsed).map(key => ({
+                            class: key,
+                            prefix: parsed[key]
+                        }));
+                        localStorage.setItem('school_class_id_prefixes', JSON.stringify(arr));
+                        return arr;
+                    }
+                } catch (e) {
+                    console.error("Error parsing school_class_id_prefixes", e);
+                }
+            }
+            return [];
+        }
+
+        function saveClassIdPrefix(event) {
+            event.preventDefault();
+            const className = document.getElementById('prefix-class-select').value;
+            const prefix = document.getElementById('class-prefix-input').value.trim();
+            if (!className) {
+                alert("Please select a class.");
+                return;
+            }
+            if (!prefix) {
+                alert("Please specify a prefix.");
+                return;
+            }
+
+            const prefixes = loadClassIdPrefixes();
+            const existingIdx = prefixes.findIndex(p => p.class === className);
+            if (existingIdx !== -1) {
+                prefixes[existingIdx].prefix = prefix;
+            } else {
+                prefixes.push({ class: className, prefix: prefix });
+            }
+
+            localStorage.setItem('school_class_id_prefixes', JSON.stringify(prefixes));
+            document.getElementById('class-prefix-input').value = '';
+
+            alert(`ID Prefix for "${className}" saved successfully!`);
+            renderClassIdPrefixList();
+            updateDatabaseStats();
+        }
+
+        function deleteClassIdPrefix(className) {
+            if (confirm(`Are you sure you want to remove the custom ID prefix for "${className}"?`)) {
+                let prefixes = loadClassIdPrefixes();
+                prefixes = prefixes.filter(p => p.class !== className);
+                localStorage.setItem('school_class_id_prefixes', JSON.stringify(prefixes));
+                renderClassIdPrefixList();
+                updateDatabaseStats();
+            }
+        }
+
+        function editClassIdPrefix(className, prefix) {
+            const selectEl = document.getElementById('prefix-class-select');
+            const inputEl = document.getElementById('class-prefix-input');
+            if (selectEl && inputEl) {
+                selectEl.value = className;
+                inputEl.value = prefix;
+                inputEl.focus();
+            }
+        }
+
+        function moveClassIdPrefix(className, direction) {
+            const prefixes = loadClassIdPrefixes();
+            const index = prefixes.findIndex(p => p.class === className);
+            if (index === -1) return;
+
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= prefixes.length) return;
+
+            // Swap
+            const temp = prefixes[index];
+            prefixes[index] = prefixes[targetIndex];
+            prefixes[targetIndex] = temp;
+
+            localStorage.setItem('school_class_id_prefixes', JSON.stringify(prefixes));
+            renderClassIdPrefixList();
+            updateDatabaseStats();
+        }
+
+        function renderClassIdPrefixList() {
+            const container = document.getElementById('class-id-prefix-list');
+            if (!container) return;
+
+            const classes = loadClasses();
+            const prefixes = loadClassIdPrefixes();
+
+            // Filter configured prefixes for classes that actually exist to clean up deleted ones
+            const activePrefixes = prefixes.filter(p => classes.includes(p.class));
+
+            if (activePrefixes.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--muted-text); font-style: italic; font-size: 0.85rem;">
+                        No class-specific ID prefixes configured.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            activePrefixes.forEach((item, index) => {
+                const isFirst = index === 0;
+                const isLast = index === activePrefixes.length - 1;
+                const upBtn = isFirst ? '' : `<button class="btn-outline" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; display:inline-flex;" onclick="moveClassIdPrefix('${item.class}', -1)">▲ Up</button>`;
+                const downBtn = isLast ? '' : `<button class="btn-outline" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; display:inline-flex;" onclick="moveClassIdPrefix('${item.class}', 1)">▼ Down</button>`;
+
+                html += `
+                    <div class="class-card-item" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <strong style="color: var(--neon-cyan); font-size: 1rem; display: block; margin-bottom: 4px;">${item.class}</strong>
+                            <span style="font-size: 0.85rem; color: #fff;">ID Prefix: <code style="color: var(--neon-pink); font-weight: bold; font-family: monospace;">${item.prefix}</code></span>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            ${upBtn}
+                            ${downBtn}
+                            <button class="btn-outline" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; border-color: var(--neon-cyan); color: var(--neon-cyan);" onclick="editClassIdPrefix('${item.class}', '${item.prefix}')">Edit</button>
+                            <button class="btn-danger" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;" onclick="deleteClassIdPrefix('${item.class}')">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- 4. CLASS & SECTION STRUCTURE FUNCTIONS ---
+        function loadClasses() {
+            const defaultClasses = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+            const stored = localStorage.getItem('school_classes');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed;
+                    }
+                } catch (e) {
+                    console.error("Error parsing school_classes", e);
+                }
+            }
+            return defaultClasses;
+        }
+
+        function populateClassDropdown() {
+            const classes = loadClasses();
+            const selectEl = document.getElementById('section-class-select');
+            if (selectEl) {
+                const currentVal = selectEl.value;
+                selectEl.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (currentVal && classes.includes(currentVal)) {
+                    selectEl.value = currentVal;
+                }
+            }
+        }
+
+        function addNewClass(event) {
+            event.preventDefault();
+            const classNameInput = document.getElementById('class-name-input');
+            const className = classNameInput.value.trim();
+            if (!className) return;
+
+            let classes = loadClasses();
+            if (classes.includes(className)) {
+                alert(`Class "${className}" already exists!`);
+                return;
+            }
+
+            classes.push(className);
+            localStorage.setItem('school_classes', JSON.stringify(classes));
+            classNameInput.value = '';
+
+            alert(`Class "${className}" added successfully!`);
+            populateClassDropdown();
+            renderClassSectionList();
+            updateDatabaseStats();
+        }
+
+        function deleteClass(className) {
+            if (confirm(`Are you sure you want to delete "${className}"? This will also remove all its sections!`)) {
+                let classes = loadClasses();
+                classes = classes.filter(c => c !== className);
+                localStorage.setItem('school_classes', JSON.stringify(classes));
+
+                let sections = loadClassSections();
+                sections = sections.filter(s => s.class !== className);
+                localStorage.setItem('school_class_sections', JSON.stringify(sections));
+
+                // Synchronize class prefixes
+                let prefixes = loadClassIdPrefixes();
+                prefixes = prefixes.filter(p => p.class !== className);
+                localStorage.setItem('school_class_id_prefixes', JSON.stringify(prefixes));
+
+                alert(`Class "${className}" and its sections removed successfully.`);
+                populateClassDropdown();
+                renderClassSectionList();
+                updateDatabaseStats();
+            }
+        }
+
+        function renameClass(className) {
+            const newName = prompt(`Enter new name for class "${className}":`, className);
+            if (newName === null) return; // User cancelled
+            const trimmed = newName.trim();
+            if (!trimmed) {
+                alert("Class name cannot be empty!");
+                return;
+            }
+
+            let classes = loadClasses();
+            if (classes.includes(trimmed) && trimmed !== className) {
+                alert(`A class named "${trimmed}" already exists!`);
+                return;
+            }
+
+            // Update in classes list
+            const index = classes.indexOf(className);
+            if (index !== -1) {
+                classes[index] = trimmed;
+                localStorage.setItem('school_classes', JSON.stringify(classes));
+            }
+
+            // Update in sections
+            let sections = loadClassSections();
+            sections.forEach(s => {
+                if (s.class === className) {
+                    s.class = trimmed;
+                }
+            });
+            localStorage.setItem('school_class_sections', JSON.stringify(sections));
+
+            // Update class prefix key
+            let prefixes = loadClassIdPrefixes();
+            prefixes.forEach(p => {
+                if (p.class === className) {
+                    p.class = trimmed;
+                }
+            });
+            localStorage.setItem('school_class_id_prefixes', JSON.stringify(prefixes));
+
+            // Update in students database
+            let students = localStorage.getItem('school_students');
+            if (students) {
+                try {
+                    students = JSON.parse(students);
+                    students.forEach(s => {
+                        if (s.class === className) {
+                            s.class = trimmed;
+                        }
+                    });
+                    localStorage.setItem('school_students', JSON.stringify(students));
+                } catch (e) {
+                    console.error("Error updating student classes", e);
+                }
+            }
+
+            alert(`Class renamed from "${className}" to "${trimmed}" successfully!`);
+            populateClassDropdown();
+            renderClassSectionList();
+            updateDatabaseStats();
+        }
+
+        function moveClass(className, direction) {
+            let classes = loadClasses();
+            const index = classes.indexOf(className);
+            if (index === -1) return;
+
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= classes.length) return; // out of bounds
+
+            // Swap items
+            const temp = classes[index];
+            classes[index] = classes[targetIndex];
+            classes[targetIndex] = temp;
+
+            localStorage.setItem('school_classes', JSON.stringify(classes));
+            populateClassDropdown();
+            renderClassSectionList();
+            updateDatabaseStats();
+        }
+
+        function loadClassSections() {
+            const defaultSections = [
+                { class: "Class 6", section: "A", capacity: 50 },
+                { class: "Class 6", section: "B", capacity: 50 },
+                { class: "Class 7", section: "A", capacity: 50 },
+                { class: "Class 7", section: "B", capacity: 50 },
+                { class: "Class 8", section: "A", capacity: 50 },
+                { class: "Class 8", section: "B", capacity: 50 },
+                { class: "Class 9", section: "A", capacity: 45 },
+                { class: "Class 9", section: "B", capacity: 45 },
+                { class: "Class 9", section: "C", capacity: 45 },
+                { class: "Class 10", section: "A", capacity: 40 },
+                { class: "Class 10", section: "B", capacity: 40 }
+            ];
+            const stored = localStorage.getItem('school_class_sections');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed;
+                    }
+                } catch (e) {
+                    console.error("Error parsing school_class_sections", e);
+                }
+            }
+            return defaultSections;
+        }
+
+        function renderClassSectionList() {
+            const classes = loadClasses();
+            const sections = loadClassSections();
+            const container = document.getElementById('class-section-grouped-list');
+            if (!container) return;
+
+            if (classes.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--muted-text); font-style: italic; font-size: 0.85rem;">
+                        No classes configured. Please add a class.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            classes.forEach((c, index) => {
+                const classSections = sections.filter(s => s.class === c);
+                let sectionsHTML = '';
+                
+                if (classSections.length === 0) {
+                    sectionsHTML = `<li style="color: var(--muted-text); font-style: italic; font-size: 0.8rem; padding: 5px 0;">No sections added yet.</li>`;
+                } else {
+                    classSections.forEach(s => {
+                        sectionsHTML += `
+                            <li style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.03);">
+                                <span style="color:#fff;">Section <strong>${s.section}</strong> (Capacity: ${s.capacity})</span>
+                                <button class="btn-danger" style="padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; background: transparent; border: 1px solid var(--neon-pink); color: var(--neon-pink);" onclick="deleteClassSection('${c}', '${s.section}')">Remove</button>
+                            </li>
+                        `;
+                    });
+                }
+
+                const isFirst = index === 0;
+                const isLast = index === classes.length - 1;
+                const upBtn = isFirst ? '' : `<button class="btn-outline" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; display:inline-flex;" onclick="moveClass('${c}', -1)">▲ Up</button>`;
+                const downBtn = isLast ? '' : `<button class="btn-outline" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; display:inline-flex;" onclick="moveClass('${c}', 1)">▼ Down</button>`;
+
+                html += `
+                    <div class="class-card-item" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; margin-bottom: 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom:6px; flex-wrap:wrap; gap:5px;">
+                            <strong style="color: var(--neon-cyan); font-size:1.05rem;">${c}</strong>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                ${upBtn}
+                                ${downBtn}
+                                <button class="btn-outline" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; border-color: var(--neon-cyan); color: var(--neon-cyan);" onclick="renameClass('${c}')">Update</button>
+                                <button class="btn-danger" style="padding: 3px 6px; font-size: 0.65rem; border-radius: 4px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;" onclick="deleteClass('${c}')">Delete</button>
+                            </div>
+                        </div>
+                        <ul style="list-style:none; padding: 0; margin: 0;">
+                            ${sectionsHTML}
+                        </ul>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function saveClassSection(event) {
+            event.preventDefault();
+            const classVal = document.getElementById('section-class-select').value;
+            const sectionName = document.getElementById('section-name-input').value.trim().toUpperCase();
+            const capacity = parseInt(document.getElementById('section-capacity-input').value) || 50;
+
+            if (!classVal) {
+                alert("Please select or add a class first.");
+                return;
+            }
+            if (!sectionName) return;
+
+            let list = loadClassSections();
+            const existingIndex = list.findIndex(item => item.class === classVal && item.section === sectionName);
+
+            if (existingIndex !== -1) {
+                list[existingIndex].capacity = capacity;
+            } else {
+                list.push({ class: classVal, section: sectionName, capacity: capacity });
+            }
+
+            localStorage.setItem('school_class_sections', JSON.stringify(list));
+            document.getElementById('section-name-input').value = '';
+            document.getElementById('section-capacity-input').value = '50';
+
+            alert(`Section "${sectionName}" added/updated successfully for ${classVal}!`);
+            renderClassSectionList();
+            updateDatabaseStats();
+        }
+
+        function deleteClassSection(classNum, sectionName) {
+            if (confirm(`Are you sure you want to delete Section ${sectionName} of Class ${classNum}?`)) {
+                let list = loadClassSections();
+                const filtered = list.filter(item => !(item.class === classNum && item.section === sectionName));
+                localStorage.setItem('school_class_sections', JSON.stringify(filtered));
+                renderClassSectionList();
+                updateDatabaseStats();
+            }
+        }
+
+        // --- 5. DATABASE STATS INSPECTOR ---
+        function updateDatabaseStats() {
+            let totalBytes = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                totalBytes += key.length + value.length;
+            }
+
+            const formattedSize = formatSizeUnits(totalBytes);
+            document.getElementById('db-usage-text').innerText = `${formattedSize} / 5 MB`;
+
+            const percentage = Math.min((totalBytes / 5242880) * 100, 100);
+            document.getElementById('db-usage-indicator').style.width = `${Math.max(percentage, 2)}%`;
+        }
+
+        function formatSizeUnits(bytes) {
+            if (bytes >= 1048576) {
+                return (bytes / 1048576).toFixed(2) + " MB";
+            } else if (bytes >= 1024) {
+                return (bytes / 1024).toFixed(2) + " KB";
+            } else {
+                return bytes + " Bytes";
+            }
+        }
+
+        // --- 6. VISITOR MESSAGE INBOX LOGS ---
+        function loadInboxMessages() {
+            const container = document.getElementById('inbox-messages-container');
+            if (!container) return;
+
+            let messages = localStorage.getItem('contact_messages');
+            if (messages) {
+                try {
+                    messages = JSON.parse(messages);
+                } catch (e) {
+                    messages = [];
+                }
+            } else {
+                messages = [];
+            }
+
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--muted-text); font-style: italic; font-size: 0.85rem;">
+                        No messages in the database.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            messages.forEach(msg => {
+                html += `
+                    <div class="inbox-item">
+                        <div class="inbox-meta">
+                            <span>From: <strong>${msg.name}</strong> (${msg.email})</span>
+                            <span>${msg.date || ''}</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #fff; margin-top: 5px;">${msg.message}</p>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- 7. DATABASE BACKUP ACTIONS: EXPORT, IMPORT, WIPE ---
+        function exportDatabase() {
+            const dbDump = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                dbDump[key] = localStorage.getItem(key);
+            }
+
+            const jsonStr = JSON.stringify(dbDump, null, 4);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(jsonStr);
+            
+            const exportFileName = 'school_database_backup.json';
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileName);
+            linkElement.click();
+        }
+
+        function importDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dbData = JSON.parse(e.target.result);
+                    if (typeof dbData !== 'object' || dbData === null) {
+                        throw new Error("Invalid database format.");
+                    }
+
+                    Object.keys(dbData).forEach(key => {
+                        localStorage.setItem(key, dbData[key]);
+                    });
+
+                    alert("Database backup imported successfully! Page will reload.");
+                    location.reload();
+                } catch (err) {
+                    alert("Failed to import database file. Make sure it is a valid JSON database file.");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function wipeDatabase() {
+            if (confirm("Are you sure you want to wipe the database? This will clear all custom school settings, notices, and messages, restoring defaults.")) {
+                localStorage.clear();
+                alert("Database wiped. Reloading default values.");
+                location.reload();
+            }
+        }
+
+        // --- 8. URL PARAMETERS ROUTING TRIGGER ---
+        function checkURLParameters() {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view') || 'general';
+            
+            let viewName = 'general';
+            if (view === 'fee-structure') viewName = 'fee-structure';
+            else if (view === 'id-structure' || view === 'id-reg-structure') viewName = 'id-reg-structure';
+            else if (view === 'reg-structure' || view === 'class-section-structure') viewName = 'class-section-structure';
+            else if (view === 'slider-management') viewName = 'slider-management';
+            
+            switchAdvanceView(viewName);
+        }
+
+
+        // --- 9. SLIDER MANAGEMENT PANEL FUNCTIONS ---
+        function renderSliderManagement() {
+            const images = loadSliderImages();
+            const galleryContainer = document.getElementById('slider-mgr-gallery');
+            if (!galleryContainer) return;
+
+            if (images.length === 0) {
+                galleryContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--muted-text); font-style: italic;">
+                        No slides available. Please upload some images.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            images.forEach((imgSrc, index) => {
+                const isDefault = !imgSrc.startsWith('data:image/');
+                const label = isDefault ? `Default Slide ${index + 1}` : `Custom Slide ${index + 1}`;
+                
+                html += `
+                    <div class="slider-mgr-card">
+                        <div class="slider-mgr-thumb" style="background-image: url('${imgSrc}')"></div>
+                        <div class="slider-mgr-info">
+                            <span style="font-weight: 500; font-size: 0.85rem;">${label}</span>
+                            <button class="slider-mgr-delete-btn" onclick="deleteSliderMgrImage(${index})" title="Remove Slide">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            galleryContainer.innerHTML = html;
+        }
+
+        function handleSliderMgrUpload(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            let images = loadSliderImages();
+            let loadedCount = 0;
+
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            
+            if (imageFiles.length === 0) {
+                alert("Please select valid image files only.");
+                return;
+            }
+
+            imageFiles.forEach(file => {
+                if (typeof compressImage === 'function') {
+                    compressImage(file, function(compressedBase64) {
+                        images.push(compressedBase64);
+                        loadedCount++;
+                        
+                        if (loadedCount === imageFiles.length) {
+                            try {
+                                if (typeof lastLocalWrites === 'object') {
+                                    lastLocalWrites['school_slider_images'] = Date.now();
+                                }
+                                localStorage.setItem('school_slider_images', JSON.stringify(images));
+                                renderSliderManagement();
+                                if (typeof renderSlider === 'function') renderSlider();
+                                alert("Successfully uploaded " + imageFiles.length + " image(s) to slideshow!");
+                            } catch (error) {
+                                console.error("Storage write failed:", error);
+                                alert("Failed to save images. Storage is full. Try deleting some existing images first.");
+                            }
+                        }
+                    });
+                }
+            });
+
+            event.target.value = '';
+        }
+
+        function deleteSliderMgrImage(index) {
+            let images = loadSliderImages();
+            if (images.length <= 1) {
+                alert("At least one image must remain in the slideshow!");
+                return;
+            }
+
+            if (confirm("Are you sure you want to delete this slide permanently?")) {
+                images.splice(index, 1);
+                
+                if (typeof lastLocalWrites === 'object') {
+                    lastLocalWrites['school_slider_images'] = Date.now();
+                }
+                localStorage.setItem('school_slider_images', JSON.stringify(images));
+                
+                renderSliderManagement();
+                if (typeof renderSlider === 'function') renderSlider();
+                alert("Slide deleted successfully!");
+            }
+        }
+
+        // --- Logo Management Functions ---
+        function renderLogoPreview() {
+            const logoContainer = document.getElementById('mgr-logo-preview');
+            if (!logoContainer) return;
+            const customLogo = localStorage.getItem('school_logo');
+            if (customLogo) {
+                logoContainer.innerHTML = `<img src="${customLogo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
+            } else {
+                logoContainer.innerHTML = `
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert("Please select a valid image file.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 150;
+                    canvas.height = 150;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 150, 150);
+                    const compressedBase64 = canvas.toDataURL('image/png');
+
+                    try {
+                        if (typeof lastLocalWrites === 'object') {
+                            lastLocalWrites['school_logo'] = Date.now();
+                        }
+                        localStorage.setItem('school_logo', compressedBase64);
+                        renderLogoPreview();
+                        if (typeof applySchoolLogo === 'function') applySchoolLogo();
+                        alert("Custom logo uploaded and applied successfully!");
+                    } catch (error) {
+                        console.error("Logo storage failed:", error);
+                        alert("Failed to save custom logo. Storage limit reached.");
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function removeCustomLogo() {
+            if (confirm("Are you sure you want to remove the custom logo and revert to the default?")) {
+                if (typeof lastLocalWrites === 'object') {
+                    lastLocalWrites['school_logo'] = Date.now();
+                }
+                localStorage.removeItem('school_logo');
+                renderLogoPreview();
+                if (typeof applySchoolLogo === 'function') applySchoolLogo();
+                alert("Logo reverted to default successfully!");
+            }
+        }
+
+        // --- Headline & Subtitle Management Functions ---
+        function loadHeadlineSettings(force = false) {
+            // Do not overwrite if user is actively editing the headline form (unless forced)
+            if (!force) {
+                const activeEl = document.activeElement;
+                if (activeEl && activeEl.closest('#headline-editor-form')) {
+                    return;
+                }
+            }
+
+            let settings = localStorage.getItem('school_settings');
+            let schoolName = "CREATIVE MODEL SCHOOL";
+            let schoolSubtitle = "Pioneer of Digital & Smart Education";
+            if (settings) {
+                try {
+                    const parsed = JSON.parse(settings);
+                    schoolName = parsed.schoolName || schoolName;
+                    schoolSubtitle = parsed.schoolSubtitle || schoolSubtitle;
+                } catch (e) {
+                    console.error("Error parsing settings", e);
+                }
+            }
+            const nameInput = document.getElementById('mgr-school-name');
+            const subtitleInput = document.getElementById('mgr-school-subtitle');
+            if (nameInput) nameInput.value = schoolName;
+            if (subtitleInput) subtitleInput.value = schoolSubtitle;
+        }
+
+        function saveHeadlineSettings(event) {
+            event.preventDefault();
+            const schoolName = document.getElementById('mgr-school-name').value.trim();
+            const schoolSubtitle = document.getElementById('mgr-school-subtitle').value.trim();
+
+            if (!schoolName) {
+                alert("Headline (School Name) cannot be empty.");
+                return;
+            }
+
+            let settings = {};
+            const stored = localStorage.getItem('school_settings');
+            if (stored) {
+                try {
+                    settings = JSON.parse(stored);
+                } catch (e) {
+                    settings = {};
+                }
+            }
+            
+            settings.schoolName = schoolName;
+            settings.schoolSubtitle = schoolSubtitle;
+
+            if (typeof lastLocalWrites === 'object') {
+                lastLocalWrites['school_settings'] = Date.now();
+            }
+            localStorage.setItem('school_settings', JSON.stringify(settings));
+
+            if (typeof applySchoolSettings === 'function') applySchoolSettings();
+            alert("Header Identity updated successfully site-wide!");
+        }
+
+        function resetHeadlineDefaults() {
+            if (confirm("Are you sure you want to reset the Headline & Subtitle to default values?")) {
+                let settings = {};
+                const stored = localStorage.getItem('school_settings');
+                if (stored) {
+                    try {
+                        settings = JSON.parse(stored);
+                    } catch (e) {
+                        settings = {};
+                    }
+                }
+                
+                settings.schoolName = "CREATIVE MODEL SCHOOL";
+                settings.schoolSubtitle = "Pioneer of Digital & Smart Education";
+
+                if (typeof lastLocalWrites === 'object') {
+                    lastLocalWrites['school_settings'] = Date.now();
+                }
+                localStorage.setItem('school_settings', JSON.stringify(settings));
+
+                loadHeadlineSettings(true);
+                if (typeof applySchoolSettings === 'function') applySchoolSettings();
+                alert("Headline & Subtitle reset to defaults successfully!");
+            }
+        }
+
+        // --- 10. SCROLLING NOTICE TICKER FUNCTIONS ---
+        function loadTickerNotices() {
+            let stored = localStorage.getItem('school_ticker_notices');
+            if (!stored) {
+                const defaults = ["সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে"];
+                localStorage.setItem('school_ticker_notices', JSON.stringify(defaults));
+                return defaults;
+            }
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function renderTickerNotices() {
+            const listContainer = document.getElementById('ticker-notice-list');
+            if (!listContainer) return;
+
+            const notices = loadTickerNotices();
+
+            if (notices.length === 0) {
+                listContainer.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 20px; color: var(--muted-text); font-style: italic;">
+                            কোনো নোটিশ যুক্ত করা হয়নি। (No scrolling notices active)
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            notices.forEach((notice, index) => {
+                html += `
+                    <tr>
+                        <td style="font-weight: 600;">${index + 1}</td>
+                        <td style="word-break: break-all;">${notice}</td>
+                        <td style="text-align: center;">
+                            <button class="action-btn-sm btn-delete-student" onclick="deleteTickerNotice(${index})" style="margin: 0; padding: 6px 12px;" title="Delete Notice">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <span>মুছে ফেলুন</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        function addTickerNotice(event) {
+            event.preventDefault();
+            const inputEl = document.getElementById('new-ticker-notice');
+            if (!inputEl) return;
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            const notices = loadTickerNotices();
+            notices.push(text);
+
+            if (typeof lastLocalWrites === 'object') {
+                lastLocalWrites['school_ticker_notices'] = Date.now();
+            }
+            localStorage.setItem('school_ticker_notices', JSON.stringify(notices));
+            inputEl.value = '';
+
+            renderTickerNotices();
+            
+            if (typeof updateNoticeTicker === 'function') {
+                updateNoticeTicker();
+            }
+            alert("নতুন টিকার নোটিশ সফলভাবে যুক্ত হয়েছে!");
+        }
+
+        function deleteTickerNotice(index) {
+            if (confirm("আপনি কি এই নোটিশটি মুছে ফেলতে চান?")) {
+                const notices = loadTickerNotices();
+                notices.splice(index, 1);
+
+                if (typeof lastLocalWrites === 'object') {
+                    lastLocalWrites['school_ticker_notices'] = Date.now();
+                }
+                localStorage.setItem('school_ticker_notices', JSON.stringify(notices));
+
+                renderTickerNotices();
+                
+                if (typeof updateNoticeTicker === 'function') {
+                    updateNoticeTicker();
+                }
+                alert("নোটিশটি মুছে ফেলা হয়েছে!");
+            }
+        }
+
+        // Add dbSynced listener update for advance page
+        window.addEventListener('dbSynced', () => {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view') || 'general';
+            if (view === 'slider-management') {
+                renderSliderManagement();
+                renderLogoPreview();
+                loadHeadlineSettings();
+                renderTickerNotices();
+            }
+        });
+        
+        // Initialize dashboard details
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentSettings();
+            checkURLParameters();
+            renderTickerNotices();
+            
+            // Recheck if URL hash or search parameters change without reloading
+            window.addEventListener('popstate', checkURLParameters);
+        });
+    </script>
+
+</body>
+</html>

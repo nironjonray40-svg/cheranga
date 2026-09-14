@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Co-curricular & Gallery - CREATIVE MODEL SCHOOL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+            </svg>
+        </div>
+        <!-- Default Slide 1 -->
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 2 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 3 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
+            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
+                <li class="nav-item" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal.html">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
+                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item active" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- 9. OTHERS SECTION (GALLERY & CLUBS) -->
+        <section id="others" class="content-section active">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">Co-curricular & Gallery</h2>
+                <p class="section-subtitle">School club activities and memorable snapshots</p>
+            </div>
+
+            <div class="glass-card" style="margin-bottom:30px;">
+                <h3 class="portal-form-title">Co-curricular Clubs</h3>
+                <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                    <div class="stat-card" style="border-color:var(--neon-purple);">
+                        <div class="stat-number" style="font-size:1.5rem; color:var(--neon-purple);">Science Club</div>
+                        <p style="font-size:0.8rem; color:var(--muted-text); margin-top:5px;">This club constantly works on creating new scientific projects and discoveries.</p>
+                    </div>
+                    <div class="stat-card" style="border-color:var(--neon-cyan);">
+                        <div class="stat-number" style="font-size:1.5rem; color:var(--neon-cyan);">Debate Society</div>
+                        <p style="font-size:0.8rem; color:var(--muted-text); margin-top:5px;">Organizes regular debate sessions and tournaments to foster rational speakers.</p>
+                    </div>
+                    <div class="stat-card" style="border-color:var(--neon-pink);">
+                        <div class="stat-number" style="font-size:1.5rem; color:var(--neon-pink);">Sports Club</div>
+                        <p style="font-size:0.8rem; color:var(--muted-text); margin-top:5px;">Committed to building top-tier sports teams in football, cricket, and indoor games.</p>
+                    </div>
+                    <div class="stat-card" style="border-color:var(--neon-green);">
+                        <div class="stat-number" style="font-size:1.5rem; color:var(--neon-green);">Cultural Club</div>
+                        <p style="font-size:0.8rem; color:var(--muted-text); margin-top:5px;">Nurturing talents through practice in music, dance, recitation, and drama.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Picture Gallery -->
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=600&auto=format&fit=crop" alt="Sports Day">
+                    <div class="gallery-item-overlay">
+                        <span class="gallery-title">Annual Sports Competition</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=600&auto=format&fit=crop" alt="Science Fair">
+                    <div class="gallery-item-overlay">
+                        <span class="gallery-title">Science & Technology Fair</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600&auto=format&fit=crop" alt="Classroom Study">
+                    <div class="gallery-item-overlay">
+                        <span class="gallery-title">Multimedia Class Session</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop" alt="Computer Lab">
+                    <div class="gallery-item-overlay">
+                        <span class="gallery-title">Computer Lab Practice</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=600&auto=format&fit=crop" alt="Debate">
+                    <div class="gallery-item-overlay">
+                        <span class="gallery-title">Inter-class Debate Session</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=600&auto=format&fit=crop" alt="Library">
+                    <div class="gallery-item-overlay">
+                        <span class="gallery-title">Well-equipped School Library</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
+            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shared JS -->
+    <script src="main.js"></script>
+</body>
+</html>

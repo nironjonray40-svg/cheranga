@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fees & Payments Calculator - CREATIVE MODEL SCHOOL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+            </svg>
+        </div>
+        <!-- Default Slide 1 -->
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 2 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 3 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
+            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item active" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
+                <li class="nav-item" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
+                <li class="nav-item dropdown" data-tab="exam-portal">
+                    <a href="exam-portal.html">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
+                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- 3. FEES & TUITION SECTION -->
+        <section id="fees" class="content-section active">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">Fees & Payments Calculator</h2>
+                <p class="section-subtitle">Easily calculate your class tuition and additional fees and download your money receipt</p>
+            </div>
+
+            <div class="fees-grid">
+                <!-- Fee Selection Panel -->
+                <div class="glass-card">
+                    <h3 class="portal-form-title">Select Tuition & Additional Fees</h3>
+                    <div class="form-group">
+                        <label for="fee-class">Select Class:</label>
+                        <select id="fee-class" class="form-control" onchange="calculateFees()">
+                            <option value="6">Class 6 (Tuition: 700 BDT)</option>
+                            <option value="7">Class 7 (Tuition: 700 BDT)</option>
+                            <option value="8">Class 8 (Tuition: 800 BDT)</option>
+                            <option value="9">Class 9 (Tuition: 1000 BDT)</option>
+                            <option value="10">Class 10 (Tuition: 1000 BDT)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fee-month">Select Month:</label>
+                        <select id="fee-month" class="form-control" onchange="calculateFees()">
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="fee-transport" style="transform: scale(1.3);" onchange="calculateFees()">
+                            School Bus Service (Fee: 500 BDT)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="fee-canteen" style="transform: scale(1.3);" onchange="calculateFees()">
+                            Lunch / Canteen Service (Fee: 800 BDT)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="fee-exam" style="transform: scale(1.3);" onchange="calculateFees()">
+                            Examination Fee (Fee: 300 BDT)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="fee-admission" style="transform: scale(1.3);" onchange="calculateFees()">
+                            Admission Fee (<span id="label-fee-admission">0</span> BDT)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="fee-session" style="transform: scale(1.3);" onchange="calculateFees()">
+                            Session Fee (<span id="label-fee-session">0</span> BDT)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Fee Invoice Display -->
+                <div class="glass-card">
+                    <div class="fee-receipt" id="fee-receipt-container">
+                        <div class="receipt-header">
+                            <div class="receipt-title">CREATIVE MODEL SCHOOL</div>
+                            <p style="font-size:0.8rem; color:var(--muted-text);">Fees & Payments Receipt</p>
+                            <p style="font-size:0.75rem; margin-top:5px; color:var(--neon-cyan);">Receipt No: <span id="receipt-no">NMS-83921</span></p>
+                        </div>
+                        
+                        <div class="receipt-row">
+                            <span>Class:</span>
+                            <span id="receipt-class">Class 6</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span>Month:</span>
+                            <span id="receipt-month">January</span>
+                        </div>
+                        
+                        <table class="fee-list-table">
+                            <thead>
+                                <tr>
+                                    <th style="color: #fff; font-size: 0.85rem;">Description</th>
+                                    <th style="color: #fff; font-size: 0.85rem; text-align: right;">Amount (BDT)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receipt-items-body">
+                                <tr>
+                                    <td>Monthly Tuition Fee</td>
+                                    <td style="text-align: right;">700 BDT</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="receipt-row total">
+                            <span>Total Payable Amount:</span>
+                            <span id="receipt-total">700 BDT</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-receipt-print" onclick="printReceipt()">Print Receipt</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
+            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shared & Page-specific JS -->
+    <script src="main.js"></script>
+    <script>
+        // Safe JSON parser to prevent errors from empty database or null storage values
+        function safeJsonParse(key, defaultValue) {
+            try {
+                const stored = localStorage.getItem(key);
+                if (stored && stored !== 'null' && stored !== 'undefined') {
+                    const parsed = JSON.parse(stored);
+                    if (parsed !== null && parsed !== undefined) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.error(`Error parsing ${key} from localStorage:`, e);
+            }
+            return defaultValue;
+        }
+
+        // Retrieve fees from localStorage or use defaults
+        function loadClasses() {
+            const defaultClasses = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+            const parsed = safeJsonParse('school_classes', null);
+            if (Array.isArray(parsed)) {
+                const filtered = parsed.filter(c => c && typeof c === 'string' && c.trim() !== '');
+                if (filtered.length > 0) {
+                    return filtered;
+                }
+            }
+            return defaultClasses;
+        }
+
+        // Retrieve fees from localStorage or use defaults
+        function getClassFees() {
+            const defaultFees = {
+                "Class 6": { tuition: 700, admission: 1000, session: 1500 },
+                "Class 7": { tuition: 700, admission: 1000, session: 1500 },
+                "Class 8": { tuition: 800, admission: 1200, session: 1800 },
+                "Class 9": { tuition: 1000, admission: 1500, session: 2000 },
+                "Class 10": { tuition: 1000, admission: 1500, session: 2000 }
+            };
+            const parsed = safeJsonParse('school_class_fees', null);
+            return (parsed && typeof parsed === 'object') ? parsed : defaultFees;
+        }
+
+        // Initialize option labels dynamically from fees data
+        function initializeFeeLabels() {
+            const classes = loadClasses();
+            const fees = getClassFees();
+            const selectEl = document.getElementById('fee-class');
+            if (selectEl) {
+                const currentVal = selectEl.value;
+                selectEl.innerHTML = classes.map(c => {
+                    let cFees = fees[c] || fees[c.replace("Class ", "")] || { tuition: 0, admission: 0, session: 0 };
+                    if (typeof cFees !== 'object') {
+                        cFees = { tuition: parseInt(cFees) || 0, admission: 0, session: 0 };
+                    }
+                    return `<option value="${c}">${c} (Tuition: ${cFees.tuition} BDT)</option>`;
+                }).join('');
+                if (currentVal && classes.includes(currentVal)) {
+                    selectEl.value = currentVal;
+                } else if (classes.length > 0) {
+                    selectEl.value = classes[0];
+                }
+            }
+        }
+
+        // --- FEE & TUITION CALCULATOR ---
+        function calculateFees() {
+            const classVal = document.getElementById('fee-class').value;
+            const monthVal = document.getElementById('fee-month').value;
+            const isTransport = document.getElementById('fee-transport').checked;
+            const isCanteen = document.getElementById('fee-canteen').checked;
+            const isExam = document.getElementById('fee-exam').checked;
+            const isAdmission = document.getElementById('fee-admission') ? document.getElementById('fee-admission').checked : false;
+            const isSession = document.getElementById('fee-session') ? document.getElementById('fee-session').checked : false;
+
+            const fees = getClassFees();
+            
+            // Get fees for selected class
+            let cFees = fees[classVal] || fees[classVal.replace("Class ", "")] || { tuition: 0, admission: 0, session: 0 };
+            if (typeof cFees !== 'object') {
+                cFees = { tuition: parseInt(cFees) || 0, admission: 0, session: 0 };
+            }
+
+            // Update labels dynamically
+            const labelAdmission = document.getElementById('label-fee-admission');
+            if (labelAdmission) labelAdmission.innerText = cFees.admission;
+            const labelSession = document.getElementById('label-fee-session');
+            if (labelSession) labelSession.innerText = cFees.session;
+
+            const tuitionFee = cFees.tuition;
+
+            let total = tuitionFee;
+            let itemsHTML = `
+                <tr>
+                    <td>Monthly Tuition Fee</td>
+                    <td style="text-align: right;">${tuitionFee} BDT</td>
+                </tr>
+            `;
+
+            if (isAdmission) {
+                total += cFees.admission;
+                itemsHTML += `
+                    <tr>
+                        <td>Admission Fee</td>
+                        <td style="text-align: right;">${cFees.admission} BDT</td>
+                    </tr>
+                `;
+            }
+            if (isSession) {
+                total += cFees.session;
+                itemsHTML += `
+                    <tr>
+                        <td>Session Fee</td>
+                        <td style="text-align: right;">${cFees.session} BDT</td>
+                    </tr>
+                `;
+            }
+            if (isTransport) {
+                total += 500;
+                itemsHTML += `
+                    <tr>
+                        <td>School Bus Service Fee</td>
+                        <td style="text-align: right;">500 BDT</td>
+                    </tr>
+                `;
+            }
+            if (isCanteen) {
+                total += 800;
+                itemsHTML += `
+                    <tr>
+                        <td>Lunch & Canteen Fee</td>
+                        <td style="text-align: right;">800 BDT</td>
+                    </tr>
+                `;
+            }
+            if (isExam) {
+                total += 300;
+                itemsHTML += `
+                    <tr>
+                        <td>Exam Management Fee</td>
+                        <td style="text-align: right;">300 BDT</td>
+                    </tr>
+                `;
+            }
+
+            // Update Invoice Panel
+            document.getElementById('receipt-class').innerText = classVal;
+            document.getElementById('receipt-month').innerText = monthVal;
+            document.getElementById('receipt-items-body').innerHTML = itemsHTML;
+            document.getElementById('receipt-total').innerText = total + " BDT";
+
+            // Generate fake receipt number
+            const randNo = "NMS-" + Math.floor(10000 + Math.random() * 90000);
+            document.getElementById('receipt-no').innerText = randNo;
+        }
+
+        function printReceipt() {
+            const receipt = document.getElementById('fee-receipt-container').outerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Receipt</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; background: #fff; }
+                        .fee-receipt { border: 2px solid #333; padding: 30px; border-radius: 10px; max-width: 500px; margin: 0 auto; }
+                        .receipt-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px; }
+                        .receipt-title { font-size: 1.5rem; font-weight: bold; }
+                        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 1.1rem; }
+                        .receipt-row.total { border-top: 2px solid #333; padding-top: 12px; margin-top: 15px; font-weight: bold; font-size: 1.2rem; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border-bottom: 1px solid #ddd; padding: 12px 8px; text-align: left; }
+                        th { background: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    \${receipt}
+                    <script>
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // Initialize invoice details and option labels
+        initializeFeeLabels();
+        calculateFees();
+    </script>
+</body>
+</html>

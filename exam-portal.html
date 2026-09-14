@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Portal - CREATIVE MODEL SCHOOL</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Sub-views Layout Toggles */
+        .portal-sub-view {
+            display: none;
+            animation: fadeInSection 0.5s ease-out forwards;
+        }
+        .portal-sub-view.active {
+            display: block;
+        }
+
+        /* Sub-navigation Tabs */
+        .sub-nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .sub-tab-btn {
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border);
+            color: var(--muted-text);
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .sub-tab-btn:hover {
+            background: var(--glass-card-hover);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .sub-tab-btn.active {
+            background: var(--primary-grad);
+            color: #fff;
+            box-shadow: var(--purple-glow);
+            border-color: transparent;
+        }
+
+        /* Quick Navigation Grid (Dashboard) */
+        .quick-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+        .quick-nav-card {
+            background: var(--glass-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .quick-nav-card:hover {
+            background: var(--glass-card-hover);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .quick-nav-icon {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quick-nav-card h4 {
+            color: #fff;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .quick-nav-card p {
+            color: var(--muted-text);
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        /* Subview Grids Layouts */
+        .exam-entry-grid, .marking-system-grid, .subject-entry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 25px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .exam-entry-grid, .marking-system-grid, .subject-entry-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Result Report Layout */
+        .result-toggle-header {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 15px;
+        }
+        .result-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted-text);
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+            border-bottom: 2px solid transparent;
+        }
+        .result-toggle-btn:hover {
+            color: #fff;
+        }
+        .result-toggle-btn.active {
+            color: var(--neon-cyan);
+            border-bottom-color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+        }
+        .result-subtab-content {
+            display: none;
+            animation: fadeInSection 0.4s ease-out forwards;
+        }
+        .result-subtab-content.active {
+            display: block;
+        }
+        .result-report-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.8fr;
+            gap: 25px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .result-report-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* SMS Center Grid */
+        .sms-center-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .sms-center-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Phone mockup preview styles */
+        .sms-preview-phone {
+            width: 290px;
+            height: 470px;
+            border: 12px solid #2e1e4a;
+            border-radius: 36px;
+            background: #0f0a1c;
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.25), inset 0 0 10px rgba(0,0,0,0.8);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .phone-notch {
+            width: 120px;
+            height: 18px;
+            background: #2e1e4a;
+            border-radius: 0 0 12px 12px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .phone-status-bar {
+            height: 24px;
+            padding: 0 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            color: #a1a1aa;
+            margin-top: 5px;
+            user-select: none;
+        }
+        .phone-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            background: #140d2b;
+            overflow-y: auto;
+            border-radius: 20px 20px 0 0;
+        }
+        .phone-chat-header {
+            padding: 8px 0 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            text-align: center;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .phone-bubble {
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 16px 16px 0 16px;
+            max-width: 88%;
+            align-self: flex-end;
+            font-size: 0.78rem;
+            line-height: 1.35;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            animation: popInBubble 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+        .phone-home-indicator {
+            height: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 4px;
+            background: #140d2b;
+            user-select: none;
+        }
+        .phone-home-line {
+            width: 85px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 2px;
+        }
+        @keyframes popInBubble {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Transcript details print layout overrides */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #student-transcript-container, #student-transcript-container * {
+                visibility: visible;
+            }
+            #student-transcript-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: #fff !important;
+                color: #000 !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            #student-transcript-container th, #student-transcript-container td {
+                color: #000 !important;
+                border-bottom: 1px solid #ddd !important;
+            }
+            #student-transcript-container button, #student-transcript-container .marksheet-summary {
+                display: none !important;
+            }
+            #student-transcript-container strong {
+                color: #000 !important;
+            }
+        }
+
+        /* Custom Modal Overlay & Content Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 10, 30, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-container {
+            background: rgba(30, 20, 50, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 480px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 15px rgba(168, 85, 247, 0.2);
+            position: relative;
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--muted-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .modal-title {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background decorative grids and blobs -->
+    <div class="bg-grid-overlay"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- HEADER / HERO SLIDESHOW -->
+    <header class="hero-slider-container">
+        <div class="school-logo-container">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.89 12.55L12 15.88l6.11-3.33c.6.3 1.89.88 1.89 1.45 0 .58-1.29 1.15-1.89 1.45L12 18.78l-6.11-3.33C5.29 15.15 4 14.58 4 14c0-.58 1.29-1.15 1.89-1.45z"/>
+            </svg>
+        </div>
+        <!-- Default Slide 1 -->
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 2 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1470&auto=format&fit=crop');"></div>
+        <!-- Default Slide 3 -->
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1470&auto=format&fit=crop');"></div>
+
+        <div class="hero-overlay"></div>
+
+        <!-- Headline Overlay Content -->
+        <div class="hero-content">
+            <h1 class="hero-title" id="school-name">CREATIVE MODEL SCHOOL</h1>
+            <p class="hero-subtitle">Pioneer of Digital & Smart Education</p>
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button class="slider-btn slider-btn-prev" onclick="changeSlide(-1)" aria-label="Previous Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="slider-btn slider-btn-next" onclick="changeSlide(1)" aria-label="Next Slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="slider-dots-container">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+            <span class="dot" onclick="setSlide(2)"></span>
+        </div>
+    </header>
+
+    <!-- STICKY TOP MENU NAVBAR -->
+    <div class="nav-wrapper" id="navbar-sticky">
+        <div class="container navbar">
+            <a href="index.html" class="nav-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Smart Vidyapith</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu-list">
+                <li class="nav-item" data-tab="home"><a href="index.html">Staff Management</a></li>
+                <li class="nav-item dropdown" data-tab="student-portal">
+                    <a href="student-portal.html">Student Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="student-portal.html?view=add">Add Student</a></li>
+                        <li><a href="student-portal.html?view=list">Student List</a></li>
+                        <li><a href="student-portal.html?view=promote">Promotion & Demotion</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="fees"><a href="fees.html">Fees & Payments</a></li>
+                <li class="nav-item" data-tab="seat-plan"><a href="seat-plan.html">Seat Plan</a></li>
+                <li class="nav-item dropdown active" data-tab="exam-portal">
+                    <a href="exam-portal.html">Exam Portal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="exam-portal.html?view=exam-entry">Exam Entry</a></li>
+                        <li><a href="exam-portal.html?view=result-report">Result Report</a></li>
+                        <li><a href="exam-portal.html?view=marking-system">Marking System</a></li>
+                        <li><a href="exam-portal.html?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal.html?view=sms">SMS</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item" data-tab="result-portal"><a href="result-portal.html">Result Portal</a></li>
+                <li class="nav-item" data-tab="contact"><a href="contact.html">Contact</a></li>
+                <li class="nav-item" data-tab="notice-board"><a href="notice-board.html">Notice Board</a></li>
+                <li class="nav-item" data-tab="others"><a href="others.html">Others</a></li>
+                <li class="nav-item dropdown" data-tab="advance">
+                    <a href="advance.html">Advance</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="advance.html?view=fee-structure">Class Fee Structure</a></li>
+                        <li><a href="advance.html?view=id-reg-structure">Student ID & Registration Structure</a></li>
+                        <li><a href="advance.html?view=class-section-structure">Class & Section Structure</a></li>
+                        <li><a href="advance.html?view=slider-management">Headline & Slider Management</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOTICE TICKER BAR -->
+    <div class="notice-bar">
+        <div class="notice-bar-container container">
+            <span class="notice-label">নোটিশ / Notice:</span>
+            <div class="notice-ticker">
+                <span class="notice-text">সকল ছাত্র-ছাত্রীর অবগতির জন্য জানানো যাচ্ছে যে, আগামী কাল ১৬ ডিসে্বর বিদ্যালয় বন্ধ থাকিবে</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL PAGES / SECTIONS (TAB CONTENT) -->
+    <main class="container">
+
+        <!-- 5. EXAM PORTAL SECTION -->
+        <section id="exam-portal" class="content-section active">
+            <div class="section-title-wrapper">
+                <h2 class="section-title" id="portal-title">Exam Portal</h2>
+                <p class="section-subtitle" id="portal-subtitle">Check upcoming exam routines and play live quizzes to test your general knowledge</p>
+            </div>
+
+            <!-- Page Sub-navigation Tabs -->
+            <div class="sub-nav-tabs">
+                <button class="sub-tab-btn active" id="btn-tab-dashboard" onclick="navigateExamView('dashboard')">Dashboard</button>
+                <button class="sub-tab-btn" id="btn-tab-exam-entry" onclick="navigateExamView('exam-entry')">Exam Entry</button>
+                <button class="sub-tab-btn" id="btn-tab-result-report" onclick="navigateExamView('result-report')">Result Report</button>
+                <button class="sub-tab-btn" id="btn-tab-marking-system" onclick="navigateExamView('marking-system')">Marking System</button>
+                <button class="sub-tab-btn" id="btn-tab-all-subject" onclick="navigateExamView('all-subject')">All Subject</button>
+                <button class="sub-tab-btn" id="btn-tab-sms" onclick="navigateExamView('sms')">SMS Center</button>
+            </div>
+
+            <!-- SUB-VIEW 0: DASHBOARD (DEFAULT OVERVIEW) -->
+            <div id="subview-dashboard" class="portal-sub-view active">
+                <div class="quick-nav-grid">
+                    <div class="quick-nav-card" onclick="navigateExamView('exam-entry')">
+                        <div class="quick-nav-icon" style="color:var(--neon-purple);">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                        </div>
+                        <h4>Exam Entry</h4>
+                        <p>Manage exam schedules & routines</p>
+                    </div>
+                    <div class="quick-nav-card" onclick="navigateExamView('result-report')">
+                        <div class="quick-nav-icon" style="color:var(--neon-cyan);">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        </div>
+                        <h4>Result Report</h4>
+                        <p>Search & print transcripts</p>
+                    </div>
+                    <div class="quick-nav-card" onclick="navigateExamView('marking-system')">
+                        <div class="quick-nav-icon" style="color:var(--neon-green);">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm1.01 16h-2v-2h2v2zm1.44-6.39l-.9.9c-.72.73-1.15 1.24-1.15 2.49h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.42 0-1.1-.9-2-2-2s-2 .9-2 2h-2c0-2.2 1.8-4 4-4s4 1.8 4 4c0 .88-.36 1.68-.96 2.3z"/></svg>
+                        </div>
+                        <h4>Marking System</h4>
+                        <p>Configure GPA scale & rules</p>
+                    </div>
+                    <div class="quick-nav-card" onclick="navigateExamView('all-subject')">
+                        <div class="quick-nav-icon" style="color:var(--neon-pink);">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                        </div>
+                        <h4>All Subject</h4>
+                        <p>List & assign class subjects</p>
+                    </div>
+                    <div class="quick-nav-card" onclick="navigateExamView('sms')">
+                        <div class="quick-nav-icon" style="color:var(--neon-green);">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                        </div>
+                        <h4>SMS Center</h4>
+                        <p>Notify guardians in real-time</p>
+                    </div>
+                </div>
+
+                <div class="exam-layout">
+                    <!-- Exam Schedule -->
+                    <div class="glass-card">
+                        <h3 class="portal-form-title">Upcoming Exam Schedule Summary</h3>
+                        <div style="overflow-x:auto;">
+                            <table class="fee-list-table" style="font-size:0.9rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#fff;">Class</th>
+                                        <th style="color:#fff;">Date</th>
+                                        <th style="color:#fff;">Subject</th>
+                                        <th style="color:#fff;">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-routine-rows">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Live Quiz Practice -->
+                    <div class="glass-card">
+                        <h3 class="portal-form-title" style="color:var(--neon-pink);">Live Quiz Practice</h3>
+                        <div class="quiz-container" id="quiz-block">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--neon-cyan);">
+                                <span>Question No: <span id="quiz-q-num">1/3</span></span>
+                                <span>Score: <span id="quiz-score">0</span></span>
+                            </div>
+                            <div class="quiz-question" id="quiz-question-text">Who is the national poet of Bangladesh?</div>
+                            
+                            <div class="quiz-option" id="opt-0" onclick="checkQuizAnswer(0)">
+                                <span style="font-weight:bold;">A.</span> <span id="opt-text-0">Rabindranath Tagore</span>
+                            </div>
+                            <div class="quiz-option" id="opt-1" onclick="checkQuizAnswer(1)">
+                                <span style="font-weight:bold;">B.</span> <span id="opt-text-1">Kazi Nazrul Islam</span>
+                            </div>
+                            <div class="quiz-option" id="opt-2" onclick="checkQuizAnswer(2)">
+                                <span style="font-weight:bold;">C.</span> <span id="opt-text-2">Jasimmudin</span>
+                            </div>
+                            <div class="quiz-option" id="opt-3" onclick="checkQuizAnswer(3)">
+                                <span style="font-weight:bold;">D.</span> <span id="opt-text-3">Jibanananda Das</span>
+                            </div>
+                            <button class="btn-primary" id="quiz-next-btn" style="margin-top:15px; display:none;" onclick="loadNextQuiz()">Next Question</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 1: EXAM ENTRY -->
+            <div id="subview-exam-entry" class="portal-sub-view">
+                <div class="exam-entry-grid">
+                    <div class="glass-card">
+                        <h3 class="portal-form-title" style="color:var(--neon-purple);">Create Exam Schedule</h3>
+                        <form id="exam-schedule-form" onsubmit="saveExamSchedule(event)">
+                            <div class="form-group">
+                                <label for="schedule-class">Class:</label>
+                                <select id="schedule-class" class="form-control" onchange="updateScheduleSubjectsDropdown()" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="schedule-exam-name">Exam Name:</label>
+                                <select id="schedule-exam-name" class="form-control" required>
+                                    <option value="Half-Yearly Examination 2026">Half-Yearly Examination 2026</option>
+                                    <option value="Annual Examination 2026">Annual Examination 2026</option>
+                                    <option value="First Term Exam 2026">First Term Exam 2026</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="schedule-subject">Subject:</label>
+                                <select id="schedule-subject" class="form-control" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="schedule-date">Exam Date:</label>
+                                <input type="date" id="schedule-date" class="form-control" required>
+                            </div>
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="schedule-start">Start Time:</label>
+                                    <input type="time" id="schedule-start" class="form-control" value="10:00" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="schedule-end">End Time:</label>
+                                    <input type="time" id="schedule-end" class="form-control" value="13:00" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primary" style="width:100%; margin-top:15px; background:var(--primary-grad); box-shadow:var(--purple-glow);">Save Schedule</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3 class="portal-form-title" style="margin-bottom:0;">Exam Schedules</h3>
+                            <select id="filter-schedule-class" class="form-control" style="width:auto; min-width:130px; margin:0;" onchange="renderScheduleList()">
+                                <option value="All">All Classes</option>
+                            </select>
+                        </div>
+                        <div style="overflow-x:auto; max-height:400px;">
+                            <table class="fee-list-table" style="font-size:0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#fff;">Class</th>
+                                        <th style="color:#fff;">Exam Name</th>
+                                        <th style="color:#fff;">Date</th>
+                                        <th style="color:#fff;">Subject</th>
+                                        <th style="color:#fff;">Time</th>
+                                        <th style="color:#fff;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schedule-list-rows">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: RESULT REPORT -->
+            <div id="subview-result-report" class="portal-sub-view">
+                <div class="result-toggle-header">
+                    <button class="result-toggle-btn active" id="btn-result-search" onclick="toggleResultReportSubTab('search')">Search Report Card</button>
+                    <button class="result-toggle-btn" id="btn-result-input" onclick="toggleResultReportSubTab('input')">Input Marks (Admin)</button>
+                </div>
+
+                <!-- Sub-Tab 1: Search & View Report -->
+                <div id="result-subtab-search" class="result-subtab-content active">
+                    <div class="result-report-layout">
+                        <div class="glass-card">
+                            <h3 class="portal-form-title" style="color:var(--neon-cyan);">Search Student Transcript</h3>
+                            <div class="form-group">
+                                <label for="search-result-class">Class:</label>
+                                <select id="search-result-class" class="form-control" onchange="updateSearchResultStudentDropdown()" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="search-result-student">Student Name:</label>
+                                <select id="search-result-student" class="form-control" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="search-result-exam">Select Exam:</label>
+                                <select id="search-result-exam" class="form-control" required>
+                                    <option value="Half-Yearly Examination 2026">Half-Yearly Examination 2026</option>
+                                    <option value="Annual Examination 2026">Annual Examination 2026</option>
+                                    <option value="First Term Exam 2026">First Term Exam 2026</option>
+                                </select>
+                            </div>
+                            <button class="btn-primary" style="width:100%; background:var(--primary-grad); box-shadow:var(--purple-glow);" onclick="generateStudentTranscriptCard()">View Transcript</button>
+                            
+                            <div style="margin-top:15px; border-top:1px dashed var(--glass-border); padding-top:15px;">
+                                <p style="font-size:0.8rem; color:var(--muted-text); text-align:center;">Don't have student marks entered? Click below to instantly generate mock marks for testing:</p>
+                                <button class="btn-primary" style="width:100%; margin-top:10px; background:var(--accent-grad); box-shadow:var(--cyan-glow);" onclick="quickAutofillMockMarks()">Autofill Mock Marks</button>
+                            </div>
+                        </div>
+
+                        <!-- Marksheet Container -->
+                        <div class="glass-card" id="student-transcript-container" style="display:none; min-height: 380px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; border-bottom:1px solid var(--glass-border); padding-bottom:12px;">
+                                <div>
+                                    <h3 style="font-size:1.4rem; color:#fff; margin-bottom:4px;" id="transcript-school-name">CREATIVE MODEL SCHOOL</h3>
+                                    <p style="font-size:0.9rem; color:var(--neon-cyan);" id="transcript-exam-title">Half-Yearly Examination 2026</p>
+                                    <p style="font-size:0.8rem; color:var(--muted-text);">Student Academic Transcript</p>
+                                </div>
+                                <button class="action-btn-sm btn-view-card" onclick="printStudentTranscript()"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right:4px;"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print</button>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px; font-size:0.9rem; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px;">
+                                <div>
+                                    <p>Name: <strong style="color:#fff;" id="transcript-student-name">-</strong></p>
+                                    <p>Class: <strong style="color:#fff;" id="transcript-student-class">-</strong></p>
+                                    <p>Roll: <strong style="color:#fff;" id="transcript-student-roll">-</strong></p>
+                                </div>
+                                <div style="text-align:right;">
+                                    <p>ID: <strong style="color:#fff;" id="transcript-student-id">-</strong></p>
+                                    <p>Reg No: <strong style="color:#fff;" id="transcript-student-reg">-</strong></p>
+                                    <p>Group: <strong style="color:#fff;" id="transcript-student-group">-</strong></p>
+                                </div>
+                            </div>
+
+                            <div style="overflow-x:auto;">
+                                <table class="fee-list-table" style="font-size:0.85rem; margin-bottom:20px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th style="text-align:left;">Subject</th>
+                                            <th>Marks</th>
+                                            <th>Letter Grade</th>
+                                            <th>GP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transcript-rows">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="marksheet-summary" style="margin-top:20px;">
+                                <div class="marksheet-summary-item">
+                                    <div class="summary-value" id="transcript-total-gpa">0.00</div>
+                                    <div style="font-size:0.8rem; color:var(--muted-text);">Average GPA</div>
+                                </div>
+                                <div class="marksheet-summary-item">
+                                    <div class="summary-value" id="transcript-final-grade" style="color:var(--neon-green);">-</div>
+                                    <div style="font-size:0.8rem; color:var(--muted-text);">Final Grade</div>
+                                </div>
+                                <div class="marksheet-summary-item">
+                                    <div class="summary-value" id="transcript-status" style="color:var(--neon-cyan);">-</div>
+                                    <div style="font-size:0.8rem; color:var(--muted-text);">Result Status</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-Tab 2: Input Student Marks -->
+                <div id="result-subtab-input" class="result-subtab-content">
+                    <div class="glass-card" style="max-width:800px; margin:0 auto;">
+                        <h3 class="portal-form-title" style="color:var(--neon-pink);">Input Student Subject Marks</h3>
+                        
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="input-mark-class">Class:</label>
+                                <select id="input-mark-class" class="form-control" onchange="updateInputMarkStudentDropdown(); generateSubjectMarkInputFields();" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-mark-student">Student Name:</label>
+                                <select id="input-mark-student" class="form-control" onchange="loadExistingStudentMarks()" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-mark-exam">Select Exam:</label>
+                                <select id="input-mark-exam" class="form-control" onchange="loadExistingStudentMarks()" required>
+                                    <option value="Half-Yearly Examination 2026">Half-Yearly Examination 2026</option>
+                                    <option value="Annual Examination 2026">Annual Examination 2026</option>
+                                    <option value="First Term Exam 2026">First Term Exam 2026</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:20px; border-top:1px solid var(--glass-border); padding-top:20px;">
+                            <h4 style="color:#fff; margin-bottom:15px; font-size:1.05rem;">Enter Subject Wise Marks:</h4>
+                            
+                            <div id="subject-marks-inputs-container" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; margin-bottom:20px;">
+                                <!-- Form inputs generated dynamically via JS -->
+                            </div>
+                            
+                            <div id="no-subjects-alert" style="display:none; text-align:center; padding:15px; color:var(--neon-pink); border:1px dashed var(--glass-border); border-radius:8px; margin-bottom:20px;">
+                                No subjects created for this class yet. Please add subjects in the "All Subject" tab first!
+                            </div>
+
+                            <button id="save-marks-btn" class="btn-primary" style="background:var(--secondary-grad); box-shadow:var(--pink-glow); padding:12px 30px; font-size:0.95rem; border-radius:10px; margin:0 auto; display:block;" onclick="saveStudentMarks()">Save Marks</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 3: MARKING SYSTEM -->
+            <div id="subview-marking-system" class="portal-sub-view">
+                <div class="marking-system-grid">
+                    <div class="glass-card">
+                        <h3 class="portal-form-title" style="color:var(--neon-green);">Customize Grade Threshold</h3>
+                        <form id="grade-rule-form" onsubmit="saveGradeRule(event)">
+                            <input type="hidden" id="grade-rule-id">
+                            <div class="form-group">
+                                <label for="grade-name">Letter Grade (e.g. A+, A-):</label>
+                                <input type="text" id="grade-name" class="form-control" placeholder="e.g. A+" required>
+                            </div>
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="grade-min">Min Mark (0-100):</label>
+                                    <input type="number" id="grade-min" class="form-control" min="0" max="100" placeholder="80" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="grade-max">Max Mark (0-100):</label>
+                                    <input type="number" id="grade-max" class="form-control" min="0" max="100" placeholder="100" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="grade-point">Grade Point (0.0 - 5.0):</label>
+                                <input type="number" id="grade-point" class="form-control" step="0.01" min="0" max="5" placeholder="5.0" required>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:15px;">
+                                <button type="submit" class="btn-primary" style="flex:1; background:var(--accent-grad); box-shadow:var(--cyan-glow);">Save Grade Rule</button>
+                                <button type="button" class="btn-primary" style="background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); box-shadow:none;" onclick="resetGradeRuleForm()">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="glass-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3 class="portal-form-title" style="margin-bottom:0;">Grading Scale</h3>
+                            <button class="action-btn-sm btn-delete-student" style="background:var(--warning-grad); box-shadow:none;" onclick="resetMarkingSystemToDefault()">Reset to Default</button>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="fee-list-table" style="font-size:0.9rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#fff;">Grade</th>
+                                        <th style="color:#fff;">Mark Range</th>
+                                        <th style="color:#fff;">Grade Point</th>
+                                        <th style="color:#fff;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="grade-rules-rows">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 4: ALL SUBJECT -->
+            <div id="subview-all-subject" class="portal-sub-view">
+                <div class="subject-entry-grid">
+                    <div class="glass-card">
+                        <h3 class="portal-form-title" id="subject-form-title" style="color:var(--neon-pink);">Add Academic Subject</h3>
+                        <form id="subject-form" onsubmit="saveSubject(event)">
+                            <input type="hidden" id="subject-edit-class">
+                            <input type="hidden" id="subject-edit-code">
+                            <div class="form-group">
+                                <label for="subject-class">Class:</label>
+                                <select id="subject-class" class="form-control" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject-name">Subject Name:</label>
+                                <input type="text" id="subject-name" class="form-control" placeholder="e.g. Mathematics" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject-short-name">Subject Short Name:</label>
+                                <input type="text" id="subject-short-name" class="form-control" placeholder="e.g. Math" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject-code">Subject Code:</label>
+                                <input type="text" id="subject-code" class="form-control" placeholder="e.g. 107" required>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:15px;" id="subject-form-actions">
+                                <button type="submit" id="subject-submit-btn" class="btn-primary" style="flex:1; background:var(--secondary-grad); box-shadow:var(--pink-glow);">Save Subject</button>
+                                <button type="button" id="subject-cancel-btn" class="btn-primary" style="display:none; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); box-shadow:none;" onclick="resetSubjectForm()">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="glass-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap: 10px; flex-wrap: wrap;">
+                            <h3 class="portal-form-title" style="margin-bottom:0;">Subject Listings</h3>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <select id="filter-subject-class" class="form-control" style="width:auto; min-width:130px; margin:0;" onchange="renderSubjectList()">
+                                    <option value="All">All Classes</option>
+                                </select>
+                                <button class="action-btn-sm btn-delete-student" style="display:none; background:var(--warning-grad); box-shadow:none; margin:0; white-space:nowrap;" onclick="resetSubjectsToDefault()">Reset to Default</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto; max-height:400px;">
+                            <table class="fee-list-table" style="font-size:0.9rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#fff;">Class</th>
+                                        <th style="color:#fff;">Subject Code</th>
+                                        <th style="color:#fff;">Subject Name</th>
+                                        <th style="color:#fff;">Short Name</th>
+                                        <th style="color:#fff;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subject-list-rows">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 5: SMS -->
+            <div id="subview-sms" class="portal-sub-view">
+                <div class="sms-center-grid">
+                    <!-- Form card -->
+                    <div class="glass-card">
+                        <h3 class="portal-form-title" style="color:var(--neon-green);">Guardian Notification Center</h3>
+                        
+                        <div class="form-group">
+                            <label for="sms-target-class">Select Class:</label>
+                            <select id="sms-target-class" class="form-control" onchange="updateSmsTargetStudentsDropdown()" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sms-target-student">Target Recipient:</label>
+                            <select id="sms-target-student" class="form-control" onchange="updateSmsMessageTemplate()" required>
+                                <option value="All">All Guardians (Class Level)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sms-template">SMS Message Template:</label>
+                            <select id="sms-template" class="form-control" onchange="updateSmsMessageTemplate()" required>
+                                <option value="custom">-- Custom Message --</option>
+                                <option value="routine">Exam Schedule Announcement</option>
+                                <option value="results">Academic Results Report</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sms-text">Message Details:</label>
+                            <textarea id="sms-text" class="form-control" rows="4" maxlength="320" oninput="updateSmsLivePreview()" required></textarea>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted-text); margin-top:5px;">
+                                <span id="sms-char-counter">0 / 160 characters</span>
+                                <span id="sms-credit-counter">1 SMS Credit</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-primary" style="width:100%; background:var(--secondary-grad); box-shadow:var(--pink-glow); font-size:1rem; padding:12px; border-radius:10px; margin-top:10px;" onclick="simulateBulkSmsSend()">Broadcast SMS Message</button>
+                        
+                        <!-- Broadcast progress animation overlay -->
+                        <div id="sms-progress-container" style="display:none; margin-top:20px; border-top:1px dashed var(--glass-border); padding-top:15px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:8px;">
+                                <span>Sending SMS Broadcast...</span>
+                                <span id="sms-progress-percent">0%</span>
+                            </div>
+                            <div style="height:8px; width:100%; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; margin-bottom:12px;">
+                                <div id="sms-progress-bar" style="height:100%; width:0%; background:var(--accent-grad); box-shadow:var(--cyan-glow); transition: width 0.1s linear;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SMS Mobile Mockup and Log card -->
+                    <div style="display:flex; flex-direction:column; gap:20px;">
+                        <!-- Mobile mockup -->
+                        <div class="sms-preview-phone">
+                            <div class="phone-notch"></div>
+                            <div class="phone-status-bar">
+                                <span style="font-weight:600;" id="phone-time">10:42 AM</span>
+                                <div style="display:flex; gap:4px; align-items:center;">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="opacity:0.8;"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="opacity:0.8;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+                                </div>
+                            </div>
+                            <div class="phone-screen">
+                                <div class="phone-chat-header">CREATIVE MODEL SCHOOL</div>
+                                <div class="phone-bubble" id="phone-bubble-text">
+                                    Message preview will appear here in real-time as you compose...
+                                </div>
+                            </div>
+                            <div class="phone-home-indicator">
+                                <div class="phone-home-line"></div>
+                            </div>
+                        </div>
+
+                        <!-- Transmission logs -->
+                        <div class="glass-card" style="flex:1; min-height: 180px;">
+                            <h4 style="color:#fff; margin-bottom:10px; font-size:0.95rem; border-bottom:1px solid var(--glass-border); padding-bottom:6px;">Transmission Broadcast Logs</h4>
+                            <div id="sms-broadcast-logs" style="font-family:monospace; font-size:0.75rem; color:var(--muted-text); max-height:160px; overflow-y:auto; line-height:1.4;">
+                                <div style="font-style:italic;">No broadcast session active.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>© 2026 CREATIVE MODEL SCHOOL. All rights reserved.</p>
+            <p style="font-size:0.8rem; color:var(--muted-text);">Technical Support: AI Team & Student Council</p>
+            <div class="footer-socials">
+                <a href="#" class="social-icon" aria-label="Facebook">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.72-1 1-1h2V2h-3c-2.76 0-5 2.24-5 5v1z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="YouTube">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.04 0 12 0 12s0 3.96.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.868.555 9.388.555 9.388.555s7.52 0 9.388-.555a3.002 3.002 0 0 0 2.11-2.108C24 15.96 24 12 24 12s0-3.96-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" class="social-icon" aria-label="Twitter">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-3.579-1.547 4.917 4.917 0 0 0-4.9 4.9c0 .385.043.762.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475A4.91 4.91 0 0 0 3.15 9.78a4.9 4.9 0 0 1-2.229-.616v.062a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SUBJECT EDIT MODAL (ON DOUBLE CLICK) -->
+    <div id="subject-modal" class="modal-overlay" onclick="closeSubjectModal()">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeSubjectModal()">&times;</button>
+            <h3 class="modal-title" style="color: var(--neon-cyan);">Edit Subject Details</h3>
+            <form id="modal-subject-form" onsubmit="saveModalSubject(event)">
+                <input type="hidden" id="modal-edit-class">
+                <input type="hidden" id="modal-edit-code">
+                
+                <div class="form-group">
+                    <label for="modal-subject-class">Class:</label>
+                    <select id="modal-subject-class" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-name">Subject Name:</label>
+                    <input type="text" id="modal-subject-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-short-name">Subject Short Name:</label>
+                    <input type="text" id="modal-subject-short-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-code">Subject Code:</label>
+                    <input type="text" id="modal-subject-code" class="form-control" required>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:20px;">
+                    <input type="checkbox" id="modal-subject-optional" style="width:18px; height:18px; cursor:pointer;">
+                    <label for="modal-subject-optional" style="margin:0; cursor:pointer; color:#fff; font-weight:600;">Optional Subject</label>
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn-primary" style="flex:1; background:var(--accent-grad); box-shadow:var(--cyan-glow);">Save</button>
+                    <button type="button" class="btn-primary" style="background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); box-shadow:none;" onclick="closeSubjectModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shared & Page-specific JS -->
+    <script src="main.js"></script>
+    <script>
+        // --- UTILITY JSON PARSE ---
+        function safeJsonParse(key, defaultValue) {
+            const item = localStorage.getItem(key);
+            if (!item) return defaultValue;
+            try {
+                return JSON.parse(item);
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+
+        // --- CONSTANT DEFAULT DATA INITIALIZERS ---
+        const DEFAULT_SCHEDULES = [
+            { id: "1", class: "Eight", term: "Half-Yearly Examination 2026", subject: "Bangla Sahitya", date: "2026-07-10", timeStart: "10:00", timeEnd: "13:00" },
+            { id: "2", class: "Eight", term: "Half-Yearly Examination 2026", subject: "English For Today", date: "2026-07-12", timeStart: "10:00", timeEnd: "13:00" },
+            { id: "3", class: "Eight", term: "Half-Yearly Examination 2026", subject: "Mathematics", date: "2026-07-14", timeStart: "10:00", timeEnd: "13:00" },
+            { id: "4", class: "Eight", term: "Half-Yearly Examination 2026", subject: "Science", date: "2026-07-16", timeStart: "10:00", timeEnd: "13:00" },
+            { id: "5", class: "Eight", term: "Half-Yearly Examination 2026", subject: "Bangladesh And Global Studies", date: "2026-07-18", timeStart: "10:00", timeEnd: "13:00" }
+        ];
+
+        const getNewDefaultSubjects = () => {
+            const list = [
+                { code: "101", name: "Bangla Sahitya", shortName: "Bangla 1st" },
+                { code: "102", name: "Bangla Bhashar Byakaran and Nirmiti", shortName: "Bangla 2nd" },
+                { code: "103", name: "English For Today", shortName: "English 1st" },
+                { code: "104", name: "English Grammar and Composition", shortName: "English 2nd" },
+                { code: "105", name: "Mathematics", shortName: "Math" },
+                { code: "106", name: "Information And Communication Technology", shortName: "ICT" },
+                { code: "107", name: "Bangladesh And Global Studies", shortName: "BGS" },
+                { code: "108", name: "Science", shortName: "Science" },
+                { code: "109", name: "Agriculture Studies", shortName: "Agri Studies" },
+                { code: "110", name: "Islamic Studies", shortName: "Islam" },
+                { code: "111", name: "Hindu Religion Studies", shortName: "Hindu" }
+            ];
+            return {
+                "Six": JSON.parse(JSON.stringify(list)),
+                "Seven": JSON.parse(JSON.stringify(list)),
+                "Eight": JSON.parse(JSON.stringify(list)),
+                "Nine": JSON.parse(JSON.stringify(list)),
+                "Ten": JSON.parse(JSON.stringify(list))
+            };
+        };
+        const DEFAULT_SUBJECTS = getNewDefaultSubjects();
+
+        const DEFAULT_GRADE_RULES = [
+            { id: "1", name: "A+", min: 80, max: 100, gp: 5.0 },
+            { id: "2", name: "A", min: 70, max: 79, gp: 4.0 },
+            { id: "3", name: "A-", min: 60, max: 69, gp: 3.5 },
+            { id: "4", name: "B", min: 50, max: 59, gp: 3.0 },
+            { id: "5", name: "C", min: 40, max: 49, gp: 2.0 },
+            { id: "6", name: "D", min: 33, max: 39, gp: 1.0 },
+            { id: "7", name: "F", min: 0, max: 32, gp: 0.0 }
+        ];
+
+        // --- CORE DATABASE DATA GETTERS/SETTERS ---
+        function loadClasses() {
+            const defaultClasses = ["Six", "Seven", "Eight", "Nine", "Ten"];
+            const parsed = safeJsonParse('school_classes', null);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed.filter(c => c && typeof c === 'string' && c.trim() !== '');
+            }
+            return defaultClasses;
+        }
+
+        function loadSubjects() {
+            let subjects = localStorage.getItem('school_subjects');
+            let needToSave = false;
+            let parsed = null;
+            
+            const defaultSubjects = getNewDefaultSubjects();
+            
+            if (subjects) {
+                try {
+                    parsed = JSON.parse(subjects);
+                    
+                    const hasOldClass6 = parsed["Class 6"] !== undefined;
+                    const hasSixSahitya = parsed["Six"] && parsed["Six"].some(s => s.name === "Bangla Sahitya");
+                    
+                    if (hasOldClass6 || !hasSixSahitya) {
+                        parsed = defaultSubjects;
+                        needToSave = true;
+                    } else {
+                        // Check if any subject in any class is missing 'shortName', if so, add it.
+                        let missingShortName = false;
+                        Object.keys(parsed).forEach(cls => {
+                            if (Array.isArray(parsed[cls])) {
+                                parsed[cls].forEach(sub => {
+                                    if (!sub.shortName) {
+                                        missingShortName = true;
+                                        // Try to match it with a default subject's shortName, otherwise use name
+                                        const defaultSub = defaultSubjects["Six"].find(ds => ds.name === sub.name || ds.code === sub.code);
+                                        sub.shortName = defaultSub ? defaultSub.shortName : sub.name;
+                                    }
+                                });
+                            }
+                        });
+                        if (missingShortName) {
+                            needToSave = true;
+                        }
+                    }
+                } catch (e) {
+                    parsed = defaultSubjects;
+                    needToSave = true;
+                }
+            } else {
+                parsed = defaultSubjects;
+                needToSave = true;
+            }
+            
+            const classes = loadClasses();
+            
+            // Clean up obsolete class keys from the subject database
+            Object.keys(parsed).forEach(key => {
+                if (!classes.includes(key)) {
+                    delete parsed[key];
+                    needToSave = true;
+                }
+            });
+            
+            // Also check if any classes returned by loadClasses() are missing from parsed
+            classes.forEach(c => {
+                if (!parsed[c]) {
+                    const defaultList = defaultSubjects[c] || [];
+                    parsed[c] = JSON.parse(JSON.stringify(defaultList));
+                    needToSave = true;
+                }
+            });
+            
+            if (needToSave) {
+                localStorage.setItem('school_subjects', JSON.stringify(parsed));
+            }
+            return parsed;
+        }
+
+        function loadSchedules() {
+            let schedules = localStorage.getItem('school_exam_schedules');
+            if (!schedules) {
+                schedules = JSON.stringify(DEFAULT_SCHEDULES);
+                localStorage.setItem('school_exam_schedules', schedules);
+            }
+            try {
+                return JSON.parse(schedules);
+            } catch (e) {
+                return DEFAULT_SCHEDULES;
+            }
+        }
+
+        function loadMarkingSystem() {
+            let rules = localStorage.getItem('school_marking_system');
+            if (!rules) {
+                rules = JSON.stringify(DEFAULT_GRADE_RULES);
+                localStorage.setItem('school_marking_system', rules);
+            }
+            try {
+                return JSON.parse(rules);
+            } catch (e) {
+                return DEFAULT_GRADE_RULES;
+            }
+        }
+
+        function loadStudents() {
+            return safeJsonParse('school_students', []);
+        }
+
+        function loadStudentMarks() {
+            return safeJsonParse('school_student_marks', {});
+        }
+
+        // --- POPULATE UTILITY DROPDOWNS ---
+        function populateClassDropdown(selectId, includeAllOption = false) {
+            const el = document.getElementById(selectId);
+            if (!el) return;
+            const currentVal = el.value;
+            const classes = loadClasses();
+            
+            let html = "";
+            if (includeAllOption) {
+                html += `<option value="All">All Classes</option>`;
+            }
+            html += classes.map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            el.innerHTML = html;
+            if (currentVal && (classes.includes(currentVal) || currentVal === 'All')) {
+                el.value = currentVal;
+            }
+        }
+
+        // --- SUBVIEWS ROUTING MECHANISM ---
+        function checkURLParameters() {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view') || 'dashboard';
+            switchExamView(view);
+        }
+
+        function navigateExamView(viewName) {
+            window.history.pushState({ view: viewName }, '', '?view=' + viewName);
+            switchExamView(viewName);
+        }
+
+        function switchExamView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.portal-sub-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show active view
+            const targetView = document.getElementById('subview-' + viewName);
+            if (targetView) targetView.classList.add('active');
+            
+            const tabBtn = document.getElementById('btn-tab-' + viewName);
+            if (tabBtn) tabBtn.classList.add('active');
+
+            // Headings text adjustment
+            const titleEl = document.getElementById('portal-title');
+            const subtitleEl = document.getElementById('portal-subtitle');
+
+            if (viewName === 'dashboard') {
+                titleEl.textContent = "Exam Portal";
+                subtitleEl.textContent = "Check upcoming exam routines and play live quizzes to test your general knowledge";
+                renderDashboardRoutineSummary();
+            } else if (viewName === 'exam-entry') {
+                titleEl.textContent = "Exam Portal - Exam Entry";
+                subtitleEl.textContent = "Manage class exam routines and upcoming exam schedules";
+                populateClassDropdown('schedule-class');
+                populateClassDropdown('filter-schedule-class', true);
+                updateScheduleSubjectsDropdown();
+                renderScheduleList();
+            } else if (viewName === 'result-report') {
+                titleEl.textContent = "Exam Portal - Result Report";
+                subtitleEl.textContent = "Input class test scores and search/print student report cards";
+                populateClassDropdown('search-result-class');
+                populateClassDropdown('input-mark-class');
+                updateSearchResultStudentDropdown();
+                updateInputMarkStudentDropdown();
+                generateSubjectMarkInputFields();
+            } else if (viewName === 'marking-system') {
+                titleEl.textContent = "Exam Portal - Marking System";
+                subtitleEl.textContent = "Define and customize grade points and average GPA thresholds";
+                renderMarkingSystem();
+            } else if (viewName === 'all-subject') {
+                titleEl.textContent = "Exam Portal - All Subject";
+                subtitleEl.textContent = "Create and list curriculum subjects assigned to class levels";
+                populateClassDropdown('subject-class');
+                populateClassDropdown('filter-subject-class', true);
+                renderSubjectList();
+            } else if (viewName === 'sms') {
+                titleEl.textContent = "Exam Portal - SMS Center";
+                subtitleEl.textContent = "Broadcasting test routines and report cards directly to parent mobiles";
+                populateClassDropdown('sms-target-class');
+                updateSmsTargetStudentsDropdown();
+                updateSmsLivePreview();
+            }
+        }
+
+        // --- SUBVIEW 0: DASHBOARD CONTROLLERS ---
+        function renderDashboardRoutineSummary() {
+            const container = document.getElementById('dashboard-routine-rows');
+            if (!container) return;
+            const schedules = loadSchedules();
+
+            if (schedules.length === 0) {
+                container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted-text); font-style:italic;">No exam routines scheduled yet.</td></tr>`;
+                return;
+            }
+
+            // Sort schedules by date
+            const sorted = [...schedules].sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            // Format dates neatly
+            let html = "";
+            sorted.slice(0, 8).forEach(sch => {
+                const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+                const formattedDate = new Date(sch.date).toLocaleDateString('en-US', dateOptions);
+                html += `
+                    <tr>
+                        <td style="color:var(--neon-cyan); font-weight:600;">${sch.class}</td>
+                        <td>${formattedDate}</td>
+                        <td style="color:#fff; font-weight:600;">${sch.subject}</td>
+                        <td>${sch.timeStart} AM - ${sch.timeEnd} PM</td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- SUBVIEW 1: EXAM ENTRY CONTROLLERS ---
+        function updateScheduleSubjectsDropdown() {
+            const classVal = document.getElementById('schedule-class').value;
+            const el = document.getElementById('schedule-subject');
+            if (!el) return;
+            
+            const subMap = loadSubjects();
+            const subjects = subMap[classVal] || [];
+
+            if (subjects.length === 0) {
+                el.innerHTML = `<option value="" disabled selected>-- No Subjects Created --</option>`;
+            } else {
+                el.innerHTML = subjects.map(s => `<option value="${s.name}">${s.name} (${s.code})</option>`).join('');
+            }
+        }
+
+        function saveExamSchedule(event) {
+            event.preventDefault();
+            const className = document.getElementById('schedule-class').value;
+            const termName = document.getElementById('schedule-exam-name').value;
+            const subject = document.getElementById('schedule-subject').value;
+            const date = document.getElementById('schedule-date').value;
+            const timeStart = document.getElementById('schedule-start').value;
+            const timeEnd = document.getElementById('schedule-end').value;
+
+            if (!subject) {
+                alert("Please select a subject. If none exist, add subjects in the All Subject tab first!");
+                return;
+            }
+
+            const schedules = loadSchedules();
+            const newSchedule = {
+                id: Date.now().toString(),
+                class: className,
+                term: termName,
+                subject: subject,
+                date: date,
+                timeStart: timeStart,
+                timeEnd: timeEnd
+            };
+
+            schedules.push(newSchedule);
+            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+
+            document.getElementById('exam-schedule-form').reset();
+            updateScheduleSubjectsDropdown();
+            renderScheduleList();
+            alert("Exam Schedule Routine added successfully!");
+        }
+
+        function deleteExamSchedule(id) {
+            if (!confirm("Are you sure you want to delete this schedule?")) return;
+            const schedules = loadSchedules();
+            const filtered = schedules.filter(s => s.id !== id);
+            localStorage.setItem('school_exam_schedules', JSON.stringify(filtered));
+            renderScheduleList();
+        }
+
+        function renderScheduleList() {
+            const container = document.getElementById('schedule-list-rows');
+            if (!container) return;
+            const filterClass = document.getElementById('filter-schedule-class').value;
+            const schedules = loadSchedules();
+
+            const filtered = filterClass === 'All' 
+                ? schedules 
+                : schedules.filter(s => s.class === filterClass);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted-text); font-style:italic;">No schedules created matching filter.</td></tr>`;
+                return;
+            }
+
+            // Sort by date
+            filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            let html = "";
+            filtered.forEach(sch => {
+                html += `
+                    <tr>
+                        <td style="color:var(--neon-cyan); font-weight:600;">${sch.class}</td>
+                        <td style="font-size:0.8rem;">${sch.term}</td>
+                        <td>${sch.date}</td>
+                        <td style="color:#fff; font-weight:600;">${sch.subject}</td>
+                        <td>${sch.timeStart} - ${sch.timeEnd}</td>
+                        <td>
+                            <button class="action-btn-sm btn-delete-student" onclick="deleteExamSchedule('${sch.id}')" style="padding:4px 8px; font-size:0.75rem;">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- SUBVIEW 2: RESULT REPORT CONTROLLERS ---
+        function toggleResultReportSubTab(subtab) {
+            document.querySelectorAll('.result-toggle-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.result-subtab-content').forEach(cont => cont.classList.remove('active'));
+
+            document.getElementById('btn-result-' + subtab).classList.add('active');
+            document.getElementById('result-subtab-' + subtab).classList.add('active');
+            
+            if (subtab === 'input') {
+                updateInputMarkStudentDropdown();
+                generateSubjectMarkInputFields();
+            } else {
+                updateSearchResultStudentDropdown();
+            }
+        }
+
+        function updateSearchResultStudentDropdown() {
+            const classVal = document.getElementById('search-result-class').value;
+            const el = document.getElementById('search-result-student');
+            if (!el) return;
+
+            const students = loadStudents();
+            const classStudents = students.filter(s => s.class === classVal);
+
+            if (classStudents.length === 0) {
+                el.innerHTML = `<option value="" disabled selected>-- No Students in this Class --</option>`;
+            } else {
+                el.innerHTML = classStudents.map(s => `<option value="${s.id}">${s.name} (Roll: ${s.roll})</option>`).join('');
+            }
+        }
+
+        function updateInputMarkStudentDropdown() {
+            const classVal = document.getElementById('input-mark-class').value;
+            const el = document.getElementById('input-mark-student');
+            if (!el) return;
+
+            const students = loadStudents();
+            const classStudents = students.filter(s => s.class === classVal);
+
+            if (classStudents.length === 0) {
+                el.innerHTML = `<option value="" disabled selected>-- No Students in this Class --</option>`;
+            } else {
+                el.innerHTML = classStudents.map(s => `<option value="${s.id}">${s.name} (Roll: ${s.roll})</option>`).join('');
+            }
+        }
+
+        function generateSubjectMarkInputFields() {
+            const classVal = document.getElementById('input-mark-class').value;
+            const container = document.getElementById('subject-marks-inputs-container');
+            const alertEl = document.getElementById('no-subjects-alert');
+            if (!container) return;
+
+            const subMap = loadSubjects();
+            const subjects = subMap[classVal] || [];
+
+            if (subjects.length === 0) {
+                container.innerHTML = "";
+                alertEl.style.display = "block";
+                document.getElementById('save-marks-btn').style.display = "none";
+                return;
+            }
+
+            alertEl.style.display = "none";
+            document.getElementById('save-marks-btn').style.display = "block";
+
+            let html = "";
+            subjects.forEach(sub => {
+                html += `
+                    <div class="form-group" style="background:rgba(255,255,255,0.01); padding:10px; border-radius:8px; border:1px solid var(--glass-border);">
+                        <label style="color:#fff; font-weight:600; display:block; margin-bottom:5px;">${sub.name} (${sub.code})</label>
+                        <input type="number" class="form-control subject-mark-input" data-code="${sub.code}" min="0" max="100" placeholder="Marks (0-100)" required>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            loadExistingStudentMarks();
+        }
+
+        function loadExistingStudentMarks() {
+            const studentId = document.getElementById('input-mark-student').value;
+            const examVal = document.getElementById('input-mark-exam').value;
+            if (!studentId) return;
+
+            const savedMarks = loadStudentMarks();
+            const key = `marks_${studentId}_${examVal}`;
+            const studentExamMarks = savedMarks[key] || {};
+
+            const inputs = document.querySelectorAll('.subject-mark-input');
+            inputs.forEach(input => {
+                const code = input.getAttribute('data-code');
+                input.value = studentExamMarks[code] !== undefined ? studentExamMarks[code] : "";
+            });
+        }
+
+        function saveStudentMarks() {
+            const studentId = document.getElementById('input-mark-student').value;
+            const examVal = document.getElementById('input-mark-exam').value;
+            if (!studentId) {
+                alert("Please select a student first!");
+                return;
+            }
+
+            const inputs = document.querySelectorAll('.subject-mark-input');
+            const marksData = {};
+            let isValid = true;
+
+            inputs.forEach(input => {
+                const code = input.getAttribute('data-code');
+                const val = parseInt(input.value, 10);
+
+                if (isNaN(val) || val < 0 || val > 100) {
+                    isValid = false;
+                    input.style.borderColor = "var(--neon-pink)";
+                } else {
+                    input.style.borderColor = "var(--glass-border)";
+                    marksData[code] = val;
+                }
+            });
+
+            if (!isValid) {
+                alert("Please enter valid marks between 0 and 100 for all subjects!");
+                return;
+            }
+
+            const savedMarks = loadStudentMarks();
+            const key = `marks_${studentId}_${examVal}`;
+            savedMarks[key] = marksData;
+
+            localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
+            alert("Student Subject Marks saved successfully!");
+        }
+
+        // --- GENERATE TRANSCRIPT & GPAS ---
+        function getGradeDetails(mark) {
+            const rules = loadMarkingSystem();
+            const match = rules.find(r => mark >= r.min && mark <= r.max);
+            if (match) return { name: match.name, gp: parseFloat(match.gp) };
+            return { name: "F", gp: 0.0 };
+        }
+
+        function generateStudentTranscriptCard() {
+            const classVal = document.getElementById('search-result-class').value;
+            const studentId = document.getElementById('search-result-student').value;
+            const examVal = document.getElementById('search-result-exam').value;
+            const container = document.getElementById('student-transcript-container');
+
+            if (!studentId) {
+                alert("Please select a student to display transcript!");
+                return;
+            }
+
+            const students = loadStudents();
+            const s = students.find(stud => stud.id === studentId);
+            if (!s) return;
+
+            const subMap = loadSubjects();
+            const subjects = subMap[classVal] || [];
+
+            if (subjects.length === 0) {
+                alert("No subjects configured for this class level. Create subjects in the All Subject tab first!");
+                return;
+            }
+
+            const allMarks = loadStudentMarks();
+            const key = `marks_${studentId}_${examVal}`;
+            const studentExamMarks = allMarks[key];
+
+            if (!studentExamMarks) {
+                container.style.display = "none";
+                alert(`No marks entered for "${s.name}" in this exam. Use the Input Marks tab to enter marks or click 'Autofill Mock Marks' to generate testing marks.`);
+                return;
+            }
+
+            container.style.display = "block";
+
+            // Fill header info
+            document.getElementById('transcript-exam-title').innerText = examVal;
+            document.getElementById('transcript-student-name').innerText = s.name;
+            document.getElementById('transcript-student-class').innerText = s.class + (s.section ? ` (${s.section})` : '');
+            document.getElementById('transcript-student-roll').innerText = s.roll;
+            document.getElementById('transcript-student-id').innerText = s.studentId || '-';
+            document.getElementById('transcript-student-reg').innerText = s.regNo || '-';
+            document.getElementById('transcript-student-group').innerText = s.roll || 'General';
+
+            let totalGP = 0;
+            let totalSubjects = subjects.length;
+            let rowsHTML = "";
+            let isFailed = false;
+            let maxGP = 0;
+            let minGP = 5.0;
+
+            subjects.forEach(sub => {
+                const mark = studentExamMarks[sub.code] !== undefined ? studentExamMarks[sub.code] : 0;
+                const grade = getGradeDetails(mark);
+                
+                totalGP += grade.gp;
+                if (grade.gp === 0) isFailed = true;
+                if (grade.gp > maxGP) maxGP = grade.gp;
+                if (grade.gp < minGP) minGP = grade.gp;
+
+                rowsHTML += `
+                    <tr>
+                        <td style="font-family: monospace;">${sub.code}</td>
+                        <td style="text-align:left; color:#fff; font-weight:500;">${sub.name} ${sub.isOptional ? '<span style="font-size:0.75rem; color:var(--muted-text); font-style:italic;">(Optional)</span>' : ''}</td>
+                        <td>${mark}</td>
+                        <td><span style="color:${grade.gp >= 3 ? 'var(--neon-green)' : 'var(--neon-pink)'}; font-weight:bold;">${grade.name}</span></td>
+                        <td>${grade.gp.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('transcript-rows').innerHTML = rowsHTML;
+
+            const averageGPA = isFailed ? 0.00 : (totalGP / totalSubjects);
+            document.getElementById('transcript-total-gpa').innerText = averageGPA.toFixed(2);
+
+            // Compute final grade
+            let finalGrade = "F";
+            if (!isFailed) {
+                const rules = loadMarkingSystem();
+                // Find rule corresponding to average GPA
+                const matchedRule = [...rules].sort((a,b) => b.gp - a.gp).find(r => averageGPA >= r.gp);
+                if (matchedRule) finalGrade = matchedRule.name;
+            }
+
+            const finalGradeEl = document.getElementById('transcript-final-grade');
+            finalGradeEl.innerText = finalGrade;
+            if (finalGrade === 'F') {
+                finalGradeEl.style.color = "var(--neon-pink)";
+            } else {
+                finalGradeEl.style.color = "var(--neon-green)";
+            }
+
+            const statusEl = document.getElementById('transcript-status');
+            statusEl.innerText = isFailed ? "Failed" : "Passed";
+            statusEl.style.color = isFailed ? "var(--neon-pink)" : "var(--neon-cyan)";
+
+            // Scroll down smoothly
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function quickAutofillMockMarks() {
+            const classVal = document.getElementById('search-result-class').value;
+            const studentId = document.getElementById('search-result-student').value;
+            const examVal = document.getElementById('search-result-exam').value;
+
+            if (!studentId) {
+                alert("Please select a student first!");
+                return;
+            }
+
+            const subMap = loadSubjects();
+            const subjects = subMap[classVal] || [];
+
+            if (subjects.length === 0) {
+                alert("No subjects created for this class. Add subjects in the All Subject tab first!");
+                return;
+            }
+
+            const mockMarks = {};
+            subjects.forEach(sub => {
+                // Generate a smart random mark: 45 to 98
+                mockMarks[sub.code] = Math.floor(Math.random() * (98 - 45 + 1)) + 45;
+            });
+
+            const saved = loadStudentMarks();
+            const key = `marks_${studentId}_${examVal}`;
+            saved[key] = mockMarks;
+
+            localStorage.setItem('school_student_marks', JSON.stringify(saved));
+            alert("Autofilled dynamic testing marks successfully!");
+            generateStudentTranscriptCard();
+        }
+
+        function printStudentTranscript() {
+            window.print();
+        }
+
+        // --- SUBVIEW 3: MARKING SYSTEM CONTROLLERS ---
+        function renderMarkingSystem() {
+            const container = document.getElementById('grade-rules-rows');
+            if (!container) return;
+
+            const rules = loadMarkingSystem();
+            // Sort by min descending
+            rules.sort((a,b) => b.min - a.min);
+
+            let html = "";
+            rules.forEach(rule => {
+                html += `
+                    <tr>
+                        <td style="color:#fff; font-weight:bold;"><span style="color:${rule.gp > 0 ? 'var(--neon-green)' : 'var(--neon-pink)'}; font-size:1.1rem;">${rule.name}</span></td>
+                        <td>${rule.min} - ${rule.max}</td>
+                        <td style="color:var(--neon-cyan); font-weight:600;">${parseFloat(rule.gp).toFixed(2)}</td>
+                        <td>
+                            <button class="action-btn-sm btn-view-card" onclick="editGradeRule('${rule.id}')" style="padding:4px 8px; font-size:0.75rem;">Edit</button>
+                            <button class="action-btn-sm btn-delete-student" onclick="deleteGradeRule('${rule.id}')" style="padding:4px 8px; font-size:0.75rem;">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function saveGradeRule(event) {
+            event.preventDefault();
+            const id = document.getElementById('grade-rule-id').value;
+            const name = document.getElementById('grade-name').value.trim();
+            const min = parseInt(document.getElementById('grade-min').value, 10);
+            const max = parseInt(document.getElementById('grade-max').value, 10);
+            const gp = parseFloat(document.getElementById('grade-point').value);
+
+            if (min >= max) {
+                alert("Minimum mark must be less than maximum mark!");
+                return;
+            }
+
+            const rules = loadMarkingSystem();
+            
+            // Check for overlaps with other rules
+            let hasOverlap = false;
+            rules.forEach(rule => {
+                if (rule.id === id) return;
+                // Check if min/max interval overlaps
+                if ((min >= rule.min && min <= rule.max) || (max >= rule.min && max <= rule.max) || (rule.min >= min && rule.min <= max)) {
+                    hasOverlap = true;
+                }
+            });
+
+            if (hasOverlap) {
+                alert("Warning: This mark range overlaps with an existing grade range! Please review.");
+                return;
+            }
+
+            if (id) {
+                // Update
+                const idx = rules.findIndex(r => r.id === id);
+                if (idx !== -1) {
+                    rules[idx] = { id, name, min, max, gp };
+                }
+            } else {
+                // Create
+                rules.push({ id: Date.now().toString(), name, min, max, gp });
+            }
+
+            localStorage.setItem('school_marking_system', JSON.stringify(rules));
+            resetGradeRuleForm();
+            renderMarkingSystem();
+            alert("Grade rule saved successfully!");
+        }
+
+        function editGradeRule(id) {
+            const rules = loadMarkingSystem();
+            const rule = rules.find(r => r.id === id);
+            if (!rule) return;
+
+            document.getElementById('grade-rule-id').value = rule.id;
+            document.getElementById('grade-name').value = rule.name;
+            document.getElementById('grade-min').value = rule.min;
+            document.getElementById('grade-max').value = rule.max;
+            document.getElementById('grade-point').value = rule.gp;
+        }
+
+        function deleteGradeRule(id) {
+            if (!confirm("Are you sure you want to delete this grade rule?")) return;
+            const rules = loadMarkingSystem();
+            const filtered = rules.filter(r => r.id !== id);
+            localStorage.setItem('school_marking_system', JSON.stringify(filtered));
+            renderMarkingSystem();
+        }
+
+        function resetGradeRuleForm() {
+            document.getElementById('grade-rule-form').reset();
+            document.getElementById('grade-rule-id').value = "";
+        }
+
+        function resetMarkingSystemToDefault() {
+            if (!confirm("Are you sure you want to restore standard grading thresholds? This will overwrite your current changes.")) return;
+            localStorage.setItem('school_marking_system', JSON.stringify(DEFAULT_GRADE_RULES));
+            renderMarkingSystem();
+            alert("Grading scale restored to defaults!");
+        }
+
+        // --- SUBVIEW 4: ALL SUBJECT CONTROLLERS ---
+        function populateDropdownsForSubjects() {
+            populateClassDropdown('subject-class');
+        }
+
+        function saveSubject(event) {
+            event.preventDefault();
+            const classVal = document.getElementById('subject-class').value;
+            const name = document.getElementById('subject-name').value.trim();
+            const shortName = document.getElementById('subject-short-name').value.trim();
+            const code = document.getElementById('subject-code').value.trim();
+            
+            const editClass = document.getElementById('subject-edit-class').value;
+            const editCode = document.getElementById('subject-edit-code').value;
+
+            const subjectsMap = loadSubjects();
+
+            if (editClass && editCode) {
+                // Edit mode
+                const oldClassSubjects = subjectsMap[editClass] || [];
+                
+                // If code or class has changed, verify uniqueness
+                if (classVal !== editClass || code !== editCode) {
+                    const targetClassSubjects = subjectsMap[classVal] || [];
+                    if (targetClassSubjects.some(s => s.code === code)) {
+                        alert("Subject with this code already exists for this class!");
+                        return;
+                    }
+                }
+                
+                // Remove the old entry
+                const idx = oldClassSubjects.findIndex(s => s.code === editCode);
+                if (idx !== -1) {
+                    oldClassSubjects.splice(idx, 1);
+                }
+                subjectsMap[editClass] = oldClassSubjects;
+
+                // Add the updated entry
+                const targetClassSubjects = subjectsMap[classVal] || [];
+                targetClassSubjects.push({ code, name, shortName });
+                subjectsMap[classVal] = targetClassSubjects;
+
+                localStorage.setItem('school_subjects', JSON.stringify(subjectsMap));
+                resetSubjectForm();
+                renderSubjectList();
+                alert("Academic subject updated successfully!");
+            } else {
+                // Add mode
+                const classSubjects = subjectsMap[classVal] || [];
+
+                // Check if code already exists
+                if (classSubjects.some(s => s.code === code)) {
+                    alert("Subject with this code already exists for this class!");
+                    return;
+                }
+
+                classSubjects.push({ code, name, shortName });
+                subjectsMap[classVal] = classSubjects;
+
+                localStorage.setItem('school_subjects', JSON.stringify(subjectsMap));
+                
+                document.getElementById('subject-form').reset();
+                renderSubjectList();
+                alert("Academic subject added successfully!");
+            }
+        }
+
+        function deleteSubject(classVal, code) {
+            if (!confirm("Are you sure you want to delete this subject?")) return;
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+            
+            const filtered = classSubjects.filter(s => s.code !== code);
+            subjectsMap[classVal] = filtered;
+
+            localStorage.setItem('school_subjects', JSON.stringify(subjectsMap));
+            
+            // If the subject currently being edited is deleted, reset the form
+            const editClass = document.getElementById('subject-edit-class').value;
+            const editCode = document.getElementById('subject-edit-code').value;
+            if (editClass === classVal && editCode === code) {
+                resetSubjectForm();
+            }
+
+            renderSubjectList();
+        }
+
+        function editSubject(classVal, code) {
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+            const sub = classSubjects.find(s => s.code === code);
+            if (!sub) return;
+
+            document.getElementById('subject-form-title').innerText = "Update Academic Subject";
+            document.getElementById('subject-form-title').style.color = "var(--neon-cyan)";
+            
+            document.getElementById('subject-edit-class').value = classVal;
+            document.getElementById('subject-edit-code').value = code;
+            
+            document.getElementById('subject-class').value = classVal;
+            document.getElementById('subject-name').value = sub.name;
+            document.getElementById('subject-short-name').value = sub.shortName || sub.name;
+            document.getElementById('subject-code').value = sub.code;
+            
+            document.getElementById('subject-submit-btn').innerText = "Update Subject";
+            document.getElementById('subject-submit-btn').style.background = "var(--primary-grad)";
+            document.getElementById('subject-cancel-btn').style.display = "block";
+            
+            // Scroll form into view smoothly
+            document.getElementById('subject-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetSubjectForm() {
+            document.getElementById('subject-form').reset();
+            document.getElementById('subject-edit-class').value = "";
+            document.getElementById('subject-edit-code').value = "";
+            
+            document.getElementById('subject-form-title').innerText = "Add Academic Subject";
+            document.getElementById('subject-form-title').style.color = "var(--neon-pink)";
+            
+            document.getElementById('subject-submit-btn').innerText = "Save Subject";
+            document.getElementById('subject-submit-btn').style.background = "var(--secondary-grad)";
+            document.getElementById('subject-cancel-btn').style.display = "none";
+        }
+
+        function resetSubjectsToDefault() {
+            if (!confirm("Are you sure you want to restore the default subject listings? This will overwrite your current subjects for all classes.")) return;
+            const defaultSubjects = getNewDefaultSubjects();
+            localStorage.setItem('school_subjects', JSON.stringify(defaultSubjects));
+            
+            // Reset edit form to prevent editing a subject that might not exist anymore
+            resetSubjectForm();
+            
+            renderSubjectList();
+            alert("Subject listings restored to defaults!");
+        }
+
+        function renderSubjectList() {
+            const container = document.getElementById('subject-list-rows');
+            if (!container) return;
+
+            const filterClass = document.getElementById('filter-subject-class').value;
+            const subjectsMap = loadSubjects();
+            
+            let html = "";
+            let totalCount = 0;
+
+            Object.keys(subjectsMap).forEach(cls => {
+                if (filterClass !== 'All' && cls !== filterClass) return;
+                
+                const subjects = subjectsMap[cls] || [];
+                subjects.forEach(sub => {
+                    totalCount++;
+                    html += `
+                        <tr ondblclick="openSubjectModal('${cls}', '${sub.code}')" style="cursor: pointer;" title="Double-click to edit details & optional status">
+                            <td style="color:var(--neon-cyan); font-weight:600;">${cls}</td>
+                            <td style="font-family: monospace;">${sub.code}</td>
+                            <td style="color:#fff; font-weight:600;">
+                                ${sub.name}
+                                ${sub.isOptional ? '<span class="action-btn-sm" style="background:var(--warning-grad); font-size:0.65rem; padding:2px 6px; border-radius:4px; margin-left:8px; display:inline-block; vertical-align:middle; text-transform:uppercase; font-weight:bold; box-shadow:none; cursor:default;">Optional</span>' : ''}
+                            </td>
+                            <td style="color:var(--muted-text);">${sub.shortName || sub.name}</td>
+                            <td style="white-space: nowrap;">
+                                <button class="action-btn-sm btn-view-card" onclick="event.stopPropagation(); editSubject('${cls}', '${sub.code}')" style="padding:6px 8px; margin-right:4px;" title="Edit Subject">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="display:block;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                </button>
+                                <button class="action-btn-sm btn-delete-student" onclick="event.stopPropagation(); deleteSubject('${cls}', '${sub.code}')" style="padding:6px 8px;" title="Delete Subject">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="display:block;"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
+            if (totalCount === 0) {
+                container.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted-text); font-style:italic;">No subjects created matching filter.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // --- DOUBLE-CLICK SUBJECT EDIT MODAL CONTROLLERS ---
+        function openSubjectModal(classVal, code) {
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+            const sub = classSubjects.find(s => s.code === code);
+            if (!sub) return;
+
+            // Populate Class dropdown in modal
+            populateClassDropdown('modal-subject-class');
+
+            document.getElementById('modal-edit-class').value = classVal;
+            document.getElementById('modal-edit-code').value = code;
+            
+            document.getElementById('modal-subject-class').value = classVal;
+            document.getElementById('modal-subject-name').value = sub.name;
+            document.getElementById('modal-subject-short-name').value = sub.shortName || sub.name;
+            document.getElementById('modal-subject-code').value = sub.code;
+            document.getElementById('modal-subject-optional').checked = !!sub.isOptional;
+
+            document.getElementById('subject-modal').classList.add('active');
+        }
+
+        function closeSubjectModal() {
+            document.getElementById('subject-modal').classList.remove('active');
+            document.getElementById('modal-subject-form').reset();
+        }
+
+        function saveModalSubject(event) {
+            event.preventDefault();
+            const classVal = document.getElementById('modal-subject-class').value;
+            const name = document.getElementById('modal-subject-name').value.trim();
+            const shortName = document.getElementById('modal-subject-short-name').value.trim();
+            const code = document.getElementById('modal-subject-code').value.trim();
+            const isOptional = document.getElementById('modal-subject-optional').checked;
+            
+            const editClass = document.getElementById('modal-edit-class').value;
+            const editCode = document.getElementById('modal-edit-code').value;
+
+            const subjectsMap = loadSubjects();
+            const oldClassSubjects = subjectsMap[editClass] || [];
+
+            // Check code uniqueness if code or class has changed
+            if (classVal !== editClass || code !== editCode) {
+                const targetClassSubjects = subjectsMap[classVal] || [];
+                if (targetClassSubjects.some(s => s.code === code)) {
+                    alert("Subject with this code already exists for this class!");
+                    return;
+                }
+            }
+
+            // Remove old entry
+            const idx = oldClassSubjects.findIndex(s => s.code === editCode);
+            if (idx !== -1) {
+                oldClassSubjects.splice(idx, 1);
+            }
+            subjectsMap[editClass] = oldClassSubjects;
+
+            // Add updated entry
+            const targetClassSubjects = subjectsMap[classVal] || [];
+            targetClassSubjects.push({ code, name, shortName, isOptional });
+            subjectsMap[classVal] = targetClassSubjects;
+
+            localStorage.setItem('school_subjects', JSON.stringify(subjectsMap));
+            
+            closeSubjectModal();
+            renderSubjectList();
+
+            // If the regular subject form was editing the same subject, reset it
+            const regularEditClass = document.getElementById('subject-edit-class').value;
+            const regularEditCode = document.getElementById('subject-edit-code').value;
+            if (regularEditClass === editClass && regularEditCode === editCode) {
+                resetSubjectForm();
+            }
+
+            alert("Subject details updated successfully!");
+        }
+
+        // --- SUBVIEW 5: SMS CONTROLLERS ---
+        function populateDropdownsForSms() {
+            populateClassDropdown('sms-target-class');
+        }
+
+        function updateSmsTargetStudentsDropdown() {
+            const classVal = document.getElementById('sms-target-class').value;
+            const el = document.getElementById('sms-target-student');
+            if (!el) return;
+
+            const students = loadStudents();
+            const classStudents = students.filter(s => s.class === classVal);
+
+            let html = `<option value="All">All Guardians (Class Level)</option>`;
+            html += classStudents.map(s => `<option value="${s.id}">${s.name} (Parent: +88017XXXXXXXX)</option>`).join('');
+
+            el.innerHTML = html;
+            updateSmsMessageTemplate();
+        }
+
+        function updateSmsMessageTemplate() {
+            const template = document.getElementById('sms-template').value;
+            const targetStudentId = document.getElementById('sms-target-student').value;
+            const classVal = document.getElementById('sms-target-class').value;
+            const textarea = document.getElementById('sms-text');
+
+            if (template === 'custom') {
+                updateSmsLivePreview();
+                return;
+            }
+
+            let msg = "";
+            let namePlaceholder = "[Student]";
+            let gpaPlaceholder = "4.50";
+            let gradePlaceholder = "A";
+
+            if (targetStudentId !== 'All') {
+                const students = loadStudents();
+                const s = students.find(stud => stud.id === targetStudentId);
+                if (s) {
+                    namePlaceholder = s.name;
+                    
+                    // Fetch real marks if possible to make preview dynamic
+                    const allMarks = loadStudentMarks();
+                    const key = `marks_${s.id}_Half-Yearly Examination 2026`;
+                    const marks = allMarks[key];
+                    if (marks) {
+                        const subMap = loadSubjects();
+                        const subjects = subMap[classVal] || [];
+                        let totalGP = 0;
+                        let isFailed = false;
+                        
+                        subjects.forEach(sub => {
+                            const mark = marks[sub.code] !== undefined ? marks[sub.code] : 0;
+                            const gd = getGradeDetails(mark);
+                            totalGP += gd.gp;
+                            if (gd.gp === 0) isFailed = true;
+                        });
+                        
+                        const averageGP = isFailed ? 0.00 : (totalGP / subjects.length);
+                        gpaPlaceholder = averageGP.toFixed(2);
+                        
+                        let finalGrade = "F";
+                        if (!isFailed) {
+                            const rules = loadMarkingSystem();
+                            const matchedRule = [...rules].sort((a,b) => b.gp - a.gp).find(r => averageGP >= r.gp);
+                            if (matchedRule) finalGrade = matchedRule.name;
+                        }
+                        gradePlaceholder = finalGrade;
+                    }
+                }
+            }
+
+            if (template === 'routine') {
+                msg = `Dear Guardian, the Half-Yearly Exam routine for ${classVal} has been published on the smart portal. Routine starts on July 10, 2026. Please check website for details. - CREATIVE MODEL SCHOOL`;
+            } else if (template === 'results') {
+                msg = `Dear Guardian, the Half-Yearly Exam results for ${namePlaceholder} (${classVal}) have been published on the portal. GPA: ${gpaPlaceholder}, Grade: ${gradePlaceholder}. - CREATIVE MODEL SCHOOL`;
+            }
+
+            textarea.value = msg;
+            updateSmsLivePreview();
+        }
+
+        function updateSmsLivePreview() {
+            const text = document.getElementById('sms-text').value;
+            const previewEl = document.getElementById('phone-bubble-text');
+            const charCountEl = document.getElementById('sms-char-counter');
+            const creditEl = document.getElementById('sms-credit-counter');
+
+            if (!text.trim()) {
+                previewEl.innerText = "Message preview will appear here in real-time as you compose...";
+            } else {
+                previewEl.innerText = text;
+            }
+
+            const chars = text.length;
+            charCountEl.innerText = `${chars} / 160 characters`;
+            
+            const credits = Math.ceil(chars / 160) || 1;
+            creditEl.innerText = `${credits} SMS Credit` + (credits > 1 ? 's' : '');
+        }
+
+        function simulateBulkSmsSend() {
+            const classVal = document.getElementById('sms-target-class').value;
+            const targetStudentId = document.getElementById('sms-target-student').value;
+            const text = document.getElementById('sms-text').value.trim();
+
+            if (!text) {
+                alert("Please compose an SMS message first!");
+                return;
+            }
+
+            const students = loadStudents();
+            let targets = [];
+
+            if (targetStudentId === 'All') {
+                targets = students.filter(s => s.class === classVal);
+            } else {
+                const s = students.find(stud => stud.id === targetStudentId);
+                if (s) targets.push(s);
+            }
+
+            if (targets.length === 0) {
+                alert(`No registered students found in ${classVal}. Add students in the Student Portal first!`);
+                return;
+            }
+
+            // Show progress overlay
+            const progressContainer = document.getElementById('sms-progress-container');
+            const progressBar = document.getElementById('sms-progress-bar');
+            const progressPercent = document.getElementById('sms-progress-percent');
+            const logsContainer = document.getElementById('sms-broadcast-logs');
+
+            progressContainer.style.display = "block";
+            progressBar.style.width = "0%";
+            progressPercent.innerText = "0%";
+            logsContainer.innerHTML = `<div style="color:var(--neon-cyan);">Initializing Broadcast Broadcast...</div>`;
+
+            let currentIndex = 0;
+            const total = targets.length;
+
+            const sendInterval = setInterval(() => {
+                if (currentIndex >= total) {
+                    clearInterval(sendInterval);
+                    progressPercent.innerText = "100%";
+                    progressBar.style.width = "100%";
+                    setTimeout(() => {
+                        alert(`SMS Broadcasing Complete! Successfully dispatched ${total} SMS notifications.`);
+                        progressContainer.style.display = "none";
+                    }, 500);
+                    return;
+                }
+
+                const s = targets[currentIndex];
+                const cleanPhone = s.phone || "+8801700000000";
+                
+                // Formulate personalized SMS log message
+                const personalText = text
+                    .replace(/\[Student\]/g, s.name)
+                    .replace(/Class \d+/g, s.class);
+
+                const newLog = document.createElement('div');
+                newLog.innerHTML = `Dispatched SMS to parent of <strong style="color:#fff;">${s.name}</strong> (${cleanPhone}) - <span style="color:var(--neon-green);">SUCCESS ✓</span>`;
+                logsContainer.appendChild(newLog);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+
+                currentIndex++;
+                const percentage = Math.round((currentIndex / total) * 100);
+                progressPercent.innerText = `${percentage}%`;
+                progressBar.style.width = `${percentage}%`;
+
+            }, 550); // Small transmission delay to look very premium & realistic
+        }
+
+        // --- EXAM PORTAL LIVE QUIZ SYSTEM (PRESERVED) ---
+        const quizData = [
+            {
+                question: "What is the national fruit of Bangladesh?",
+                options: ["Mango", "Jackfruit", "Litchi", "Banana"],
+                correct: 1
+            },
+            {
+                question: "Which is the largest planet in our solar system?",
+                options: ["Mars", "Mercury", "Jupiter", "Saturn"],
+                correct: 2
+            },
+            {
+                question: "What is the chemical formula of water?",
+                options: ["CO2", "H2O", "O2", "NaCl"],
+                correct: 1
+            }
+        ];
+
+        let quizIndex = 0;
+        let quizScore = 0;
+        let hasAnswered = false;
+
+        function loadQuizQuestion() {
+            hasAnswered = false;
+            const nextBtn = document.getElementById('quiz-next-btn');
+            if (nextBtn) nextBtn.style.display = "none";
+            
+            const qData = quizData[quizIndex];
+            const qNumEl = document.getElementById('quiz-q-num');
+            const qTextEl = document.getElementById('quiz-question-text');
+            const qScoreEl = document.getElementById('quiz-score');
+            
+            if (qNumEl) qNumEl.innerText = (quizIndex + 1) + "/" + quizData.length;
+            if (qTextEl) qTextEl.innerText = qData.question;
+            if (qScoreEl) qScoreEl.innerText = quizScore;
+
+            for (let i = 0; i < 4; i++) {
+                const optEl = document.getElementById('opt-' + i);
+                const optText = document.getElementById('opt-text-' + i);
+                if (optText) optText.innerText = qData.options[i];
+                if (optEl) optEl.className = "quiz-option"; // Reset classes
+            }
+        }
+
+        function checkQuizAnswer(selectedIdx) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const correctIdx = quizData[quizIndex].correct;
+            const optElSelected = document.getElementById('opt-' + selectedIdx);
+            const optElCorrect = document.getElementById('opt-' + correctIdx);
+
+            if (selectedIdx === correctIdx) {
+                if (optElSelected) optElSelected.classList.add('correct');
+                quizScore += 10;
+                const scoreEl = document.getElementById('quiz-score');
+                if (scoreEl) scoreEl.innerText = quizScore;
+            } else {
+                if (optElSelected) optElSelected.classList.add('incorrect');
+                if (optElCorrect) optElCorrect.classList.add('correct');
+            }
+
+            // Show next button
+            const nextBtn = document.getElementById('quiz-next-btn');
+            if (nextBtn) nextBtn.style.display = "block";
+        }
+
+        function loadNextQuiz() {
+            quizIndex++;
+            if (quizIndex < quizData.length) {
+                loadQuizQuestion();
+            } else {
+                // Finished quiz
+                const quizBlock = document.getElementById('quiz-block');
+                if (quizBlock) {
+                    quizBlock.innerHTML = `
+                        <div style="text-align:center; padding: 20px 0;">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2" style="margin-bottom:15px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <h4 style="color:#fff; font-size:1.3rem; margin-bottom:10px;">Congratulations! Quiz Finished</h4>
+                            <p style="color:var(--muted-text);">Your total score: <strong style="color:var(--neon-cyan); font-size:1.5rem;">\${quizScore}</strong></p>
+                            <button class="btn-primary" style="margin-top:20px;" onclick="resetQuiz()">Play Again</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function resetQuiz() {
+            quizIndex = 0;
+            quizScore = 0;
+            const quizBlock = document.getElementById('quiz-block');
+            if (quizBlock) {
+                quizBlock.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--neon-cyan);">
+                        <span>Question No: <span id="quiz-q-num">1/3</span></span>
+                        <span>Score: <span id="quiz-score">0</span></span>
+                    </div>
+                    <div class="quiz-question" id="quiz-question-text">Who is the national poet of Bangladesh?</div>
+                    
+                    <div class="quiz-option" id="opt-0" onclick="checkQuizAnswer(0)">
+                        <span style="font-weight:bold;">A.</span> <span id="opt-text-0">Rabindranath Tagore</span>
+                    </div>
+                    <div class="quiz-option" id="opt-1" onclick="checkQuizAnswer(1)">
+                        <span style="font-weight:bold;">B.</span> <span id="opt-text-1">Kazi Nazrul Islam</span>
+                    </div>
+                    <div class="quiz-option" id="opt-2" onclick="checkQuizAnswer(2)">
+                        <span style="font-weight:bold;">C.</span> <span id="opt-text-2">Jasimmudin</span>
+                    </div>
+                    <div class="quiz-option" id="opt-3" onclick="checkQuizAnswer(3)">
+                        <span style="font-weight:bold;">D.</span> <span id="opt-text-3">Jibanananda Das</span>
+                    </div>
+                    <button class="btn-primary" id="quiz-next-btn" style="margin-top:15px; display:none;" onclick="loadNextQuiz()">Next Question</button>
+                `;
+            }
+            loadQuizQuestion();
+        }
+
+        // --- MOBILE PHONE CLOCK ---
+        function updateMockPhoneTime() {
+            const timeEl = document.getElementById('phone-time');
+            if (timeEl) {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                timeEl.textContent = `${hours}:${minutes} \${ampm}`;
+            }
+        }
+
+        // --- GLOBAL INITIALIZATIONS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pre-initialize databases
+            loadSchedules();
+            loadSubjects();
+            loadMarkingSystem();
+
+            // Check view and display the correct panel
+            checkURLParameters();
+
+            // Listen to browser popstate (back/forward clicks)
+            window.addEventListener('popstate', checkURLParameters);
+
+            // Update live mobile phone preview time clocks
+            updateMockPhoneTime();
+            setInterval(updateMockPhoneTime, 10000);
+        });
+
+        // Listen to Database Sync from Server (Periodic sync)
+        window.addEventListener('dbSynced', () => {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view') || 'dashboard';
+            
+            // Refresh tables dynamically on active views
+            if (view === 'dashboard') {
+                renderDashboardRoutineSummary();
+            } else if (view === 'exam-entry') {
+                renderScheduleList();
+            } else if (view === 'marking-system') {
+                renderMarkingSystem();
+            } else if (view === 'all-subject') {
+                renderSubjectList();
+            }
+        });
+    </script>
+</body>
+</html>
