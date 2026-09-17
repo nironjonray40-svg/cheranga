@@ -1407,6 +1407,16 @@
                             </svg>
                             <span style="color:#ffffff;">Create Exam Schedule</span>
                         </button>
+                        <button id="exam-portal-tabulation-sheet-btn" class="btn-secondary"
+                            style="background:linear-gradient(135deg, #059669 0%, #047857 100%); border:none; box-shadow:0 4px 14px rgba(5,150,105,0.25); padding:10px 22px; border-radius:22px; font-size:0.98rem; font-weight:700; cursor:pointer; color:#ffffff; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s ease;"
+                            onclick="navigateToTabulationSheet()" title="সরাসরি এই পরীক্ষার ফলাফল শিট দেখুন">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span style="color:#ffffff;">📊 Tabulation Sheet</span>
+                        </button>
                         <button id="exam-list-back-btn" class="btn-secondary"
                             style="background:#ffffff; border:1.5px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.05); padding:9px 22px; border-radius:20px; font-weight:700; font-size:0.95rem; cursor:pointer; color:#334155; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s ease;"
                             onclick="if(document.referrer && window.history.length > 1){ window.history.back(); } else { navigateExamView('dashboard'); }">
@@ -3110,7 +3120,32 @@
 
         function onScheduleFilterChange() {
             currentSchedulePage = 1;
+            const filterExam = document.getElementById('filter-schedule-exam')?.value;
+            if (filterExam && filterExam !== 'All') {
+                localStorage.setItem('school_active_exam_filter', filterExam);
+                try {
+                    window.dispatchEvent(new CustomEvent('dbSynced'));
+                } catch (e) { }
+            }
             renderScheduleList();
+        }
+
+        function navigateToTabulationSheet() {
+            const filterExam = document.getElementById('filter-schedule-exam')?.value;
+            const filterClass = document.getElementById('filter-schedule-class')?.value;
+            let url = 'Tabulation Sheet.html';
+            const params = [];
+            if (filterExam && filterExam !== 'All') {
+                localStorage.setItem('school_active_exam_filter', filterExam);
+                params.push(`exam=${encodeURIComponent(filterExam)}`);
+            }
+            if (filterClass && filterClass !== 'All') {
+                params.push(`class=${encodeURIComponent(filterClass)}`);
+            }
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            window.location.href = url;
         }
 
         function setStatusFilter(status) {
@@ -4324,6 +4359,12 @@
             let schedules = loadSchedules();
             schedules.push(...newSchedules);
             localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+            if (termName) {
+                localStorage.setItem('school_active_exam_filter', termName);
+            }
+            try {
+                window.dispatchEvent(new CustomEvent('dbSynced'));
+            } catch (e) { }
 
             resetScheduleForm();
             populateAllScheduleFilters();
@@ -4587,6 +4628,12 @@
                 alert("Exam Schedule Routine added successfully!");
             }
             localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+            if (termName) {
+                localStorage.setItem('school_active_exam_filter', termName);
+            }
+            try {
+                window.dispatchEvent(new CustomEvent('dbSynced'));
+            } catch (e) { }
 
             resetScheduleForm();
             populateAllScheduleFilters();
@@ -5677,6 +5724,9 @@
                     schedules[scheduleIdx].marksEntryTime = formattedTimestamp;
                 }
                 localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                if (sch.term) {
+                    localStorage.setItem('school_active_exam_filter', sch.term);
+                }
             }
 
             localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));

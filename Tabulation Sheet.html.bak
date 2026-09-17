@@ -2264,7 +2264,7 @@
 
                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
 
-                <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="chem">ব্যবহারিক</th>
+                <th rowspan="2" class="v-text bg-peach">ব্যবহারিক</th>
 
                 <th rowspan="2" class="v-text bg-peach">মোট</th>
 
@@ -2278,7 +2278,7 @@
 
                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
 
-                <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="phys">ব্যবহারিক</th>
+                <th rowspan="2" class="v-text bg-peach">ব্যবহারিক</th>
 
                 <th rowspan="2" class="v-text bg-peach">মোট</th>
 
@@ -2292,7 +2292,7 @@
 
                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
 
-                <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="bio">ব্যবহারিক</th>
+                <th rowspan="2" class="v-text bg-peach">ব্যবহারিক</th>
 
                 <th rowspan="2" class="v-text bg-peach">মোট</th>
 
@@ -2330,7 +2330,7 @@
 
                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
 
-                <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="agri">ব্যবহারিক</th>
+                <th rowspan="2" class="v-text bg-peach">ব্যবহারিক</th>
 
                 <th rowspan="2" class="v-text bg-peach">মোট</th>
 
@@ -2402,29 +2402,29 @@
 
                 <th class="bg-peach">১০০</th> <!-- BGS Total -->
 
-                <th class="bg-peach" data-fullmark="mcq" data-subj="chem">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="written" data-subj="chem">৫০</th>
+                <th class="bg-peach">৫০</th>
 
-                <th class="bg-peach" data-col-type="practical" data-subj="chem">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="total" data-subj="chem">১০০</th> <!-- Chemistry Total -->
+                <th class="bg-peach">১০০</th> <!-- Chemistry Total -->
 
-                <th class="bg-peach" data-fullmark="mcq" data-subj="phys">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="written" data-subj="phys">৫০</th>
+                <th class="bg-peach">৫০</th>
 
-                <th class="bg-peach" data-col-type="practical" data-subj="phys">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="total" data-subj="phys">১০০</th> <!-- Physics Total -->
+                <th class="bg-peach">১০০</th> <!-- Physics Total -->
 
-                <th class="bg-peach" data-fullmark="mcq" data-subj="bio">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="written" data-subj="bio">৫০</th>
+                <th class="bg-peach">৫০</th>
 
-                <th class="bg-peach" data-col-type="practical" data-subj="bio">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="total" data-subj="bio">১০০</th> <!-- Biology Total -->
+                <th class="bg-peach">১০০</th> <!-- Biology Total -->
 
                 <th class="bg-peach">৩০</th>
 
@@ -2438,13 +2438,13 @@
 
                 <th class="bg-peach">৫০</th> <!-- ICT Total -->
 
-                <th class="bg-peach" data-fullmark="mcq" data-subj="agri">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="written" data-subj="agri">৫০</th>
+                <th class="bg-peach">৫০</th>
 
-                <th class="bg-peach" data-col-type="practical" data-subj="agri">২৫</th>
+                <th class="bg-peach">২৫</th>
 
-                <th class="bg-peach" data-fullmark="total" data-subj="agri">১০০</th> <!-- Agriculture Total -->
+                <th class="bg-peach">১০০</th> <!-- Agriculture Total -->
 
             </tr>
 
@@ -7760,8 +7760,6 @@
 
 
 
-        let activeClassSlotMap = {};
-
         function updateSubjects() {
             let subjectsMap = {};
             try {
@@ -7769,20 +7767,7 @@
             } catch (e) { }
 
             function normalizeClassName(cls) {
-                if (!cls || cls === 'all') {
-                    const classSelect = document.getElementById('class-filter');
-                    if (classSelect && classSelect.value && classSelect.value !== 'all') {
-                        cls = classSelect.value;
-                    } else {
-                        try {
-                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
-                            const activeExam = (currentFilterExam || 'all').trim().toLowerCase();
-                            const sch = schedules.find(s => s && s.class && (activeExam === 'all' || (s.term || '').trim().toLowerCase() === activeExam));
-                            if (sch && sch.class) cls = sch.class;
-                        } catch (e) {}
-                    }
-                    if (!cls || cls === 'all') cls = 'Ten';
-                }
+                if (!cls) return 'Ten';
                 const val = cls.toString().toLowerCase().trim();
                 if (val === '10th' || val === 'ten' || val === '10' || val === '১০ম' || val.includes('ten') || val.includes('10')) return 'Ten';
                 if (val === '9th' || val === 'nine' || val === '9' || val === '৯ম' || val.includes('nine') || val.includes('9')) return 'Nine';
@@ -7801,22 +7786,13 @@
             }
 
             const targetClass = normalizeClassName(currentFilterClass);
-            let classSubjects = subjectsMap[targetClass] || subjectsMap[currentFilterClass];
-            if (!classSubjects || !Array.isArray(classSubjects) || classSubjects.length === 0) {
-                for (const k of Object.keys(subjectsMap)) {
-                    if (normalizeClassName(k) === targetClass || k.toLowerCase() === targetClass.toLowerCase()) {
-                        classSubjects = subjectsMap[k];
-                        break;
-                    }
-                }
-            }
-            if (!Array.isArray(classSubjects)) classSubjects = [];
+            const classSubjects = subjectsMap[targetClass] || subjectsMap[currentFilterClass] || [];
 
             const isSeniorClass = ['Ten', 'Nine'].includes(targetClass);
 
             // Filter subjects by section / group
             let activeSubs = [];
-            if (classSubjects.length > 0) {
+            if (Array.isArray(classSubjects) && classSubjects.length > 0) {
                 classSubjects.forEach(s => {
                     const sec = (s.section || 'All').toString().trim();
                     if (sec === 'All' || sec === 'all' || sec === '') {
@@ -7846,39 +7822,38 @@
                     "full": {
                         "bangla": "বাংলা", "bangla1": "বাংলা ১ম", "bangla2": "বাংলা ২য়",
                         "english": "English", "english1": "English 1st", "english2": "English 2nd",
-                        "math": "গণিত", "bgs": "বাংলাদেশ ও বিশ্বপরিচয়", "chem": isSeniorClass ? "রসায়ন" : "বিজ্ঞান",
-                        "phys": isSeniorClass ? "পদার্থ" : "-", "bio": isSeniorClass ? "জীববিজ্ঞান" : "-", "rel": "ধর্ম",
-                        "ict": "তথ্য ও যোগাযোগ প্রযুক্তি", "agri": isSeniorClass ? "কৃষি/উচ্চতর" : "কৃষি শিক্ষা"
+                        "math": "গণিত", "bgs": "বাংলাদেশ ও বিশ্বপরিচয়", "chem": "রসায়ন",
+                        "phys": "পদার্থ", "bio": "জীববিজ্ঞান", "rel": "ধর্ম",
+                        "ict": "তথ্য ও যোগাযোগ যুক্তি", "agri": "কৃষি/উচ্চতর"
                     },
                     "short": {
                         "bangla": "বাংলা", "bangla1": "বাং ১ম", "bangla2": "বাং ২য়",
                         "english": "English", "english1": "ইং ১ম", "english2": "ইং ২য়",
-                        "math": "গণিত", "bgs": "বা.বি.প", "chem": isSeniorClass ? "রসা" : "বিজ্ঞান",
-                        "phys": isSeniorClass ? "পদা" : "-", "bio": isSeniorClass ? "জীব" : "-", "rel": "ধর্ম",
-                        "ict": "আইসিটি", "agri": isSeniorClass ? "কৃ/উ" : "কৃষি"
+                        "math": "গণি", "bgs": "বা.বি.প", "chem": "রসা",
+                        "phys": "পদা", "bio": "জীব", "rel": "ধর্ম",
+                        "ict": "আইসিটি", "agri": "কৃ/উ"
                     }
                 },
                 "en": {
                     "full": {
-                        "bangla": "Bangla", "bangla1": "Bangla 1st", "bangla2": "Bangla 2nd",
+                        "bangla": "বাংলা", "bangla1": "Bangla 1st", "bangla2": "Bangla 2nd",
                         "english": "English", "english1": "English 1st", "english2": "English 2nd",
-                        "math": "Mathematics", "bgs": "BGS", "chem": isSeniorClass ? "Chemistry" : "Science",
-                        "phys": isSeniorClass ? "Physics" : "-", "bio": isSeniorClass ? "Biology" : "-", "rel": "Religion",
-                        "ict": "ICT", "agri": isSeniorClass ? "Agri/Higher" : "Agriculture"
+                        "math": "Mathematics", "bgs": "BGS", "chem": "Chemistry",
+                        "phys": "Physics", "bio": "Biology", "rel": "Religion",
+                        "ict": "ICT", "agri": "Agri/Higher"
                     },
                     "short": {
-                        "bangla": "BAN", "bangla1": "BAN 1st", "bangla2": "BAN 2nd",
-                        "english": "ENG", "english1": "ENG 1st", "english2": "ENG 2nd",
-                        "math": "MAT", "bgs": "BGS", "chem": isSeniorClass ? "CHE" : "SCI",
-                        "phys": isSeniorClass ? "PHY" : "-", "bio": isSeniorClass ? "BIO" : "-", "rel": "REL",
-                        "ict": "ICT", "agri": isSeniorClass ? "AGR/HM" : "AGRI"
+                        "bangla": "বাংলা", "bangla1": "BAN 1st", "bangla2": "BAN 2nd",
+                        "english": "English", "english1": "ENG 1st", "english2": "ENG 2nd",
+                        "math": "MAT", "bgs": "BGS", "chem": "CHE",
+                        "phys": "PHY", "bio": "BIO", "rel": "REL",
+                        "ict": "ICT", "agri": "AGR/HM"
                     }
                 }
             };
 
             const usedCodes = new Set();
             const slotAssignments = {};
-            activeClassSlotMap = {};
             let hasIslam = false;
             let hasHindu = false;
             let islamSub = null;
@@ -7890,16 +7865,9 @@
             let agriSub = null;
 
             const assignSlot = (slotKey, s) => {
-                if (!s || slotAssignments[slotKey]) return;
+                if (!s || slotAssignments[slotKey] || slotKey === 'bangla' || slotKey === 'english') return;
                 slotAssignments[slotKey] = s;
-                if (s.code) {
-                    const cStr = s.code.toString().trim();
-                    usedCodes.add(cStr);
-                    activeClassSlotMap[cStr] = slotKey;
-                }
-                if (s.name) activeClassSlotMap[s.name.trim().toLowerCase()] = slotKey;
-                if (s.nameBn) activeClassSlotMap[s.nameBn.trim().toLowerCase()] = slotKey;
-                if (s.shortName) activeClassSlotMap[s.shortName.trim().toLowerCase()] = slotKey;
+                if (s.code) usedCodes.add(s.code.toString());
 
                 const nameEn = (s.name || '').trim();
                 const nameBn = (s.nameBn || s.name || '').trim();
@@ -7963,28 +7931,16 @@
                         assignSlot('chem', s);
                     } else if (code === '180' || /biology|জীববিজ্ঞান/i.test(comb)) {
                         assignSlot('bio', s);
-                    } else if ((code === '108' || /science|বিজ্ঞান/i.test(comb)) && (!isSeniorClass || currentFilterGroup !== 'science')) {
+                    } else if (code === '108' || (/science|বিজ্ঞান/i.test(comb) && !isSeniorClass)) {
                         assignSlot('chem', s);
                     } else if (code === '106' || /ict|information.*tech|তথ্য.*যোগাযোগ/i.test(comb)) {
                         assignSlot('ict', s);
                     }
                 });
 
-                // Assign combined Religion to 'rel' slot dynamically from All Subject
+                // Assign combined Religion to 'rel' slot dynamically from Academic Subject Management
                 if (hasIslam || hasHindu) {
                     slotAssignments['rel'] = islamSub || hinduSub;
-                    if (islamSub) {
-                        const ic = (islamSub.code || '110').toString().trim();
-                        activeClassSlotMap[ic] = 'rel';
-                        if (islamSub.name) activeClassSlotMap[islamSub.name.trim().toLowerCase()] = 'rel';
-                        if (islamSub.nameBn) activeClassSlotMap[islamSub.nameBn.trim().toLowerCase()] = 'rel';
-                    }
-                    if (hinduSub) {
-                        const hc = (hinduSub.code || '111').toString().trim();
-                        activeClassSlotMap[hc] = 'rel';
-                        if (hinduSub.name) activeClassSlotMap[hinduSub.name.trim().toLowerCase()] = 'rel';
-                        if (hinduSub.nameBn) activeClassSlotMap[hinduSub.nameBn.trim().toLowerCase()] = 'rel';
-                    }
                     
                     let relBn = "ধর্ম";
                     let relEn = "Religion";
@@ -8043,21 +7999,9 @@
                     dynamicSubjectMap.en.short['rel'] = relShortEn;
                 }
 
-                // Assign combined Higher Math / Agriculture to 'agri' slot dynamically from All Subject
+                // Assign combined Higher Math / Agriculture to 'agri' slot dynamically from Academic Subject Management
                 if (hasHigherMath || hasAgri) {
                     slotAssignments['agri'] = higherMathSub || agriSub;
-                    if (higherMathSub) {
-                        const mc = (higherMathSub.code || '505').toString().trim();
-                        activeClassSlotMap[mc] = 'agri';
-                        if (higherMathSub.name) activeClassSlotMap[higherMathSub.name.trim().toLowerCase()] = 'agri';
-                        if (higherMathSub.nameBn) activeClassSlotMap[higherMathSub.nameBn.trim().toLowerCase()] = 'agri';
-                    }
-                    if (agriSub) {
-                        const ac = (agriSub.code || '109').toString().trim();
-                        activeClassSlotMap[ac] = 'agri';
-                        if (agriSub.name) activeClassSlotMap[agriSub.name.trim().toLowerCase()] = 'agri';
-                        if (agriSub.nameBn) activeClassSlotMap[agriSub.nameBn.trim().toLowerCase()] = 'agri';
-                    }
 
                     let optBn = "কৃষি/উচ্চতর";
                     let optEn = "Agri/Higher";
@@ -8103,10 +8047,10 @@
                     } else {
                         const singleOpt = higherMathSub || agriSub;
                         if (singleOpt) {
-                            optBn = (singleOpt.nameBn || singleOpt.name || '').trim() || "কৃষি শিক্ষা";
-                            optEn = (singleOpt.name || singleOpt.nameBn || '').trim() || "Agriculture";
-                            optShortBn = (singleOpt.shortName || singleOpt.nameBn || '').trim() || "কৃষি";
-                            optShortEn = (singleOpt.shortName || singleOpt.name || '').trim() || "AGRI";
+                            optBn = (singleOpt.nameBn || singleOpt.name || '').trim() || "কৃষি/উচ্চতর";
+                            optEn = (singleOpt.name || singleOpt.nameBn || '').trim() || "Agri/Higher";
+                            optShortBn = (singleOpt.shortName || singleOpt.nameBn || '').trim() || "কৃ/উ";
+                            optShortEn = (singleOpt.shortName || singleOpt.name || '').trim() || "AGR/HM";
                         }
                     }
 
@@ -8126,24 +8070,18 @@
             }
 
             // Apply all mapped names to table header DOM elements
-            const lang = (currentLang === 'en') ? 'en' : 'bn';
-            const fmt = (currentSubjFormat === 'short') ? 'short' : 'full';
-
-            document.querySelectorAll('thead th[data-subj]:not([data-col-type]):not([data-fullmark])').forEach(el => {
+            document.querySelectorAll('th[data-subj]').forEach(el => {
                 let key = el.getAttribute('data-subj');
-                if (!key) return;
-
                 if (key === 'bangla') {
-                    el.textContent = (lang === 'en') ? 'Bangla' : 'বাংলা';
+                    el.textContent = 'বাংলা';
                     return;
                 }
                 if (key === 'english') {
-                    el.textContent = (lang === 'en') ? 'English' : 'English';
+                    el.textContent = 'English';
                     return;
                 }
-
-                if (dynamicSubjectMap[lang] && dynamicSubjectMap[lang][fmt] && dynamicSubjectMap[lang][fmt][key] !== undefined) {
-                    el.textContent = dynamicSubjectMap[lang][fmt][key];
+                if (dynamicSubjectMap[currentLang] && dynamicSubjectMap[currentLang][currentSubjFormat] && dynamicSubjectMap[currentLang][currentSubjFormat][key]) {
+                    el.textContent = dynamicSubjectMap[currentLang][currentSubjFormat][key];
                 }
             });
         }
@@ -8593,8 +8531,8 @@
                 const b1MCQ = getCellFloat(2);
                 const b1Wri = getCellFloat(3);
                 let b1Total = getCellFloat(4);
-                if (isNaN(b1Total) && (!isNaN(b1MCQ) || !isNaN(b1Wri))) {
-                    b1Total = (isNaN(b1MCQ) ? 0 : b1MCQ) + (isNaN(b1Wri) ? 0 : b1Wri);
+                if (!isNaN(b1MCQ) && !isNaN(b1Wri)) {
+                    b1Total = b1MCQ + b1Wri;
                     setCellVal(4, b1Total);
                 }
 
@@ -8602,26 +8540,25 @@
                 const b2MCQ = getCellFloat(5);
                 const b2Wri = getCellFloat(6);
                 let b2Total = getCellFloat(7);
-                if (isNaN(b2Total) && (!isNaN(b2MCQ) || !isNaN(b2Wri))) {
-                    b2Total = (isNaN(b2MCQ) ? 0 : b2MCQ) + (isNaN(b2Wri) ? 0 : b2Wri);
+                if (!isNaN(b2MCQ) && !isNaN(b2Wri)) {
+                    b2Total = b2MCQ + b2Wri;
                     setCellVal(7, b2Total);
                 }
 
                 // Bangla Grand Total (cell 8) & Avg (cell 9)
                 let bGrandTotal = getCellFloat(8);
-                if (isNaN(bGrandTotal) && (!isNaN(b1Total) || !isNaN(b2Total))) {
-                    bGrandTotal = (isNaN(b1Total) ? 0 : b1Total) + (isNaN(b2Total) ? 0 : b2Total);
+                if (!isNaN(b1Total) && !isNaN(b2Total)) {
+                    bGrandTotal = b1Total + b2Total;
                     setCellVal(8, bGrandTotal);
                 }
                 let banglaAvg = getCellFloat(9);
                 if (!isNaN(bGrandTotal)) {
-                    banglaAvg = (!isNaN(b1Total) && !isNaN(b2Total)) ? (bGrandTotal / 2) : bGrandTotal;
+                    banglaAvg = bGrandTotal / 2;
                     setCellVal(9, banglaAvg);
                 }
 
-                const bAbsent = (cells[2]?.textContent.trim().toUpperCase() === 'A' || cells[3]?.textContent.trim().toUpperCase() === 'A' || cells[5]?.textContent.trim().toUpperCase() === 'A' || cells[6]?.textContent.trim().toUpperCase() === 'A');
-                const banglaInfo = bAbsent ? { name: 'F', gp: 0 } : (!isNaN(banglaAvg) ? getGradeForPercentage(banglaAvg) : { name: '-', gp: 0 });
-                if (!isNaN(banglaAvg) || bAbsent) {
+                const banglaInfo = !isNaN(banglaAvg) ? getGradeForPercentage(banglaAvg) : { name: '-', gp: 0 };
+                if (!isNaN(banglaAvg)) {
                     cells[10].textContent = banglaInfo.name;
                     cells[11].textContent = translateDigits(banglaInfo.gp.toFixed(2), currentLang);
                 }
@@ -8631,19 +8568,18 @@
                 const eng1 = getCellFloat(12);
                 const eng2 = getCellFloat(13);
                 let engGrandTotal = getCellFloat(14);
-                if (isNaN(engGrandTotal) && (!isNaN(eng1) || !isNaN(eng2))) {
-                    engGrandTotal = (isNaN(eng1) ? 0 : eng1) + (isNaN(eng2) ? 0 : eng2);
+                if (!isNaN(eng1) && !isNaN(eng2)) {
+                    engGrandTotal = eng1 + eng2;
                     setCellVal(14, engGrandTotal);
                 }
                 let engAvg = getCellFloat(15);
                 if (!isNaN(engGrandTotal)) {
-                    engAvg = (!isNaN(eng1) && !isNaN(eng2)) ? (engGrandTotal / 2) : engGrandTotal;
+                    engAvg = engGrandTotal / 2;
                     setCellVal(15, engAvg);
                 }
 
-                const engAbsent = (cells[12]?.textContent.trim().toUpperCase() === 'A' || cells[13]?.textContent.trim().toUpperCase() === 'A');
-                const engInfo = engAbsent ? { name: 'F', gp: 0 } : (!isNaN(engAvg) ? getGradeForPercentage(engAvg) : { name: '-', gp: 0 });
-                if (!isNaN(engAvg) || engAbsent) {
+                const engInfo = !isNaN(engAvg) ? getGradeForPercentage(engAvg) : { name: '-', gp: 0 };
+                if (!isNaN(engAvg)) {
                     cells[16].textContent = engInfo.name;
                     cells[17].textContent = translateDigits(engInfo.gp.toFixed(2), currentLang);
                 }
@@ -8652,13 +8588,12 @@
                 const mathMCQ = getCellFloat(18);
                 const mathWri = getCellFloat(19);
                 let mathTotal = getCellFloat(20);
-                if (isNaN(mathTotal) && (!isNaN(mathMCQ) || !isNaN(mathWri))) {
-                    mathTotal = (isNaN(mathMCQ) ? 0 : mathMCQ) + (isNaN(mathWri) ? 0 : mathWri);
+                if (!isNaN(mathMCQ) && !isNaN(mathWri)) {
+                    mathTotal = mathMCQ + mathWri;
                     setCellVal(20, mathTotal);
                 }
-                const mathAbsent = (cells[18]?.textContent.trim().toUpperCase() === 'A' || cells[19]?.textContent.trim().toUpperCase() === 'A');
-                const mathInfo = mathAbsent ? { name: 'F', gp: 0 } : (!isNaN(mathTotal) ? getGradeForPercentage(mathTotal) : { name: '-', gp: 0 });
-                if (!isNaN(mathTotal) || mathAbsent) {
+                const mathInfo = !isNaN(mathTotal) ? getGradeForPercentage(mathTotal) : { name: '-', gp: 0 };
+                if (!isNaN(mathTotal)) {
                     cells[21].textContent = mathInfo.name;
                     cells[22].textContent = translateDigits(mathInfo.gp.toFixed(2), currentLang);
                 }
@@ -8667,33 +8602,27 @@
                 const bgsMCQ = getCellFloat(23);
                 const bgsWri = getCellFloat(24);
                 let bgsTotal = getCellFloat(25);
-                if (isNaN(bgsTotal) && (!isNaN(bgsMCQ) || !isNaN(bgsWri))) {
-                    bgsTotal = (isNaN(bgsMCQ) ? 0 : bgsMCQ) + (isNaN(bgsWri) ? 0 : bgsWri);
+                if (!isNaN(bgsMCQ) && !isNaN(bgsWri)) {
+                    bgsTotal = bgsMCQ + bgsWri;
                     setCellVal(25, bgsTotal);
                 }
-                const bgsAbsent = (cells[23]?.textContent.trim().toUpperCase() === 'A' || cells[24]?.textContent.trim().toUpperCase() === 'A');
-                const bgsInfo = bgsAbsent ? { name: 'F', gp: 0 } : (!isNaN(bgsTotal) ? getGradeForPercentage(bgsTotal) : { name: '-', gp: 0 });
-                if (!isNaN(bgsTotal) || bgsAbsent) {
+                const bgsInfo = !isNaN(bgsTotal) ? getGradeForPercentage(bgsTotal) : { name: '-', gp: 0 };
+                if (!isNaN(bgsTotal)) {
                     cells[26].textContent = bgsInfo.name;
                     cells[27].textContent = translateDigits(bgsInfo.gp.toFixed(2), currentLang);
                 }
 
-                const pracStatus = (typeof getSubjectPracticalStatus === 'function') 
-                    ? getSubjectPracticalStatus() 
-                    : { chem: false, phys: false, bio: false, agri: false };
-
-                // 5. Chemistry / Science (MCQ cell 28, Written cell 29, Practical cell 30, Total cell 31)
+                // 5. Chemistry (MCQ cell 28, Written cell 29, Practical cell 30, Total cell 31)
                 const chemMCQ = getCellFloat(28);
                 const chemWri = getCellFloat(29);
-                const chemPrac = pracStatus.chem ? getCellFloat(30) : 0;
+                const chemPrac = getCellFloat(30);
                 let chemTotal = getCellFloat(31);
-                if (isNaN(chemTotal) && (!isNaN(chemMCQ) || !isNaN(chemWri) || (pracStatus.chem && !isNaN(chemPrac)))) {
-                    chemTotal = (isNaN(chemMCQ) ? 0 : chemMCQ) + (isNaN(chemWri) ? 0 : chemWri) + (pracStatus.chem && !isNaN(chemPrac) ? chemPrac : 0);
+                if (!isNaN(chemMCQ) && !isNaN(chemWri) && !isNaN(chemPrac)) {
+                    chemTotal = chemMCQ + chemWri + chemPrac;
                     setCellVal(31, chemTotal);
                 }
-                const chemAbsent = (cells[28]?.textContent.trim().toUpperCase() === 'A' || cells[29]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.chem && cells[30]?.textContent.trim().toUpperCase() === 'A'));
-                const chemInfo = chemAbsent ? { name: 'F', gp: 0 } : (!isNaN(chemTotal) ? getGradeForPercentage(chemTotal) : { name: '-', gp: 0 });
-                if (!isNaN(chemTotal) || chemAbsent) {
+                const chemInfo = !isNaN(chemTotal) ? getGradeForPercentage(chemTotal) : { name: '-', gp: 0 };
+                if (!isNaN(chemTotal)) {
                     cells[32].textContent = chemInfo.name;
                     cells[33].textContent = translateDigits(chemInfo.gp.toFixed(2), currentLang);
                 }
@@ -8701,15 +8630,14 @@
                 // 6. Physics (MCQ cell 34, Written cell 35, Practical cell 36, Total cell 37)
                 const physMCQ = getCellFloat(34);
                 const physWri = getCellFloat(35);
-                const physPrac = pracStatus.phys ? getCellFloat(36) : 0;
+                const physPrac = getCellFloat(36);
                 let physTotal = getCellFloat(37);
-                if (isNaN(physTotal) && (!isNaN(physMCQ) || !isNaN(physWri) || (pracStatus.phys && !isNaN(physPrac)))) {
-                    physTotal = (isNaN(physMCQ) ? 0 : physMCQ) + (isNaN(physWri) ? 0 : physWri) + (pracStatus.phys && !isNaN(physPrac) ? physPrac : 0);
+                if (!isNaN(physMCQ) && !isNaN(physWri) && !isNaN(physPrac)) {
+                    physTotal = physMCQ + physWri + physPrac;
                     setCellVal(37, physTotal);
                 }
-                const physAbsent = (cells[34]?.textContent.trim().toUpperCase() === 'A' || cells[35]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.phys && cells[36]?.textContent.trim().toUpperCase() === 'A'));
-                const physInfo = physAbsent ? { name: 'F', gp: 0 } : (!isNaN(physTotal) ? getGradeForPercentage(physTotal) : { name: '-', gp: 0 });
-                if (!isNaN(physTotal) || physAbsent) {
+                const physInfo = !isNaN(physTotal) ? getGradeForPercentage(physTotal) : { name: '-', gp: 0 };
+                if (!isNaN(physTotal)) {
                     cells[38].textContent = physInfo.name;
                     cells[39].textContent = translateDigits(physInfo.gp.toFixed(2), currentLang);
                 }
@@ -8717,15 +8645,14 @@
                 // 7. Biology (MCQ cell 40, Written cell 41, Practical cell 42, Total cell 43)
                 const bioMCQ = getCellFloat(40);
                 const bioWri = getCellFloat(41);
-                const bioPrac = pracStatus.bio ? getCellFloat(42) : 0;
+                const bioPrac = getCellFloat(42);
                 let bioTotal = getCellFloat(43);
-                if (isNaN(bioTotal) && (!isNaN(bioMCQ) || !isNaN(bioWri) || (pracStatus.bio && !isNaN(bioPrac)))) {
-                    bioTotal = (isNaN(bioMCQ) ? 0 : bioMCQ) + (isNaN(bioWri) ? 0 : bioWri) + (pracStatus.bio && !isNaN(bioPrac) ? bioPrac : 0);
+                if (!isNaN(bioMCQ) && !isNaN(bioWri) && !isNaN(bioPrac)) {
+                    bioTotal = bioMCQ + bioWri + bioPrac;
                     setCellVal(43, bioTotal);
                 }
-                const bioAbsent = (cells[40]?.textContent.trim().toUpperCase() === 'A' || cells[41]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.bio && cells[42]?.textContent.trim().toUpperCase() === 'A'));
-                const bioInfo = bioAbsent ? { name: 'F', gp: 0 } : (!isNaN(bioTotal) ? getGradeForPercentage(bioTotal) : { name: '-', gp: 0 });
-                if (!isNaN(bioTotal) || bioAbsent) {
+                const bioInfo = !isNaN(bioTotal) ? getGradeForPercentage(bioTotal) : { name: '-', gp: 0 };
+                if (!isNaN(bioTotal)) {
                     cells[44].textContent = bioInfo.name;
                     cells[45].textContent = translateDigits(bioInfo.gp.toFixed(2), currentLang);
                 }
@@ -8734,13 +8661,12 @@
                 const relMCQ = getCellFloat(46);
                 const relWri = getCellFloat(47);
                 let relTotal = getCellFloat(48);
-                if (isNaN(relTotal) && (!isNaN(relMCQ) || !isNaN(relWri))) {
-                    relTotal = (isNaN(relMCQ) ? 0 : relMCQ) + (isNaN(relWri) ? 0 : relWri);
+                if (!isNaN(relMCQ) && !isNaN(relWri)) {
+                    relTotal = relMCQ + relWri;
                     setCellVal(48, relTotal);
                 }
-                const relAbsent = (cells[46]?.textContent.trim().toUpperCase() === 'A' || cells[47]?.textContent.trim().toUpperCase() === 'A');
-                const relInfo = relAbsent ? { name: 'F', gp: 0 } : (!isNaN(relTotal) ? getGradeForPercentage(relTotal) : { name: '-', gp: 0 });
-                if (!isNaN(relTotal) || relAbsent) {
+                const relInfo = !isNaN(relTotal) ? getGradeForPercentage(relTotal) : { name: '-', gp: 0 };
+                if (!isNaN(relTotal)) {
                     cells[49].textContent = relInfo.name;
                     cells[50].textContent = translateDigits(relInfo.gp.toFixed(2), currentLang);
                 }
@@ -8749,14 +8675,13 @@
                 const ictMCQ = getCellFloat(51);
                 const ictWri = getCellFloat(52);
                 let ictTotal = getCellFloat(53);
-                if (isNaN(ictTotal) && (!isNaN(ictMCQ) || !isNaN(ictWri))) {
-                    ictTotal = (isNaN(ictMCQ) ? 0 : ictMCQ) + (isNaN(ictWri) ? 0 : ictWri);
+                if (!isNaN(ictMCQ) && !isNaN(ictWri)) {
+                    ictTotal = ictMCQ + ictWri;
                     setCellVal(53, ictTotal);
                 }
-                const ictAbsent = (cells[51]?.textContent.trim().toUpperCase() === 'A' || cells[52]?.textContent.trim().toUpperCase() === 'A');
                 const ictPct = !isNaN(ictTotal) ? (ictTotal / 50) * 100 : NaN;
-                const ictInfo = ictAbsent ? { name: 'F', gp: 0 } : (!isNaN(ictPct) ? getGradeForPercentage(ictPct) : { name: '-', gp: 0 });
-                if (!isNaN(ictPct) || ictAbsent) {
+                const ictInfo = !isNaN(ictPct) ? getGradeForPercentage(ictPct) : { name: '-', gp: 0 };
+                if (!isNaN(ictPct)) {
                     cells[54].textContent = ictInfo.name;
                     cells[55].textContent = translateDigits(ictInfo.gp.toFixed(2), currentLang);
                 }
@@ -8764,15 +8689,14 @@
                 // 10. Agriculture / Higher Math (Optional Subject, Cell 59 = Total 100)
                 const optMCQ = getCellFloat(56);
                 const optWri = getCellFloat(57);
-                const optPrac = pracStatus.agri ? getCellFloat(58) : 0;
+                const optPrac = getCellFloat(58);
                 let optTotal = getCellFloat(59);
-                if (isNaN(optTotal) && (!isNaN(optMCQ) || !isNaN(optWri) || (pracStatus.agri && !isNaN(optPrac)))) {
-                    optTotal = (isNaN(optMCQ) ? 0 : optMCQ) + (isNaN(optWri) ? 0 : optWri) + (pracStatus.agri && !isNaN(optPrac) ? optPrac : 0);
+                if (!isNaN(optMCQ) && !isNaN(optWri) && !isNaN(optPrac)) {
+                    optTotal = optMCQ + optWri + optPrac;
                     setCellVal(59, optTotal);
                 }
-                const optAbsent = (cells[56]?.textContent.trim().toUpperCase() === 'A' || cells[57]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.agri && cells[58]?.textContent.trim().toUpperCase() === 'A'));
-                const optInfo = optAbsent ? { name: 'F', gp: 0 } : (!isNaN(optTotal) ? getGradeForPercentage(optTotal) : { name: '-', gp: 0 });
-                if (!isNaN(optTotal) || optAbsent) {
+                const optInfo = !isNaN(optTotal) ? getGradeForPercentage(optTotal) : { name: '-', gp: 0 };
+                if (!isNaN(optTotal)) {
                     cells[60].textContent = optInfo.name;
                     cells[61].textContent = translateDigits(optInfo.gp.toFixed(2), currentLang);
                 }
@@ -9105,244 +9029,114 @@
 
 
         function changeMCQWritten(val) {
+
             currentMCQWritten = val;
+
             applyTableSettings();
+
         }
 
-        // --- SUBJECT & PRACTICAL STATUS RESOLUTION (from Exam List & Schedules) ---
-        function getSubjectSlot(subName, subCode) {
-            const sName = (subName || '').trim().toLowerCase();
-            const code = (subCode || '').toString().trim();
 
-            if (code && activeClassSlotMap[code]) return activeClassSlotMap[code];
-            if (sName && activeClassSlotMap[sName]) return activeClassSlotMap[sName];
-
-            if (code === '101' || /bangla.*1|বাং.*১|বাংলা সাহিত্য/i.test(sName)) return 'bangla1';
-            if (code === '102' || /bangla.*2|বাং.*২|ব্যাকরণ/i.test(sName)) return 'bangla2';
-            if (code === '103' || /english.*1|eng.*1|ইংরেজি ১ম|for today/i.test(sName)) return 'english1';
-            if (code === '104' || /english.*2|eng.*2|ইংরেজি ২য়|grammar/i.test(sName)) return 'english2';
-            if (code === '105' || /math|গণিত/i.test(sName)) return 'math';
-            if (code === '107' || /bgs|global studies|বিশ্বপরিচয়/i.test(sName)) return 'bgs';
-            if (code === '1111' || /physics|পদার্থ/i.test(sName)) return 'phys';
-            if (code === '135' || /chemistry|রসায়ন/i.test(sName)) return 'chem';
-            if (code === '108' || /science|বিজ্ঞান/i.test(sName)) return 'chem'; // General Science maps to slot 5 (chem)
-            if (code === '180' || /biology|জীববিজ্ঞান/i.test(sName)) return 'bio';
-            if (['110', '111', '112', '113'].includes(code) || /religion|islam|hindu|ধর্ম/i.test(sName)) return 'rel';
-            if (code === '106' || /ict|information.*tech|যোগাযোগ/i.test(sName)) return 'ict';
-            if (['109', '126', '505'].includes(code) || /agri|কৃষি|higher.*math|উচ্চতর/i.test(sName)) return 'agri';
-
-            return null;
-        }
-
-        function getSubjectPracticalStatus() {
-            const status = {
-                chem: false,
-                phys: false,
-                bio: false,
-                agri: false
-            };
-
-            let schedules = [];
-            let examTypes = [];
-            let savedMarks = {};
-            try {
-                schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
-            } catch (e) {}
-            try {
-                examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
-            } catch (e) {}
-            try {
-                savedMarks = JSON.parse(localStorage.getItem('school_student_marks') || '{}');
-            } catch (e) {}
-
-            const activeExam = (currentFilterExam || 'all').trim().toLowerCase();
-            const activeClass = (currentFilterClass || 'all').trim().toLowerCase();
-
-            function normCls(cls) {
-                if (!cls) return '';
-                const v = cls.toString().toLowerCase().trim();
-                if (v.includes('ten') || v.includes('10')) return 'ten';
-                if (v.includes('nine') || v.includes('9')) return 'nine';
-                if (v.includes('eight') || v.includes('8')) return 'eight';
-                if (v.includes('seven') || v.includes('7')) return 'seven';
-                if (v.includes('six') || v.includes('6')) return 'six';
-                return v;
-            }
-
-            const normActiveClass = normCls(activeClass);
-
-            const matchedSchedules = schedules.filter(s => {
-                if (!s) return false;
-                if (activeExam !== 'all' && (s.term || '').trim().toLowerCase() !== activeExam) return false;
-                if (normActiveClass && normActiveClass !== 'all') {
-                    const sc = normCls(s.class);
-                    if (sc && sc !== normActiveClass) return false;
-                }
-                return true;
-            });
-
-            matchedSchedules.forEach(s => {
-                const slot = getSubjectSlot(s.subject, '');
-                if (!['chem', 'phys', 'bio', 'agri'].includes(slot)) return;
-
-                let hasPractical = false;
-
-                // 1. Direct practical property on schedule
-                if (s.practical !== undefined && Number(s.practical) > 0) {
-                    hasPractical = true;
-                }
-
-                // 2. Exam type distribution config from school_exam_types
-                if (!hasPractical && examTypes.length > 0) {
-                    const examObj = examTypes.find(et => (et.name || '').trim().toLowerCase() === (s.term || '').trim().toLowerCase());
-                    if (examObj) {
-                        const subTypes = examObj.examTypes || [];
-                        let matchedST = null;
-                        if (s.examType) {
-                            matchedST = subTypes.find(st => (st.typeName || '').trim().toLowerCase() === (s.examType || '').trim().toLowerCase());
-                        }
-                        if (!matchedST && subTypes.length > 0) {
-                            matchedST = subTypes[0];
-                        }
-                        const pracNum = matchedST && matchedST.defaultPractical !== undefined
-                            ? Number(matchedST.defaultPractical)
-                            : (examObj.defaultPractical !== undefined ? Number(examObj.defaultPractical) : 0);
-                        if (pracNum > 0) {
-                            hasPractical = true;
-                        }
-                    }
-                }
-
-                // 3. Check actual saved student marks
-                if (!hasPractical && savedMarks) {
-                    for (const key of Object.keys(savedMarks)) {
-                        if (key.endsWith(`_${s.id}`) || key.endsWith(`_${s.term}`)) {
-                            const rec = savedMarks[key];
-                            if (rec && typeof rec === 'object') {
-                                for (const subK of Object.keys(rec)) {
-                                    const m = rec[subK];
-                                    if (m && typeof m === 'object' && m.practical !== undefined && m.practical !== '' && m.practical !== '-' && Number(m.practical) > 0) {
-                                        hasPractical = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (hasPractical) break;
-                    }
-                }
-
-                if (hasPractical) {
-                    status[slot] = true;
-                }
-            });
-
-            return status;
-        }
 
         function applyTableSettings() {
+
             // Sync dropdowns
+
             document.getElementById('table-layout').value = currentLayout;
+
             document.getElementById('mcq-written').value = currentMCQWritten;
 
+            
+
             const isCompact = (currentLayout === 'compact');
+
             const isHideMCQW = (currentMCQWritten === 'hide');
 
-            const pracStatus = getSubjectPracticalStatus();
+            
 
             // 1. Calculate and set colspans for main subjects in Row 1
+
             const subjectBaseColspans = {
+
                 "bangla": 10,
+
                 "english": 6,
+
                 "math": 5,
+
                 "bgs": 5,
-                "chem": pracStatus.chem ? 6 : 5,
-                "phys": pracStatus.phys ? 6 : 5,
-                "bio": pracStatus.bio ? 6 : 5,
+
+                "chem": 6,
+
+                "phys": 6,
+
+                "bio": 6,
+
                 "rel": 5,
+
                 "ict": 5,
-                "agri": pracStatus.agri ? 6 : 5
+
+                "agri": 6
+
             };
 
+            
+
             for (let key in subjectBaseColspans) {
+
                 let colspan = subjectBaseColspans[key];
+
                 if (isCompact) colspan -= 2; // Hide Grade & Point
+
                 if (isHideMCQW && key !== 'english') {
+
                     if (key === 'bangla') {
+
                         colspan -= 4; // Hide MCQ1, Wri1, MCQ2, Wri2
+
                     } else {
+
                         colspan -= 2; // Hide MCQ, Written
+
                     }
+
                 }
+
                 const th = document.querySelector(`thead th[data-subj="${key}"]`);
+
                 if (th) {
+
                     th.setAttribute('colspan', colspan);
+
                 }
+
             }
 
-            // 2. Set colspan for inside-header-row & tfoot
+            
+
+            // 2. Set colspan for inside-header-row
+
             let totalColspan = 68;
+
             if (isCompact) totalColspan -= 20; // 10 subjects * 2
+
             if (isHideMCQW) totalColspan -= 20; // 9 subjects * 2 + bangla * 2 = 20
-            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
-                if (!pracStatus[k]) totalColspan -= 1;
-            });
 
             const insideHeaderTh = document.querySelector('#inside-header-row th');
+
             if (insideHeaderTh) {
+
                 insideHeaderTh.setAttribute('colspan', totalColspan);
+
             }
+
             const tfootTd = document.querySelector('#print-tfoot-signatures td');
+
             if (tfootTd) {
+
                 tfootTd.setAttribute('colspan', totalColspan);
+
             }
-
-            // Toggle Practical headers in thead (Row 2 & Row 4)
-            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
-                const showPrac = pracStatus[k];
-                document.querySelectorAll(`thead th[data-col-type="practical"][data-subj="${k}"]`).forEach(th => {
-                    th.style.display = showPrac ? '' : 'none';
-                });
-            });
-
-            // Adjust Row 4 full marks for subjects without practical
-            try {
-                const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
-                const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
-                const activeExam = (currentFilterExam || 'all').trim().toLowerCase();
-                
-                ['chem', 'phys', 'bio', 'agri'].forEach(k => {
-                    if (!pracStatus[k]) {
-                        let cqMark = 70;
-                        let mcqMark = 30;
-                        const sch = schedules.find(s => {
-                            if (!s) return false;
-                            if (activeExam !== 'all' && (s.term || '').trim().toLowerCase() !== activeExam) return false;
-                            return getSubjectSlot(s.subject, '') === k;
-                        });
-                        if (sch && sch.term) {
-                            const examDef = examTypes.find(et => (et.name || '').trim().toLowerCase() === (sch.term || '').trim().toLowerCase());
-                            if (examDef) {
-                                const subTypes = examDef.examTypes || [];
-                                const st = subTypes.find(t => (t.typeName || '').trim().toLowerCase() === (sch.examType || '').trim().toLowerCase()) || subTypes[0];
-                                if (st) {
-                                    if (st.defaultCQ !== undefined) cqMark = st.defaultCQ;
-                                    if (st.defaultMCQ !== undefined) mcqMark = st.defaultMCQ;
-                                }
-                            }
-                        }
-                        const mcqTh = document.querySelector(`thead th[data-fullmark="mcq"][data-subj="${k}"]`);
-                        if (mcqTh) mcqTh.textContent = translateDigits(mcqMark.toString(), currentLang);
-                        const wriTh = document.querySelector(`thead th[data-fullmark="written"][data-subj="${k}"]`);
-                        if (wriTh) wriTh.textContent = translateDigits(cqMark.toString(), currentLang);
-                    } else {
-                        const mcqTh = document.querySelector(`thead th[data-fullmark="mcq"][data-subj="${k}"]`);
-                        if (mcqTh) mcqTh.textContent = translateDigits('25', currentLang);
-                        const wriTh = document.querySelector(`thead th[data-fullmark="written"][data-subj="${k}"]`);
-                        if (wriTh) wriTh.textContent = translateDigits('50', currentLang);
-                    }
-                });
-            } catch (e) {}
 
             
 
@@ -9521,14 +9315,11 @@
                 
 
                 // Toggle MCQ/Written cells
-                mcqWrittenColIdxs.forEach(idx => {
-                    cells[idx].style.display = isHideMCQW ? 'none' : '';
-                });
 
-                // Toggle Practical cells
-                const practicalColMap = { chem: 30, phys: 36, bio: 42, agri: 58 };
-                ['chem', 'phys', 'bio', 'agri'].forEach(k => {
-                    cells[practicalColMap[k]].style.display = pracStatus[k] ? '' : 'none';
+                mcqWrittenColIdxs.forEach(idx => {
+
+                    cells[idx].style.display = isHideMCQW ? 'none' : '';
+
                 });
 
                 
@@ -9601,7 +9392,7 @@
 
             // Update colspans for section dividers
 
-            const activeColspan = getActiveColspan();
+            const activeColspan = 68 - (isCompact ? 20 : 0) - (isHideMCQW ? 20 : 0);
 
             document.querySelectorAll('.section-divider-cell').forEach(td => {
 
@@ -9622,14 +9413,15 @@
 
 
         function getActiveColspan() {
+
             let total = 68;
+
             if (currentLayout === 'compact') total -= 20;
+
             if (currentMCQWritten === 'hide') total -= 20;
-            const pracStatus = (typeof getSubjectPracticalStatus === 'function') ? getSubjectPracticalStatus() : { chem: false, phys: false, bio: false, agri: false };
-            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
-                if (!pracStatus[k]) total -= 1;
-            });
+
             return total;
+
         }
 
 
@@ -9818,11 +9610,11 @@
 
             if (examSelect) {
 
-                const selectedExamText = examSelect.options[examSelect.selectedIndex]?.textContent || currentFilterExam || '';
+                const selectedExamText = examSelect.options[examSelect.selectedIndex]?.textContent || '';
 
                 document.querySelectorAll('.header h2').forEach(el => {
 
-                    if (selectedExamText === 'All' || selectedExamText === 'সকল' || !selectedExamText) {
+                    if (selectedExamText === 'All' || selectedExamText === 'সকল') {
 
                         el.textContent = currentLang === 'en' ? 'Result Sheet' : 'ফলাফল শীট';
 
@@ -9833,10 +9625,6 @@
                     }
 
                 });
-
-                if (selectedExamText && selectedExamText !== 'All' && selectedExamText !== 'সকল') {
-                    document.title = `${selectedExamText} এর ফলাফল শীট`;
-                }
 
             }
 
@@ -10294,14 +10082,6 @@
 
             const sortOrderEl = document.getElementById('sort-order');
 
-            updateHeaderMeta();
-            updateSubjects();
-            syncStudentNamesFromDatabase();
-            populateStudentMarksFromDatabase();
-            applyTableSettings();
-            recalculateTableGradesAndRanks();
-            highlightFailures();
-
             if (sortOrderEl) {
 
                 sortStudents(sortOrderEl.value);
@@ -10324,40 +10104,6 @@
 
             if (filterEl) filterEl.value = val;
 
-            if (val && val !== 'all') {
-                localStorage.setItem('school_active_exam_filter', val);
-            }
-
-            // Auto-detect if class needs to switch to match this exam's schedules in Exam Portal
-            try {
-                const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
-                const activeSchedules = schedules.filter(s => s && s.term && s.term.trim().toLowerCase() === val.trim().toLowerCase());
-                if (activeSchedules.length > 0) {
-                    const examClasses = [...new Set(activeSchedules.map(s => s.class).filter(Boolean))];
-                    const classSelect = document.getElementById('class-filter');
-                    if (classSelect && examClasses.length > 0) {
-                        const isCurrentClassInExam = examClasses.some(c => c.toLowerCase() === classSelect.value.toLowerCase());
-                        if (!isCurrentClassInExam) {
-                            const matchOpt = [...classSelect.options].find(o => examClasses.some(c => c.toLowerCase() === o.value.toLowerCase()));
-                            if (matchOpt) {
-                                classSelect.value = matchOpt.value;
-                                currentFilterClass = classSelect.value;
-                                if (typeof updateSectionFilterOptions === 'function') {
-                                    updateSectionFilterOptions(classSelect.value);
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (e) {}
-
-            updateHeaderMeta();
-            updateSubjects();
-            syncStudentNamesFromDatabase();
-            populateStudentMarksFromDatabase();
-            applyTableSettings();
-            recalculateTableGradesAndRanks();
-            highlightFailures();
             applyFilters();
 
         }
@@ -10372,8 +10118,6 @@
 
             if (filterEl) filterEl.value = val;
 
-            updateSubjects();
-            applyTableSettings();
             applyFilters();
 
         }
@@ -10388,8 +10132,6 @@
 
             if (filterEl) filterEl.value = val;
 
-            updateSubjects();
-            applyTableSettings();
             applyFilters();
 
         }
@@ -10881,12 +10623,6 @@
                         nameCell.setAttribute('data-original-bn', cleanBn);
                         nameCell.setAttribute('data-original-en', cleanEn);
 
-                        row.setAttribute('data-student-id', dbStudent.id || '');
-                        row.setAttribute('data-student-code', dbStudent.studentId || '');
-                        row.setAttribute('data-student-roll', displayRoll);
-                        row.setAttribute('data-class', currentFilterClass);
-                        row.setAttribute('data-exam', currentFilterExam);
-
                         // Make sure the row is visible under filter display
                         const isSeniorClass = ['9', '10', '9th', '10th', 'nine', 'ten', '৯ম', '১০ম', 'play', 'nursery', 'kg', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'].some(k => currentFilterClass.toLowerCase().includes(k))
                             ? ['9', '10', '9th', '10th', 'nine', 'ten', '৯ম', '১০ম'].some(k => currentFilterClass.toLowerCase().includes(k))
@@ -10917,269 +10653,6 @@
             if (clonedAny) {
                 applyTableSettings();
             }
-            populateStudentMarksFromDatabase();
-        }
-
-        // --- LIVE MARKS INJECTION FROM EXAM PORTAL (Exam List / school_student_marks) ---
-        function getSubjectSlot(subName, subCode) {
-            const sName = (subName || '').toLowerCase();
-            const code = (subCode || '').toString().trim();
-
-            if (code === '101' || /bangla.*1|বাং.*১|বাংলা সাহিত্য/i.test(sName)) return 'bangla1';
-            if (code === '102' || /bangla.*2|বাং.*২|ব্যাকরণ/i.test(sName)) return 'bangla2';
-            if (code === '103' || /english.*1|eng.*1|ইংরেজি ১ম|for today/i.test(sName)) return 'english1';
-            if (code === '104' || /english.*2|eng.*2|ইংরেজি ২য়|grammar/i.test(sName)) return 'english2';
-            if (code === '105' || /math|গণিত/i.test(sName)) return 'math';
-            if (code === '107' || /bgs|global studies|বিশ্বপরিচয়/i.test(sName)) return 'bgs';
-            if (code === '1111' || /physics|পদার্থ/i.test(sName)) return 'phys';
-            if (code === '135' || /chemistry|রসায়ন/i.test(sName)) return 'chem';
-            if (code === '108' || /science|বিজ্ঞান/i.test(sName)) return 'chem'; // General Science maps to slot 5 (chem)
-            if (code === '180' || /biology|জীববিজ্ঞান/i.test(sName)) return 'bio';
-            if (['110', '111', '112', '113'].includes(code) || /religion|islam|hindu|ধর্ম/i.test(sName)) return 'rel';
-            if (code === '106' || /ict|information.*tech|যোগাযোগ/i.test(sName)) return 'ict';
-            if (['109', '126'].includes(code) || /agri|কৃষি|higher.*math|উচ্চতর/i.test(sName)) return 'agri';
-
-            return null;
-        }
-
-        function populateStudentMarksFromDatabase() {
-            const pracStatus = getSubjectPracticalStatus();
-            let savedMarks = {};
-            let schedules = [];
-            let subjectsMap = {};
-            try {
-                savedMarks = JSON.parse(localStorage.getItem('school_student_marks') || '{}');
-            } catch (e) {}
-            try {
-                schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
-            } catch (e) {}
-            try {
-                subjectsMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
-            } catch (e) {}
-
-            function normClass(cls) {
-                if (!cls) return '';
-                const val = cls.toString().toLowerCase().trim();
-                if (val === '10th' || val === 'ten' || val === '10' || val === '১০ম' || val.includes('ten') || val.includes('10')) return 'ten';
-                if (val === '9th' || val === 'nine' || val === '9' || val === '৯ম' || val.includes('nine') || val.includes('9')) return 'nine';
-                if (val === '8th' || val === 'eight' || val === '8' || val === '৮ম' || val.includes('eight') || val.includes('8')) return 'eight';
-                if (val === '7th' || val === 'seven' || val === '7' || val === '৭ম' || val.includes('seven') || val.includes('7')) return 'seven';
-                if (val === '6th' || val === 'six' || val === '6' || val === '৬ষ্ঠ' || val.includes('six') || val.includes('6')) return 'six';
-                if (val === 'five' || val === '5' || val === '৫ম' || val.includes('five') || val.includes('5')) return 'five';
-                if (val === 'four' || val === '4' || val === '৪র্থ' || val.includes('four') || val.includes('4')) return 'four';
-                if (val === 'three' || val === '3' || val === '৩য়' || val.includes('three') || val.includes('3')) return 'three';
-                if (val === 'two' || val === '2' || val === '২য়' || val.includes('two') || val.includes('2')) return 'two';
-                if (val === 'one' || val === '1' || val === '১ম' || val.includes('one') || val.includes('1')) return 'one';
-                return val;
-            }
-
-            const targetClass = normClass(currentFilterClass);
-            const classSubjects = subjectsMap[currentFilterClass] || subjectsMap[targetClass] || [];
-
-            const activeExam = (currentFilterExam || 'all').trim();
-            const activeExamLower = activeExam.toLowerCase();
-
-            // Find schedules for this class and active exam from Exam Portal's Exam List
-            const examSchedules = schedules.filter(s => {
-                if (!s) return false;
-                const sClass = normClass(s.class);
-                if (targetClass && sClass !== targetClass) return false;
-                if (activeExamLower === 'all') return true;
-                return (s.term || '').trim().toLowerCase() === activeExamLower;
-            });
-
-            // Map each schedule to its subject code and slot
-            const mappedSchedules = [];
-            examSchedules.forEach(s => {
-                let subCode = '';
-                if (Array.isArray(classSubjects)) {
-                    const matchedSub = classSubjects.find(cs => 
-                        (cs.name && cs.name.trim().toLowerCase() === (s.subject || '').trim().toLowerCase()) ||
-                        (cs.nameBn && cs.nameBn.trim().toLowerCase() === (s.subject || '').trim().toLowerCase()) ||
-                        (cs.code && cs.code.toString().trim() === (s.subject || '').trim())
-                    );
-                    if (matchedSub && matchedSub.code) {
-                        subCode = matchedSub.code.toString().trim();
-                    }
-                }
-                const slot = getSubjectSlot(s.subject, subCode);
-                mappedSchedules.push({
-                    id: s.id,
-                    subject: s.subject,
-                    term: s.term,
-                    subCode: subCode,
-                    slot: slot
-                });
-            });
-
-            const rows = document.querySelectorAll('tbody tr[data-section]');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length < 68) return;
-
-                const stId = row.getAttribute('data-student-id');
-                const stCode = row.getAttribute('data-student-code');
-                const stRoll = row.getAttribute('data-student-roll');
-
-                // If this is a database student row
-                if (stId || stCode || stRoll) {
-                    // Reset all mark cells (index 2 to 61) to '-' before populating for the active exam
-                    if (mappedSchedules.length > 0) {
-                        for (let c = 2; c <= 61; c++) {
-                            cells[c].textContent = '-';
-                            cells[c].removeAttribute('data-orig-val');
-                        }
-                    }
-
-                    mappedSchedules.forEach(item => {
-                        if (!item.slot) return;
-
-                        // Look up mark object in savedMarks
-                        let markRecord = null;
-                        if (stId && savedMarks[`marks_${stId}_${item.id}`]) {
-                            markRecord = savedMarks[`marks_${stId}_${item.id}`];
-                        } else if (stCode && savedMarks[`marks_${stCode}_${item.id}`]) {
-                            markRecord = savedMarks[`marks_${stCode}_${item.id}`];
-                        } else if (stRoll && savedMarks[`marks_${stRoll}_${item.id}`]) {
-                            markRecord = savedMarks[`marks_${stRoll}_${item.id}`];
-                        } else if (stId && savedMarks[`marks_${stId}_${activeExam}`]) {
-                            markRecord = savedMarks[`marks_${stId}_${activeExam}`];
-                        } else if (stCode && savedMarks[`marks_${stCode}_${activeExam}`]) {
-                            markRecord = savedMarks[`marks_${stCode}_${activeExam}`];
-                        } else if (stRoll && savedMarks[`marks_${stRoll}_${activeExam}`]) {
-                            markRecord = savedMarks[`marks_${stRoll}_${activeExam}`];
-                        }
-
-                        if (!markRecord) return;
-
-                        let markData = null;
-                        if (item.subCode && markRecord[item.subCode] !== undefined) {
-                            markData = markRecord[item.subCode];
-                        } else if (markRecord[item.subject] !== undefined) {
-                            markData = markRecord[item.subject];
-                        } else if (typeof markRecord === 'object' && !Array.isArray(markRecord)) {
-                            const keys = Object.keys(markRecord);
-                            if (keys.length === 1 && typeof markRecord[keys[0]] === 'object') {
-                                markData = markRecord[keys[0]];
-                            }
-                        }
-
-                        if (markData === null || markData === undefined) return;
-
-                        let isAbsent = false;
-                        let cq = null;
-                        let mcq = null;
-                        let prac = null;
-                        let total = null;
-
-                        if (typeof markData === 'object') {
-                            isAbsent = !!markData.isAbsent;
-                            if (!isAbsent) {
-                                if (markData.cq !== undefined && markData.cq !== '' && markData.cq !== '-') cq = markData.cq;
-                                if (markData.mcq !== undefined && markData.mcq !== '' && markData.mcq !== '-') mcq = markData.mcq;
-                                if (markData.practical !== undefined && markData.practical !== '' && markData.practical !== '-') prac = markData.practical;
-                                if (markData.total !== undefined && markData.total !== '' && markData.total !== '-') total = markData.total;
-                                if (total === null && (cq !== null || mcq !== null || prac !== null)) {
-                                    total = (Number(cq) || 0) + (Number(mcq) || 0) + (Number(prac) || 0);
-                                }
-                            }
-                        } else if (typeof markData === 'number' || (typeof markData === 'string' && markData.trim() !== '')) {
-                            if (markData.toString().toUpperCase() === 'A' || markData.toString().toUpperCase() === 'ABS') {
-                                isAbsent = true;
-                            } else {
-                                total = markData;
-                                cq = markData;
-                            }
-                        }
-
-                        const formatCell = (val) => {
-                            if (isAbsent) return 'A';
-                            if (val === null || val === undefined || val === '') return '-';
-                            return translateDigits(val.toString(), currentLang);
-                        };
-
-                        // Inject values into slot cells
-                        switch (item.slot) {
-                            case 'bangla1':
-                                if (mcq !== null || isAbsent) cells[2].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[3].textContent = formatCell(cq);
-                                if (total !== null || isAbsent) cells[4].textContent = formatCell(total);
-                                break;
-                            case 'bangla2':
-                                if (mcq !== null || isAbsent) cells[5].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[6].textContent = formatCell(cq);
-                                if (total !== null || isAbsent) cells[7].textContent = formatCell(total);
-                                break;
-                            case 'english1':
-                                cells[12].textContent = formatCell(total !== null ? total : cq);
-                                break;
-                            case 'english2':
-                                cells[13].textContent = formatCell(total !== null ? total : cq);
-                                break;
-                            case 'math':
-                                if (mcq !== null || isAbsent) cells[18].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[19].textContent = formatCell(cq);
-                                if (total !== null || isAbsent) cells[20].textContent = formatCell(total);
-                                break;
-                            case 'bgs':
-                                if (mcq !== null || isAbsent) cells[23].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[24].textContent = formatCell(cq);
-                                if (total !== null || isAbsent) cells[25].textContent = formatCell(total);
-                                break;
-                            case 'chem':
-                                if (mcq !== null || isAbsent) cells[28].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[29].textContent = formatCell(cq);
-                                if (pracStatus.chem) {
-                                    if (prac !== null || isAbsent) cells[30].textContent = formatCell(prac);
-                                } else {
-                                    cells[30].textContent = '-';
-                                }
-                                if (total !== null || isAbsent) cells[31].textContent = formatCell(total);
-                                break;
-                            case 'phys':
-                                if (mcq !== null || isAbsent) cells[34].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[35].textContent = formatCell(cq);
-                                if (pracStatus.phys) {
-                                    if (prac !== null || isAbsent) cells[36].textContent = formatCell(prac);
-                                } else {
-                                    cells[36].textContent = '-';
-                                }
-                                if (total !== null || isAbsent) cells[37].textContent = formatCell(total);
-                                break;
-                            case 'bio':
-                                if (mcq !== null || isAbsent) cells[40].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[41].textContent = formatCell(cq);
-                                if (pracStatus.bio) {
-                                    if (prac !== null || isAbsent) cells[42].textContent = formatCell(prac);
-                                } else {
-                                    cells[42].textContent = '-';
-                                }
-                                if (total !== null || isAbsent) cells[43].textContent = formatCell(total);
-                                break;
-                            case 'rel':
-                                if (mcq !== null || isAbsent) cells[46].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[47].textContent = formatCell(cq);
-                                if (total !== null || isAbsent) cells[48].textContent = formatCell(total);
-                                break;
-                            case 'ict':
-                                if (mcq !== null || isAbsent) cells[51].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[52].textContent = formatCell(cq);
-                                if (total !== null || isAbsent) cells[53].textContent = formatCell(total);
-                                break;
-                            case 'agri':
-                                if (mcq !== null || isAbsent) cells[56].textContent = formatCell(mcq);
-                                if (cq !== null || isAbsent) cells[57].textContent = formatCell(cq);
-                                if (pracStatus.agri) {
-                                    if (prac !== null || isAbsent) cells[58].textContent = formatCell(prac);
-                                } else {
-                                    cells[58].textContent = '-';
-                                }
-                                if (total !== null || isAbsent) cells[59].textContent = formatCell(total);
-                                break;
-                        }
-                    });
-                }
-            });
         }
 
         function populateDynamicFilters() {
@@ -11243,25 +10716,22 @@
                 }
             }
 
-            // 2. Exam Filter (Dynamically synchronized with Exam Portal's Exam List)
+            // 2. Exam Filter
             let examNames = [];
             try {
+                const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
                 const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
                 const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
-                const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
 
                 const examSet = new Set();
-                // 1. Prioritize active Exam Names from Exam Portal's Exam List (school_exam_schedules)
-                if (Array.isArray(schedules)) {
-                    schedules.forEach(s => { if (s && s.term && s.term.trim()) examSet.add(s.term.trim()); });
-                }
-                // 2. Then Exam Types from Exam Portal (school_exam_types)
-                if (Array.isArray(examTypes)) {
-                    examTypes.forEach(t => { if (t && t.name && t.name.trim()) examSet.add(t.name.trim()); });
-                }
-                // 3. Fallback routines
                 if (Array.isArray(routines)) {
-                    routines.forEach(r => { if (r && r.examName && r.examName.trim()) examSet.add(r.examName.trim()); });
+                    routines.forEach(r => { if (r && r.examName) examSet.add(r.examName.trim()); });
+                }
+                if (Array.isArray(schedules)) {
+                    schedules.forEach(s => { if (s && s.term) examSet.add(s.term.trim()); });
+                }
+                if (Array.isArray(examTypes)) {
+                    examTypes.forEach(t => { if (t && t.name) examSet.add(t.name.trim()); });
                 }
                 examNames = [...examSet];
             } catch (e) { }
@@ -11269,19 +10739,7 @@
             const examSelect = document.getElementById('exam-filter');
             if (examSelect) {
                 if (examNames && examNames.length > 0) {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const paramExam = urlParams.get('exam');
-                    const savedActiveExam = localStorage.getItem('school_active_exam_filter');
-
-                    let currentVal = examSelect.value;
-                    if (paramExam && examNames.some(e => e.toLowerCase() === paramExam.trim().toLowerCase())) {
-                        currentVal = examNames.find(e => e.toLowerCase() === paramExam.trim().toLowerCase());
-                    } else if (savedActiveExam && examNames.some(e => e.toLowerCase() === savedActiveExam.trim().toLowerCase())) {
-                        currentVal = examNames.find(e => e.toLowerCase() === savedActiveExam.trim().toLowerCase());
-                    } else if (!currentVal || currentVal === 'half_yearly' || !examNames.includes(currentVal)) {
-                        currentVal = examNames[0];
-                    }
-
+                    const currentVal = examSelect.value || 'half_yearly';
                     examSelect.innerHTML = '<option value="all">All</option>';
 
                     examNames.forEach(exam => {
@@ -11298,32 +10756,6 @@
                     } else if (examSelect.options.length > 1) {
                         examSelect.selectedIndex = 1;
                     }
-                    currentFilterExam = examSelect.value;
-
-                    // Smart auto-class detection for the active exam from Exam Portal schedules
-                    try {
-                        const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
-                        const activeSchedules = schedules.filter(s => s && s.term && s.term.trim().toLowerCase() === examSelect.value.trim().toLowerCase());
-                        if (activeSchedules.length > 0) {
-                            const examClasses = [...new Set(activeSchedules.map(s => s.class).filter(Boolean))];
-                            const classSelect = document.getElementById('class-filter');
-                            const paramClass = urlParams.get('class');
-
-                            if (paramClass && classSelect && [...classSelect.options].some(o => o.value.toLowerCase() === paramClass.toLowerCase())) {
-                                classSelect.value = paramClass;
-                                currentFilterClass = classSelect.value;
-                            } else if (classSelect && examClasses.length > 0) {
-                                const isCurrentClassInExam = examClasses.some(c => c.toLowerCase() === classSelect.value.toLowerCase());
-                                if (!isCurrentClassInExam) {
-                                    const matchOpt = [...classSelect.options].find(o => examClasses.some(c => c.toLowerCase() === o.value.toLowerCase()));
-                                    if (matchOpt) {
-                                        classSelect.value = matchOpt.value;
-                                        currentFilterClass = classSelect.value;
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e) {}
                 } else {
                     [...examSelect.options].forEach(opt => {
                         const val = opt.value;
@@ -11383,18 +10815,14 @@
         recalculateTableGradesAndRanks();
         highlightFailures();
 
-        // Listen for storage and database changes to keep filters, subjects, grading rules, student marks, and ranks updated in real-time
+        // Listen for storage and database changes to keep filters, subjects, grading rules, and Roll column updated in real-time
         function refreshTabulationSheetData() {
             populateDynamicFilters();
             applySchoolSettings();
             updateHeaderMeta();
             updateSubjects();
             syncStudentNamesFromDatabase();
-            populateStudentMarksFromDatabase();
-            applyTableSettings();
             recalculateTableGradesAndRanks();
-            highlightFailures();
-            applyFilters();
             const modal = document.getElementById('grading-system-modal');
             if (modal && modal.style.display !== 'none') {
                 renderGradingSystemModalContent();
@@ -11402,34 +10830,27 @@
         }
 
         window.addEventListener('storage', (e) => {
-            if (!e.key || e.key === 'school_classes' || e.key === 'school_subjects' || e.key === 'school_marking_system' || e.key === 'school_exam_schedules' || e.key === 'school_exam_routines' || e.key === 'school_exam_types' || e.key === 'school_settings' || e.key === 'school_students' || e.key === 'school_student_marks' || e.key === 'school_active_exam_filter') {
+            if (!e.key || e.key === 'school_classes' || e.key === 'school_subjects' || e.key === 'school_marking_system' || e.key === 'school_exam_schedules' || e.key === 'school_exam_routines' || e.key === 'school_exam_types' || e.key === 'school_settings' || e.key === 'school_students' || e.key === 'school_student_marks') {
                 refreshTabulationSheetData();
             }
         });
 
         window.addEventListener('dbSynced', refreshTabulationSheetData);
-        window.addEventListener('school_subjects_synced', refreshTabulationSheetData);
-        window.addEventListener('school_classes_synced', refreshTabulationSheetData);
-        window.addEventListener('localStorageUpdated', refreshTabulationSheetData);
         window.addEventListener('focus', refreshTabulationSheetData);
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) refreshTabulationSheetData();
         });
 
-        // Periodic live sync check (detects changes made in Exam Portal, Student Directory, Grading Scale, or Academic Subject Management without needing reload)
+        // Periodic live sync check (detects changes made in Student Directory, Grading Scale, or Academic Subject Management in another tab/window without needing reload)
         let lastKnownStudentsJson = '';
         let lastKnownSubjectsJson = '';
         let lastKnownMarkingSystemJson = '';
         let lastKnownMarksJson = '';
-        let lastKnownSchedulesJson = '';
-        let lastKnownActiveExam = '';
         try {
             lastKnownStudentsJson = localStorage.getItem('school_students') || '';
             lastKnownSubjectsJson = localStorage.getItem('school_subjects') || '';
             lastKnownMarkingSystemJson = localStorage.getItem('school_marking_system') || '';
             lastKnownMarksJson = localStorage.getItem('school_student_marks') || '';
-            lastKnownSchedulesJson = localStorage.getItem('school_exam_schedules') || '';
-            lastKnownActiveExam = localStorage.getItem('school_active_exam_filter') || '';
         } catch (e) { }
 
         setInterval(() => {
@@ -11438,20 +10859,14 @@
                 const currentSubjectsJson = localStorage.getItem('school_subjects') || '';
                 const currentMarkingSystemJson = localStorage.getItem('school_marking_system') || '';
                 const currentMarksJson = localStorage.getItem('school_student_marks') || '';
-                const currentSchedulesJson = localStorage.getItem('school_exam_schedules') || '';
-                const currentActiveExam = localStorage.getItem('school_active_exam_filter') || '';
                 if (currentStudentsJson !== lastKnownStudentsJson || 
                     currentSubjectsJson !== lastKnownSubjectsJson || 
                     currentMarkingSystemJson !== lastKnownMarkingSystemJson ||
-                    currentMarksJson !== lastKnownMarksJson ||
-                    currentSchedulesJson !== lastKnownSchedulesJson ||
-                    currentActiveExam !== lastKnownActiveExam) {
+                    currentMarksJson !== lastKnownMarksJson) {
                     lastKnownStudentsJson = currentStudentsJson;
                     lastKnownSubjectsJson = currentSubjectsJson;
                     lastKnownMarkingSystemJson = currentMarkingSystemJson;
                     lastKnownMarksJson = currentMarksJson;
-                    lastKnownSchedulesJson = currentSchedulesJson;
-                    lastKnownActiveExam = currentActiveExam;
                     refreshTabulationSheetData();
                 }
             } catch (e) { }
