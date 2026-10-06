@@ -23,7 +23,8 @@ try:
 except ImportError:
     HAS_HYPERCORN = False
 
-PORT = 8000
+PORT = int(os.environ.get('PORT', 8000))
+IS_CLOUD = bool(os.environ.get('RENDER') or os.environ.get('PORT') or os.environ.get('DYNO'))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.environ.get('SCHOOL_DB_PATH', os.path.join(BASE_DIR, 'school.db'))
 db_dir = os.path.dirname(os.path.abspath(DB_FILE))
@@ -926,7 +927,7 @@ async def asgi_app(scope, receive, send):
             (b'access-control-allow-headers', b'Content-Type, Authorization, X-Requested-With, *'),
             (b'content-type', content_type.encode('utf-8')),
         ]
-        if scheme == 'https':
+        if scheme == 'https' and not IS_CLOUD:
             resp_headers.append((b'alt-svc', f'h3=":{PORT}"; ma=86400'.encode('ascii')))
 
         if extra_headers:
@@ -1904,6 +1905,18 @@ async def start_hypercorn_server(cert_path=None, key_path=None):
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_asyncio_exception)
     
+    # 0. Cloud (Render / Railway / Heroku) Mode: bind directly to the cloud assigned PORT
+    if IS_CLOUD:
+        config = HyperConfig()
+        config.keep_alive_timeout = 60.0
+        config.graceful_timeout = 5.0
+        config.bind = [f"0.0.0.0:{PORT}"]
+        config.alpn_protocols = ["h2c", "http/1.1"]
+        config.accesslog = None
+        print(f"  [+] Cloud Deployment Mode Active: Listening directly on 0.0.0.0:{PORT}")
+        await hypercorn.asyncio.serve(asgi_app, config)
+        return
+
     # Auto-clean any stale port listeners before starting internal engines
     free_ports_if_occupied([PORT, INTERNAL_HTTP_PORT, INTERNAL_HTTPS_PORT])
 
