@@ -1892,10 +1892,10 @@ function updateNoticeTicker() {
 
     const fullHtml = tickerItems.map(item => {
         if (item.pdf) {
-            return `<span>✦ ${item.text} <a href="javascript:void(0)" onclick="openTickerPdfFromGlobal(${item.index})" class="ticker-pdf-badge" style="color: #1e40af; background: #e0e7ff; padding: 1px 7px; border-radius: 4px; font-weight: 700; text-decoration: none; font-size: 0.82rem; margin-left: 6px; border: 1px solid #c7d2fe; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">📄 PDF</a></span>`;
+            return `<span><b style="color: #38bdf8; margin-right: 6px; font-weight: 700;">✦</b><span style="color: #ffffff; font-weight: 600; letter-spacing: 0.2px;">${item.text}</span> <a href="javascript:void(0)" onclick="openTickerPdfFromGlobal(${item.index})" class="ticker-pdf-badge" style="color: #ffffff; background: #2563eb; padding: 2px 9px; border-radius: 5px; font-weight: 700; text-decoration: none; font-size: 0.82rem; margin-left: 8px; border: 1px solid #60a5fa; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(37,99,235,0.4); cursor: pointer;">📄 PDF</a></span>`;
         }
-        return `<span>✦ ${item.text}</span>`;
-    }).join("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        return `<span><b style="color: #38bdf8; margin-right: 6px; font-weight: 700;">✦</b><span style="color: #ffffff; font-weight: 600; letter-spacing: 0.2px;">${item.text}</span></span>`;
+    }).join("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 
     const plainText = tickerItems.map(item => item.text).join("    ");
     const speed = Math.max(22, Math.round(plainText.length * 0.18));
