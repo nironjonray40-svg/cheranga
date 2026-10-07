@@ -1,14 +1,18 @@
 import re
 
-with open('seat-plan.html', 'r', encoding='utf-8') as f:
-    seat_content = f.read()
+with open('exam-portal.html', 'r', encoding='utf-8') as f:
+    html = f.read()
 
-with open('Seating arrangement details.html', 'r', encoding='utf-8') as f:
-    seating_content = f.read()
+ids_in_html = set(re.findall(r'id=["\']([^"\']+)["\']', html))
 
-seat_ids = set(re.findall(r'id=["\']([^"\']+)["\']', seat_content))
-seating_ids = set(re.findall(r'id=["\']([^"\']+)["\']', seating_content))
+with open('scratch/script_7.js', 'r', encoding='utf-8') as sf:
+    js = sf.read()
 
-common_ids = seat_ids.intersection(seating_ids)
-print('Common IDs:', common_ids)
-print('Seating Details IDs:', seating_ids)
+get_elem_calls = re.findall(r'document\.getElementById\(["\']([^"\']+)["\']\)', js)
+missing = []
+for gid in get_elem_calls:
+    if gid not in ids_in_html:
+        missing.append(gid)
+
+print(f"Total getElementById calls: {len(get_elem_calls)}")
+print(f"Missing IDs from HTML: {set(missing)}")

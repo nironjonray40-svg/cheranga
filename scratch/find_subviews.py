@@ -1,8 +1,11 @@
+import sys
 import re
+sys.stdout.reconfigure(encoding='utf-8')
 
-with open('advance.html', 'r', encoding='utf-8') as f:
-    lines = f.readlines()
+with open(r'c:\Users\niron\OneDrive\Desktop\Cheranga\exam-portal.html', 'r', encoding='utf-8', errors='ignore') as f:
+    text = f.read()
 
-for i, line in enumerate(lines):
-    if 'subview-' in line and ('id=' in line or 'class=' in line or 'data-view=' in line):
-        print(f"Line {i+1}: {line.strip()[:100]}")
+matches = re.finditer(r'id="(subview-[^"]+)"', text)
+for m in matches:
+    line_no = text[:m.start()].count('\n') + 1
+    print(f"Line {line_no}: {m.group(1)}")

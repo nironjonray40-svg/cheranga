@@ -1,0 +1,506 @@
+
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand-logo">
+        <div class="logo-badge">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-text">
+          <h1>OMR মূল্যায়ন ও রেজাল্ট প্রসেসর <span style="font-size: 0.75rem; background: var(--omr-pink-light); color: var(--omr-pink); padding: 2px 8px; border-radius: 12px; font-weight: 600;">v2.5 PRO</span></h1>
+          <p>সহজ, নিখুঁত ও দ্রুততম ওএমআর পরীক্ষণ সিস্টেম</p>
+        </div>
+      </div>
+      
+      <div class="nav-actions">
+        <!-- Blank OMR Download Button -->
+        <button id="btnDownloadBlankOMR" class="btn btn-omr" title="একটি পরিচ্ছন্ন ব্লাংক OMR শিট ডাউনলোড বা প্রিন্ট করুন">
+          <i class="fa-solid fa-file-arrow-down"></i> ব্লাংক OMR শিট
+        </button>
+        
+        <!-- Answer Key Manager Modal Trigger -->
+        <button id="btnOpenKeyModal" class="btn btn-outline" title="উত্তরপত্র (Answer Key) দেখুন বা পরিবর্তন করুন">
+          <i class="fa-solid fa-key"></i> উত্তরপত্র সেটআপ
+        </button>
+        
+        <!-- Dark/Light Mode Toggle -->
+        <button id="btnThemeToggle" class="icon-btn" title="থিম পরিবর্তন (Dark/Light)">
+          <i class="fa-regular fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="app-main">
+    
+    <!-- Hero Banner with Quick Instruction & Direct Action -->
+    <section class="hero-banner">
+      <div class="banner-info">
+        <h2><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> ওএমআর শিট মূল্যায়ন ড্যাশবোর্ড</h2>
+        <p>শিক্ষার্থীদের পূরণকৃত OMR স্ক্যান করা ফোল্ডার এবং উত্তরপত্রের ফোল্ডার সিলেক্ট করে 'মূল্যায়ন শুরু করুন' বাটনে ক্লিক করুন। সিস্টেমটি স্বয়ংক্রিয়ভাবে আইডি, রোল ও উত্তরমালা স্ক্যান করে নির্ভুল গ্রেড শিট তৈরি করবে।</p>
+      </div>
+      <div class="banner-actions">
+        <!-- Instant Sample Data Generator for testing -->
+        <button id="btnLoadSampleData" class="btn btn-outline" style="border-style: dashed; border-color: var(--primary);">
+          <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> নমুনা ডেটা লোড করুন (Demo)
+        </button>
+      </div>
+    </section>
+
+    <!-- Folder Inputs Section -->
+    <section class="grid-upload-section">
+      
+      <!-- Card 1: Answer Key Upload & Management -->
+      <div class="upload-card">
+        <div class="card-header-flex">
+          <div class="card-title">
+            <i class="fa-solid fa-folder-open" style="color: #4f46e5;"></i>
+            <span>১. উত্তরপত্রের (Answer Key) ফোল্ডার / ফাইল</span>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button type="button" class="btn btn-xs btn-outline" id="btnPreviewAnswerKeyCard" title="উত্তরপত্র প্রিভিউ ও সেটআপ দেখুন">
+              <i class="fa-solid fa-eye" style="color: var(--primary);"></i> প্রিভিউ ও সেটআপ
+            </button>
+            <span class="badge-pill badge-primary">ধাপ ১</span>
+          </div>
+        </div>
+        
+        <div class="dropzone-box" id="dropzoneAnswerKey">
+          <input type="file" id="inputAnswerKeyFolder" webkitdirectory directory multiple style="display: none;">
+          <input type="file" id="inputAnswerKeyFile" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" multiple style="display: none;">
+          <div class="dropzone-icon">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <div class="dropzone-text">
+            <h4>উত্তরপত্র ফাইল বা ফোল্ডার সিলেক্ট করুন</h4>
+            <p>Excel (.xlsx), CSV, TXT, JSON ফাইল অথবা ফোল্ডার ড্র্যাগ করুন</p>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap;" onclick="event.stopPropagation();">
+              <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeyFile').click();">
+                <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড (.xlsx/.txt/.csv)
+              </button>
+              <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFolder').click();">
+                <i class="fa-solid fa-folder-open"></i> ফোল্ডার আপলোড
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="folder-status-bar" id="statusAnswerKey" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <span><i class="fa-regular fa-folder"></i> স্ট্যাটাস:</span>
+            <strong id="textAnswerKeyStatus" style="color: var(--text-muted);">কোনো উত্তরপত্র আপলোড করা হয়নি</strong>
+          </div>
+          <button type="button" class="btn btn-xs btn-outline" id="btnQuickKeyPreview" style="flex-shrink: 0;" title="আপলোডকৃত উত্তরপত্র প্রিভিউ করুন">
+            <i class="fa-solid fa-magnifying-glass"></i> প্রিভিউ
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: Student OMR Folder -->
+      <div class="upload-card">
+        <div class="card-header-flex">
+          <div class="card-title">
+            <i class="fa-solid fa-folder-tree" style="color: #d91c84;"></i>
+            <span>২. শিক্ষার্থীদের পূরণকৃত OMR ফোল্ডার</span>
+          </div>
+          <span class="badge-pill badge-omr">ধাপ ২</span>
+        </div>
+        
+        <div class="dropzone-box" id="dropzoneStudentOMR">
+          <input type="file" id="inputStudentOMRFolder" webkitdirectory directory multiple>
+          <div class="dropzone-icon" style="color: #d91c84;">
+            <i class="fa-solid fa-file-import"></i>
+          </div>
+          <div class="dropzone-text">
+            <h4>শিক্ষার্থীদের ওএমআর ফোল্ডার সিলেক্ট করুন</h4>
+            <p>স্ক্যান করা ইমেজ (.jpg, .png) যুক্ত ফোল্ডারটি নির্বাচন করুন</p>
+          </div>
+        </div>
+        
+        <div class="folder-status-bar" id="statusStudentOMR">
+          <span><i class="fa-regular fa-images"></i> প্রাপ্ত OMR ফাইল:</span>
+          <strong id="textStudentOMRStatus" style="color: var(--text-muted);">০ টি ফাইল নির্বাচিত</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Evaluation Action Toolbar -->
+    <section class="evaluation-toolbar">
+      <div class="toolbar-left">
+        <button id="btnStartEvaluation" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.65rem 1.5rem;">
+          <i class="fa-solid fa-play"></i> OMR মূল্যায়ন শুরু করুন
+        </button>
+        <button id="btnResetData" class="btn btn-outline btn-sm" title="বর্তমান তালিকা রিসেট করুন">
+          <i class="fa-solid fa-rotate-left"></i> রিসেট
+        </button>
+      </div>
+      
+      <div class="toolbar-right">
+        <!-- Excel Export Button -->
+        <button id="btnExportExcel" class="btn btn-success" title="সকল ফলাফল .xlsx এক্সেল ফাইলে ডাউনলোড করুন" disabled>
+          <i class="fa-solid fa-file-excel"></i> Excel (.xlsx) এক্সপোর্ট
+        </button>
+        
+        <!-- Print Table Button -->
+        <button id="btnPrintTable" class="btn btn-outline" title="প্রিন্ট ভিউ দেখুন" disabled>
+          <i class="fa-solid fa-print"></i> প্রিন্ট রিপোর্ট
+        </button>
+      </div>
+    </section>
+
+    <!-- Scanning Progress Animation Bar -->
+    <section class="progress-wrapper" id="progressWrapper">
+      <div class="progress-header">
+        <span id="progressStatusText"><i class="fa-solid fa-spinner fa-spin"></i> OMR শিট স্ক্যানিং ও বাবল রিকগনিশন চলছে...</span>
+        <span id="progressPercentText" style="font-family: 'Inter', monospace; font-weight: 700;">০%</span>
+      </div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progressBarInner"></div>
+      </div>
+    </section>
+
+    <!-- Summary Statistics Cards -->
+    <section class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statTotalStudents">০</div>
+          <div class="stat-label">মোট পরীক্ষার্থী</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statPassedStudents">০</div>
+          <div class="stat-label">উত্তীর্ণ (পাস)</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon pink">
+          <i class="fa-solid fa-award"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statAverageScore">০.০</div>
+          <div class="stat-label">গড় শুদ্ধ উত্তর / নম্বর</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statHighestScore">০</div>
+          <div class="stat-label">সর্বোচ্চ নম্বর (৩০ এর মধ্যে)</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon yellow">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statPassRate">০%</div>
+          <div class="stat-label">পাসের হার</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Results Table Card -->
+    <section class="table-container-card">
+      
+      <!-- Table Filter Toolbar -->
+      <div class="table-header-toolbar">
+        <div class="search-filter-group">
+          <!-- Search Input -->
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="inputSearch" placeholder="আইডি নং বা রোল নং খুঁজুন...">
+          </div>
+
+          <!-- Class Filter -->
+          <select id="filterClass" class="filter-select">
+            <option value="ALL">সকল শ্রেণি</option>
+            <option value="10">১০ম শ্রেণি</option>
+            <option value="9">৯ম শ্রেণি</option>
+            <option value="8">৮ম শ্রেণি</option>
+          </select>
+
+          <!-- Section Filter -->
+          <select id="filterSection" class="filter-select">
+            <option value="ALL">সকল শাখা</option>
+            <option value="ক">শাখা: ক</option>
+            <option value="খ">শাখা: খ</option>
+            <option value="গ">শাখা: গ</option>
+            <option value="ঘ">শাখা: ঘ</option>
+          </select>
+
+          <!-- Set Filter -->
+          <select id="filterSet" class="filter-select">
+            <option value="ALL">সকল সেট</option>
+            <option value="ক">সেট: ক</option>
+            <option value="খ">সেট: খ</option>
+            <option value="গ">সেট: গ</option>
+          </select>
+
+          <!-- Status Filter -->
+          <select id="filterStatus" class="filter-select">
+            <option value="ALL">সকল ফলাফল</option>
+            <option value="উত্তীর্ণ">উত্তীর্ণ</option>
+            <option value="অনুত্তীর্ণ">অনুত্তীর্ণ</option>
+          </select>
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          প্রদর্শিত হচ্ছে: <strong id="textShowingCount" style="color: var(--text-main);">০</strong> জন
+        </div>
+      </div>
+
+      <!-- Main Results Table -->
+      <div class="table-responsive">
+        <table class="results-table" id="tableResults">
+          <thead>
+            <tr>
+              <th style="width: 50px;">ক্রমিক</th>
+              <th>শিক্ষার্থী আইডি নং</th>
+              <th>রোল নং</th>
+              <th>শ্রেণি</th>
+              <th>শাখা</th>
+              <th>সেট নং</th>
+              <th>শুদ্ধ উত্তরের সংখ্যা</th>
+              <th>প্রাপ্ত নম্বর (%)</th>
+              <th>স্ট্যাটাস</th>
+              <th style="text-align: right;">অ্যাকশন</th>
+            </tr>
+          </thead>
+          <tbody id="tableResultsBody">
+            <!-- Populated dynamically via JS -->
+            <tr>
+              <td colspan="10">
+                <div class="empty-state">
+                  <i class="fa-regular fa-folder-open"></i>
+                  <h3>কোনো মূল্যায়ন ডেটা লোড করা হয়নি</h3>
+                  <p>উপরে ফোল্ডার আপলোড করুন অথবা 'নমুনা ডেটা লোড করুন' বাটনে ক্লিক করে পরীক্ষা করুন।</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- View & Edit Modal -->
+  <div class="modal-overlay" id="modalViewEdit">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-user-pen" style="color: var(--omr-pink);"></i>
+          <span>শিক্ষার্থীর OMR তথ্য ও উত্তরমালা পর্যালোচনা / সংশোধন</span>
+        </div>
+        <button class="icon-btn" id="btnCloseModal" title="বন্ধ করুন">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Editable Student Information Grid -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="editStudentId">শিক্ষার্থী আইডি নং</label>
+            <input type="text" id="editStudentId" class="form-control" maxlength="7">
+          </div>
+          <div class="form-group">
+            <label for="editRoll">রোল নং</label>
+            <input type="text" id="editRoll" class="form-control" maxlength="3">
+          </div>
+          <div class="form-group">
+            <label for="editClass">শ্রেণি</label>
+            <select id="editClass" class="form-control">
+              <option value="10">১০ম (10)</option>
+              <option value="9">৯ম (9)</option>
+              <option value="8">৮ম (8)</option>
+              <option value="7">৭ম (7)</option>
+              <option value="6">৬ষ্ঠ (6)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editSection">শাখা</label>
+            <select id="editSection" class="form-control">
+              <option value="ক">ক</option>
+              <option value="খ">খ</option>
+              <option value="গ">গ</option>
+              <option value="ঘ">ঘ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editSet">সেট নং</label>
+            <select id="editSet" class="form-control">
+              <option value="ক">ক</option>
+              <option value="খ">খ</option>
+              <option value="গ">গ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>বর্তমান শুদ্ধ উত্তর</label>
+            <div id="editCurrentScoreDisplay" style="font-weight: 800; font-size: 1.25rem; color: #10b981; padding-top: 4px;">
+              ০ / ৩০
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Visual OMR Sheet Section -->
+        <div class="omr-review-container">
+          <div class="omr-review-header">
+            <div>
+              <i class="fa-solid fa-circle-dot"></i> ৩০টি প্রশ্নের উত্তরমালা (যেকোনো বাবলে ক্লিক করে উত্তর পরিবর্তন করতে পারেন)
+            </div>
+            <div class="omr-legend">
+              <div class="legend-item"><span class="legend-dot dot-correct"></span> সঠিক উত্তর</div>
+              <div class="legend-item"><span class="legend-dot dot-wrong"></span> ভুল উত্তর</div>
+              <div class="legend-item"><span class="legend-dot dot-key"></span> আসল উত্তরচিহ্ন</div>
+              <div class="legend-item"><span class="legend-dot dot-blank"></span> অনুত্তরিত</div>
+            </div>
+          </div>
+
+          <div class="omr-questions-grid" id="modalOmrGrid">
+            <!-- 3 columns of 10 questions each rendered via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          * পরিবর্তন সংরক্ষণ করার পর তাৎক্ষণিকভাবে ফলাফল ও মূল টেবিল আপডেট হয়ে যাবে।
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-outline" id="btnCancelEdit">বাতিল</button>
+          <button class="btn btn-success" id="btnSaveEdit">
+            <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Answer Key Setup & Preview Modal -->
+  <div class="modal-overlay" id="modalAnswerKey">
+    <div class="modal-card" style="max-width: 860px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-key" style="color: var(--primary);"></i>
+          <span>উত্তরপত্র (Answer Key) প্রিভিউ ও ব্যবস্থাপনা</span>
+        </div>
+        <button class="icon-btn" id="btnCloseKeyModal" title="বন্ধ করুন">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Tab Navigation inside Modal -->
+      <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap;">
+        <button type="button" class="key-tab-btn active" id="tabBtnBubbleView" onclick="switchKeyModalTab('bubble')">
+          <i class="fa-solid fa-circle-dot"></i> ওএমআর বাবল সেটআপ ও প্রিভিউ
+        </button>
+        <button type="button" class="key-tab-btn" id="tabBtnSourceView" onclick="switchKeyModalTab('source')">
+          <i class="fa-solid fa-file-code"></i> আপলোডকৃত সোর্স ফাইল প্রিভিউ
+        </button>
+        <button type="button" class="key-tab-btn" id="tabBtnTemplateView" onclick="switchKeyModalTab('template')">
+          <i class="fa-solid fa-download"></i> স্যাম্পল টেমপ্লেট
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding-top: 1rem;">
+        
+        <!-- Tab 1: Live Bubble Grid Setup -->
+        <div id="keyTabBubbleContent">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 600;">সেট নির্বাচন করুন:</span>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-sm btn-primary active-set-btn" onclick="selectAnswerKeySet('ক')">সেট ক</button>
+                <button type="button" class="btn btn-sm btn-outline active-set-btn" onclick="selectAnswerKeySet('খ')">সেট খ</button>
+                <button type="button" class="btn btn-sm btn-outline active-set-btn" onclick="selectAnswerKeySet('গ')">সেট গ</button>
+              </div>
+            </div>
+            
+            <div id="keySourceBadge" style="font-size: 0.8rem; background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-weight: 600;">
+              <i class="fa-solid fa-circle-check"></i> সিস্টেম সিঙ্ক সক্রিয়
+            </div>
+          </div>
+          
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            প্রতিটি প্রশ্নের সঠিক বাবলটি (ক, খ, গ, ঘ) সিলেক্ট করুন। আপলোডকৃত উত্তরপত্রের সাথে এই বাবলগুলো অটোমেটিক আপডেট থাকে।
+          </p>
+
+          <div class="omr-questions-grid" id="answerKeyQuestionsGrid" style="max-height: 48vh; overflow-y: auto;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Uploaded Source Preview (Excel table, raw text, or image) -->
+        <div id="keyTabSourceContent" style="display: none;">
+          <div id="keySourcePreviewContainer" style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; min-height: 250px; max-height: 50vh; overflow: auto;">
+            <!-- Source details / table / text / image rendered here -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Template Download Generator -->
+        <div id="keyTabTemplateContent" style="display: none;">
+          <div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
+            <h4 style="margin-bottom: 8px; color: var(--primary);">উত্তরপত্রের টেমপ্লেট ডাউনলোড করুন</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+              আপনার সুবিধার্থে প্রস্তুত করা ডেমো এক্সেল/টেক্সট ফাইল ডাউনলোড করে সেখানে ৩০টি প্রশ্নের সঠিক উত্তর (ক/খ/গ/ঘ বা A/B/C/D) লিখে সরাসরি আপলোড করতে পারেন।
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-success" onclick="downloadAnswerKeyTemplate('xlsx')">
+                <i class="fa-solid fa-file-excel"></i> Excel (.xlsx) টেমপ্লেট ডাউনলোড
+              </button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="downloadAnswerKeyTemplate('csv')">
+                <i class="fa-solid fa-file-csv"></i> CSV টেমপ্লেট ডাউনলোড
+              </button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="downloadAnswerKeyTemplate('txt')">
+                <i class="fa-solid fa-file-lines"></i> TXT টেমপ্লেট ডাউনলোড
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      
+      <div class="modal-footer">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="randomizeAnswerKeys()" title="পরীক্ষার জন্য র‍্যান্ডম কি জেনারেট করুন">
+            <i class="fa-solid fa-shuffle"></i> র‍্যান্ডম কি
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="clearAnswerKeys()" title="বর্তমান উত্তরপত্র মুছে ফেলুন">
+            <i class="fa-solid fa-trash-can"></i> উত্তরপত্র মুছুন
+          </button>
+        </div>
+        <button type="button" class="btn btn-primary" id="btnSaveAnswerKeys">
+          <i class="fa-solid fa-check"></i> নিশ্চিত ও সংরক্ষণ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden iframe for printing blank OMR -->
+  <iframe id="printIframe" style="display: none;"></iframe>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Logic & Scripts -->
+  

@@ -826,6 +826,8 @@ const URL_PERMISSION_RULES = [
     { pattern: /exam-portal(\.html)?.*[?&]view=exam-types/i, required: ['exam_routine'], name: 'পরীক্ষার ধরন কনফিগারেশন', view: 'exam-types', page: 'exam-portal.html' },
     { pattern: /exam-portal(\.html)?.*[?&]view=all-subject/i, required: ['exam_marks'], name: 'বিষয়সমূহ কনফিগারেশন', view: 'all-subject', page: 'exam-portal.html' },
     { pattern: /exam-portal(\.html)?.*[?&]view=sms/i, required: ['exam_marks'], name: 'রেজাল্ট এসএমএস', view: 'sms', page: 'exam-portal.html' },
+    { pattern: /exam-portal(\.html)?.*[?&]view=omr-reader/i, required: ['exam_marks', 'exam_routine'], name: 'ওএমআর শিট মূল্যায়ন ও রেজাল্ট প্রসেসর', view: 'omr-reader', page: 'exam-portal.html' },
+    { pattern: /2O2mr(\.html)?/i, required: ['exam_marks', 'exam_routine'], name: 'ব্লাংক OMR শিট', page: '2O2mr.html' },
     { pattern: /admit card(\.html)?/i, required: ['exam_admit'], name: 'এডমিট কার্ড', page: 'Admit Card.html' },
     { pattern: /exam-portal(\.html)?/i, required: ['exam_routine', 'exam_marks', 'exam_admit', 'exam_tabulation'], name: 'পরীক্ষা পোর্টাল', page: 'exam-portal.html' },
 
