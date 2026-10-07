@@ -1155,6 +1155,21 @@ def inject_html_boot(content_bytes):
             '</script>'
         )
         html_text = content_bytes.decode('utf-8', errors='replace')
+        # Dynamic OMR institution profile replacement from live database
+        if 'omr-school-name' in html_text or 'আলহেরা এডুকেয়ার হোম হাই স্কুল' in html_text:
+            try:
+                school_settings_raw = db_data.get('school_settings')
+                if school_settings_raw:
+                    s_data = json.loads(school_settings_raw) if isinstance(school_settings_raw, str) else school_settings_raw
+                    s_name = s_data.get('schoolSubtitle') or s_data.get('schoolName')
+                    s_addr = s_data.get('schoolAddress')
+                    if s_name:
+                        html_text = html_text.replace('আলহেরা এডুকেয়ার হোম হাই স্কুল', s_name)
+                    if s_addr:
+                        html_text = html_text.replace('জলঢাকা, নীলফামারী', s_addr)
+            except Exception as e:
+                print(f"Error updating OMR school info in boot: {e}")
+
         if '<link rel="icon"' not in html_text and '<link rel="shortcut icon"' not in html_text:
             favicon_tags = (
                 '<link rel="icon" type="image/x-icon" href="/favicon.ico">\n'
