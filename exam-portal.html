@@ -1807,7 +1807,6 @@
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
-      animation: fadeIn 0.2s ease;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease;
@@ -1818,9 +1817,10 @@
       opacity: 1 !important;
       pointer-events: auto !important;
       visibility: visible !important;
+      animation: fadeIn 0.2s ease;
     }
 
-    #btnDownloadBlankOMR, #btnOpenKeyModal, #btnSaveToExamsApi {
+    #btnDownloadBlankOMR, #btnOpenKeyModal, #btnSaveToExamsApi, #btnPreviewAnswerKeyCard, #btnQuickKeyPreview {
       cursor: pointer !important;
       pointer-events: auto !important;
       position: relative;
@@ -1839,6 +1839,91 @@
       border: 1px solid var(--border-color);
       overflow: hidden;
       animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #modalAnswerKey .modal-card.split-active {
+      max-width: 1260px !important;
+      width: 96vw !important;
+    }
+
+    .split-view-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+      min-height: 480px;
+    }
+
+    @media (max-width: 960px) {
+      .split-view-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .split-panel {
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 55vh;
+      min-height: 460px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .split-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .split-panel-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+    }
+
+    .split-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    .key-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .key-preview-table th {
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      font-weight: 600;
+      color: var(--primary);
+      z-index: 2;
+    }
+
+    .key-preview-table td {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .key-preview-table tr:hover {
+      background: rgba(79, 70, 229, 0.04);
     }
 
     @keyframes fadeIn { from { opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -3588,10 +3673,10 @@
         <div class="card-header-flex">
           <div class="card-title">
             <i class="fa-solid fa-folder-open" style="color: #4f46e5;"></i>
-            <span>১. উত্তরপত্রের (Answer Key) ফোল্ডার / ফাইল</span>
+            <span>১. উত্তরপত্র (Answer Key)</span>
           </div>
           <div style="display: flex; gap: 6px; align-items: center;">
-            <button type="button" class="btn btn-xs btn-outline" id="btnPreviewAnswerKeyCard" title="উত্তরপত্র প্রিভিউ ও সেটআপ দেখুন">
+            <button type="button" class="btn btn-xs btn-outline" id="btnPreviewAnswerKeyCard" onclick="openAnswerKeyModalDirect()" title="উত্তরপত্র প্রিভিউ ও সেটআপ দেখুন">
               <i class="fa-solid fa-eye" style="color: var(--primary);"></i> প্রিভিউ ও সেটআপ
             </button>
             <span class="badge-pill badge-primary">ধাপ ১</span>
@@ -3605,11 +3690,11 @@
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
           <div class="dropzone-text">
-            <h4>উত্তরপত্র ফাইল বা ফোল্ডার সিলেক্ট করুন</h4>
-            <p>Excel (.xlsx), CSV, TXT, JSON ফাইল অথবা ফোল্ডার ড্র্যাগ করুন</p>
+            <h4>উত্তরপত্র আপলোড করুন</h4>
+            <p>ফাইল বা ফোল্ডার ড্র্যাগ করুন (Excel, CSV, TXT)</p>
             <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap;" onclick="event.stopPropagation();">
               <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeyFile').click();">
-                <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড (.xlsx/.txt/.csv)
+                <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড
               </button>
               <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFolder').click();">
                 <i class="fa-solid fa-folder-open"></i> ফোল্ডার আপলোড
@@ -3621,9 +3706,9 @@
         <div class="folder-status-bar" id="statusAnswerKey" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             <span><i class="fa-regular fa-folder"></i> স্ট্যাটাস:</span>
-            <strong id="textAnswerKeyStatus" style="color: var(--text-muted);">কোনো উত্তরপত্র আপলোড করা হয়নি</strong>
+            <strong id="textAnswerKeyStatus" style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</strong>
           </div>
-          <button type="button" class="btn btn-xs btn-outline" id="btnQuickKeyPreview" style="flex-shrink: 0;" title="আপলোডকৃত উত্তরপত্র প্রিভিউ করুন">
+          <button type="button" class="btn btn-xs btn-outline" id="btnQuickKeyPreview" onclick="openAnswerKeyModalDirect()" style="flex-shrink: 0;" title="আপলোডকৃত উত্তরপত্র প্রিভিউ করুন">
             <i class="fa-solid fa-magnifying-glass"></i> প্রিভিউ
           </button>
         </div>
@@ -3634,7 +3719,7 @@
         <div class="card-header-flex">
           <div class="card-title">
             <i class="fa-solid fa-folder-tree" style="color: #d91c84;"></i>
-            <span>২. শিক্ষার্থীদের পূরণকৃত OMR ফোল্ডার</span>
+            <span>২. শিক্ষার্থীদের OMR ফোল্ডার</span>
           </div>
           <span class="badge-pill badge-omr">ধাপ ২</span>
         </div>
@@ -3645,14 +3730,14 @@
             <i class="fa-solid fa-file-import"></i>
           </div>
           <div class="dropzone-text">
-            <h4>শিক্ষার্থীদের ওএমআর ফোল্ডার সিলেক্ট করুন</h4>
-            <p>স্ক্যান করা ইমেজ (.jpg, .png) যুক্ত ফোল্ডারটি নির্বাচন করুন</p>
+            <h4>OMR ফোল্ডার নির্বাচন করুন</h4>
+            <p>স্ক্যানকৃত ইমেজ ফোল্ডার ড্র্যাগ বা সিলেক্ট করুন</p>
           </div>
         </div>
         
         <div class="folder-status-bar" id="statusStudentOMR">
-          <span><i class="fa-regular fa-images"></i> প্রাপ্ত OMR ফাইল:</span>
-          <strong id="textStudentOMRStatus" style="color: var(--text-muted);">০ টি ফাইল নির্বাচিত</strong>
+          <span><i class="fa-regular fa-images"></i> প্রাপ্ত OMR:</span>
+          <strong id="textStudentOMRStatus" style="color: var(--text-muted);">০ টি ফাইল</strong>
         </div>
       </div>
 
@@ -3970,16 +4055,26 @@
         </div>
 
         <!-- Tab Navigation inside Modal -->
-        <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap;">
-          <button type="button" class="key-tab-btn active" id="tabBtnBubbleView" onclick="switchKeyModalTab('bubble')">
-            <i class="fa-solid fa-circle-dot"></i> ওএমআর বাবল সেটআপ ও প্রিভিউ
-          </button>
-          <button type="button" class="key-tab-btn" id="tabBtnSourceView" onclick="switchKeyModalTab('source')">
-            <i class="fa-solid fa-file-code"></i> আপলোডকৃত সোর্স ফাইল প্রিভিউ
-          </button>
-          <button type="button" class="key-tab-btn" id="tabBtnTemplateView" onclick="switchKeyModalTab('template')">
-            <i class="fa-solid fa-download"></i> স্যাম্পল টেমপ্লেট
-          </button>
+        <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="key-tab-btn active" id="tabBtnBubbleView" onclick="switchKeyModalTab('bubble')">
+              <i class="fa-solid fa-circle-dot"></i> ওএমআর বাবল
+            </button>
+            <button type="button" class="key-tab-btn" id="tabBtnSourceView" onclick="switchKeyModalTab('source')">
+              <i class="fa-solid fa-file-code"></i> ফাইল প্রিভিউ
+            </button>
+            <button type="button" class="key-tab-btn" id="tabBtnSplitView" onclick="switchKeyModalTab('split')">
+              <i class="fa-solid fa-table-columns" style="color: #4f46e5;"></i> স্প্লিট ভিউ (পাশাপাশি)
+            </button>
+            <button type="button" class="key-tab-btn" id="tabBtnTemplateView" onclick="switchKeyModalTab('template')">
+              <i class="fa-solid fa-download"></i> স্যাম্পল টেমপ্লেট
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+            <span class="badge-pill badge-primary" style="cursor: pointer; padding: 4px 10px;" onclick="switchKeyModalTab('split')" title="উত্তরপত্র ফাইল এবং ওএমআর বাবল একই সাথে পাশাপাশি দেখতে ক্লিক করুন">
+              <i class="fa-solid fa-table-columns"></i> স্প্লিট ভিউ মোড
+            </span>
+          </div>
         </div>
 
         <div class="modal-body" style="padding-top: 1rem;">
@@ -4016,7 +4111,55 @@
             </div>
           </div>
 
-          <!-- Tab 3: Template Download Generator -->
+          <!-- Tab 3: Split View (Side by Side: Uploaded File & Bubble Grid) -->
+          <div id="keyTabSplitContent" style="display: none;">
+            <div class="split-view-container">
+              <!-- Left Column: Uploaded Answer Key Source File -->
+              <div class="split-panel split-source-panel">
+                <div class="split-panel-header">
+                  <div class="split-panel-title">
+                    <i class="fa-solid fa-file-lines" style="color: var(--primary);"></i>
+                    <span>আপলোডকৃত উত্তরপত্র ফাইল</span>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <span id="splitSourceBadge" style="font-size: 0.78rem; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                      সোর্স প্রিভিউ
+                    </span>
+                    <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFile').click();" title="অন্য ফাইল আপলোড করুন">
+                      <i class="fa-solid fa-upload"></i> ফাইল আপলোড
+                    </button>
+                  </div>
+                </div>
+                <div class="split-panel-body" id="splitSourcePreviewContainer">
+                  <!-- Rendered source file (Excel table / Image / Text / Empty notice) -->
+                </div>
+              </div>
+
+              <!-- Right Column: Interactive OMR Bubbles Grid -->
+              <div class="split-panel split-bubbles-panel">
+                <div class="split-panel-header">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-weight: 600; font-size: 0.9rem;">সেট নির্বাচন:</span>
+                    <div style="display: flex; gap: 5px;">
+                      <button type="button" class="btn btn-xs btn-primary active-set-btn" onclick="selectAnswerKeySet('ক')">সেট ক</button>
+                      <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('খ')">সেট খ</button>
+                      <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('গ')">সেট গ</button>
+                    </div>
+                  </div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">
+                    <i class="fa-solid fa-pen-to-square"></i> বাবল ক্লিক করে সংশোধন করুন
+                  </div>
+                </div>
+                <div class="split-panel-body" style="padding: 0; background: #fafafa; border-radius: var(--radius-sm);">
+                  <div class="omr-questions-grid" id="splitAnswerKeyQuestionsGrid" style="padding: 8px; gap: 8px;">
+                    <!-- Rendered bubbles -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 4: Template Download Generator -->
           <div id="keyTabTemplateContent" style="display: none;">
             <div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
               <h4 style="margin-bottom: 8px; color: var(--primary);">উত্তরপত্রের টেমপ্লেট ডাউনলোড করুন</h4>
@@ -12157,7 +12300,7 @@
       }
     };
 
-    window.openAnswerKeyModalDirect = function() {
+    window.openAnswerKeyModalDirect = function(defaultTab) {
       if (typeof selectAnswerKeySet === 'function') {
         selectAnswerKeySet(state.currentEditingKeySet || 'ক');
       }
@@ -12166,8 +12309,9 @@
         m.classList.add('active');
         m.style.display = 'flex';
       }
+      const targetTab = defaultTab || (state && state.uploadedKeyPreview ? 'split' : 'bubble');
       if (window.switchKeyModalTab) {
-        window.switchKeyModalTab(state && state.uploadedKeyPreview ? 'source' : 'bubble');
+        window.switchKeyModalTab(targetTab);
       }
     };
 
@@ -12501,10 +12645,9 @@
     [btnPreviewAnswerKeyCard, btnQuickKeyPreview].forEach(btn => {
       if (btn) {
         btn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          selectAnswerKeySet(state.currentEditingKeySet || 'ক');
-          modalAnswerKey.style.display = 'flex';
-          switchKeyModalTab(state.uploadedKeyPreview ? 'source' : 'bubble');
+          window.openAnswerKeyModalDirect();
         });
       }
     });
@@ -13041,8 +13184,26 @@
     }
 
     if (btnCloseKeyModal) {
-      btnCloseKeyModal.addEventListener('click', () => {
+      btnCloseKeyModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         window.closeAnswerKeyModalDirect();
+      });
+    }
+
+    // Close on overlay backdrop click
+    if (modalAnswerKey) {
+      modalAnswerKey.addEventListener('click', (e) => {
+        if (e.target === modalAnswerKey) {
+          window.closeAnswerKeyModalDirect();
+        }
+      });
+    }
+    if (modalViewEdit) {
+      modalViewEdit.addEventListener('click', (e) => {
+        if (e.target === modalViewEdit) {
+          window.closeStudentEditModal();
+        }
       });
     }
 
@@ -13087,7 +13248,7 @@
         `;
       }
 
-      answerKeyQuestionsGrid.innerHTML = colsHtml.map((colContent, idx) => `
+      const gridHtml = colsHtml.map((colContent, idx) => `
         <div class="omr-column">
           <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 6px; border-bottom: 1px dashed var(--border-color); padding-bottom: 3px;">
             প্রশ্ন ${toBengaliNumber(idx * 10 + 1)} - ${toBengaliNumber((idx + 1) * 10)}
@@ -13095,6 +13256,14 @@
           ${colContent}
         </div>
       `).join('');
+
+      if (answerKeyQuestionsGrid) {
+        answerKeyQuestionsGrid.innerHTML = gridHtml;
+      }
+      const splitQuestionsGrid = document.getElementById('splitAnswerKeyQuestionsGrid');
+      if (splitQuestionsGrid) {
+        splitQuestionsGrid.innerHTML = gridHtml;
+      }
     }
 
     window.setAnswerKeyOption = function(qNum, option) {
@@ -13113,7 +13282,7 @@
     window.clearAnswerKeys = function() {
       state.answerKeys = JSON.parse(JSON.stringify(defaultAnswerKeys));
       state.uploadedKeyPreview = null;
-      textAnswerKeyStatus.innerHTML = 'কোনো উত্তরপত্র আপলোড করা হয়নি';
+      textAnswerKeyStatus.innerHTML = 'কোনো ফাইল যুক্ত হয়নি';
       renderAnswerKeyBubbles();
       updateKeySourcePreviewUI();
       if (state.students.length > 0) {
@@ -13132,20 +13301,45 @@
       
       const tabBubble = document.getElementById('keyTabBubbleContent');
       const tabSource = document.getElementById('keyTabSourceContent');
+      const tabSplit = document.getElementById('keyTabSplitContent');
       const tabTemplate = document.getElementById('keyTabTemplateContent');
+      const modalKeyCard = document.querySelector('#modalAnswerKey .modal-card');
       
       if (tabBubble) tabBubble.style.display = 'none';
       if (tabSource) tabSource.style.display = 'none';
+      if (tabSplit) tabSplit.style.display = 'none';
       if (tabTemplate) tabTemplate.style.display = 'none';
+
+      if (modalKeyCard) {
+        if (tabName === 'split') {
+          modalKeyCard.classList.add('split-active');
+        } else {
+          modalKeyCard.classList.remove('split-active');
+        }
+      }
       
       if (tabName === 'bubble') {
-        document.getElementById('tabBtnBubbleView').classList.add('active');
+        const btn = document.getElementById('tabBtnBubbleView');
+        if (btn) btn.classList.add('active');
         if (tabBubble) tabBubble.style.display = 'block';
       } else if (tabName === 'source') {
-        document.getElementById('tabBtnSourceView').classList.add('active');
+        const btn = document.getElementById('tabBtnSourceView');
+        if (btn) btn.classList.add('active');
         if (tabSource) tabSource.style.display = 'block';
+        if (typeof updateKeySourcePreviewUI === 'function') {
+          updateKeySourcePreviewUI();
+        }
+      } else if (tabName === 'split') {
+        const btn = document.getElementById('tabBtnSplitView');
+        if (btn) btn.classList.add('active');
+        if (tabSplit) tabSplit.style.display = 'block';
+        renderAnswerKeyBubbles();
+        if (typeof updateKeySourcePreviewUI === 'function') {
+          updateKeySourcePreviewUI();
+        }
       } else if (tabName === 'template') {
-        document.getElementById('tabBtnTemplateView').classList.add('active');
+        const btn = document.getElementById('tabBtnTemplateView');
+        if (btn) btn.classList.add('active');
         if (tabTemplate) tabTemplate.style.display = 'block';
       }
     };
@@ -13153,25 +13347,33 @@
     window.updateKeySourcePreviewUI = function() {
       const preview = state.uploadedKeyPreview;
       if (!preview) {
+        const emptyHtml = `
+          <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; margin-bottom: 12px; color: var(--primary); opacity: 0.6;"></i><br>
+            <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px; font-size: 1rem;">এখনও কোনো উত্তরপত্র আপলোড করা হয়নি</div>
+            <p style="font-size: 0.85rem; margin-bottom: 14px;">এক্সেল, CSV, TXT বা স্ক্যান করা উত্তরপত্র আপলোড করুন</p>
+            <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeyFile').click();">
+              <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড করুন
+            </button>
+          </div>
+        `;
         if (typeof keySourcePreviewContainer !== 'undefined' && keySourcePreviewContainer) {
-          keySourcePreviewContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-              <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i><br>
-              এখনও কোনো উত্তরপত্র আপলোড করা হয়নি।<br>
-              দয়া করে একটি উত্তরপত্র আপলোড করুন।
-            </div>
-          `;
+          keySourcePreviewContainer.innerHTML = emptyHtml;
+        }
+        const splitPreview = document.getElementById('splitSourcePreviewContainer');
+        if (splitPreview) {
+          splitPreview.innerHTML = emptyHtml;
         }
         return;
       }
       
       let innerHtml = `
-        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-file-circle-check" style="font-size: 1.5rem; color: var(--success);"></i>
+            <i class="fa-solid fa-file-circle-check" style="font-size: 1.4rem; color: var(--success);"></i>
             <div>
-              <div style="font-weight: 600; font-size: 1.05rem;">${escapeHtml(preview.fileName)}</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">ফাইল টাইপ: ${preview.type.toUpperCase()}</div>
+              <div style="font-weight: 600; font-size: 0.95rem;">${escapeHtml(preview.fileName)}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">টাইপ: ${preview.type.toUpperCase()} | মোট প্রশ্ন: ৩০</div>
             </div>
           </div>
         </div>
@@ -13182,28 +13384,28 @@
         preview.tableData.forEach((row, rIdx) => {
           let cellsHtml = row.map(cell => `<td>${escapeHtml(cell !== undefined ? cell : '')}</td>`).join('');
           if (rIdx === 0) {
-            tableRowsHtml += `<tr style="background: var(--bg-card); font-weight: 600;">${row.map(cell => `<th>${escapeHtml(cell !== undefined ? cell : '')}</th>`).join('')}</tr>`;
+            tableRowsHtml += `<tr>${row.map(cell => `<th>${escapeHtml(cell !== undefined ? cell : '')}</th>`).join('')}</tr>`;
           } else {
             tableRowsHtml += `<tr>${cellsHtml}</tr>`;
           }
         });
         
         innerHtml += `
-          <div style="overflow-x: auto; max-height: 38vh; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
-            <table class="key-preview-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+          <div style="overflow-x: auto; max-height: 42vh; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+            <table class="key-preview-table">
               ${tableRowsHtml}
             </table>
           </div>
         `;
       } else if (preview.type === 'image' && preview.imagePreviewUrl) {
         innerHtml += `
-          <div style="text-align: center; max-height: 40vh; overflow: auto; background: #000; padding: 10px; border-radius: var(--radius-sm);">
-            <img src="${preview.imagePreviewUrl}" alt="Answer Key Preview" style="max-width: 100%; max-height: 360px; object-fit: contain; border-radius: 4px;">
+          <div style="text-align: center; max-height: 42vh; overflow: auto; background: #0f172a; padding: 10px; border-radius: var(--radius-sm);">
+            <img src="${preview.imagePreviewUrl}" alt="Answer Key Preview" style="max-width: 100%; max-height: 380px; object-fit: contain; border-radius: 4px;">
           </div>
         `;
       } else if (preview.rawText) {
         innerHtml += `
-          <div class="key-source-text-view" style="max-height: 38vh; overflow-y: auto; padding: 1rem; background: #1e293b; color: #f8fafc; border-radius: 6px; font-family: monospace; white-space: pre-wrap;">${escapeHtml(preview.rawText)}</div>
+          <div class="key-source-text-view" style="max-height: 42vh; overflow-y: auto; padding: 1rem; background: #1e293b; color: #f8fafc; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem;">${escapeHtml(preview.rawText)}</div>
         `;
       } else {
         innerHtml += `
@@ -13215,6 +13417,14 @@
 
       if (typeof keySourcePreviewContainer !== 'undefined' && keySourcePreviewContainer) {
         keySourcePreviewContainer.innerHTML = innerHtml;
+      }
+      const splitPreview = document.getElementById('splitSourcePreviewContainer');
+      if (splitPreview) {
+        splitPreview.innerHTML = innerHtml;
+      }
+      const splitBadge = document.getElementById('splitSourceBadge');
+      if (splitBadge && preview) {
+        splitBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${escapeHtml(preview.fileName)}`;
       }
     };
     
@@ -13318,8 +13528,8 @@
         
         dropzoneAnswerKey.classList.remove('filled');
         dropzoneStudentOMR.classList.remove('filled');
-        textAnswerKeyStatus.innerHTML = 'কোনো উত্তরপত্র আপলোড করা হয়নি';
-        textStudentOMRStatus.innerHTML = '০ টি ফাইল নির্বাচিত';
+        textAnswerKeyStatus.innerHTML = 'কোনো ফাইল যুক্ত হয়নি';
+        textStudentOMRStatus.innerHTML = '০ টি ফাইল';
         
         renderResultsTable();
         updateStatistics();

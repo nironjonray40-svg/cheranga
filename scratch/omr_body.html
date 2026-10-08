@@ -57,10 +57,10 @@
         <div class="card-header-flex">
           <div class="card-title">
             <i class="fa-solid fa-folder-open" style="color: #4f46e5;"></i>
-            <span>১. উত্তরপত্রের (Answer Key) ফোল্ডার / ফাইল</span>
+            <span>১. উত্তরপত্র (Answer Key)</span>
           </div>
           <div style="display: flex; gap: 6px; align-items: center;">
-            <button type="button" class="btn btn-xs btn-outline" id="btnPreviewAnswerKeyCard" title="উত্তরপত্র প্রিভিউ ও সেটআপ দেখুন">
+            <button type="button" class="btn btn-xs btn-outline" id="btnPreviewAnswerKeyCard" onclick="openAnswerKeyModalDirect()" title="উত্তরপত্র প্রিভিউ ও সেটআপ দেখুন">
               <i class="fa-solid fa-eye" style="color: var(--primary);"></i> প্রিভিউ ও সেটআপ
             </button>
             <span class="badge-pill badge-primary">ধাপ ১</span>
@@ -74,11 +74,11 @@
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
           <div class="dropzone-text">
-            <h4>উত্তরপত্র ফাইল বা ফোল্ডার সিলেক্ট করুন</h4>
-            <p>Excel (.xlsx), CSV, TXT, JSON ফাইল অথবা ফোল্ডার ড্র্যাগ করুন</p>
+            <h4>উত্তরপত্র আপলোড করুন</h4>
+            <p>ফাইল বা ফোল্ডার ড্র্যাগ করুন (Excel, CSV, TXT)</p>
             <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap;" onclick="event.stopPropagation();">
               <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeyFile').click();">
-                <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড (.xlsx/.txt/.csv)
+                <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড
               </button>
               <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFolder').click();">
                 <i class="fa-solid fa-folder-open"></i> ফোল্ডার আপলোড
@@ -90,7 +90,7 @@
         <div class="folder-status-bar" id="statusAnswerKey" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             <span><i class="fa-regular fa-folder"></i> স্ট্যাটাস:</span>
-            <strong id="textAnswerKeyStatus" style="color: var(--text-muted);">কোনো উত্তরপত্র আপলোড করা হয়নি</strong>
+            <strong id="textAnswerKeyStatus" style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</strong>
           </div>
           <button type="button" class="btn btn-xs btn-outline" id="btnQuickKeyPreview" style="flex-shrink: 0;" title="আপলোডকৃত উত্তরপত্র প্রিভিউ করুন">
             <i class="fa-solid fa-magnifying-glass"></i> প্রিভিউ
@@ -103,7 +103,7 @@
         <div class="card-header-flex">
           <div class="card-title">
             <i class="fa-solid fa-folder-tree" style="color: #d91c84;"></i>
-            <span>২. শিক্ষার্থীদের পূরণকৃত OMR ফোল্ডার</span>
+            <span>২. শিক্ষার্থীদের OMR ফোল্ডার</span>
           </div>
           <span class="badge-pill badge-omr">ধাপ ২</span>
         </div>
@@ -114,14 +114,14 @@
             <i class="fa-solid fa-file-import"></i>
           </div>
           <div class="dropzone-text">
-            <h4>শিক্ষার্থীদের ওএমআর ফোল্ডার সিলেক্ট করুন</h4>
-            <p>স্ক্যান করা ইমেজ (.jpg, .png) যুক্ত ফোল্ডারটি নির্বাচন করুন</p>
+            <h4>OMR ফোল্ডার নির্বাচন করুন</h4>
+            <p>স্ক্যানকৃত ইমেজ ফোল্ডার ড্র্যাগ বা সিলেক্ট করুন</p>
           </div>
         </div>
         
         <div class="folder-status-bar" id="statusStudentOMR">
-          <span><i class="fa-regular fa-images"></i> প্রাপ্ত OMR ফাইল:</span>
-          <strong id="textStudentOMRStatus" style="color: var(--text-muted);">০ টি ফাইল নির্বাচিত</strong>
+          <span><i class="fa-regular fa-images"></i> প্রাপ্ত OMR:</span>
+          <strong id="textStudentOMRStatus" style="color: var(--text-muted);">০ টি ফাইল</strong>
         </div>
       </div>
 
@@ -410,16 +410,26 @@
       </div>
 
       <!-- Tab Navigation inside Modal -->
-      <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap;">
-        <button type="button" class="key-tab-btn active" id="tabBtnBubbleView" onclick="switchKeyModalTab('bubble')">
-          <i class="fa-solid fa-circle-dot"></i> ওএমআর বাবল সেটআপ ও প্রিভিউ
-        </button>
-        <button type="button" class="key-tab-btn" id="tabBtnSourceView" onclick="switchKeyModalTab('source')">
-          <i class="fa-solid fa-file-code"></i> আপলোডকৃত সোর্স ফাইল প্রিভিউ
-        </button>
-        <button type="button" class="key-tab-btn" id="tabBtnTemplateView" onclick="switchKeyModalTab('template')">
-          <i class="fa-solid fa-download"></i> স্যাম্পল টেমপ্লেট
-        </button>
+      <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="key-tab-btn active" id="tabBtnBubbleView" onclick="switchKeyModalTab('bubble')">
+            <i class="fa-solid fa-circle-dot"></i> ওএমআর বাবল
+          </button>
+          <button type="button" class="key-tab-btn" id="tabBtnSourceView" onclick="switchKeyModalTab('source')">
+            <i class="fa-solid fa-file-code"></i> ফাইল প্রিভিউ
+          </button>
+          <button type="button" class="key-tab-btn" id="tabBtnSplitView" onclick="switchKeyModalTab('split')">
+            <i class="fa-solid fa-table-columns" style="color: #4f46e5;"></i> স্প্লিট ভিউ (পাশাপাশি)
+          </button>
+          <button type="button" class="key-tab-btn" id="tabBtnTemplateView" onclick="switchKeyModalTab('template')">
+            <i class="fa-solid fa-download"></i> স্যাম্পল টেমপ্লেট
+          </button>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+          <span class="badge-pill badge-primary" style="cursor: pointer; padding: 4px 10px;" onclick="switchKeyModalTab('split')" title="উত্তরপত্র ফাইল এবং ওএমআর বাবল একই সাথে পাশাপাশি দেখতে ক্লিক করুন">
+            <i class="fa-solid fa-table-columns"></i> স্প্লিট ভিউ মোড
+          </span>
+        </div>
       </div>
 
       <div class="modal-body" style="padding-top: 1rem;">
@@ -454,6 +464,54 @@
         <div id="keyTabSourceContent" style="display: none;">
           <div id="keySourcePreviewContainer" style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; min-height: 250px; max-height: 50vh; overflow: auto;">
             <!-- Source details / table / text / image rendered here -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Split View (Side by Side: Uploaded File & Bubble Grid) -->
+        <div id="keyTabSplitContent" style="display: none;">
+          <div class="split-view-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; min-height: 480px;">
+            <!-- Left Column: Uploaded Answer Key Source File -->
+            <div class="split-panel split-source-panel" style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; height: 55vh; min-height: 460px; overflow: hidden;">
+              <div class="split-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                <div class="split-panel-title" style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-file-lines" style="color: var(--primary);"></i>
+                  <span>আপলোডকৃত উত্তরপত্র ফাইল</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span id="splitSourceBadge" style="font-size: 0.78rem; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                    সোর্স প্রিভিউ
+                  </span>
+                  <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFile').click();" title="অন্য ফাইল আপলোড করুন">
+                    <i class="fa-solid fa-upload"></i> ফাইল আপলোড
+                  </button>
+                </div>
+              </div>
+              <div class="split-panel-body" id="splitSourcePreviewContainer" style="flex: 1; overflow-y: auto; overflow-x: auto;">
+                <!-- Rendered source file -->
+              </div>
+            </div>
+
+            <!-- Right Column: Interactive OMR Bubbles Grid -->
+            <div class="split-panel split-bubbles-panel" style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; height: 55vh; min-height: 460px; overflow: hidden;">
+              <div class="split-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-weight: 600; font-size: 0.9rem;">সেট নির্বাচন:</span>
+                  <div style="display: flex; gap: 5px;">
+                    <button type="button" class="btn btn-xs btn-primary active-set-btn" onclick="selectAnswerKeySet('ক')">সেট ক</button>
+                    <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('খ')">সেট খ</button>
+                    <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('গ')">সেট গ</button>
+                  </div>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">
+                  <i class="fa-solid fa-pen-to-square"></i> বাবল ক্লিক করে সংশোধন করুন
+                </div>
+              </div>
+              <div class="split-panel-body" style="padding: 0; background: #fafafa; border-radius: var(--radius-sm); flex: 1; overflow-y: auto;">
+                <div class="omr-questions-grid" id="splitAnswerKeyQuestionsGrid" style="padding: 8px; gap: 8px;">
+                  <!-- Rendered bubbles -->
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
