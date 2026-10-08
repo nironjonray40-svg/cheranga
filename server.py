@@ -831,11 +831,13 @@ def process_omr_image(image_data, filename="Memory Stream"):
     ]
     
     bottom_bubbles = []
+    mcq_bubbles = []
     
     for b in filled_bubbles:
         # Group bubbles based on their Y position relative to the page content
-        if b["y"] < page_top_y + (page_bottom_y - page_top_y) * 0.65:
+        if b["y"] < page_top_y + (page_bottom_y - page_top_y) * 0.58:
             # It's an MCQ bubble
+            mcq_bubbles.append(b)
             if b["x"] < cols[0]["max_x"]:
                 cols[0]["bubbles"].append(b)
             elif b["x"] < cols[1]["max_x"]:
@@ -851,15 +853,32 @@ def process_omr_image(image_data, filename="Memory Stream"):
 
     # 4. Determine Answer for each Question
     page_height = max(1, page_bottom_y - page_top_y)
-    expected_row_0_y = page_top_y + page_height * 0.2025
-    row_spacing = page_height * 0.0307
+    # The first row (Q1, Q11, Q21) starts at ~0.1735 of page height, with ~0.0295 spacing per row
+    expected_row_0_y = page_top_y + page_height * 0.1735
+    row_spacing = page_height * 0.0295
+    
+    # Adaptive Row Calibration using detected MCQ bubbles
+    if len(mcq_bubbles) >= 5:
+        mcq_ys = [b["y"] for b in mcq_bubbles]
+        row_estimates = [round((y - expected_row_0_y) / row_spacing) for y in mcq_ys]
+        valid_pairs = [(y, r) for y, r in zip(mcq_ys, row_estimates) if 0 <= r < 10]
+        if len(valid_pairs) >= 5:
+            implied_r0s = [y - r * row_spacing for y, r in valid_pairs]
+            expected_row_0_y = float(np.median(implied_r0s))
     
     for i, col in enumerate(cols):
         bubbles = col["bubbles"]
-        
         col_ans = [None] * 10
-        expected_A_x = page_left_x + page_width * (0.142 + i * 0.293)
-        bubble_spacing = page_width * 0.0544
+        expected_A_x = page_left_x + page_width * (0.140 + i * 0.294)
+        bubble_spacing = page_width * 0.055
+        
+        # Adaptive Column X Calibration:
+        if len(bubbles) >= 3:
+            slot_estimates = [round((b["x"] - expected_A_x) / bubble_spacing) for b in bubbles]
+            valid_slots = [(b["x"], s) for b, s in zip(bubbles, slot_estimates) if 0 <= s < 4]
+            if len(valid_slots) >= 3:
+                implied_x0s = [x - s * bubble_spacing for x, s in valid_slots]
+                expected_A_x = float(np.median(implied_x0s))
         
         for b in bubbles:
             row_idx = int(round((b["y"] - expected_row_0_y) / row_spacing))

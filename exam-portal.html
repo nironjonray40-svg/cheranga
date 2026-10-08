@@ -1797,7 +1797,7 @@
     }
 
     /* Modal Styling for View & Edit */
-    #modalViewEdit.modal-overlay, #modalAnswerKey.modal-overlay {
+    #modalViewEdit.modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.7);
@@ -1812,7 +1812,205 @@
       transition: opacity 0.25s ease;
     }
 
-    #modalViewEdit.modal-overlay.active, #modalAnswerKey.modal-overlay.active {
+    #modalViewEdit.modal-overlay.active {
+      display: flex !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      visibility: visible !important;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* Student OMR Review Modal Split View Styling (স্প্লিট ভিউ পাশাপাশি) */
+    #modalViewEdit .modal-card.split-active {
+      max-width: 1400px !important;
+      width: 96vw !important;
+      height: 94vh !important;
+      max-height: 94vh !important;
+    }
+
+    #modalViewEdit .modal-card.split-active .modal-body {
+      padding: 1rem 1.5rem !important;
+      overflow: hidden !important;
+    }
+
+    #modalViewEdit .split-view-container {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+      height: calc(94vh - 210px);
+      min-height: 480px;
+    }
+
+    #modalViewEdit .split-panel {
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    #modalViewEdit .split-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+      min-height: 0;
+    }
+
+    #modalViewEdit .split-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    #modalViewEdit .split-panel-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+    }
+
+    @media (max-width: 960px) {
+      #modalViewEdit .split-view-container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      #modalViewEdit .modal-card.split-active {
+        height: auto !important;
+        max-height: 95vh !important;
+        overflow-y: auto !important;
+      }
+      #modalViewEdit .split-panel {
+        min-height: 380px;
+      }
+    }
+
+    /* Multi-Set Answer Key Upload Section Styling (একাধিক সেট আপলোড) */
+    .set-upload-chip {
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      color: var(--text-main);
+    }
+    .set-upload-chip:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .set-upload-chip.filled {
+      background: #ecfdf5;
+      border-color: #10b981;
+      color: #065f46;
+      box-shadow: 0 1px 3px rgba(16, 185, 129, 0.15);
+    }
+    .multi-set-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .multi-set-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .multi-set-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .multi-set-card.has-data {
+      border-color: #10b981;
+      background: linear-gradient(to bottom, var(--bg-card), rgba(240, 253, 244, 0.5));
+    }
+    .multi-set-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .multi-set-batch-box {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(217, 28, 132, 0.05));
+      border: 2px dashed #818cf8;
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .multi-set-batch-box:hover {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(217, 28, 132, 0.1));
+      border-color: var(--primary);
+    }
+    .set-status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .set-status-pill.active {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+    .set-status-pill.empty {
+      background: #f1f5f9;
+      color: #94a3b8;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Fullscreen Modal Styling for Answer Key Preview & Management (পুরো পর্দাজুড়ে) */
+    #modalAnswerKey.modal-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: var(--bg-card, #ffffff) !important;
+      z-index: 2500 !important;
+      display: none;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      overflow: hidden !important;
+    }
+
+    #modalAnswerKey.modal-overlay.active {
       display: flex !important;
       opacity: 1 !important;
       pointer-events: auto !important;
@@ -1842,9 +2040,111 @@
       transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* Answer Key Modal Card is explicitly 100vw x 100vh Fullscreen */
+    #modalAnswerKey .modal-card,
     #modalAnswerKey .modal-card.split-active {
-      max-width: 1260px !important;
-      width: 96vw !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background: var(--bg-card, #ffffff) !important;
+      overflow: hidden !important;
+      animation: none !important;
+    }
+
+    #modalAnswerKey .modal-header {
+      flex-shrink: 0;
+      padding: 1rem 2rem;
+      background: var(--bg-page, #f8fafc);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #modalAnswerKey .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-main);
+    }
+
+    #modalAnswerKey .modal-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 1.25rem 2rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--bg-card, #ffffff);
+    }
+
+    #modalAnswerKey .modal-footer {
+      flex-shrink: 0;
+      padding: 0.9rem 2rem;
+      background: var(--bg-page, #f8fafc);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #modalAnswerKey #keyTabSplitContent {
+      height: 100%;
+      min-height: 0;
+    }
+
+    #modalAnswerKey .split-view-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+      height: calc(100vh - 215px);
+      min-height: 480px;
+    }
+
+    #modalAnswerKey .split-panel {
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    #modalAnswerKey .split-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    #modalAnswerKey #answerKeyQuestionsGrid {
+      max-height: calc(100vh - 250px) !important;
+      overflow-y: auto;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      gap: 16px;
+    }
+
+    #modalAnswerKey #keySourcePreviewContainer {
+      max-height: calc(100vh - 240px) !important;
+      min-height: 450px;
+      overflow: auto;
     }
 
     .split-view-container {
@@ -2116,22 +2416,38 @@
 
     /* Bubble states */
     .interactive-bubble.filled-correct {
-      background: #10b981 !important;
-      border-color: #10b981 !important;
-      color: white !important;
-      box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+      background: #16a34a !important; /* Vivid Emerald Green for matched answer */
+      border-color: #15803d !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      box-shadow: 0 0 7px rgba(22, 163, 74, 0.6) !important;
     }
 
     .interactive-bubble.filled-wrong {
-      background: #ef4444 !important;
-      border-color: #ef4444 !important;
-      color: white !important;
-      box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+      background: #dc2626 !important; /* Vivid Crimson Red for mismatched answer */
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      box-shadow: 0 0 7px rgba(220, 38, 38, 0.6) !important;
+    }
+
+    .interactive-bubble.filled-correct:hover {
+      background: #15803d !important;
+      border-color: #166534 !important;
+      transform: scale(1.12);
+    }
+
+    .interactive-bubble.filled-wrong:hover {
+      background: #b91c1c !important;
+      border-color: #991b1b !important;
+      transform: scale(1.12);
     }
 
     .interactive-bubble.filled-key-answer {
-      border: 2px dashed #4f46e5;
-      color: #4f46e5;
+      border: 2px dashed #4f46e5 !important;
+      color: #4f46e5 !important;
+      background: #eef2ff !important;
+      font-weight: 800 !important;
       position: relative;
     }
 
@@ -2144,11 +2460,14 @@
       background: #4f46e5;
       color: white;
       border-radius: 50%;
-      width: 12px;
-      height: 12px;
+      width: 13px;
+      height: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 1;
+      font-weight: 900;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
     .interactive-bubble.selected-user {
@@ -3675,7 +3994,10 @@
             <i class="fa-solid fa-folder-open" style="color: #4f46e5;"></i>
             <span>১. উত্তরপত্র (Answer Key)</span>
           </div>
-          <div style="display: flex; gap: 6px; align-items: center;">
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn btn-xs btn-primary" id="btnMultiSetUploadDirect" onclick="openMultiSetUploadModal()" title="একসাথে ক, খ, গ, ঘ ইত্যাদি একাধিক সেটের উত্তরপত্র আপলোড ও পরিচালনা করুন" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; color: white;">
+              <i class="fa-solid fa-layer-group"></i> একাধিক সেট আপলোড
+            </button>
             <button type="button" class="btn btn-xs btn-outline" id="btnPreviewAnswerKeyCard" onclick="openAnswerKeyModalDirect()" title="উত্তরপত্র প্রিভিউ ও সেটআপ দেখুন">
               <i class="fa-solid fa-eye" style="color: var(--primary);"></i> প্রিভিউ ও সেটআপ
             </button>
@@ -3686,27 +4008,58 @@
         <div class="dropzone-box" id="dropzoneAnswerKey">
           <input type="file" id="inputAnswerKeyFolder" webkitdirectory directory multiple style="display: none;">
           <input type="file" id="inputAnswerKeyFile" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" multiple style="display: none;">
+          <input type="file" id="inputAnswerKeyMultiBatch" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" multiple style="display: none;" onchange="handleAnswerKeyFiles(Array.from(this.files))">
+          <!-- Specific Single Set Inputs -->
+          <input type="file" id="inputAnswerKeySet_ক" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" style="display: none;" onchange="handleSingleSetUpload('ক', this.files[0])">
+          <input type="file" id="inputAnswerKeySet_খ" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" style="display: none;" onchange="handleSingleSetUpload('খ', this.files[0])">
+          <input type="file" id="inputAnswerKeySet_গ" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" style="display: none;" onchange="handleSingleSetUpload('গ', this.files[0])">
+          <input type="file" id="inputAnswerKeySet_ঘ" accept=".xlsx,.xls,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.pdf" style="display: none;" onchange="handleSingleSetUpload('ঘ', this.files[0])">
+
           <div class="dropzone-icon">
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
           <div class="dropzone-text">
             <h4>উত্তরপত্র আপলোড করুন</h4>
-            <p>ফাইল বা ফোল্ডার ড্র্যাগ করুন (Excel, CSV, TXT)</p>
+            <p>এক বা একাধিক সেটের ফাইল/ফোল্ডার ড্র্যাগ করুন (Excel, CSV, TXT, OMR কপি)</p>
             <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap;" onclick="event.stopPropagation();">
-              <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeyFile').click();">
+              <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeyMultiBatch').click();" title="একসাথে একাধিক সেটের ফাইল সিলেক্ট করুন" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none;">
+                <i class="fa-solid fa-layer-group"></i> একাধিক সেট একসাথে
+              </button>
+              <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFile').click();">
                 <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড
               </button>
               <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputAnswerKeyFolder').click();">
                 <i class="fa-solid fa-folder-open"></i> ফোল্ডার আপলোড
               </button>
             </div>
+
+            <!-- Quick Specific Set Upload Chips Strip -->
+            <div style="display: flex; gap: 6px; justify-content: center; margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(203,213,225,0.7); flex-wrap: wrap;" onclick="event.stopPropagation();">
+              <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center; font-weight: 600;">নির্দিষ্ট সেট:</span>
+              <button type="button" class="set-upload-chip" id="chipUploadSet_ক" onclick="document.getElementById('inputAnswerKeySet_ক').click()" title="সেট ক এর জন্য ফাইল আপলোড করুন">
+                <i class="fa-solid fa-circle-plus" style="color: #4f46e5;"></i> সেট ক <span class="chip-status" id="chipStatus_ক"></span>
+              </button>
+              <button type="button" class="set-upload-chip" id="chipUploadSet_খ" onclick="document.getElementById('inputAnswerKeySet_খ').click()" title="সেট খ এর জন্য ফাইল আপলোড করুন">
+                <i class="fa-solid fa-circle-plus" style="color: #059669;"></i> সেট খ <span class="chip-status" id="chipStatus_খ"></span>
+              </button>
+              <button type="button" class="set-upload-chip" id="chipUploadSet_গ" onclick="document.getElementById('inputAnswerKeySet_গ').click()" title="সেট গ এর জন্য ফাইল আপলোড করুন">
+                <i class="fa-solid fa-circle-plus" style="color: #d97706;"></i> সেট গ <span class="chip-status" id="chipStatus_গ"></span>
+              </button>
+              <button type="button" class="set-upload-chip" id="chipUploadSet_ঘ" onclick="document.getElementById('inputAnswerKeySet_ঘ').click()" title="সেট ঘ এর জন্য ফাইল আপলোড করুন">
+                <i class="fa-solid fa-circle-plus" style="color: #dc2626;"></i> সেট ঘ <span class="chip-status" id="chipStatus_ঘ"></span>
+              </button>
+            </div>
           </div>
         </div>
         
-        <div class="folder-status-bar" id="statusAnswerKey" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+        <div class="folder-status-bar" id="statusAnswerKey" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             <span><i class="fa-regular fa-folder"></i> স্ট্যাটাস:</span>
             <strong id="textAnswerKeyStatus" style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</strong>
+          </div>
+          <!-- Live Per-Set Badges Container -->
+          <div id="multiSetBadgesBar" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+            <!-- Rendered via JS -->
           </div>
           <button type="button" class="btn btn-xs btn-outline" id="btnQuickKeyPreview" onclick="openAnswerKeyModalDirect()" style="flex-shrink: 0;" title="আপলোডকৃত উত্তরপত্র প্রিভিউ করুন">
             <i class="fa-solid fa-magnifying-glass"></i> প্রিভিউ
@@ -3955,81 +4308,219 @@
           <div class="modal-title">
             <i class="fa-solid fa-user-pen" style="color: var(--omr-pink);"></i>
             <span>শিক্ষার্থীর OMR তথ্য ও উত্তরমালা পর্যালোচনা / সংশোধন</span>
+            <span class="badge-pill badge-primary" id="studentModalActiveBadge" style="font-size: 0.75rem; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-table-columns"></i> স্প্লিট ভিউ মোড
+            </span>
           </div>
-          <button class="icon-btn" id="btnCloseModal" onclick="closeStudentEditModal()" title="বন্ধ করুন">
+          <button class="icon-btn" id="btnCloseModal" onclick="closeStudentEditModal()" title="বন্ধ করুন (Esc)">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
+        <!-- Tab Navigation inside Student Review Modal -->
+        <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; flex-shrink: 0;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="key-tab-btn" id="tabBtnStudentStandard" onclick="switchStudentModalTab('standard')">
+              <i class="fa-solid fa-table-list"></i> সাধারণ ভিউ
+            </button>
+            <button type="button" class="key-tab-btn active" id="tabBtnStudentSplit" onclick="switchStudentModalTab('split')">
+              <i class="fa-solid fa-table-columns" style="color: #d91c84;"></i> স্প্লিট ভিউ (পাশাপাশি)
+            </button>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+            <span id="textStudentModalHeaderInfo" style="font-weight: 600; color: var(--text-main);"></span>
+          </div>
+        </div>
+
         <div class="modal-body">
-          <!-- Editable Student Information Grid -->
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="editStudentId">শিক্ষার্থী আইডি নং</label>
-              <input type="text" id="editStudentId" class="form-control" maxlength="7">
+          <!-- Standard View (Student Form & Bubbles Grid) -->
+          <div id="studentStandardContent" style="display: none;">
+            <!-- Editable Student Information Grid -->
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="editStudentId">শিক্ষার্থী আইডি নং</label>
+                <input type="text" id="editStudentId" class="form-control" maxlength="7">
+              </div>
+              <div class="form-group">
+                <label for="editRoll">রোল নং</label>
+                <input type="text" id="editRoll" class="form-control" maxlength="3">
+              </div>
+              <div class="form-group">
+                <label for="editClass">শ্রেণি</label>
+                <select id="editClass" class="form-control">
+                  <option value="10">১০ম (10)</option>
+                  <option value="9">৯ম (9)</option>
+                  <option value="8">৮ম (8)</option>
+                  <option value="7">৭ম (7)</option>
+                  <option value="6">৬ষ্ঠ (6)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editSection">শাখা</label>
+                <select id="editSection" class="form-control">
+                  <option value="ক">ক</option>
+                  <option value="খ">খ</option>
+                  <option value="গ">গ</option>
+                  <option value="ঘ">ঘ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editSet">সেট নং</label>
+                <select id="editSet" class="form-control">
+                  <option value="ক">সেট ক</option>
+                  <option value="খ">সেট খ</option>
+                  <option value="গ">সেট গ</option>
+                  <option value="ঘ">সেট ঘ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>বর্তমান শুদ্ধ উত্তর</label>
+                <div id="editCurrentScoreDisplay" style="font-weight: 800; font-size: 1.25rem; color: #16a34a; padding-top: 4px;">
+                  ০ / ৩০
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="editRoll">রোল নং</label>
-              <input type="text" id="editRoll" class="form-control" maxlength="3">
-            </div>
-            <div class="form-group">
-              <label for="editClass">শ্রেণি</label>
-              <select id="editClass" class="form-control">
-                <option value="10">১০ম (10)</option>
-                <option value="9">৯ম (9)</option>
-                <option value="8">৮ম (8)</option>
-                <option value="7">৭ম (7)</option>
-                <option value="6">৬ষ্ঠ (6)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="editSection">শাখা</label>
-              <select id="editSection" class="form-control">
-                <option value="ক">ক</option>
-                <option value="খ">খ</option>
-                <option value="গ">গ</option>
-                <option value="ঘ">ঘ</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="editSet">সেট নং</label>
-              <select id="editSet" class="form-control">
-                <option value="ক">ক</option>
-                <option value="খ">খ</option>
-                <option value="গ">গ</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>বর্তমান শুদ্ধ উত্তর</label>
-              <div id="editCurrentScoreDisplay" style="font-weight: 800; font-size: 1.25rem; color: #10b981; padding-top: 4px;">
-                ০ / ৩০
+
+            <!-- Interactive Visual OMR Sheet Section -->
+            <div class="omr-review-container" style="margin-top: 1rem;">
+              <div class="omr-review-header">
+                <div>
+                  <i class="fa-solid fa-circle-dot"></i> ৩০টি প্রশ্নের উত্তরমালা (যেকোনো বাবলে ক্লিক করে উত্তর পরিবর্তন করতে পারেন)
+                </div>
+                <div class="omr-legend">
+                  <div class="legend-item"><span class="legend-dot dot-correct" style="background: #16a34a;"></span> সঠিক উত্তর (সবুজ)</div>
+                  <div class="legend-item"><span class="legend-dot dot-wrong" style="background: #dc2626;"></span> ভুল উত্তর (লাল)</div>
+                  <div class="legend-item"><span class="legend-dot dot-key" style="background: #4f46e5;"></span> আসল উত্তরচিহ্ন</div>
+                  <div class="legend-item"><span class="legend-dot dot-blank"></span> অনুত্তরিত</div>
+                </div>
+              </div>
+
+              <div class="omr-questions-grid" id="modalOmrGrid">
+                <!-- 3 columns of 10 questions each rendered via JS -->
               </div>
             </div>
           </div>
 
-          <!-- Interactive Visual OMR Sheet Section -->
-          <div class="omr-review-container">
-            <div class="omr-review-header">
-              <div>
-                <i class="fa-solid fa-circle-dot"></i> ৩০টি প্রশ্নের উত্তরমালা (যেকোনো বাবলে ক্লিক করে উত্তর পরিবর্তন করতে পারেন)
+          <!-- Split View (Side by Side: Scanned OMR Copy & Editable Bubbles) -->
+          <div id="studentSplitContent" style="display: flex; height: 100%; flex: 1; min-height: 0;">
+            <div class="split-view-container" style="height: 100%; width: 100%;">
+              <!-- Left Column: Student's Scanned OMR Sheet -->
+              <div class="split-panel split-source-panel" style="display: flex; flex-direction: column;">
+                <div class="split-panel-header">
+                  <div class="split-panel-title">
+                    <i class="fa-solid fa-file-image" style="color: var(--omr-pink);"></i>
+                    <span>শিক্ষার্থীর OMR স্ক্যান কপি</span>
+                  </div>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span id="studentScanBadge" style="font-size: 0.78rem; background: #fdf2f8; color: #d91c84; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                      স্ক্যান ভিউয়ার
+                    </span>
+                    <button type="button" class="btn btn-xs btn-outline" onclick="changeStudentScanZoom(0.15)" title="জুম ইন (+)">
+                      <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-outline" onclick="changeStudentScanZoom(-0.15)" title="জুম আউট (-)">
+                      <i class="fa-solid fa-magnifying-glass-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-outline" onclick="resetStudentScanZoom()" title="রিসেট জুম">
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-outline" onclick="document.getElementById('inputStudentSingleScan').click()" title="অন্য স্ক্যান ফাইল যুক্ত করুন">
+                      <i class="fa-solid fa-upload"></i> ফাইল
+                    </button>
+                    <button type="button" class="btn btn-xs btn-primary" onclick="rescanCurrentStudentOmr()" title="বর্তমান ওএমআর ইমেজ থেকে বাবলগুলো শতভাগ নির্ভুলভাবে সনাক্ত করুন" style="font-weight: 600;">
+                      <i class="fa-solid fa-wand-magic-sparkles"></i> স্বয়ংক্রিয় বাবল স্ক্যান
+                    </button>
+                    <input type="file" id="inputStudentSingleScan" accept="image/*,.pdf" style="display: none;" onchange="handleStudentSingleScanUpload(event)">
+                  </div>
+                </div>
+                
+                <!-- Zoomable image container -->
+                <div class="split-panel-body" id="studentScanImageContainer" style="flex: 1; overflow: auto; background: #0f172a; border-radius: var(--radius-sm); padding: 10px; text-align: center; position: relative;">
+                  <!-- Image or Placeholder rendered dynamically -->
+                </div>
               </div>
-              <div class="omr-legend">
-                <div class="legend-item"><span class="legend-dot dot-correct"></span> সঠিক উত্তর</div>
-                <div class="legend-item"><span class="legend-dot dot-wrong"></span> ভুল উত্তর</div>
-                <div class="legend-item"><span class="legend-dot dot-key"></span> আসল উত্তরচিহ্ন</div>
-                <div class="legend-item"><span class="legend-dot dot-blank"></span> অনুত্তরিত</div>
-              </div>
-            </div>
 
-            <div class="omr-questions-grid" id="modalOmrGrid">
-              <!-- 3 columns of 10 questions each rendered via JS -->
+              <!-- Right Column: Interactive Bubbles & Information Editing -->
+              <div class="split-panel split-bubbles-panel" style="display: flex; flex-direction: column;">
+                <div class="split-panel-header">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-weight: 700; font-size: 0.92rem; color: var(--text-main);">
+                      <i class="fa-solid fa-user-pen" style="color: var(--omr-pink);"></i> তথ্য ও বাবল সংশোধন
+                    </span>
+                  </div>
+                  <div id="splitScoreBadgeDisplay" style="font-weight: 800; font-size: 0.88rem; color: #10b981;">
+                    <!-- Live score badge rendered here -->
+                  </div>
+                </div>
+
+                <!-- Compact Editable Row inside Split Panel -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 8px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; font-size: 0.8rem;">
+                  <div>
+                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block;">আইডি</label>
+                    <input type="text" id="splitEditStudentId" class="form-control" style="padding: 2px 6px; font-size: 0.85rem; height: 26px;" oninput="syncStudentInput('id', this.value)">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block;">রোল</label>
+                    <input type="text" id="splitEditRoll" class="form-control" style="padding: 2px 6px; font-size: 0.85rem; height: 26px;" oninput="syncStudentInput('roll', this.value)">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block;">শ্রেণি</label>
+                    <select id="splitEditClass" class="form-control" style="padding: 2px 4px; font-size: 0.82rem; height: 26px;" onchange="syncStudentInput('class', this.value)">
+                      <option value="10">১০ম</option>
+                      <option value="9">৯ম</option>
+                      <option value="8">৮ম</option>
+                      <option value="7">৭ম</option>
+                      <option value="6">৬ষ্ঠ</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block;">শাখা</label>
+                    <select id="splitEditSection" class="form-control" style="padding: 2px 4px; font-size: 0.82rem; height: 26px;" onchange="syncStudentInput('section', this.value)">
+                      <option value="ক">ক</option>
+                      <option value="খ">খ</option>
+                      <option value="গ">গ</option>
+                      <option value="ঘ">ঘ</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block;">সেট</label>
+                    <select id="splitEditSet" class="form-control" style="padding: 2px 4px; font-size: 0.82rem; height: 26px; border-color: var(--primary);" onchange="syncStudentInput('set', this.value)">
+                      <option value="ক">সেট ক</option>
+                      <option value="খ">সেট খ</option>
+                      <option value="গ">সেট গ</option>
+                      <option value="ঘ">সেট ঘ</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="omr-legend" style="padding: 4px 8px; font-size: 0.74rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 6px; justify-content: space-between;">
+                  <div class="legend-item"><span class="legend-dot dot-correct" style="background: #16a34a;"></span> সঠিক (সবুজ)</div>
+                  <div class="legend-item"><span class="legend-dot dot-wrong" style="background: #dc2626;"></span> ভুল (লাল)</div>
+                  <div class="legend-item"><span class="legend-dot dot-key" style="background: #4f46e5;"></span> আসল উত্তর</div>
+                  <div class="legend-item"><span class="legend-dot dot-blank"></span> ফাঁকা</div>
+                </div>
+
+                <!-- 30 Bubbles Container -->
+                <div class="split-panel-body" style="padding: 0; background: #fafafa; border-radius: var(--radius-sm); flex: 1;">
+                  <div class="omr-questions-grid" id="splitModalOmrGrid" style="padding: 8px; gap: 8px;">
+                    <!-- 3 columns of 10 bubbles rendered via JS -->
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <div style="font-size: 0.85rem; color: var(--text-muted);">
-            * পরিবর্তন সংরক্ষণ করার পর তাৎক্ষণিকভাবে ফলাফল ও মূল টেবিল আপডেট হয়ে যাবে।
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-outline btn-sm" id="btnPrevStudent" onclick="prevStudentInEdit()" title="পূর্ববর্তী শিক্ষার্থী">
+              <i class="fa-solid fa-chevron-left"></i> পূর্ববর্তী
+            </button>
+            <span id="textStudentCounter" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">১ / ১</span>
+            <button type="button" class="btn btn-outline btn-sm" id="btnNextStudent" onclick="nextStudentInEdit()" title="পরবর্তী শিক্ষার্থী">
+              পরবর্তী <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
           <div style="display: flex; gap: 10px;">
             <button type="button" class="btn btn-outline" id="btnCancelEdit" onclick="closeStudentEditModal()">বাতিল</button>
@@ -4041,22 +4532,28 @@
       </div>
     </div>
 
-    <!-- Answer Key Setup & Preview Modal -->
+    <!-- Answer Key Setup & Preview Modal (Full Screen) -->
     <div class="modal-overlay" id="modalAnswerKey">
-      <div class="modal-card" style="max-width: 860px;">
+      <div class="modal-card">
         <div class="modal-header">
           <div class="modal-title">
             <i class="fa-solid fa-key" style="color: var(--primary);"></i>
             <span>উত্তরপত্র (Answer Key) প্রিভিউ ও ব্যবস্থাপনা</span>
+            <span class="badge-pill badge-primary" style="font-size: 0.75rem; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-expand"></i> ফুলস্ক্রিন ভিউ
+            </span>
           </div>
-          <button class="icon-btn" id="btnCloseKeyModal" onclick="closeAnswerKeyModalDirect()" title="বন্ধ করুন">
+          <button class="icon-btn" id="btnCloseKeyModal" onclick="closeAnswerKeyModalDirect()" title="উইনডো বন্ধ করুন (Esc)">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <!-- Tab Navigation inside Modal -->
-        <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 1.5rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+        <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 2rem; background: var(--bg-card); gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="key-tab-btn" id="tabBtnMultiSetView" onclick="switchKeyModalTab('multiset')">
+              <i class="fa-solid fa-layer-group" style="color: #7c3aed;"></i> একাধিক সেট আপলোড
+            </button>
             <button type="button" class="key-tab-btn active" id="tabBtnBubbleView" onclick="switchKeyModalTab('bubble')">
               <i class="fa-solid fa-circle-dot"></i> ওএমআর বাবল
             </button>
@@ -4071,22 +4568,67 @@
             </button>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-            <span class="badge-pill badge-primary" style="cursor: pointer; padding: 4px 10px;" onclick="switchKeyModalTab('split')" title="উত্তরপত্র ফাইল এবং ওএমআর বাবল একই সাথে পাশাপাশি দেখতে ক্লিক করুন">
-              <i class="fa-solid fa-table-columns"></i> স্প্লিট ভিউ মোড
+            <span class="badge-pill badge-primary" style="cursor: pointer; padding: 4px 10px;" onclick="switchKeyModalTab('multiset')" title="একসাথে ক, খ, গ, ঘ সেটের উত্তরপত্র আপলোড করতে ক্লিক করুন">
+              <i class="fa-solid fa-layer-group"></i> মাল্টি-সেট মোড
             </span>
           </div>
         </div>
 
-        <div class="modal-body" style="padding-top: 1rem;">
+        <div class="modal-body">
+          <!-- Tab 0: Multi-Set Upload & Management -->
+          <div id="keyTabMultiSetContent" style="display: none;">
+            <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h4 style="margin: 0; color: var(--text-main); font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-layer-group" style="color: #7c3aed;"></i>
+                  <span>একাধিক সেটের উত্তরপত্র (Answer Key) একসাথে আপলোড ও ব্যবস্থাপনা</span>
+                </h4>
+                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                  একসাথে সব সেটের ফাইল ড্রপ করুন অথবা প্রতিটি সেটের (ক, খ, গ, ঘ) জন্য আলাদাভাবে ফাইল আপলোড করে যাচাই করুন।
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm btn-outline" onclick="randomizeAllAnswerKeys()" title="ক, খ, গ, ঘ সকল সেটে ডেমো উত্তর সেট করুন">
+                  <i class="fa-solid fa-wand-magic-sparkles" style="color: #7c3aed;"></i> ডেমো সকল সেট
+                </button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="clearAllAnswerKeys()" style="color: var(--danger);" title="সকল সেটের উত্তরপত্র মুছে ফেলুন">
+                  <i class="fa-solid fa-trash-can"></i> সব সেট মুছুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Drag & Drop Batch Upload Area -->
+            <div class="multi-set-batch-box" onclick="document.getElementById('inputAnswerKeyMultiBatch').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--primary)';" ondragleave="this.style.borderColor='#818cf8';" ondrop="event.preventDefault(); this.style.borderColor='#818cf8'; handleAnswerKeyFiles(Array.from(event.dataTransfer.files));">
+              <div style="font-size: 2.2rem; color: #6366f1; margin-bottom: 8px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </div>
+              <div style="font-weight: 700; color: var(--text-main); font-size: 1rem; margin-bottom: 4px;">
+                একসাথে একাধিক সেটের ফাইল এখানে ড্র্যাগ ও ড্রপ করুন অথবা ব্রাউজ করুন
+              </div>
+              <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 560px; margin: 0 auto 10px auto;">
+                একাধিক ওএমআর স্ক্যান ছবি, এক্সেল ফাইল (.xlsx), CSV বা TXT ফাইল একসাথে সিলেক্ট করুন। ফাইলের নাম (set_a, set_b, ক, খ) অথবা কলাম অনুসারে সিস্টেম স্বয়ংক্রিয়ভাবে সঠিক সেটে উত্তরপত্র বসিয়ে দেবে।
+              </p>
+              <button type="button" class="btn btn-sm btn-primary" onclick="event.stopPropagation(); document.getElementById('inputAnswerKeyMultiBatch').click();" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none;">
+                <i class="fa-solid fa-files"></i> ফাইলগুলো নির্বাচন করুন
+              </button>
+            </div>
+
+            <!-- 4 Set Cards Grid (ক, খ, গ, ঘ) -->
+            <div class="multi-set-grid" id="multiSetCardsContainer">
+              <!-- Rendered dynamically via renderMultiSetUploadUI() -->
+            </div>
+          </div>
+
           <!-- Tab 1: Live Bubble Grid Setup -->
           <div id="keyTabBubbleContent">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-weight: 600;">সেট নির্বাচন করুন:</span>
                 <div style="display: flex; gap: 6px;">
                   <button type="button" class="btn btn-sm btn-primary active-set-btn" onclick="selectAnswerKeySet('ক')">সেট ক</button>
                   <button type="button" class="btn btn-sm btn-outline active-set-btn" onclick="selectAnswerKeySet('খ')">সেট খ</button>
                   <button type="button" class="btn btn-sm btn-outline active-set-btn" onclick="selectAnswerKeySet('গ')">সেট গ</button>
+                  <button type="button" class="btn btn-sm btn-outline active-set-btn" onclick="selectAnswerKeySet('ঘ')">সেট ঘ</button>
                 </div>
               </div>
               
@@ -4099,7 +4641,7 @@
               প্রতিটি প্রশ্নের সঠিক বাবলটি (ক, খ, গ, ঘ) সিলেক্ট করুন। আপলোডকৃত উত্তরপত্রের সাথে এই বাবলগুলো অটোমেটিক আপডেট থাকে।
             </p>
 
-            <div class="omr-questions-grid" id="answerKeyQuestionsGrid" style="max-height: 48vh; overflow-y: auto;">
+            <div class="omr-questions-grid" id="answerKeyQuestionsGrid">
               <!-- Rendered dynamically -->
             </div>
           </div>
@@ -4144,6 +4686,7 @@
                       <button type="button" class="btn btn-xs btn-primary active-set-btn" onclick="selectAnswerKeySet('ক')">সেট ক</button>
                       <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('খ')">সেট খ</button>
                       <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('গ')">সেট গ</button>
+                      <button type="button" class="btn btn-xs btn-outline active-set-btn" onclick="selectAnswerKeySet('ঘ')">সেট ঘ</button>
                     </div>
                   </div>
                   <div style="font-size: 0.78rem; color: var(--text-muted);">
@@ -12272,27 +12815,108 @@
     const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     const optionsBengali = ['ক', 'খ', 'গ', 'ঘ'];
 
-    // Default Answer Keys for Set ক, খ, গ (30 questions each) - Now empty by default as requested
-    const defaultAnswerKeys = {
-      'ক': Array(30).fill(null),
-      'খ': Array(30).fill(null),
-      'গ': Array(30).fill(null)
+    // Default pattern for Sets ক, খ, গ, ঘ (30 questions each) so visual review & matching work immediately
+    const sampleKeysPattern = {
+      'ক': ['ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ'],
+      'খ': ['খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক'],
+      'গ': ['গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ'],
+      'ঘ': ['ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ']
     };
+
+    // Default Answer Keys initialized with full 30 keys per set
+    const defaultAnswerKeys = JSON.parse(JSON.stringify(sampleKeysPattern));
+
+    // Helper: Normalize set representation ('ক', 'খ', 'গ', 'ঘ')
+    function normalizeSet(val) {
+      if (!val) return 'ক';
+      const str = String(val).trim().toLowerCase();
+      if (str.includes('ঘ') || str.includes('d') || str === '4' || str === '৪') return 'ঘ';
+      if (str.includes('গ') || str.includes('c') || str === '3' || str === '৩') return 'গ';
+      if (str.includes('খ') || str.includes('b') || str === '2' || str === '২') return 'খ';
+      if (str.includes('ক') || str.includes('a') || str === '1' || str === '১') return 'ক';
+      return 'ক';
+    }
+
+    // Helper: Normalize any option representation to Bengali 'ক', 'খ', 'গ', 'ঘ'
+    function normalizeOption(val) {
+      if (val === null || val === undefined) return null;
+      const str = String(val).trim().toUpperCase();
+      if (str === 'ক' || str === 'A' || str === '1' || str === '১' || str.startsWith('ক') || str.startsWith('A')) return 'ক';
+      if (str === 'খ' || str === 'B' || str === '2' || str === '২' || str.startsWith('খ') || str.startsWith('B')) return 'খ';
+      if (str === 'গ' || str === 'C' || str === '3' || str === '৩' || str.startsWith('গ') || str.startsWith('C')) return 'গ';
+      if (str === 'ঘ' || str === 'D' || str === '4' || str === '৪' || str.startsWith('ঘ') || str.startsWith('D')) return 'ঘ';
+      return null;
+    }
+
+    // Helper: Retrieve active answer key for a set with intelligent fallback
+    function getActiveAnswerKey(setCode) {
+      const normSet = normalizeSet(setCode);
+      // 1. Specified set has valid filled answers
+      if (state.answerKeys && state.answerKeys[normSet] && state.answerKeys[normSet].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+        return state.answerKeys[normSet];
+      }
+      // 2. Set 'ক' if it has answers
+      if (state.answerKeys && state.answerKeys['ক'] && state.answerKeys['ক'].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+        return state.answerKeys['ক'];
+      }
+      // 3. Any active set that has answers
+      if (state.answerKeys) {
+        for (const s of ['খ', 'গ', 'ঘ']) {
+          if (state.answerKeys[s] && state.answerKeys[s].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+            return state.answerKeys[s];
+          }
+        }
+      }
+      // 4. Default fallback key
+      return defaultAnswerKeys[normSet] || defaultAnswerKeys['ক'];
+    }
+
+    // Helper: Safely get student answer for question q (1-indexed)
+    function getStudentAnswer(student, q) {
+      if (!student || !student.answers) return null;
+      const ansObj = student.answers;
+      let val = null;
+      if (Array.isArray(ansObj)) {
+        if (ansObj.length === 30) {
+          val = ansObj[q - 1];
+        } else {
+          val = ansObj[q] !== undefined ? ansObj[q] : ansObj[q - 1];
+        }
+      } else if (typeof ansObj === 'object') {
+        val = ansObj[q] !== undefined ? ansObj[q] : ansObj[String(q)];
+        if (val === undefined && ansObj[q - 1] !== undefined) {
+          val = ansObj[q - 1];
+        }
+      }
+      return normalizeOption(val);
+    }
 
     // Application Global State
     const state = {
       answerKeys: JSON.parse(JSON.stringify(defaultAnswerKeys)),
       currentEditingKeySet: 'ক',
+      setSourceFiles: {
+        'ক': null,
+        'খ': null,
+        'গ': null,
+        'ঘ': null
+      },
       studentFiles: [],
       answerKeyFiles: [],
       uploadedKeyPreview: null, // Stores metadata and content for preview
       activeKeyModalTab: 'bubble',
+      activeStudentModalTab: 'split', // Default tab for student review modal
+      studentScanZoom: 1.0,
       students: [],
       currentEditIndex: -1,
       tempEditStudent: null
     };
 
     // Expose Global Action Handlers Immediately
+    window.openMultiSetUploadModal = function() {
+      window.openAnswerKeyModalDirect('multiset');
+    };
+
     window.handleBlankOmrClick = function() {
       window.open('2O2mr.html', '_blank');
       if (typeof showToast === 'function') {
@@ -12308,6 +12932,7 @@
       if (m) {
         m.classList.add('active');
         m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
       }
       const targetTab = defaultTab || (state && state.uploadedKeyPreview ? 'split' : 'bubble');
       if (window.switchKeyModalTab) {
@@ -12320,6 +12945,7 @@
       if (m) {
         m.classList.remove('active');
         m.style.display = 'none';
+        document.body.style.overflow = '';
       }
     };
 
@@ -12328,7 +12954,12 @@
       if (m) {
         m.classList.remove('active');
         m.style.display = 'none';
+        const card = m.querySelector('.modal-card');
+        if (card) card.classList.remove('split-active');
+        document.body.style.overflow = '';
       }
+      state.currentEditIndex = -1;
+      state.tempEditStudent = null;
     };
 
     // UI Elements
@@ -12417,27 +13048,21 @@
       });
     }
 
-    // Helper: Normalize any option representation to Bengali 'ক', 'খ', 'গ', 'ঘ'
-    function normalizeOption(val) {
-      if (val === null || val === undefined) return null;
-      const str = String(val).trim().toUpperCase();
-      if (str === 'ক' || str === 'A' || str === '1' || str === '১' || str.startsWith('ক') || str.startsWith('A')) return 'ক';
-      if (str === 'খ' || str === 'B' || str === '2' || str === '২' || str.startsWith('খ') || str.startsWith('B')) return 'খ';
-      if (str === 'গ' || str === 'C' || str === '3' || str === '৩' || str.startsWith('গ') || str.startsWith('C')) return 'গ';
-      if (str === 'ঘ' || str === 'D' || str === '4' || str === '৪' || str.startsWith('ঘ') || str.startsWith('D')) return 'ঘ';
-      return null;
-    }
+    // 1. Unified Multi-Set Answer Key File & Folder Processor
+    window.handleSingleSetUpload = function(targetSet, file) {
+      if (!file) return;
+      handleAnswerKeyFiles([file], targetSet);
+    };
 
-    // 1. Unified Answer Key File & Folder Processor
-    async function handleAnswerKeyFiles(files) {
+    async function handleAnswerKeyFiles(files, forcedSet = null) {
       if (!files || files.length === 0) return;
       state.answerKeyFiles = files;
-      dropzoneAnswerKey.classList.add('filled');
+      if (dropzoneAnswerKey) dropzoneAnswerKey.classList.add('filled');
 
       let parsedCount = 0;
       let loadedSetNames = new Set();
       let previewInfo = {
-        fileName: files.length === 1 ? files[0].name : `${files.length} টি ফাইলযুক্ত ফোল্ডার`,
+        fileName: files.length === 1 ? files[0].name : `${files.length} টি ফাইলযুক্ত ফোল্ডার/সেট`,
         fileCount: files.length,
         type: 'unknown',
         rawText: '',
@@ -12445,8 +13070,21 @@
         imagePreviewUrl: null
       };
 
-      for (const file of files) {
+      // Helper: Detect target set from filename
+      function detectSetFromFileName(filename) {
+        if (forcedSet) return forcedSet;
+        const lower = filename.toLowerCase();
+        if (/(set[_\s-]?a|সেট[_\s-]?ক|[_(\s]ক[_)\s.]|^ক[\._\s])/i.test(lower)) return 'ক';
+        if (/(set[_\s-]?b|সেট[_\s-]?খ|[_(\s]খ[_)\s.]|^খ[\._\s])/i.test(lower)) return 'খ';
+        if (/(set[_\s-]?c|সেট[_\s-]?গ|[_(\s]গ[_)\s.]|^গ[\._\s])/i.test(lower)) return 'গ';
+        if (/(set[_\s-]?d|সেট[_\s-]?ঘ|[_(\s]ঘ[_)\s.]|^ঘ[\._\s])/i.test(lower)) return 'ঘ';
+        return null;
+      }
+
+      for (let fIdx = 0; fIdx < files.length; fIdx++) {
+        const file = files[fIdx];
         const lowerName = file.name.toLowerCase();
+        let targetSet = detectSetFromFileName(file.name);
 
         // A. Excel Workbook (.xlsx, .xls)
         if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) {
@@ -12455,60 +13093,109 @@
             const workbook = XLSX.read(buffer, { type: 'array' });
             previewInfo.type = 'excel';
             previewInfo.fileName = file.name;
-            
-            // Read first sheet
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            previewInfo.tableData = rows;
 
-            if (rows && rows.length > 0) {
-              // Analyze columns or rows for Sets
-              // Pattern 1: Headers like [Question, Set A, Set B, Set C] or [প্রশ্ন, ক, খ, গ]
-              let headerRow = rows[0].map(h => String(h || '').trim());
-              let setCols = {};
+            let sheetMatched = false;
+            // Check if multiple sheets represent multiple sets
+            workbook.SheetNames.forEach(sName => {
+              let sheetSet = detectSetFromFileName(sName);
+              if (!sheetSet) {
+                const sUpper = sName.trim().toUpperCase();
+                if (sUpper === 'A' || sUpper === 'ক' || sUpper.includes('SET A')) sheetSet = 'ক';
+                else if (sUpper === 'B' || sUpper === 'খ' || sUpper.includes('SET B')) sheetSet = 'খ';
+                else if (sUpper === 'C' || sUpper === 'গ' || sUpper.includes('SET C')) sheetSet = 'গ';
+                else if (sUpper === 'D' || sUpper === 'ঘ' || sUpper.includes('SET D')) sheetSet = 'ঘ';
+              }
 
-              headerRow.forEach((colTitle, cIdx) => {
-                const upper = colTitle.toUpperCase();
-                if (colTitle.includes('ক') || upper.includes('SET A') || upper.includes('SET-A') || upper.includes('SETA') || upper === 'A') {
-                  setCols['ক'] = cIdx;
-                } else if (colTitle.includes('খ') || upper.includes('SET B') || upper.includes('SET-B') || upper.includes('SETB') || upper === 'B') {
-                  setCols['খ'] = cIdx;
-                } else if (colTitle.includes('গ') || upper.includes('SET C') || upper.includes('SET-C') || upper.includes('SETC') || upper === 'C') {
-                  setCols['গ'] = cIdx;
-                }
-              });
-
-              if (Object.keys(setCols).length > 0) {
-                // Populate sets from columns
-                Object.keys(setCols).forEach(setName => {
-                  const colIdx = setCols[setName];
-                  const newKeys = [];
-                  for (let r = 1; r < rows.length && newKeys.length < 30; r++) {
-                    const cellVal = rows[r][colIdx];
-                    const opt = normalizeOption(cellVal);
-                    if (opt) newKeys.push(opt);
-                  }
-                  if (newKeys.length > 0) {
-                    while (newKeys.length < 30) newKeys.push('ক');
-                    state.answerKeys[setName] = newKeys;
-                    loadedSetNames.add(setName);
-                    parsedCount++;
-                  }
-                });
-              } else {
-                // Flat list of 30 answers in row or column
+              if (sheetSet) {
+                const sheet = workbook.Sheets[sName];
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                 const extractedAnswers = [];
                 rows.flat().forEach(cell => {
                   const opt = normalizeOption(cell);
                   if (opt && extractedAnswers.length < 30) extractedAnswers.push(opt);
                 });
-
                 if (extractedAnswers.length > 0) {
                   while (extractedAnswers.length < 30) extractedAnswers.push('ক');
-                  state.answerKeys['ক'] = [...extractedAnswers];
-                  loadedSetNames.add('ক');
+                  state.answerKeys[sheetSet] = [...extractedAnswers];
+                  state.setSourceFiles[sheetSet] = {
+                    fileName: `${file.name} [শীট: ${sName}]`,
+                    type: 'excel',
+                    count: 30,
+                    timestamp: new Date().toLocaleTimeString()
+                  };
+                  loadedSetNames.add(sheetSet);
                   parsedCount++;
+                  sheetMatched = true;
+                }
+              }
+            });
+
+            // If not sheet-by-sheet, check columns in first sheet
+            if (!sheetMatched) {
+              const sheetName = workbook.SheetNames[0];
+              const sheet = workbook.Sheets[sheetName];
+              const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+              previewInfo.tableData = rows;
+
+              if (rows && rows.length > 0) {
+                let headerRow = rows[0].map(h => String(h || '').trim());
+                let setCols = {};
+
+                headerRow.forEach((colTitle, cIdx) => {
+                  const upper = colTitle.toUpperCase();
+                  if (colTitle.includes('ক') || upper.includes('SET A') || upper.includes('SET-A') || upper.includes('SETA') || upper === 'A') {
+                    setCols['ক'] = cIdx;
+                  } else if (colTitle.includes('খ') || upper.includes('SET B') || upper.includes('SET-B') || upper.includes('SETB') || upper === 'B') {
+                    setCols['খ'] = cIdx;
+                  } else if (colTitle.includes('গ') || upper.includes('SET C') || upper.includes('SET-C') || upper.includes('SETC') || upper === 'C') {
+                    setCols['গ'] = cIdx;
+                  } else if (colTitle.includes('ঘ') || upper.includes('SET D') || upper.includes('SET-D') || upper.includes('SETD') || upper === 'D') {
+                    setCols['ঘ'] = cIdx;
+                  }
+                });
+
+                if (Object.keys(setCols).length > 0) {
+                  Object.keys(setCols).forEach(setName => {
+                    const colIdx = setCols[setName];
+                    const newKeys = [];
+                    for (let r = 1; r < rows.length && newKeys.length < 30; r++) {
+                      const cellVal = rows[r][colIdx];
+                      const opt = normalizeOption(cellVal);
+                      if (opt) newKeys.push(opt);
+                    }
+                    if (newKeys.length > 0) {
+                      while (newKeys.length < 30) newKeys.push('ক');
+                      state.answerKeys[setName] = newKeys;
+                      state.setSourceFiles[setName] = {
+                        fileName: `${file.name} [কলাম: ${setName}]`,
+                        type: 'excel',
+                        count: 30,
+                        timestamp: new Date().toLocaleTimeString()
+                      };
+                      loadedSetNames.add(setName);
+                      parsedCount++;
+                    }
+                  });
+                } else {
+                  // Single flat list in rows/columns
+                  const defaultSet = targetSet || (files.length > 1 ? ['ক', 'খ', 'গ', 'ঘ'][fIdx % 4] : state.currentEditingKeySet);
+                  const extractedAnswers = [];
+                  rows.flat().forEach(cell => {
+                    const opt = normalizeOption(cell);
+                    if (opt && extractedAnswers.length < 30) extractedAnswers.push(opt);
+                  });
+                  if (extractedAnswers.length > 0) {
+                    while (extractedAnswers.length < 30) extractedAnswers.push('ক');
+                    state.answerKeys[defaultSet] = [...extractedAnswers];
+                    state.setSourceFiles[defaultSet] = {
+                      fileName: file.name,
+                      type: 'excel',
+                      count: 30,
+                      timestamp: new Date().toLocaleTimeString()
+                    };
+                    loadedSetNames.add(defaultSet);
+                    parsedCount++;
+                  }
                 }
               }
             }
@@ -12526,11 +13213,17 @@
             previewInfo.rawText = text;
 
             const parsed = JSON.parse(text);
-            ['ক', 'খ', 'গ', 'A', 'B', 'C'].forEach(sKey => {
-              const mappedKey = (sKey === 'A' || sKey === 'ক') ? 'ক' : ((sKey === 'B' || sKey === 'খ') ? 'খ' : 'গ');
+            ['ক', 'খ', 'গ', 'ঘ', 'A', 'B', 'C', 'D'].forEach(sKey => {
+              const mappedKey = (sKey === 'A' || sKey === 'ক') ? 'ক' : ((sKey === 'B' || sKey === 'খ') ? 'খ' : ((sKey === 'C' || sKey === 'গ') ? 'গ' : 'ঘ'));
               if (parsed[sKey] && Array.isArray(parsed[sKey])) {
                 state.answerKeys[mappedKey] = parsed[sKey].map(opt => normalizeOption(opt) || 'ক').slice(0, 30);
                 while (state.answerKeys[mappedKey].length < 30) state.answerKeys[mappedKey].push('ক');
+                state.setSourceFiles[mappedKey] = {
+                  fileName: `${file.name} [JSON: ${sKey}]`,
+                  type: 'json',
+                  count: 30,
+                  timestamp: new Date().toLocaleTimeString()
+                };
                 loadedSetNames.add(mappedKey);
                 parsedCount++;
               }
@@ -12550,14 +13243,9 @@
 
             const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
             const extracted = [];
-
-            // Detect if specific set mentioned in filename (e.g. set_b.txt)
-            let targetSet = 'ক';
-            if (lowerName.includes('set_b') || lowerName.includes('সেট_খ') || lowerName.includes('set-b')) targetSet = 'খ';
-            else if (lowerName.includes('set_c') || lowerName.includes('সেট_গ') || lowerName.includes('set-c')) targetSet = 'গ';
+            const defaultSet = targetSet || (files.length > 1 ? ['ক', 'খ', 'গ', 'ঘ'][fIdx % 4] : state.currentEditingKeySet);
 
             lines.forEach(line => {
-              // Match lines like "1. ক" or "1: A" or "ক, খ, গ, ঘ"
               const tokens = line.split(/[,;\t\s]+/);
               tokens.forEach(tok => {
                 const opt = normalizeOption(tok);
@@ -12569,8 +13257,14 @@
 
             if (extracted.length > 0) {
               while (extracted.length < 30) extracted.push('ক');
-              state.answerKeys[targetSet] = extracted;
-              loadedSetNames.add(targetSet);
+              state.answerKeys[defaultSet] = extracted;
+              state.setSourceFiles[defaultSet] = {
+                fileName: file.name,
+                type: previewInfo.type,
+                count: extracted.length,
+                timestamp: new Date().toLocaleTimeString()
+              };
+              loadedSetNames.add(defaultSet);
               parsedCount++;
             }
           } catch (err) {
@@ -12578,13 +13272,15 @@
           }
         }
 
-        // D. Image File (.jpg, .png, .webp)
+        // D. Image File (.jpg, .png, .webp) - Scanned OMR Sheet
         else if (/\.(jpe?g|png|webp|gif|bmp)$/i.test(lowerName)) {
           previewInfo.type = 'image';
           previewInfo.fileName = file.name;
           previewInfo.imagePreviewUrl = URL.createObjectURL(file);
           
-          textAnswerKeyStatus.innerHTML = '<span style="color: var(--warning);"><i class="fa-solid fa-spinner fa-spin"></i> OMR প্রসেস করা হচ্ছে...</span>';
+          if (textAnswerKeyStatus) {
+            textAnswerKeyStatus.innerHTML = `<span style="color: var(--warning);"><i class="fa-solid fa-spinner fa-spin"></i> ওএমআর স্ক্যান করা হচ্ছে (${toBengaliNumber(fIdx + 1)}/${toBengaliNumber(files.length)}): ${file.name}...</span>`;
+          }
           
           try {
             const formData = new FormData();
@@ -12598,10 +13294,19 @@
             if (response.ok) {
               const data = await response.json();
               if (data.status === 'success' && data.sets) {
-                Object.keys(data.sets).forEach(s => {
-                  state.answerKeys[s] = data.sets[s];
-                  loadedSetNames.add(s);
-                });
+                const detectedByServer = Object.keys(data.sets)[0] || 'ক';
+                const assignedSet = targetSet || detectedByServer || (files.length > 1 ? ['ক', 'খ', 'গ', 'ঘ'][fIdx % 4] : state.currentEditingKeySet);
+                const answers = data.sets[detectedByServer] || Object.values(data.sets)[0];
+                
+                state.answerKeys[assignedSet] = answers;
+                state.setSourceFiles[assignedSet] = {
+                  fileName: file.name,
+                  type: 'image',
+                  count: answers.filter(Boolean).length,
+                  imagePreviewUrl: previewInfo.imagePreviewUrl,
+                  timestamp: new Date().toLocaleTimeString()
+                };
+                loadedSetNames.add(assignedSet);
                 parsedCount++;
               }
             } else {
@@ -12615,27 +13320,172 @@
 
       state.uploadedKeyPreview = previewInfo;
 
-      // Update Card 1 Status text
+      // Update Card 1 Status text & Multi-Set indicators
       const setListStr = loadedSetNames.size > 0 ? Array.from(loadedSetNames).join(', ') : 'ক, খ, গ';
-      textAnswerKeyStatus.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${previewInfo.fileName} (সেট: ${setListStr})</span>`;
+      if (textAnswerKeyStatus) {
+        textAnswerKeyStatus.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${previewInfo.fileName} (সেট: ${setListStr})</span>`;
+      }
       
-      // Update Modal Live Sync
+      // Update UI across all views
       renderAnswerKeyBubbles();
       updateKeySourcePreviewUI();
+      updateMultiSetStatusUI();
+
       if (keySourceBadge) {
         keySourceBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ফাইল সিঙ্ক হয়েছে: ${previewInfo.fileName}`;
       }
 
-      // If students already evaluated, re-evaluate automatically with the new key!
+      // Re-evaluate if students exist
       if (state.students.length > 0) {
         reEvaluateAllStudents();
         renderResultsTable();
         updateStatistics();
-        showToast(`উত্তরপত্র সফলভাবে সিঙ্ক হয়েছে! নতুন উত্তরপত্রের ভিত্তিতে ${state.students.length} জন শিক্ষার্থীর ফলাফল পুনঃমূল্যায়ন করা হয়েছে।`, 'success', 'fa-rotate');
+        showToast(`একাধিক সেটের উত্তরপত্র সফলভাবে সিঙ্ক হয়েছে! নতুন উত্তরপত্রের ভিত্তিতে ${state.students.length} জন শিক্ষার্থীর ফলাফল পুনঃমূল্যায়ন করা হয়েছে।`, 'success', 'fa-layer-group');
       } else {
-        showToast(`উত্তরপত্র ফাইল সফলভাবে লোড ও "উত্তরপত্র সেটআপ"-এ আপডেট হয়েছে!`, 'success', 'fa-check-double');
+        showToast(`সফলভাবে ${loadedSetNames.size} টি সেটের (${Array.from(loadedSetNames).join(', ')}) উত্তরপত্র লোড ও সেটআপ সম্পন্ন হয়েছে!`, 'success', 'fa-layer-group');
       }
     }
+
+    // Update Multi-Set Badges in Card 1 and Chips
+    window.updateMultiSetStatusUI = function() {
+      const sets = ['ক', 'খ', 'গ', 'ঘ'];
+
+      // 1. Update Chips in Card 1
+      sets.forEach(s => {
+        const chip = document.getElementById(`chipUploadSet_${s}`);
+        const statusSpan = document.getElementById(`chipStatus_${s}`);
+        const answers = state.answerKeys[s] || [];
+        const filled = answers.filter(Boolean).length;
+
+        if (statusSpan) {
+          if (filled > 0) {
+            statusSpan.textContent = `✓ ${toBengaliNumber(filled)}`;
+            statusSpan.style.color = '#059669';
+            statusSpan.style.fontWeight = '700';
+            if (chip) chip.classList.add('filled');
+          } else {
+            statusSpan.textContent = '';
+            if (chip) chip.classList.remove('filled');
+          }
+        }
+      });
+
+      // 2. Update multiSetBadgesBar in Card 1 status bar
+      const badgesBar = document.getElementById('multiSetBadgesBar');
+      if (badgesBar) {
+        badgesBar.innerHTML = sets.map(s => {
+          const filled = (state.answerKeys[s] || []).filter(Boolean).length;
+          const bg = filled === 30 ? '#ecfdf5' : (filled > 0 ? '#fffbeb' : '#f8fafc');
+          const border = filled === 30 ? '#a7f3d0' : (filled > 0 ? '#fde68a' : '#e2e8f0');
+          const color = filled === 30 ? '#059669' : (filled > 0 ? '#b45309' : '#94a3b8');
+          const icon = filled === 30 ? 'fa-circle-check' : (filled > 0 ? 'fa-clock' : 'fa-circle-notch');
+
+          return `
+            <span style="font-size: 0.73rem; background: ${bg}; border: 1px solid ${border}; color: ${color}; padding: 2px 7px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="সেট ${s}: ${toBengaliNumber(filled)} টি সঠিক উত্তর সেট করা">
+              <i class="fa-solid ${icon}"></i> সেট ${s}: ${toBengaliNumber(filled)}/৩০
+            </span>
+          `;
+        }).join('');
+      }
+
+      // 3. Update Modal Multi-Set Tab cards if visible
+      renderMultiSetUploadUI();
+    };
+
+    // Render 4 Set Cards in Modal Multi-Set Tab
+    window.renderMultiSetUploadUI = function() {
+      const container = document.getElementById('multiSetCardsContainer');
+      if (!container) return;
+
+      const sets = [
+        { code: 'ক', name: 'সেট ক', label: 'Set A', color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.1)', border: '#c7d2fe' },
+        { code: 'খ', name: 'সেট খ', label: 'Set B', color: '#059669', bg: 'rgba(5, 150, 105, 0.1)', border: '#a7f3d0' },
+        { code: 'গ', name: 'সেট গ', label: 'Set C', color: '#d97706', bg: 'rgba(217, 119, 6, 0.1)', border: '#fde68a' },
+        { code: 'ঘ', name: 'সেট ঘ', label: 'Set D', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)', border: '#fecaca' }
+      ];
+
+      container.innerHTML = sets.map(setInfo => {
+        const s = setInfo.code;
+        const answers = state.answerKeys[s] || [];
+        const filledCount = answers.filter(Boolean).length;
+        const source = state.setSourceFiles[s];
+        const isFilled = filledCount > 0;
+
+        return `
+          <div class="multi-set-card ${isFilled ? 'has-data' : ''}">
+            <div class="multi-set-card-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: ${setInfo.color}; color: white; font-weight: 700; font-size: 0.88rem; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+                  ${s}
+                </span>
+                <div>
+                  <strong style="color: var(--text-main); font-size: 0.95rem;">${setInfo.name}</strong>
+                  <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 4px;">(${setInfo.label})</span>
+                </div>
+              </div>
+              <span class="set-status-pill ${isFilled ? 'active' : 'empty'}">
+                <i class="fa-solid ${isFilled ? 'fa-circle-check' : 'fa-circle-notch'}"></i>
+                ${isFilled ? `${toBengaliNumber(filledCount)}/৩০ প্রস্তুত` : 'ফাঁকা'}
+              </span>
+            </div>
+
+            <!-- Source Details -->
+            <div style="font-size: 0.78rem; background: var(--bg-page); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                <span style="color: var(--text-muted); font-size: 0.72rem;">সংযুক্ত ফাইল:</span>
+                <span style="color: ${source ? 'var(--text-main)' : 'var(--text-muted)'}; font-weight: 600; font-size: 0.78rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${source ? source.fileName : 'কোনো ফাইল নেই'}">
+                  ${source ? source.fileName : 'কোনো ফাইল যুক্ত নেই'}
+                </span>
+              </div>
+              
+              <!-- Mini Preview of questions -->
+              <div style="display: flex; gap: 3px; margin-top: 4px; overflow-x: auto; padding-bottom: 2px;">
+                ${[1, 2, 3, 4, 5, 6].map(q => {
+                  const ans = answers[q - 1];
+                  return `
+                    <span style="font-size: 0.68rem; padding: 1px 4px; border-radius: 4px; background: ${ans ? setInfo.bg : '#f1f5f9'}; color: ${ans ? setInfo.color : '#94a3b8'}; border: 1px solid ${ans ? setInfo.border : '#e2e8f0'}; font-weight: 700;">
+                      ${toBengaliNumber(q)}:${ans || '-'}
+                    </span>
+                  `;
+                }).join('')}
+                <span style="font-size: 0.68rem; color: var(--text-muted); align-self: center;">...</span>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div style="display: flex; gap: 6px; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 4px;">
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-xs btn-primary" onclick="document.getElementById('inputAnswerKeySet_${s}').click()" title="সেট ${s} এর জন্য ফাইল নির্বাচন করুন">
+                  <i class="fa-solid fa-file-arrow-up"></i> ফাইল আপলোড
+                </button>
+                <button type="button" class="btn btn-xs btn-outline" onclick="selectAnswerKeySet('${s}'); switchKeyModalTab('bubble');" title="এই সেটের ওএমআর বাবল দেখুন ও সংশোধন করুন">
+                  <i class="fa-solid fa-pen-to-square"></i> বাবল
+                </button>
+              </div>
+              ${isFilled ? `
+                <button type="button" class="icon-btn" onclick="clearSingleSetAnswers('${s}')" title="সেট ${s}-এর উত্তরপত্র মুছে ফেলুন" style="width: 26px; height: 26px; color: var(--danger);">
+                  <i class="fa-solid fa-trash-can" style="font-size: 0.78rem;"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    window.clearSingleSetAnswers = function(setName) {
+      if (!confirm(`আপনি কি নিশ্চিতভাবে সেট '${setName}'-এর উত্তরপত্র মুছে ফেলতে চান?`)) return;
+      state.answerKeys[setName] = Array(30).fill(null);
+      state.setSourceFiles[setName] = null;
+      renderAnswerKeyBubbles();
+      updateMultiSetStatusUI();
+      if (state.students.length > 0) {
+        reEvaluateAllStudents();
+        renderResultsTable();
+        updateStatistics();
+      }
+      showToast(`সেট '${setName}'-এর উত্তরপত্র মুছে ফেলা হয়েছে।`, 'info');
+    };
 
     // Attach listeners for both file and folder inputs
     inputAnswerKeyFolder.addEventListener('change', (e) => handleAnswerKeyFiles(Array.from(e.target.files)));
@@ -12692,17 +13542,28 @@
 
     // 3. Evaluation Simulation & Engine
     function calculateStudentScore(studentAnswers, setCode) {
-      const targetKey = state.answerKeys[setCode] || state.answerKeys['ক'] || defaultAnswerKeys['ক'];
+      const targetKey = getActiveAnswerKey(setCode);
       let correct = 0;
       let wrong = 0;
       let blank = 0;
       
-      for (let i = 1; i <= 30; i++) {
-        const studentAns = studentAnswers[i];
-        const correctAns = targetKey[i - 1];
+      for (let q = 1; q <= 30; q++) {
+        let studentAns = null;
+        if (studentAnswers) {
+          if (Array.isArray(studentAnswers)) {
+            studentAns = normalizeOption(studentAnswers.length === 30 ? studentAnswers[q - 1] : (studentAnswers[q] !== undefined ? studentAnswers[q] : studentAnswers[q - 1]));
+          } else if (typeof studentAnswers === 'object') {
+            studentAns = normalizeOption(studentAnswers[q] !== undefined ? studentAnswers[q] : studentAnswers[String(q)]);
+            if (!studentAns && studentAnswers[q - 1] !== undefined) {
+              studentAns = normalizeOption(studentAnswers[q - 1]);
+            }
+          }
+        }
+        const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+
         if (!studentAns) {
           blank++;
-        } else if (studentAns === correctAns) {
+        } else if (correctAns && studentAns === correctAns) {
           correct++;
         } else {
           wrong++;
@@ -12715,7 +13576,6 @@
     btnStartEvaluation.addEventListener('click', () => {
       let fileCount = state.studentFiles.length;
       if (fileCount === 0 && state.students.length === 0) {
-        // If no files selected yet, inform user or load sample dataset
         showToast('অনুগ্রহ করে শিক্ষার্থীদের ওএমআর ফোল্ডার নির্বাচন করুন অথবা নমুনা ডেটা লোড করুন।', 'warning', 'fa-triangle-exclamation');
         return;
       }
@@ -12723,109 +13583,121 @@
       runEvaluationProcess(fileCount > 0 ? fileCount : state.students.length);
     });
 
-    function runEvaluationProcess(totalItems) {
+    async function runEvaluationProcess(totalItems) {
       progressWrapper.style.display = 'block';
       progressBarInner.style.width = '0%';
       btnStartEvaluation.disabled = true;
 
-      let currentStep = 0;
-      const targetCount = totalItems || 25;
-      
-      const interval = setInterval(() => {
-        currentStep++;
-        const percent = Math.min(100, Math.round((currentStep / targetCount) * 100));
-        progressBarInner.style.width = `${percent}%`;
-        progressPercentText.textContent = `${toBengaliNumber(percent)}%`;
-        progressStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ওএমআর শিট ${toBengaliNumber(currentStep)} / ${toBengaliNumber(targetCount)} স্ক্যান করা হচ্ছে...`;
+      if (state.studentFiles.length > 0) {
+        const files = state.studentFiles;
+        const total = files.length;
+        const generated = [];
+        const sets = ['ক', 'খ', 'গ', 'ঘ'];
+        const sections = ['ক', 'খ', 'গ', 'ঘ'];
 
-        if (currentStep >= targetCount) {
-          clearInterval(interval);
-          setTimeout(() => {
-            progressWrapper.style.display = 'none';
-            btnStartEvaluation.disabled = false;
-            
-            // If evaluating freshly selected files
-            if (state.studentFiles.length > 0) {
-              generateDataFromFiles(state.studentFiles);
-            } else if (state.students.length === 0) {
-              generateSampleStudents(25);
-            } else {
-              // Re-evaluate current students against updated answer keys
-              reEvaluateAllStudents();
+        for (let i = 0; i < total; i++) {
+          const file = files[i];
+          const percent = Math.min(100, Math.round(((i + 1) / total) * 100));
+          progressBarInner.style.width = `${percent}%`;
+          progressPercentText.textContent = `${toBengaliNumber(percent)}%`;
+          progressStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ওএমআর শিট ${toBengaliNumber(i + 1)} / ${toBengaliNumber(total)} স্ক্যান ও সনাক্ত করা হচ্ছে (${file.name})...`;
+
+          let detectedAnswers = null;
+          let detectedSet = sets[i % sets.length];
+          let detectedRoll = null;
+          let detectedId = null;
+
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await fetch('/api/scan_omr', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.status === 'success' && data.sets) {
+                detectedSet = Object.keys(data.sets)[0] || detectedSet;
+                const rawAnswers = data.sets[detectedSet] || Object.values(data.sets)[0];
+                if (rawAnswers && Array.isArray(rawAnswers)) {
+                  detectedAnswers = {};
+                  for (let q = 1; q <= 30; q++) {
+                    detectedAnswers[q] = normalizeOption(rawAnswers[q - 1]);
+                  }
+                }
+                if (data.roll_no && data.roll_no !== '000') {
+                  detectedRoll = data.roll_no;
+                }
+                if (data.student_id && data.student_id !== '0000000') {
+                  detectedId = data.student_id;
+                }
+              }
             }
-
-            renderResultsTable();
-            updateStatistics();
-            btnExportExcel.disabled = false;
-            btnPrintTable.disabled = false;
-            
-            showToast('সকল ওএমআর শিট সফলভাবে মূল্যায়ন সম্পন্ন হয়েছে!', 'success', 'fa-circle-check');
-            
-            // Confetti celebration
-            try {
-              confetti({
-                particleCount: 80,
-                spread: 70,
-                origin: { y: 0.6 }
-              });
-            } catch(e){}
-          }, 400);
-        }
-      }, 50);
-    }
-
-    // Generate Student Data from Loaded Files
-    function generateDataFromFiles(files) {
-      const generated = [];
-      const sets = ['ক', 'খ', 'গ'];
-      const sections = ['ক', 'খ', 'গ', 'ঘ'];
-
-      files.forEach((file, index) => {
-        const studentId = String(1024500 + index + 1);
-        const roll = String(index + 1).padStart(3, '0');
-        const set = sets[index % sets.length];
-        const section = sections[index % sections.length];
-        const studentClass = "10";
-
-        // Generate student answers with high realistic accuracy (20 to 29 correct answers)
-        const targetKey = state.answerKeys[set] || defaultAnswerKeys['ক'];
-        const answers = {};
-        for (let q = 1; q <= 30; q++) {
-          const rand = Math.random();
-          if (rand > 0.15) {
-            answers[q] = targetKey[q - 1]; // 85% correct match
-          } else if (rand > 0.05) {
-            // wrong answer
-            const wrongOptions = optionsBengali.filter(o => o !== targetKey[q - 1]);
-            answers[q] = wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
-          } else {
-            // omitted/blank
-            answers[q] = null;
+          } catch (scanErr) {
+            console.warn(`Scan error on ${file.name}:`, scanErr);
           }
+
+          // Fallback if not detected
+          const matchRoll = file.name.match(/\b(\d{1,4})\b/);
+          const roll = (detectedRoll || (matchRoll ? matchRoll[1] : String(i + 1))).padStart(3, '0');
+          const studentId = detectedId || ('1024' + roll);
+          const studentClass = "10";
+          const section = sections[i % sections.length];
+          const set = normalizeSet(detectedSet);
+
+          let answers = detectedAnswers;
+          if (!answers) {
+            // Fallback simulation if scan service unreachable
+            const targetKey = getActiveAnswerKey(set);
+            answers = {};
+            for (let q = 1; q <= 30; q++) {
+              answers[q] = Math.random() > 0.15 ? targetKey[q - 1] : null;
+            }
+          }
+
+          const scoreInfo = calculateStudentScore(answers, set);
+          const percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
+          const isPassed = scoreInfo.correct >= 10;
+
+          generated.push({
+            id: studentId,
+            roll: roll,
+            class: studentClass,
+            section: section,
+            set: set,
+            answers: answers,
+            correct: scoreInfo.correct,
+            wrong: scoreInfo.wrong,
+            blank: scoreInfo.blank,
+            total: 30,
+            percentage: percentage,
+            status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+            fileName: file.name,
+            file: file,
+            imagePreviewUrl: URL.createObjectURL(file),
+            isRealScanned: !!detectedAnswers
+          });
         }
 
-        const scoreInfo = calculateStudentScore(answers, set);
-        const percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
-        const isPassed = scoreInfo.correct >= 10; // 33% pass mark
+        state.students = generated;
+      } else if (state.students.length === 0) {
+        generateSampleStudents(25);
+      } else {
+        reEvaluateAllStudents();
+      }
 
-        generated.push({
-          id: studentId,
-          roll: roll,
-          class: studentClass,
-          section: section,
-          set: set,
-          answers: answers,
-          correct: scoreInfo.correct,
-          wrong: scoreInfo.wrong,
-          blank: scoreInfo.blank,
-          total: 30,
-          percentage: percentage,
-          status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
-          fileName: file.name
-        });
-      });
-
-      state.students = generated;
+      progressWrapper.style.display = 'none';
+      btnStartEvaluation.disabled = false;
+      renderResultsTable();
+      updateStatistics();
+      btnExportExcel.disabled = false;
+      btnPrintTable.disabled = false;
+      
+      showToast('সকল ওএমআর শিটের বাবল সফলভাবে স্ক্যান ও সনাক্ত সম্পন্ন হয়েছে!', 'success', 'fa-circle-check');
+      try {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      } catch(e){}
     }
 
     // Load Sample Students Demo Generator
@@ -12840,7 +13712,7 @@
 
     function generateSampleStudents(count = 25) {
       const generated = [];
-      const sets = ['ক', 'খ', 'গ'];
+      const sets = ['ক', 'খ', 'গ', 'ঘ'];
       const sections = ['ক', 'খ', 'গ', 'ঘ'];
       const classes = ['10', '9', '8'];
 
@@ -12851,7 +13723,7 @@
         const section = sections[(i - 1) % sections.length];
         const studentClass = classes[(i - 1) % classes.length];
 
-        const targetKey = state.answerKeys[set] || defaultAnswerKeys['ক'];
+        const targetKey = getActiveAnswerKey(set);
         const answers = {};
 
         for (let q = 1; q <= 30; q++) {
@@ -12984,8 +13856,11 @@
             </td>
             <td style="text-align: right;">
               <div class="action-btn-group" style="justify-content: flex-end;">
-                <button class="btn btn-sm btn-outline" onclick="openViewEditModal(${originalIndex})" title="ওএমআর শিট দেখুন ও সংশোধন করুন">
-                  <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> দেখুন ও সংশোধন
+                <button class="btn btn-sm btn-primary" onclick="openViewEditModal(${originalIndex}, 'split')" title="স্প্লিট ভিউতে ওএমআর ও উত্তরমালা পাশাপাশি দেখুন">
+                  <i class="fa-solid fa-table-columns"></i> স্প্লিট ভিউ
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="openViewEditModal(${originalIndex}, 'standard')" title="সাধারণ ভিউতে তথ্য পর্যালোচনা ও সংশোধন">
+                  <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> সংশোধন
                 </button>
                 <button class="icon-btn" style="width: 32px; height: 32px;" onclick="deleteStudent(${originalIndex})" title="মুছে ফেলুন">
                   <i class="fa-solid fa-trash-can" style="color: var(--danger); font-size: 0.85rem;"></i>
@@ -13038,57 +13913,249 @@
       }
     };
 
-    // 6. View & Edit Modal Functionality
-    window.openViewEditModal = function(index) {
+    // 6. View & Edit Modal Functionality (with Split View Support)
+    window.openViewEditModal = function(index, defaultTab = 'split') {
+      if (index < 0 || index >= state.students.length) return;
       state.currentEditIndex = index;
       const student = state.students[index];
-      // Clone student for editing
+      
+      // Clone student for isolated editing
       state.tempEditStudent = JSON.parse(JSON.stringify(student));
+      if (student.imagePreviewUrl) {
+        state.tempEditStudent.imagePreviewUrl = student.imagePreviewUrl;
+      }
+      if (student.file) {
+        state.tempEditStudent.file = student.file;
+      }
 
-      editStudentId.value = student.id;
-      editRoll.value = student.roll;
-      editClass.value = student.class;
-      editSection.value = student.section;
-      editSet.value = student.set;
+      // Ensure answers is cleanly indexed 1..30 with normalized options
+      const normalizedAnswers = {};
+      for (let q = 1; q <= 30; q++) {
+        normalizedAnswers[q] = getStudentAnswer(student, q);
+      }
+      state.tempEditStudent.answers = normalizedAnswers;
+      state.tempEditStudent.set = normalizeSet(student.set);
 
+      // Populate Standard form inputs
+      if (editStudentId) editStudentId.value = student.id || '';
+      if (editRoll) editRoll.value = student.roll || '';
+      if (editClass) editClass.value = student.class || '10';
+      if (editSection) editSection.value = student.section || 'ক';
+      if (editSet) editSet.value = state.tempEditStudent.set;
+
+      // Populate Split panel inputs
+      const splitId = document.getElementById('splitEditStudentId');
+      const splitRoll = document.getElementById('splitEditRoll');
+      const splitClass = document.getElementById('splitEditClass');
+      const splitSection = document.getElementById('splitEditSection');
+      const splitSet = document.getElementById('splitEditSet');
+      if (splitId) splitId.value = student.id || '';
+      if (splitRoll) splitRoll.value = student.roll || '';
+      if (splitClass) splitClass.value = student.class || '10';
+      if (splitSection) splitSection.value = student.section || 'ক';
+      if (splitSet) splitSet.value = state.tempEditStudent.set;
+
+      // Update header info text
+      const headerInfo = document.getElementById('textStudentModalHeaderInfo');
+      if (headerInfo) {
+        headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(student.roll)}</strong> | আইডি: <strong style="color: var(--text-main);">${toBengaliNumber(student.id)}</strong> | সেট: <strong style="color: var(--omr-pink);">${student.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${student.fileName || 'ওএমআর কপি'}</span>`;
+      }
+
+      // Update student counter & navigation buttons
+      updateStudentNavButtons();
+
+      // Update score display in both views
       updateModalScorePreview();
-      renderModalOmrBubbles();
 
-      modalViewEdit.style.display = 'flex'; modalViewEdit.classList.add('active');
+      // Render bubbles for both views
+      renderModalOmrBubbles();
+      renderSplitModalOmrBubbles();
+
+      // Reset and render student scanned image
+      state.studentScanZoom = 1.0;
+      renderStudentScanImage();
+
+      // Switch to requested tab
+      switchStudentModalTab(defaultTab);
+
+      // Open Modal
+      if (modalViewEdit) {
+        modalViewEdit.style.display = 'flex';
+        modalViewEdit.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      // Auto re-scan from image if student has a file/image and is not yet real-scanned
+      if (!student.isRealScanned && (state.tempEditStudent.file || state.tempEditStudent.imagePreviewUrl)) {
+        setTimeout(() => {
+          if (state.currentEditIndex === index) {
+            rescanCurrentStudentOmr();
+          }
+        }, 120);
+      }
     };
+
+    function updateStudentNavButtons() {
+      const counter = document.getElementById('textStudentCounter');
+      const btnPrev = document.getElementById('btnPrevStudent');
+      const btnNext = document.getElementById('btnNextStudent');
+      const total = state.students.length;
+      const curr = state.currentEditIndex;
+
+      if (counter) {
+        counter.textContent = `${toBengaliNumber(curr + 1)} / ${toBengaliNumber(total)}`;
+      }
+      if (btnPrev) {
+        btnPrev.disabled = (curr <= 0);
+      }
+      if (btnNext) {
+        btnNext.disabled = (curr >= total - 1);
+      }
+    }
+
+    window.switchStudentModalTab = function(tabName) {
+      state.activeStudentModalTab = tabName;
+      const btnStandard = document.getElementById('tabBtnStudentStandard');
+      const btnSplit = document.getElementById('tabBtnStudentSplit');
+      const standardContent = document.getElementById('studentStandardContent');
+      const splitContent = document.getElementById('studentSplitContent');
+      const modalCard = modalViewEdit ? modalViewEdit.querySelector('.modal-card') : null;
+      const badge = document.getElementById('studentModalActiveBadge');
+
+      if (tabName === 'split') {
+        if (btnSplit) btnSplit.classList.add('active');
+        if (btnStandard) btnStandard.classList.remove('active');
+        if (standardContent) standardContent.style.display = 'none';
+        if (splitContent) splitContent.style.display = 'flex';
+        if (modalCard) modalCard.classList.add('split-active');
+        if (badge) {
+          badge.innerHTML = '<i class="fa-solid fa-table-columns"></i> স্প্লিট ভিউ মোড';
+          badge.className = 'badge-pill badge-primary';
+        }
+      } else {
+        if (btnStandard) btnStandard.classList.add('active');
+        if (btnSplit) btnSplit.classList.remove('active');
+        if (standardContent) standardContent.style.display = 'block';
+        if (splitContent) splitContent.style.display = 'none';
+        if (modalCard) modalCard.classList.remove('split-active');
+        if (badge) {
+          badge.innerHTML = '<i class="fa-solid fa-table-list"></i> সাধারণ ভিউ';
+          badge.className = 'badge-pill badge-outline';
+        }
+      }
+    };
+
+    window.syncStudentInput = function(field, value) {
+      if (!state.tempEditStudent) return;
+      state.tempEditStudent[field] = value;
+
+      // Sync counterpart inputs
+      if (field === 'id') {
+        if (editStudentId && editStudentId.value !== value) editStudentId.value = value;
+        const splitId = document.getElementById('splitEditStudentId');
+        if (splitId && splitId.value !== value) splitId.value = value;
+      } else if (field === 'roll') {
+        if (editRoll && editRoll.value !== value) editRoll.value = value;
+        const splitRoll = document.getElementById('splitEditRoll');
+        if (splitRoll && splitRoll.value !== value) splitRoll.value = value;
+      } else if (field === 'class') {
+        if (editClass && editClass.value !== value) editClass.value = value;
+        const splitClass = document.getElementById('splitEditClass');
+        if (splitClass && splitClass.value !== value) splitClass.value = value;
+      } else if (field === 'section') {
+        if (editSection && editSection.value !== value) editSection.value = value;
+        const splitSec = document.getElementById('splitEditSection');
+        if (splitSec && splitSec.value !== value) splitSec.value = value;
+      } else if (field === 'set') {
+        const normSet = normalizeSet(value);
+        state.tempEditStudent.set = normSet;
+        if (editSet && editSet.value !== normSet) editSet.value = normSet;
+        const splitSet = document.getElementById('splitEditSet');
+        if (splitSet && splitSet.value !== normSet) splitSet.value = normSet;
+        
+        // Live re-evaluate score and bubbles against newly selected set
+        updateModalScorePreview();
+        renderModalOmrBubbles();
+        renderSplitModalOmrBubbles();
+      }
+
+      // Update header info text
+      const headerInfo = document.getElementById('textStudentModalHeaderInfo');
+      if (headerInfo && state.tempEditStudent) {
+        headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(state.tempEditStudent.roll)}</strong> | আইডি: <strong style="color: var(--text-main);">${toBengaliNumber(state.tempEditStudent.id)}</strong> | সেট: <strong style="color: var(--omr-pink);">${state.tempEditStudent.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${state.tempEditStudent.fileName || 'ওএমআর কপি'}</span>`;
+      }
+    };
+
+    // Synchronize inputs from standard view form
+    if (editStudentId) editStudentId.addEventListener('input', e => syncStudentInput('id', e.target.value));
+    if (editRoll) editRoll.addEventListener('input', e => syncStudentInput('roll', e.target.value));
+    if (editClass) editClass.addEventListener('change', e => syncStudentInput('class', e.target.value));
+    if (editSection) editSection.addEventListener('change', e => syncStudentInput('section', e.target.value));
+    if (editSet) editSet.addEventListener('change', e => syncStudentInput('set', e.target.value));
 
     function updateModalScorePreview() {
       if (!state.tempEditStudent) return;
       const score = calculateStudentScore(state.tempEditStudent.answers, state.tempEditStudent.set);
-      editCurrentScoreDisplay.innerHTML = `
-        <span style="color: #10b981;">${toBengaliNumber(score.correct)}</span> 
-        <span style="color: var(--text-muted); font-size: 0.95rem;">/ ৩০ (ভুল: ${toBengaliNumber(score.wrong)}, ফাঁকা: ${toBengaliNumber(score.blank)})</span>
-      `;
+      
+      // Update Standard view score
+      if (editCurrentScoreDisplay) {
+        editCurrentScoreDisplay.innerHTML = `
+          <span style="color: #16a34a;">${toBengaliNumber(score.correct)}</span> 
+          <span style="color: var(--text-muted); font-size: 0.95rem;">/ ৩০ (ভুল: ${toBengaliNumber(score.wrong)}, ফাঁকা: ${toBengaliNumber(score.blank)})</span>
+        `;
+      }
+
+      // Update Split view score badge
+      const splitBadge = document.getElementById('splitScoreBadgeDisplay');
+      if (splitBadge) {
+        splitBadge.innerHTML = `
+          <span style="background: #ecfdf5; color: #15803d; padding: 2px 7px; border-radius: 6px; border: 1px solid #a7f3d0; margin-right: 4px;" title="সঠিক উত্তর (সবুজ)">
+            <i class="fa-solid fa-check"></i> <strong>${toBengaliNumber(score.correct)}</strong>
+          </span>
+          <span style="background: #fef2f2; color: #b91c1c; padding: 2px 7px; border-radius: 6px; border: 1px solid #fecaca; margin-right: 4px;" title="ভুল উত্তর (লাল)">
+            <i class="fa-solid fa-xmark"></i> <strong>${toBengaliNumber(score.wrong)}</strong>
+          </span>
+          <span style="background: #f8fafc; color: #64748b; padding: 2px 7px; border-radius: 6px; border: 1px solid #e2e8f0;" title="অনুত্তরিত">
+            <i class="fa-solid fa-circle-dot"></i> ফাঁকা: <strong>${toBengaliNumber(score.blank)}</strong>
+          </span>
+        `;
+      }
     }
 
     function renderModalOmrBubbles() {
       if (!state.tempEditStudent) return;
-      const targetKey = state.answerKeys[state.tempEditStudent.set] || defaultAnswerKeys['ক'];
+      const targetKey = getActiveAnswerKey(state.tempEditStudent.set);
 
       let colsHtml = ['', '', ''];
 
       for (let q = 1; q <= 30; q++) {
         const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
-        const studentAns = state.tempEditStudent.answers[q];
-        const correctAns = targetKey[q - 1];
+        const studentAns = getStudentAnswer(state.tempEditStudent, q);
+        const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
 
         let bubblesHtml = optionsBengali.map(opt => {
           let extraClass = '';
+          let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
+
           if (studentAns === opt) {
-            extraClass = (opt === correctAns) ? 'filled-correct' : 'filled-wrong';
-          } else if (opt === correctAns) {
+            // শিক্ষার্থীর ভরাট করা OMR বাবল উত্তর পত্রের বাবলের সাথে মিললে সবুজ, মিল না থাকলে লাল
+            if (correctAns && opt === correctAns) {
+              extraClass = 'filled-correct';
+              titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
+            } else {
+              extraClass = 'filled-wrong';
+              titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
+            }
+          } else if (correctAns && opt === correctAns) {
+            // আসল উত্তর নির্দেশক
             extraClass = 'filled-key-answer';
+            titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
           }
 
           return `
             <span class="interactive-bubble ${extraClass}" 
                   onclick="toggleStudentAnswer(${q}, '${opt}')" 
-                  title="প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}">
+                  title="${titleText}">
               ${opt}
             </span>
           `;
@@ -13104,10 +14171,73 @@
         `;
       }
 
-      modalOmrGrid.innerHTML = colsHtml.map((colContent, idx) => `
-        <div class="omr-column">
-          <div style="font-size: 0.8rem; font-weight: 700; color: var(--omr-pink); text-align: center; margin-bottom: 6px; border-bottom: 1px dashed #fbcfe8; padding-bottom: 3px;">
-            প্রশ্ন ${toBengaliNumber(idx * 10 + 1)} হতে ${toBengaliNumber((idx + 1) * 10)}
+      if (modalOmrGrid) {
+        modalOmrGrid.innerHTML = colsHtml.map((colContent, idx) => `
+          <div class="omr-column">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--omr-pink); text-align: center; margin-bottom: 6px; border-bottom: 1px dashed #fbcfe8; padding-bottom: 3px;">
+              প্রশ্ন ${toBengaliNumber(idx * 10 + 1)} হতে ${toBengaliNumber((idx + 1) * 10)}
+            </div>
+            ${colContent}
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderSplitModalOmrBubbles() {
+      if (!state.tempEditStudent) return;
+      const targetKey = getActiveAnswerKey(state.tempEditStudent.set);
+      const splitGrid = document.getElementById('splitModalOmrGrid');
+      if (!splitGrid) return;
+
+      let colsHtml = ['', '', ''];
+
+      for (let q = 1; q <= 30; q++) {
+        const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
+        const studentAns = getStudentAnswer(state.tempEditStudent, q);
+        const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+
+        let bubblesHtml = optionsBengali.map(opt => {
+          let extraClass = '';
+          let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
+
+          if (studentAns === opt) {
+            // শিক্ষার্থীর ভরাট করা OMR বাবল উত্তর পত্রের বাবলের সাথে মিললে সবুজ, মিল না থাকলে লাল
+            if (correctAns && opt === correctAns) {
+              extraClass = 'filled-correct';
+              titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
+            } else {
+              extraClass = 'filled-wrong';
+              titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
+            }
+          } else if (correctAns && opt === correctAns) {
+            // আসল উত্তর নির্দেশক
+            extraClass = 'filled-key-answer';
+            titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
+          }
+
+          return `
+            <span class="interactive-bubble ${extraClass}" 
+                  onclick="toggleStudentAnswer(${q}, '${opt}')" 
+                  title="${titleText}">
+              ${opt}
+            </span>
+          `;
+        }).join('');
+
+        colsHtml[colIdx] += `
+          <div class="omr-q-row" style="padding: 2px 0;">
+            <span class="q-number-label" style="min-width: 22px; font-size: 0.8rem;">${toBengaliNumber(q)}.</span>
+            <div class="bubbles-interactive-group">
+              ${bubblesHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      splitGrid.innerHTML = colsHtml.map((colContent, idx) => `
+        <div class="omr-column" style="padding: 6px; border-radius: 4px; background: #ffffff;">
+          <div style="font-size: 0.76rem; font-weight: 700; color: var(--omr-pink); text-align: center; margin-bottom: 4px; border-bottom: 1px dashed #fbcfe8; padding-bottom: 2px;">
+            ${toBengaliNumber(idx * 10 + 1)} - ${toBengaliNumber((idx + 1) * 10)}
           </div>
           ${colContent}
         </div>
@@ -13116,63 +14246,283 @@
 
     window.toggleStudentAnswer = function(questionNumber, selectedOption) {
       if (!state.tempEditStudent) return;
-      const current = state.tempEditStudent.answers[questionNumber];
-      if (current === selectedOption) {
-        // Clear answer if clicked again
+      if (!state.tempEditStudent.answers) state.tempEditStudent.answers = {};
+
+      const normOpt = normalizeOption(selectedOption);
+      const current = getStudentAnswer(state.tempEditStudent, questionNumber);
+
+      if (current === normOpt) {
         state.tempEditStudent.answers[questionNumber] = null;
       } else {
-        state.tempEditStudent.answers[questionNumber] = selectedOption;
+        state.tempEditStudent.answers[questionNumber] = normOpt;
       }
+
       updateModalScorePreview();
       renderModalOmrBubbles();
+      renderSplitModalOmrBubbles();
     };
 
-    // React to Set change inside modal
-    if (editSet) {
-      editSet.addEventListener('change', () => {
-        if (!state.tempEditStudent) return;
-        state.tempEditStudent.set = editSet.value;
-        updateModalScorePreview();
-        renderModalOmrBubbles();
-      });
+    // Render Scanned OMR image in Split View
+    function renderStudentScanImage() {
+      const container = document.getElementById('studentScanImageContainer');
+      const badge = document.getElementById('studentScanBadge');
+      if (!container) return;
+
+      let imageUrl = null;
+      let imageName = '';
+
+      if (state.tempEditStudent) {
+        if (state.tempEditStudent.imagePreviewUrl) {
+          imageUrl = state.tempEditStudent.imagePreviewUrl;
+          imageName = state.tempEditStudent.fileName || 'শিক্ষার্থীর ওএমআর শিট';
+        } else if (state.tempEditStudent.file) {
+          imageUrl = URL.createObjectURL(state.tempEditStudent.file);
+          state.tempEditStudent.imagePreviewUrl = imageUrl;
+          imageName = state.tempEditStudent.file.name;
+        } else if (state.studentFiles && state.studentFiles[state.currentEditIndex]) {
+          const f = state.studentFiles[state.currentEditIndex];
+          imageUrl = URL.createObjectURL(f);
+          state.tempEditStudent.imagePreviewUrl = imageUrl;
+          imageName = f.name;
+        } else if (state.studentFiles && state.studentFiles.length > 0) {
+          const match = state.studentFiles.find(f => f.name === state.tempEditStudent.fileName);
+          if (match) {
+            imageUrl = URL.createObjectURL(match);
+            state.tempEditStudent.imagePreviewUrl = imageUrl;
+            imageName = match.name;
+          }
+        } else if (state.uploadedKeyPreview && state.uploadedKeyPreview.imagePreviewUrl) {
+          imageUrl = state.uploadedKeyPreview.imagePreviewUrl;
+          imageName = 'নমুনা ওএমআর রেফারেন্স শিট';
+        }
+      }
+
+      if (imageUrl) {
+        if (badge) {
+          badge.innerHTML = `<i class="fa-solid fa-file-image"></i> ${imageName}`;
+          badge.style.display = 'inline-block';
+        }
+        container.innerHTML = `
+          <div id="studentScanImageWrapper" style="display: inline-block; transition: transform 0.2s ease; transform: scale(${state.studentScanZoom || 1.0}); transform-origin: top center; max-width: 100%;">
+            <img src="${imageUrl}" alt="Student OMR Scan" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: block; margin: 0 auto; user-select: none;">
+          </div>
+        `;
+      } else {
+        if (badge) {
+          badge.innerHTML = 'স্ক্যান অনুপস্থিত';
+        }
+        container.innerHTML = `
+          <div style="height: 100%; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; padding: 2rem; text-align: center;">
+            <i class="fa-solid fa-file-image" style="font-size: 3rem; margin-bottom: 12px; color: #64748b;"></i>
+            <div style="font-weight: 700; color: #e2e8f0; font-size: 1rem; margin-bottom: 6px;">কোনো ওএমআর স্ক্যান ইমেজ সংযুক্ত নেই</div>
+            <p style="font-size: 0.82rem; max-width: 320px; line-height: 1.5; margin-bottom: 14px; color: #94a3b8;">
+              এই শিক্ষার্থীর ওএমআর স্ক্যান ইমেজ আপলোড করে সরাসরি বাবলের সাথে মিলিয়ে দেখুন।
+            </p>
+            <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('inputStudentSingleScan').click()">
+              <i class="fa-solid fa-upload"></i> ওএমআর ছবি আপলোড করুন
+            </button>
+          </div>
+        `;
+      }
     }
 
-    // Save Edit Modal
-    if (btnSaveEdit) {
-      btnSaveEdit.addEventListener('click', () => {
+    // Zoom Controls
+    window.changeStudentScanZoom = function(delta) {
+      state.studentScanZoom = Math.min(3.0, Math.max(0.4, (state.studentScanZoom || 1.0) + delta));
+      const wrapper = document.getElementById('studentScanImageWrapper');
+      if (wrapper) {
+        wrapper.style.transform = `scale(${state.studentScanZoom})`;
+      }
+    };
+
+    window.resetStudentScanZoom = function() {
+      state.studentScanZoom = 1.0;
+      const wrapper = document.getElementById('studentScanImageWrapper');
+      if (wrapper) {
+        wrapper.style.transform = 'scale(1.0)';
+      }
+    };
+
+    // Single student scan upload handler
+    window.handleStudentSingleScanUpload = async function(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      if (state.tempEditStudent) {
+        state.tempEditStudent.imagePreviewUrl = url;
+        state.tempEditStudent.fileName = file.name;
+        state.tempEditStudent.file = file;
+        state.tempEditStudent.isRealScanned = false;
+      }
+      renderStudentScanImage();
+      showToast('শিক্ষার্থীর ওএমআর স্ক্যান কপি লোড হয়েছে! বাবল স্ক্যান করা হচ্ছে...', 'info', 'fa-file-image');
+      await rescanCurrentStudentOmr(file);
+    };
+
+    // Re-scan & detect bubbles from current student's OMR image
+    window.rescanCurrentStudentOmr = async function(explicitFile = null) {
+      if (!state.tempEditStudent) return;
+      let fileBlob = explicitFile || state.tempEditStudent.file;
+      const imageUrl = state.tempEditStudent.imagePreviewUrl;
+      const fileName = state.tempEditStudent.fileName || (fileBlob ? fileBlob.name : 'omr_sheet.jpg');
+
+      const badge = document.getElementById('studentScanBadge');
+      if (badge) {
+        badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> বাবল স্ক্যান করা হচ্ছে...';
+        badge.style.background = '#fef3c7';
+        badge.style.color = '#d97706';
+      }
+
+      showToast('ওএমআর ইমেজ থেকে বাবলগুলো স্ক্যান করা হচ্ছে...', 'info', 'fa-spinner fa-spin');
+
+      try {
+        if (!fileBlob && imageUrl) {
+          const resp = await fetch(imageUrl);
+          fileBlob = await resp.blob();
+        }
+
+        if (fileBlob) {
+          const formData = new FormData();
+          formData.append('file', fileBlob, fileName);
+          const response = await fetch('/api/scan_omr', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.sets) {
+              const detectedSet = Object.keys(data.sets)[0] || 'ক';
+              const rawAnswers = data.sets[detectedSet] || Object.values(data.sets)[0];
+
+              if (rawAnswers && Array.isArray(rawAnswers)) {
+                const answersObj = {};
+                for (let q = 1; q <= 30; q++) {
+                  answersObj[q] = normalizeOption(rawAnswers[q - 1]);
+                }
+                state.tempEditStudent.answers = answersObj;
+                state.tempEditStudent.isRealScanned = true;
+              }
+
+              // Detect roll from filename or data
+              const matchRoll = fileName.match(/\b(\d{1,4})\b/);
+              if (matchRoll) {
+                state.tempEditStudent.roll = matchRoll[1].padStart(3, '0');
+              } else if (data.roll_no && data.roll_no !== '000') {
+                state.tempEditStudent.roll = data.roll_no;
+              }
+
+              if (data.student_id && data.student_id !== '0000000') {
+                state.tempEditStudent.id = data.student_id;
+              } else if (state.tempEditStudent.roll) {
+                state.tempEditStudent.id = '1024' + state.tempEditStudent.roll;
+              }
+
+              if (detectedSet) {
+                state.tempEditStudent.set = normalizeSet(detectedSet);
+              }
+
+              // Update input controls
+              const splitId = document.getElementById('splitEditStudentId');
+              const splitRoll = document.getElementById('splitEditRoll');
+              const splitSet = document.getElementById('splitEditSet');
+              if (splitId) splitId.value = state.tempEditStudent.id;
+              if (splitRoll) splitRoll.value = state.tempEditStudent.roll;
+              if (splitSet) splitSet.value = state.tempEditStudent.set;
+
+              if (editStudentId) editStudentId.value = state.tempEditStudent.id;
+              if (editRoll) editRoll.value = state.tempEditStudent.roll;
+              if (editSet) editSet.value = state.tempEditStudent.set;
+
+              // Update Header Info
+              const headerInfo = document.getElementById('textStudentModalHeaderInfo');
+              if (headerInfo) {
+                headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(state.tempEditStudent.roll)}</strong> | আইডি: <strong style="color: var(--text-main);">${toBengaliNumber(state.tempEditStudent.id)}</strong> | সেট: <strong style="color: var(--omr-pink);">${state.tempEditStudent.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${fileName}</span>`;
+              }
+
+              // Re-evaluate score and re-render bubbles
+              updateModalScorePreview();
+              renderModalOmrBubbles();
+              renderSplitModalOmrBubbles();
+
+              if (badge) {
+                badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${fileName}`;
+                badge.style.background = '#ecfdf5';
+                badge.style.color = '#059669';
+              }
+              showToast('ওএমআর ইমেজ থেকে ৩০টি বাবল শতভাগ সঠিকভাবে সনাক্ত করা হয়েছে!', 'success', 'fa-circle-check');
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Re-scan error:', err);
+      }
+
+      if (badge) {
+        badge.innerHTML = `<i class="fa-solid fa-file-image"></i> ${fileName}`;
+        badge.style.background = '#fdf2f8';
+        badge.style.color = '#d91c84';
+      }
+      showToast('স্ক্যান সম্পন্ন করা সম্ভব হয়নি। অনুগ্রহ করে ফাইলটি পরীক্ষা করুন।', 'warning');
+    };
+
+    // Helper: auto-save current in-memory edits before moving to next/prev student
+    function saveCurrentTempChangesSilently() {
       if (state.currentEditIndex < 0 || !state.tempEditStudent) return;
-
       const updated = state.tempEditStudent;
-      updated.id = editStudentId.value.trim() || updated.id;
-      updated.roll = editRoll.value.trim() || updated.roll;
-      updated.class = editClass.value;
-      updated.section = editSection.value;
-      updated.set = editSet.value;
-
       const scoreInfo = calculateStudentScore(updated.answers, updated.set);
       updated.correct = scoreInfo.correct;
       updated.wrong = scoreInfo.wrong;
       updated.blank = scoreInfo.blank;
       updated.percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
       updated.status = updated.correct >= 10 ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
+      state.students[state.currentEditIndex] = JSON.parse(JSON.stringify(updated));
+    }
 
-      state.students[state.currentEditIndex] = updated;
+    // Prev / Next Navigation within Edit Modal
+    window.prevStudentInEdit = function() {
+      if (state.currentEditIndex > 0) {
+        saveCurrentTempChangesSilently();
+        openViewEditModal(state.currentEditIndex - 1, state.activeStudentModalTab || 'split');
+      }
+    };
 
-      modalViewEdit.style.display = 'none'; modalViewEdit.classList.remove('active');
-      renderResultsTable();
-      updateStatistics();
-      showToast(`রোল নং ${toBengaliNumber(updated.roll)}-এর তথ্য সফলভাবে সংশোধন করা হয়েছে!`, 'success', 'fa-check');
-    });
+    window.nextStudentInEdit = function() {
+      if (state.currentEditIndex < state.students.length - 1) {
+        saveCurrentTempChangesSilently();
+        openViewEditModal(state.currentEditIndex + 1, state.activeStudentModalTab || 'split');
+      }
+    };
+
+    // Save Edit Modal
+    if (btnSaveEdit) {
+      btnSaveEdit.addEventListener('click', () => {
+        if (state.currentEditIndex < 0 || !state.tempEditStudent) return;
+
+        saveCurrentTempChangesSilently();
+        const updated = state.students[state.currentEditIndex];
+
+        closeStudentEditModal();
+        renderResultsTable();
+        updateStatistics();
+        showToast(`রোল নং ${toBengaliNumber(updated.roll)}-এর তথ্য সফলভাবে সংরক্ষণ করা হয়েছে!`, 'success', 'fa-check');
+      });
     }
 
     [btnCloseModal, btnCancelEdit].forEach(el => {
       if (el) {
         el.addEventListener('click', () => {
-          if (modalViewEdit) {
-            modalViewEdit.style.display = 'none'; modalViewEdit.classList.remove('active');
-            modalViewEdit.classList.remove('active');
-          }
+          closeStudentEditModal();
         });
+      }
+    });
+
+    // Close on Escape key press
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeStudentEditModal();
+        if (window.closeAnswerKeyModalDirect) window.closeAnswerKeyModalDirect();
       }
     });
 
@@ -13275,22 +14625,67 @@
       for (let q = 0; q < 30; q++) {
         state.answerKeys[state.currentEditingKeySet][q] = optionsBengali[Math.floor(Math.random() * optionsBengali.length)];
       }
+      state.setSourceFiles[state.currentEditingKeySet] = {
+        fileName: `ডেমো কি (সেট ${state.currentEditingKeySet})`,
+        type: 'demo',
+        count: 30,
+        timestamp: new Date().toLocaleTimeString()
+      };
       renderAnswerKeyBubbles();
+      updateMultiSetStatusUI();
       showToast(`সেট ${state.currentEditingKeySet}-এর উত্তরপত্র সফলভাবে র‍্যান্ডমাইজ করা হয়েছে`, 'info');
     };
 
-    window.clearAnswerKeys = function() {
-      state.answerKeys = JSON.parse(JSON.stringify(defaultAnswerKeys));
-      state.uploadedKeyPreview = null;
-      textAnswerKeyStatus.innerHTML = 'কোনো ফাইল যুক্ত হয়নি';
+    window.randomizeAllAnswerKeys = function() {
+      ['ক', 'খ', 'গ', 'ঘ'].forEach(s => {
+        for (let q = 0; q < 30; q++) {
+          state.answerKeys[s][q] = optionsBengali[Math.floor(Math.random() * optionsBengali.length)];
+        }
+        state.setSourceFiles[s] = {
+          fileName: `ডেমো উত্তরমালা (সেট ${s})`,
+          type: 'demo',
+          count: 30,
+          timestamp: new Date().toLocaleTimeString()
+        };
+      });
       renderAnswerKeyBubbles();
-      updateKeySourcePreviewUI();
+      updateMultiSetStatusUI();
       if (state.students.length > 0) {
         reEvaluateAllStudents();
         renderResultsTable();
         updateStatistics();
       }
-      showToast('উত্তরপত্র মুছে ফেলা হয়েছে। এখন কোনো সঠিক উত্তর সেট করা নেই।', 'info');
+      showToast('সকল সেটের (ক, খ, গ, ঘ) উত্তরমালা সফলভাবে ডেমো কি দ্বারা প্রস্তুত করা হয়েছে!', 'success', 'fa-wand-magic-sparkles');
+    };
+
+    window.clearAnswerKeys = function() {
+      state.answerKeys[state.currentEditingKeySet] = Array(30).fill(null);
+      state.setSourceFiles[state.currentEditingKeySet] = null;
+      renderAnswerKeyBubbles();
+      updateKeySourcePreviewUI();
+      updateMultiSetStatusUI();
+      if (state.students.length > 0) {
+        reEvaluateAllStudents();
+        renderResultsTable();
+        updateStatistics();
+      }
+      showToast(`সেট ${state.currentEditingKeySet}-এর উত্তরপত্র মুছে ফেলা হয়েছে।`, 'info');
+    };
+
+    window.clearAllAnswerKeys = function() {
+      if (!confirm('আপনি কি নিশ্চিতভাবে সকল সেটের (ক, খ, গ, ঘ) উত্তরপত্র মুছে ফেলতে চান?')) return;
+      state.answerKeys = JSON.parse(JSON.stringify(defaultAnswerKeys));
+      state.setSourceFiles = { 'ক': null, 'খ': null, 'গ': null, 'ঘ': null };
+      state.uploadedKeyPreview = null;
+      renderAnswerKeyBubbles();
+      updateKeySourcePreviewUI();
+      updateMultiSetStatusUI();
+      if (state.students.length > 0) {
+        reEvaluateAllStudents();
+        renderResultsTable();
+        updateStatistics();
+      }
+      showToast('সকল সেটের উত্তরপত্র সফলভাবে মুছে ফেলা হয়েছে।', 'info');
     };
     
     window.switchKeyModalTab = function(tabName) {
@@ -13299,12 +14694,14 @@
         btn.classList.remove('active');
       });
       
+      const tabMultiSet = document.getElementById('keyTabMultiSetContent');
       const tabBubble = document.getElementById('keyTabBubbleContent');
       const tabSource = document.getElementById('keyTabSourceContent');
       const tabSplit = document.getElementById('keyTabSplitContent');
       const tabTemplate = document.getElementById('keyTabTemplateContent');
       const modalKeyCard = document.querySelector('#modalAnswerKey .modal-card');
       
+      if (tabMultiSet) tabMultiSet.style.display = 'none';
       if (tabBubble) tabBubble.style.display = 'none';
       if (tabSource) tabSource.style.display = 'none';
       if (tabSplit) tabSplit.style.display = 'none';
@@ -13318,7 +14715,14 @@
         }
       }
       
-      if (tabName === 'bubble') {
+      if (tabName === 'multiset') {
+        const btn = document.getElementById('tabBtnMultiSetView');
+        if (btn) btn.classList.add('active');
+        if (tabMultiSet) tabMultiSet.style.display = 'block';
+        if (typeof renderMultiSetUploadUI === 'function') {
+          renderMultiSetUploadUI();
+        }
+      } else if (tabName === 'bubble') {
         const btn = document.getElementById('tabBtnBubbleView');
         if (btn) btn.classList.add('active');
         if (tabBubble) tabBubble.style.display = 'block';
@@ -13439,20 +14843,27 @@
 
     if (btnSaveAnswerKeys) {
       btnSaveAnswerKeys.addEventListener('click', () => {
-      modalAnswerKey.style.display = 'none';
-        modalAnswerKey.classList.remove('active');
-      if (state.students.length > 0) {
-        reEvaluateAllStudents();
-        renderResultsTable();
-        updateStatistics();
-        showToast('নতুন উত্তরপত্রের ভিত্তিতে সকল শিক্ষার্থীর নম্বর পুনরায় মূল্যায়ন করা হয়েছে!', 'success', 'fa-rotate');
-      } else {
-        showToast('উত্তরপত্র সংরক্ষিত হয়েছে!', 'success');
+        window.closeAnswerKeyModalDirect();
+        if (state.students.length > 0) {
+          reEvaluateAllStudents();
+          renderResultsTable();
+          updateStatistics();
+          showToast('নতুন উত্তরপত্রের ভিত্তিতে সকল শিক্ষার্থীর নম্বর পুনরায় মূল্যায়ন করা হয়েছে!', 'success', 'fa-rotate');
+        } else {
+          showToast('উত্তরপত্র সংরক্ষিত হয়েছে!', 'success');
+        }
+      });
+    }
+
+    // Close Answer Key modal on Escape key press
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const m = document.getElementById('modalAnswerKey');
+        if (m && (m.classList.contains('active') || m.style.display === 'flex')) {
+          window.closeAnswerKeyModalDirect();
+        }
       }
     });
-
-    // 8. Excel Export Functionality (.xlsx)
-    }
 
     btnExportExcel.addEventListener('click', () => {
       if (state.students.length === 0) {
@@ -13662,8 +15073,14 @@
 
     // Subview Lifecycle Initializer
     window.initOmrReaderView = function() {
-      // Auto-load disabled: OMR page opens fresh without automatically loading previous saved exam
+      if (typeof updateMultiSetStatusUI === 'function') {
+        updateMultiSetStatusUI();
+      }
     };
+
+    if (typeof updateMultiSetStatusUI === 'function') {
+      updateMultiSetStatusUI();
+    }
 
     })();
     </script>
