@@ -13452,9 +13452,7 @@
 
     // Subview Lifecycle Initializer
     window.initOmrReaderView = function() {
-      if (state.students.length === 0) {
-        loadOmrFromExamsApi();
-      }
+      // Auto-load disabled: OMR page opens fresh without automatically loading previous saved exam
     };
 
     })();
