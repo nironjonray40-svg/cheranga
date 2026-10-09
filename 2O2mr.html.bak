@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ওএমআর শিট - আলহেরা এডুকেয়ার হোম হাই স্কুল</title>
+<title>ওএমআর শিট -হাই স্কুল</title>
 <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet">
 <style>
   :root {
@@ -898,7 +898,7 @@
       
       <!-- Student ID No (7 digits) -->
       <div class="grid-box">
-        <div class="grid-header">শিক্ষার্থী আইডি নং</div>
+        <div class="grid-header">শিক্ষার্থী রেজিঃ নং</div>
         <div class="grid-body">
           <script>
             for(let c=0; c<7; c++) {

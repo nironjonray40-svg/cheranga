@@ -625,7 +625,7 @@
               <div class="empty-state">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <h3>কোনো ফলাফল পাওয়া যায়নি</h3>
-                <p>অন্য কোনো আইডি বা ফিল্টার প্রয়োগ করে পুনরায় চেষ্টা করুন।</p>
+                <p>অন্য কোনো রেজিঃ নং বা ফিল্টার প্রয়োগ করে পুনরায় চেষ্টা করুন।</p>
               </div>
             </td>
           </tr>
@@ -1074,7 +1074,7 @@
         // Prepare formatted data for SheetJS
         const excelRows = state.students.map((s, idx) => ({
           'ক্রমিক নং': idx + 1,
-          'শিক্ষার্থী আইডি নং': s.id,
+          'শিক্ষার্থী রেজিঃ নং': s.id,
           'রোল নং': s.roll,
           'শ্রেণি': s.class,
           'শাখা': s.section,

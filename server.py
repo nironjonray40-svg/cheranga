@@ -1,5 +1,17 @@
 import os
 import sys
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 import time
 import json
 import sqlite3
@@ -889,56 +901,63 @@ def process_omr_image(image_data, filename="Memory Stream"):
             
         total_answers.extend(col_ans)
 
-    # 5. Extract ID, Roll, Class, Section, Set
-    student_id = "0000000"
-    roll_no = "000"
-    class_name = "10"
-    detected_set = 'ক'
-    detected_section = 'ক'
-    
-    if bottom_bubbles:
-        y_step = row_spacing
-        initial_digit_0_y = page_top_y + page_height * 0.7244
-        
-        implied_y0s = []
-        for b in bottom_bubbles:
-            d = round((b["y"] - initial_digit_0_y) / y_step)
-            implied_y0s.append(b["y"] - d * y_step)
-            
-        implied_y0s.sort()
-        digit_0_y = implied_y0s[len(implied_y0s) // 2] if implied_y0s else initial_digit_0_y
-        
-        id_cols, roll_cols, class_cols = ["" for _ in range(7)], ["" for _ in range(3)], ["" for _ in range(2)]
-        
-        for b in bottom_bubbles:
-            rel_x = (b["x"] - page_left_x) / float(page_width)
-            if 0.05 <= rel_x < 0.35: # ID
-                col = int((rel_x - 0.05) / ((0.35 - 0.05) / 7.0))
-                if 0 <= col < 7:
-                    digit = int(round((b["y"] - digit_0_y) / y_step))
-                    id_cols[col] = str(max(0, min(9, digit)))
-            elif 0.37 <= rel_x < 0.52: # Roll
-                col = int((rel_x - 0.37) / ((0.52 - 0.37) / 3.0))
-                if 0 <= col < 3:
-                    digit = int(round((b["y"] - digit_0_y) / y_step))
-                    roll_cols[col] = str(max(0, min(9, digit)))
-            elif 0.54 <= rel_x < 0.65: # Class
-                col = int((rel_x - 0.54) / ((0.65 - 0.54) / 2.0))
-                if 0 <= col < 2:
-                    digit = int(round((b["y"] - digit_0_y) / y_step))
-                    class_cols[col] = str(max(0, min(9, digit)))
-            elif 0.67 <= rel_x < 0.82: # Section & Set
-                digit_approx = (b["y"] - digit_0_y) / y_step
-                if 0 <= digit_approx <= 3.5:
-                    idx = int(round(digit_approx))
-                    detected_section = bengali_options[max(0, min(3, idx))]
-                elif 5.5 <= digit_approx <= 9:
-                    idx = int(round(digit_approx - 6.0))
-                    detected_set = bengali_options[max(0, min(2, idx))]
-                    
-        student_id = "".join(d if d else "0" for d in id_cols)
-        roll_no = "".join(d if d else "0" for d in roll_cols)
-        class_name = "".join(d if d else "0" for d in class_cols)
+    # 5. Extract ID, Roll, Class, Section, Set using calibrated geometric grid sampling
+    def sample_bubble_density(cx, cy, r=10):
+        cx, cy = int(round(cx)), int(round(cy))
+        mask = np.zeros(thresh.shape, dtype='uint8')
+        cv2.circle(mask, (cx, cy), r, 255, -1)
+        filled = cv2.countNonZero(cv2.bitwise_and(thresh, thresh, mask=mask))
+        total = cv2.countNonZero(mask)
+        return filled / float(max(1, total))
+
+    # Grid geometry calibrated to page bounds
+    reg_xs = [page_left_x + page_width * (0.0771 + i * 0.03897) for i in range(7)]
+    roll_xs = [page_left_x + page_width * (0.3868 + i * 0.0398) for i in range(3)]
+    class_xs = [page_left_x + page_width * (0.5460 + i * 0.0386) for i in range(2)]
+    sec_x = page_left_x + page_width * 0.704
+    set_x = page_left_x + page_width * 0.704
+
+    # Y coordinates: digit 0 at rel_y = 0.6496, step = 0.02343
+    digit_ys = [page_top_y + page_height * (0.6496 + d * 0.02343) for d in range(10)]
+    sec_ys = [page_top_y + page_height * (0.6505 + i * 0.02824) for i in range(4)]
+    set_ys = [page_top_y + page_height * (0.8041 + i * 0.0298) for i in range(3)]
+    set_options = ['ক', 'খ', 'গ', 'ঘ']
+
+    # 1. Reg No (7 digits)
+    id_digits = []
+    for cx in reg_xs:
+        scores = [sample_bubble_density(cx, cy) for cy in digit_ys]
+        best_d = int(np.argmax(scores))
+        id_digits.append(str(best_d) if scores[best_d] > 0.35 else '0')
+    student_id = "".join(id_digits)
+
+    # 2. Roll No (3 digits)
+    r_digits = []
+    for cx in roll_xs:
+        scores = [sample_bubble_density(cx, cy) for cy in digit_ys]
+        best_d = int(np.argmax(scores))
+        r_digits.append(str(best_d) if scores[best_d] > 0.35 else '0')
+    roll_no = "".join(r_digits)
+
+    # 3. Class (2 digits)
+    c_digits = []
+    for cx in class_xs:
+        scores = [sample_bubble_density(cx, cy) for cy in digit_ys]
+        best_d = int(np.argmax(scores))
+        c_digits.append(str(best_d) if scores[best_d] > 0.35 else '0')
+    class_name = "".join(c_digits)
+    if class_name.startswith('0') and len(class_name) > 1:
+        class_name = class_name[1:]
+
+    # 4. Section (ক, খ, গ, ঘ)
+    sec_scores = [sample_bubble_density(sec_x, cy) for cy in sec_ys]
+    best_sec_idx = int(np.argmax(sec_scores))
+    detected_section = bengali_options[best_sec_idx] if sec_scores[best_sec_idx] > 0.35 else 'ক'
+
+    # 5. Set (ক, খ, গ, ঘ)
+    set_scores = [sample_bubble_density(set_x, cy) for cy in set_ys]
+    best_set_idx = int(np.argmax(set_scores))
+    detected_set = set_options[best_set_idx] if set_scores[best_set_idx] > 0.35 else 'ক'
 
     if len(total_answers) == 0:
         total_answers = [None] * 30
@@ -1967,23 +1986,6 @@ class SyncServerHandler(http.server.SimpleHTTPRequestHandler):
                     self.wfile.write(cert_bytes)
                 else:
                     self.send_error(404, 'Certificate not found')
-            elif clean_path == '/api/exams':
-                exams_file = os.path.join(BASE_DIR, 'exams_data.json')
-                try:
-                    with open(exams_file, 'w', encoding='utf-8') as f:
-                        json.dump(payload, f, ensure_ascii=False, indent=4)
-                    self.send_compressed_response('application/json', b'{"status":"success"}')
-                except Exception as e:
-                    self.send_compressed_response('application/json', json.dumps({"error": str(e)}).encode('utf-8'), status_code=500)
-                return
-
-            if clean_path == '/api/scan_omr':
-                ctype_header = self.headers.get('Content-Type', '')
-                image_bytes, filename = parse_multipart_file(post_data, ctype_header)
-                result = process_omr_image(image_bytes, filename)
-                self.send_compressed_response('application/json', json.dumps(result, ensure_ascii=False).encode('utf-8'))
-                return
-
             if clean_path.startswith('/api/'):
                 self.send_compressed_response('application/json', json.dumps({"error": "API route not found", "path": clean_path}).encode('utf-8'), status_code=404)
             else:
@@ -1998,10 +2000,28 @@ class SyncServerHandler(http.server.SimpleHTTPRequestHandler):
 
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length) if content_length > 0 else b''
+
+        if clean_path == '/api/scan_omr':
+            ctype_header = self.headers.get('Content-Type', '')
+            image_bytes, filename = parse_multipart_file(post_data, ctype_header)
+            result = process_omr_image(image_bytes, filename)
+            self.send_compressed_response('application/json', json.dumps(result, ensure_ascii=False).encode('utf-8'))
+            return
+
         try:
             payload = json.loads(post_data.decode('utf-8')) if post_data else {}
         except Exception:
             payload = {}
+
+        if clean_path == '/api/exams':
+            exams_file = os.path.join(BASE_DIR, 'exams_data.json')
+            try:
+                with open(exams_file, 'w', encoding='utf-8') as f:
+                    json.dump(payload, f, ensure_ascii=False, indent=4)
+                self.send_compressed_response('application/json', b'{"status":"success"}')
+            except Exception as e:
+                self.send_compressed_response('application/json', json.dumps({"error": str(e)}).encode('utf-8'), status_code=500)
+            return
 
         if clean_path in ['/api/status', '/status', '/api/health', '/health', '/api/ping']:
             client_ip = self.client_address[0] if self.client_address else "127.0.0.1"
