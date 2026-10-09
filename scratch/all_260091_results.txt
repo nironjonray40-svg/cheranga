@@ -1,0 +1,11 @@
+MATCH IN KEY: school_saved_seat_allocations
+  sub-key r_1784800374733: {"room": {"id": "r_1784800374733", "buildingId": "b_1784800348068", "number": "101", "floor": "1", "benches": 20, "gender": "Male"}, "building": {"id": "b_1784800348068", "name": "গোলাপী ভবন", "floors": 2}, "shift": "Morning", "dept": "High Level", "examName": "বার্ষিক পরীক্ষা", "benches": [{"benchN
+MATCH IN KEY: school_seat_plans_store
+  sub-key SEAT_PLAN_High Level__বার্ষিক পরীক্ষা__Morning__mtnlr3u8sf0s: {"dept": "High Level", "examName": "বার্ষিক পরীক্ষা", "shift": "Morning", "timestamp": "2026-09-04T23:45:56.529Z", "allocations": {"r102": {"room": {"id": "r102", "buildingId": "b1", "number": "102", "floor": "5", "benches": 5, "gender": "Male"}, "building": {"id": "b1", "name": "পলাশ ভবন A", "floor
+MATCH IN KEY: school_students
+  list item: {"photo": "", "studentId": "0001", "regNo": "260091", "name": "Sarthak Sharma", "nameBn": "সার্থক শর্মা — S", "class": "Ten", "section": "ব্যবসায়", "roll": "1", "optionalSubject": "", "session": "2026", "dob": "", "gender": "Male", "religion": "Hindu (হিন্দু)", "blood": "A+", "fatherName": "", "fath
+MATCH IN KEY: school_student_marks
+  sub-key marks_260091_1789576252617: {"Agriculture Studies": {"total": 0, "isAbsent": true, "cq": 0, "mcq": 0, "practical": 0, "set": "ক", "answers": {}, "percentage": "0.0", "status": "পেন্ডিং", "fileName": "1.jpg", "omrEvaluatedAt": "2026-10-09T08:55:24.368Z"}}
+  sub-key marks_260091_বার্ষিক পরীক্ষা: {"Agriculture Studies": {"total": 0, "isAbsent": true, "cq": 0, "mcq": 0, "practical": 0, "set": "ক", "answers": {}, "percentage": "0.0", "status": "পেন্ডিং", "fileName": "1.jpg", "omrEvaluatedAt": "2026-10-09T08:55:24.368Z"}}
+MATCH IN KEY: school_omr_exams
+  list item: {"id": "1789576252617", "scheduleId": "1789576252617", "source": "schedule", "examName": "বার্ষিক পরীক্ষা", "subject": "Agriculture Studies", "class": "Ten", "section": "মানবিক, বিজ্ঞান, ব্যবসায়", "date": "16/09/2026", "totalStudents": 16, "evaluatedStudentsCount": 7, "students": [{"id": "260091", "

@@ -1772,6 +1772,12 @@
       color: #92400e;
     }
 
+    .status-pending {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
     .action-btn-group {
       display: flex;
       align-items: center;
@@ -1794,6 +1800,310 @@
       font-size: 1.2rem;
       color: var(--text-main);
       margin-bottom: 6px;
+    }
+
+    /* Results Tab Bar & Pending List Styles */
+    .results-tab-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.25rem;
+      background: var(--bg-page);
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .results-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.55rem 1.15rem;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 0.92rem;
+      font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .results-tab-btn:hover {
+      background: rgba(79, 70, 229, 0.08);
+      color: var(--primary);
+    }
+    .results-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      border-color: rgba(79, 70, 229, 0.25);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+    .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: rgba(79, 70, 229, 0.12);
+      color: var(--primary);
+    }
+    .tab-badge.badge-warning {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .results-tab-btn.active .tab-badge.badge-warning {
+      background: #dc2626;
+      color: #ffffff;
+    }
+    .pending-alert-banner {
+      padding: 0.85rem 1.25rem;
+      background: #fffbeb;
+      border-bottom: 1px solid #fde68a;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: fadeIn 0.3s ease;
+    }
+    .pending-list-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 1.25rem;
+    }
+    .pending-card {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 22px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-left: 5px solid #f59e0b;
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      transition: all 0.25s ease;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+    }
+    .pending-card:hover {
+      border-color: #f59e0b;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+    }
+    .pending-card-left {
+      flex: 1.25;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .pending-card-right {
+      flex: 0.95;
+      min-width: 280px;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .pending-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pending-file-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      font-family: 'Inter', monospace;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pending-reason-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: #b45309;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pending-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+      gap: 8px;
+      background: var(--bg-page);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+    .pending-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .pending-stat-item .stat-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .pending-stat-item .stat-val {
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: 'Inter', 'Outfit', sans-serif;
+      color: var(--text-main);
+    }
+    .pending-stat-item .val-reg {
+      color: #4338ca;
+    }
+    .pending-stat-item .val-unclear {
+      color: #dc2626;
+    }
+    .pending-action-section {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pending-inputs-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pending-student-select {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+      color: var(--text-main);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pending-student-select:focus {
+      border-color: var(--primary);
+    }
+    .pending-reg-input {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+      color: var(--text-main);
+      font-family: 'Inter', monospace;
+      font-weight: 700;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pending-reg-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    .pending-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .pending-omr-viewer-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 270px;
+      max-height: 380px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1.5px solid #cbd5e1;
+      background: #0f172a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      transition: all 0.25s ease;
+    }
+    .pending-omr-viewer-box:hover {
+      border-color: var(--primary);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.25);
+    }
+    .pending-omr-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #1e293b;
+      transition: transform 0.3s ease;
+    }
+    .pending-omr-viewer-box:hover .pending-omr-image {
+      transform: scale(1.03);
+    }
+    .pending-omr-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+    .pending-omr-hover-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .pending-omr-viewer-box:hover .pending-omr-hover-overlay {
+      opacity: 1;
+    }
+    .pending-omr-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      color: #f8fafc;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    @media (max-width: 960px) {
+      .pending-card {
+        flex-direction: column-reverse;
+      }
+      .pending-card-right {
+        max-width: 100%;
+        min-height: 240px;
+      }
     }
 
     /* Modal Styling for View & Edit */
@@ -4005,13 +4315,13 @@
         <button type="button" id="btnDownloadBlankOMR" class="btn btn-omr" onclick="handleBlankOmrClick()" title="একটি পরিচ্ছন্ন ব্লাংক OMR শিট ডাউনলোড বা প্রিন্ট করুন">
           <i class="fa-solid fa-file-arrow-down"></i> ব্লাংক OMR শিট
         </button>
-        <button type="button" id="btnOpenKeyModal" class="btn btn-outline" onclick="openAnswerKeyModalDirect()" title="উত্তরপত্র (Answer Key) দেখুন বা পরিবর্তন করুন">
+        <button type="button" id="btnOpenKeyModal" class="btn btn-outline" style="display: none !important;" onclick="openAnswerKeyModalDirect()" title="উত্তরপত্র (Answer Key) দেখুন বা পরিবর্তন করুন">
           <i class="fa-solid fa-key"></i> উত্তরপত্র সেটআপ
         </button>
         <button type="button" id="btnImportExamTop" class="btn" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff; font-weight: 700; border: none; padding: 0.55rem 1.25rem; font-size: 0.92rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);" onclick="openImportExamModal()" title="Exam List থেকে পরীক্ষা নির্বাচন ও তথ্য ইমপোর্ট করুন">
           <i class="fa-solid fa-file-import"></i> Import Exam
         </button>
-        <button type="button" id="btnSaveToExamsApi" class="btn btn-outline" style="border-color: #10b981; color: #10b981;" onclick="saveOmrToExamsApi()" title="পরীক্ষার ফলাফল ডাটাবেজে সংরক্ষণ করুন">
+        <button type="button" id="btnSaveToExamsApi" class="btn btn-outline" style="display: none !important; border-color: #10b981; color: #10b981;" onclick="saveOmrToExamsApi()" title="পরীক্ষার ফলাফল ডাটাবেজে সংরক্ষণ করুন">
           <i class="fa-solid fa-cloud-arrow-up"></i> পরীক্ষা সংরক্ষণ
         </button>
       </div>
@@ -4211,7 +4521,7 @@
         </div>
         <div class="stat-info">
           <div class="stat-value" id="statAverageScore">০.০</div>
-          <div class="stat-label">গড় শুদ্ধ উত্তর / নম্বর</div>
+          <div class="stat-label">গড় MCQ নম্বর</div>
         </div>
       </div>
 
@@ -4236,88 +4546,153 @@
       </div>
     </section>
 
-    <!-- Student Results Table Card -->
-    <section class="table-container-card">
+        <!-- Student Results Table Card -->
+    <section class="table-container-card" id="resultsMainCard">
       
-      <!-- Table Filter Toolbar -->
-      <div class="table-header-toolbar">
-        <div class="search-filter-group">
-          <!-- Search Input -->
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="inputSearch" placeholder="রেজিঃ নং বা রোল নং খুঁজুন...">
-          </div>
-
-          <!-- Class Filter -->
-          <select id="filterClass" class="filter-select">
-            <option value="ALL">সকল শ্রেণি</option>
-            <option value="10">১০ম শ্রেণি</option>
-            <option value="9">৯ম শ্রেণি</option>
-            <option value="8">৮ম শ্রেণি</option>
-            <option value="7">৭ম শ্রেণি</option>
-            <option value="6">৬ষ্ঠ শ্রেণি</option>
-          </select>
-
-          <!-- Section Filter -->
-          <select id="filterSection" class="filter-select">
-            <option value="ALL">সকল শাখা</option>
-            <option value="ক">শাখা: ক</option>
-            <option value="খ">শাখা: খ</option>
-            <option value="গ">শাখা: গ</option>
-            <option value="ঘ">শাখা: ঘ</option>
-          </select>
-
-          <!-- Set Filter -->
-          <select id="filterSet" class="filter-select">
-            <option value="ALL">সকল সেট</option>
-            <option value="ক">সেট: ক</option>
-            <option value="খ">সেট: খ</option>
-            <option value="গ">সেট: গ</option>
-          </select>
-
-          <!-- Status Filter -->
-          <select id="filterStatus" class="filter-select">
-            <option value="ALL">সকল ফলাফল</option>
-            <option value="উত্তীর্ণ">উত্তীর্ণ</option>
-            <option value="অনুত্তীর্ণ">অনুত্তীর্ণ</option>
-          </select>
+      <!-- Navigation Tabs & Alert Bar -->
+      <div class="results-tab-bar">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" id="tabBtnMainResults" class="results-tab-btn active" onclick="switchResultsTab('main')">
+            <i class="fa-solid fa-list-check"></i> রেজাল্ট শিট
+            <span class="tab-badge" id="badgeMainCount">০</span>
+          </button>
+          <button type="button" id="tabBtnPendingResults" class="results-tab-btn" onclick="switchResultsTab('pending')">
+            <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> পেন্ডিং তালিকা (Pending List)
+            <span class="tab-badge badge-warning" id="badgePendingCount">০</span>
+          </button>
         </div>
-
-        <div style="font-size: 0.85rem; color: var(--text-muted);">
-          প্রদর্শিত হচ্ছে: <strong id="textShowingCount" style="color: var(--text-main);">০</strong> জন
+        <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
+          <div id="pendingAlertQuickHint" style="display: none; font-size: 0.85rem; color: #dc2626; font-weight: 600; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-circle-exclamation"></i> <span id="pendingQuickCountText">০ টি শিট পেন্ডিং তালিকায় রয়েছে</span>
+          </div>
+          <button type="button" id="btnSaveAndEntry" class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 700; border: none; padding: 0.52rem 1.25rem; font-size: 0.9rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35); transition: all 0.2s ease;" onclick="saveAndEntryExamMarks()" title="বর্তমান মূল্যায়নকৃত ফলাফল Exam List এ স্থায়ীভাবে সংরক্ষণ ও এন্ট্রি করুন">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Save & Entry
+          </button>
         </div>
       </div>
 
-      <!-- Main Results Table -->
-      <div class="table-responsive">
-        <table class="results-table" id="tableResults">
-          <thead>
-            <tr>
-              <th style="width: 50px;">ক্রমিক</th>
-              <th>শিক্ষার্থী রেজিঃ নং</th>
-              <th>রোল নং</th>
-              <th>শ্রেণি</th>
-              <th>শাখা</th>
-              <th>সেট নং</th>
-              <th>শুদ্ধ উত্তরের সংখ্যা</th>
-              <th>প্রাপ্ত নম্বর (%)</th>
-              <th>স্ট্যাটাস</th>
-              <th style="text-align: right;">অ্যাকশন</th>
-            </tr>
-          </thead>
-          <tbody id="tableResultsBody">
-            <!-- Populated dynamically via JS -->
-            <tr>
-              <td colspan="10">
-                <div class="empty-state">
-                  <i class="fa-regular fa-folder-open"></i>
-                  <h3>কোনো মূল্যায়ন ডেটা লোড করা হয়নি</h3>
-                  <p>উপরে ফোল্ডার আপলোড করুন অথবা 'নমুনা ডেটা লোড করুন' বাটনে ক্লিক করে পরীক্ষা করুন।</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Pending Alert Banner -->
+      <div id="pendingAlertBanner" class="pending-alert-banner" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #fef3c7; color: #d97706; font-size: 1.1rem; flex-shrink: 0;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+          <div>
+            <strong style="font-size: 0.95rem; color: #78350f;">সনাক্ত না হওয়া / অমিল ওএমআর শিট রয়েছে!</strong>
+            <p style="margin: 2px 0 0 0; font-size: 0.83rem; color: #92400e;" id="pendingAlertBannerDesc">
+              ওএমআর শিটের রেজিঃ নং মেলেনি। "Pending List" ট্যাবে গিয়ে শিক্ষার্থীর সঠিক রেজিঃ নং দিয়ে সংশোধন করুন।
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm" onclick="switchResultsTab('pending')" style="background: #d97706; color: #ffffff; font-weight: 700; border: none; padding: 7px 15px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);">
+          <i class="fa-solid fa-pen-to-square"></i> পেন্ডিং তালিকা দেখুন ও সংশোধন করুন ➜
+        </button>
+      </div>
+
+      <!-- Main Results Table View -->
+      <div id="sectionMainResultsView">
+        <!-- Table Filter Toolbar -->
+        <div class="table-header-toolbar">
+          <div class="search-filter-group">
+            <!-- Search Input -->
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="inputSearch" placeholder="রেজিঃ নং বা রোল নং খুঁজুন...">
+            </div>
+
+            <!-- Class Filter -->
+            <select id="filterClass" class="filter-select">
+              <option value="ALL">সকল শ্রেণি</option>
+              <option value="10">১০ম শ্রেণি</option>
+              <option value="9">৯ম শ্রেণি</option>
+              <option value="8">৮ম শ্রেণি</option>
+              <option value="7">৭ম শ্রেণি</option>
+              <option value="6">৬ষ্ঠ শ্রেণি</option>
+            </select>
+
+            <!-- Section Filter -->
+            <select id="filterSection" class="filter-select">
+              <option value="ALL">সকল শাখা</option>
+              <option value="ক">শাখা: ক</option>
+              <option value="খ">শাখা: খ</option>
+              <option value="গ">শাখা: গ</option>
+              <option value="ঘ">শাখা: ঘ</option>
+            </select>
+
+            <!-- Set Filter -->
+            <select id="filterSet" class="filter-select">
+              <option value="ALL">সকল সেট</option>
+              <option value="ক">সেট: ক</option>
+              <option value="খ">সেট: খ</option>
+              <option value="গ">সেট: গ</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="filterStatus" class="filter-select">
+              <option value="ALL">সকল ফলাফল</option>
+              <option value="উত্তীর্ণ">উত্তীর্ণ</option>
+              <option value="অনুত্তীর্ণ">অনুত্তীর্ণ</option>
+              <option value="পেন্ডিং">পেন্ডিং</option>
+            </select>
+          </div>
+
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            প্রদর্শিত হচ্ছে: <strong id="textShowingCount" style="color: var(--text-main);">০</strong> জন
+          </div>
+        </div>
+
+        <!-- Main Results Table -->
+        <div class="table-responsive">
+          <table class="results-table" id="tableResults">
+            <thead>
+              <tr>
+                <th style="width: 50px;">ক্রমিক</th>
+                <th>শিক্ষার্থী রেজিঃ নং</th>
+                <th>রোল নং</th>
+                <th>শ্রেণি</th>
+                <th>শাখা</th>
+                <th>সেট নং</th>
+                <th>MCQ নম্বর</th>
+                <th>প্রাপ্ত নম্বর (%)</th>
+                <th>স্ট্যাটাস</th>
+                <th style="text-align: right;">অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="tableResultsBody">
+              <!-- Populated dynamically via JS -->
+              <tr>
+                <td colspan="10">
+                  <div class="empty-state">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <h3>কোনো মূল্যায়ন ডেটা লোড করা হয়নি</h3>
+                    <p>উপরে ফোল্ডার আপলোড করুন অথবা 'নমুনা ডেটা লোড করুন' বাটনে ক্লিক করে পরীক্ষা করুন।</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pending List View -->
+      <div id="sectionPendingListView" style="display: none;">
+        <div style="padding: 1rem 1.25rem; background: #fffdf5; border-bottom: 1px solid #fde68a; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; color: #92400e; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-circle-question" style="color: #d97706;"></i> অমিল বা অপাঠ্য রেজিঃ নং বিশিষ্ট ওএমআর তালিকা (Pending List)
+            </h3>
+            <p style="margin: 3px 0 0 0; font-size: 0.84rem; color: #78350f;">
+              যে সকল ওএমআর শিটের রেজিঃ নং বাবল সনাক্ত করা যায়নি অথবা পরীক্ষার শিক্ষার্থী তালিকায় মেলেনি, সেগুলো এখানে রয়েছে। ওএমআর শিট প্রিভিউ দেখে শিক্ষার্থী নির্বাচন করে <strong>"সংশোধন ও মার্ক যুক্ত করুন"</strong> বাটনে ক্লিক করলেই শিক্ষার্থীর MCQ নম্বর যুক্ত হয়ে যাবে।
+            </p>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" onclick="switchResultsTab('main')">
+            <i class="fa-solid fa-arrow-left"></i> রেজাল্ট শিটে ফিরুন
+          </button>
+        </div>
+
+        <div id="pendingListItemsContainer" class="pending-list-grid">
+          <!-- Dynamically populated via JS -->
+        </div>
       </div>
 
     </section>
@@ -4355,7 +4730,20 @@
         </div>
     </footer>
 
-        <!-- OMR READER MODALS -->
+        <!-- Modal: Pending OMR Image Lightbox -->
+    <div class="modal-overlay" id="modalPendingOmrLightbox" style="display: none; z-index: 10050;" onclick="closePendingOmrLightbox()">
+      <div class="modal-card" style="max-width: 850px; width: 95vw; max-height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #0f172a;" onclick="event.stopPropagation();">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: #1e293b; color: white;">
+          <h3 style="margin: 0; font-size: 1rem; color: #f8fafc;" id="lightboxOmrTitle"><i class="fa-regular fa-image"></i> ওএমআর শিট প্রিভিউ</h3>
+          <button type="button" class="icon-btn" onclick="closePendingOmrLightbox()" style="color: #cbd5e1; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="flex: 1; overflow: auto; padding: 15px; display: flex; justify-content: center; align-items: center; background: #090d16;">
+          <img id="lightboxOmrImage" src="" alt="OMR Sheet" style="max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        </div>
+      </div>
+    </div>
+
+    <!-- OMR READER MODALS -->
     <div class="modal-overlay" id="modalViewEdit">
       <div class="modal-card">
         <div class="modal-header">
@@ -12924,10 +13312,90 @@
     <script id="omr-reader-script">
 (function() {
 
-    // Bengali number formatting utility
+    // Bengali & English number formatting utilities
     const toBengaliNumber = num => String(num).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+    const toEnglishDigits = str => String(str ?? '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
     const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     const optionsBengali = ['ক', 'খ', 'গ', 'ঘ'];
+
+    // Class normalization and formatting helpers
+    function mapClassToNumber(cls) {
+      if (!cls) return '8';
+      const str = String(cls).trim().toLowerCase();
+      const enMap = {
+        'ten': '10', 'nine': '9', 'eight': '8', 'seven': '7', 'six': '6',
+        'five': '5', 'four': '4', 'three': '3', 'two': '2', 'one': '1'
+      };
+      if (enMap[str]) return enMap[str];
+      const bnMap = {
+        '১০': '10', '৯': '9', '৮': '8', '৭': '7', '৬': '6',
+        '৫': '5', '৪': '4', '৩': '3', '২': '2', '১': '1'
+      };
+      if (bnMap[str]) return bnMap[str];
+      const digits = str.replace(/[^\d]/g, '');
+      if (digits) return digits;
+      return cls;
+    }
+    window.mapClassToNumber = mapClassToNumber;
+
+    function formatClassBangla(cls) {
+      const c = mapClassToNumber(cls);
+      if (c === '6') return '৬ষ্ঠ শ্রেণি';
+      if (c === '7') return '৭ম শ্রেণি';
+      if (c === '8') return '৮ম শ্রেণি';
+      if (c === '9') return '৯ম শ্রেণি';
+      if (c === '10') return '১০ম শ্রেণি';
+      return toBengaliNumber(c) + ' শ্রেণি';
+    }
+    window.formatClassBangla = formatClassBangla;
+
+    // Student Lookup Index Helper (for instant lookup of English name from school_students)
+    function getStudentsLookupMaps() {
+      let allStudents = [];
+      try {
+        if (typeof loadStudents === 'function') {
+          allStudents = loadStudents() || [];
+        } else {
+          allStudents = safeJsonParse('school_students', []);
+        }
+      } catch(e) {}
+      if (!Array.isArray(allStudents)) allStudents = [];
+
+      const byReg = new Map();
+      const byRollClass = new Map();
+
+      allStudents.forEach(s => {
+        const enName = String(s.name || s.nameEn || '').trim();
+        if (!enName) return;
+
+        const reg = toEnglishDigits(s.regNo || '').trim();
+        const sId = toEnglishDigits(s.studentId || '').trim();
+        const sDbId = toEnglishDigits(s.id || '').trim();
+        if (reg) byReg.set(reg, enName);
+        if (sId && !byReg.has(sId)) byReg.set(sId, enName);
+        if (sDbId && !byReg.has(sDbId)) byReg.set(sDbId, enName);
+
+        const r = toEnglishDigits(s.roll || '').trim();
+        const c = mapClassToNumber(s.class);
+        if (r) {
+          if (c) byRollClass.set(`${c}_${r}`, enName);
+          if (!byRollClass.has(`_${r}`)) byRollClass.set(`_${r}`, enName);
+        }
+      });
+
+      return { byReg, byRollClass };
+    }
+    window.getStudentsLookupMaps = getStudentsLookupMaps;
+
+    function getStudentEnglishNameById(id, roll, cls) {
+      if (!id && !roll) return '';
+      const lookup = getStudentsLookupMaps();
+      const rawId = toEnglishDigits(id || '').trim();
+      const rawRoll = toEnglishDigits(roll || '').trim();
+      const rawCls = mapClassToNumber(cls);
+      return lookup.byReg.get(rawId) || lookup.byRollClass.get(`${rawCls}_${rawRoll}`) || lookup.byRollClass.get(`_${rawRoll}`) || '';
+    }
+    window.getStudentEnglishNameById = getStudentEnglishNameById;
 
     // Default pattern for Sets ক, খ, গ, ঘ (30 questions each) so visual review & matching work immediately
     const sampleKeysPattern = {
@@ -13022,6 +13490,9 @@
       activeStudentModalTab: 'split', // Default tab for student review modal
       studentScanZoom: 1.0,
       students: [],
+      pendingUnmatchedList: [],
+      activeResultsTab: 'main',
+      importedExamInfo: null,
       currentEditIndex: -1,
       tempEditStudent: null
     };
@@ -13686,15 +14157,444 @@
       return { correct, wrong, blank, total: 30 };
     }
 
-    // Start Evaluation Flow
-    btnStartEvaluation.addEventListener('click', () => {
-      let fileCount = state.studentFiles.length;
-      if (fileCount === 0 && state.students.length === 0) {
-        showToast('অনুগ্রহ করে শিক্ষার্থীদের ওএমআর ফোল্ডার নির্বাচন করুন অথবা নমুনা ডেটা লোড করুন।', 'warning', 'fa-triangle-exclamation');
+    // Registration Number Matching Utility
+    function isRegNoMatch(regA, regB) {
+      if (!regA || !regB) return false;
+      const sA = toEnglishDigits(String(regA)).trim();
+      const sB = toEnglishDigits(String(regB)).trim();
+      if (!sA || !sB) return false;
+      if (sA === sB) return true;
+      const strippedA = sA.replace(/^0+/, '');
+      const strippedB = sB.replace(/^0+/, '');
+      if (strippedA && strippedB && strippedA === strippedB) return true;
+      return false;
+    }
+
+    // Switch between 'main' (Result Sheet) and 'pending' (Pending List) tabs
+    window.switchResultsTab = function(tab) {
+      state.activeResultsTab = tab;
+      const tabBtnMain = document.getElementById('tabBtnMainResults');
+      const tabBtnPending = document.getElementById('tabBtnPendingResults');
+      const sectionMain = document.getElementById('sectionMainResultsView');
+      const sectionPending = document.getElementById('sectionPendingListView');
+      const alertBanner = document.getElementById('pendingAlertBanner');
+
+      if (tab === 'pending') {
+        if (tabBtnMain) tabBtnMain.classList.remove('active');
+        if (tabBtnPending) tabBtnPending.classList.add('active');
+        if (sectionMain) sectionMain.style.display = 'none';
+        if (sectionPending) sectionPending.style.display = 'block';
+        if (alertBanner) alertBanner.style.display = 'none';
+        renderPendingList();
+      } else {
+        if (tabBtnMain) tabBtnMain.classList.add('active');
+        if (tabBtnPending) tabBtnPending.classList.remove('active');
+        if (sectionMain) sectionMain.style.display = 'block';
+        if (sectionPending) sectionPending.style.display = 'none';
+        if (alertBanner) {
+          alertBanner.style.display = (state.pendingUnmatchedList && state.pendingUnmatchedList.length > 0) ? 'flex' : 'none';
+        }
+      }
+      updateTabCounts();
+    };
+
+    // Update Counts on the Tab Badges
+    window.updateTabCounts = function() {
+      const badgeMain = document.getElementById('badgeMainCount');
+      const badgePending = document.getElementById('badgePendingCount');
+      const alertBanner = document.getElementById('pendingAlertBanner');
+      const alertHint = document.getElementById('pendingAlertQuickHint');
+      const alertCountText = document.getElementById('pendingQuickCountText');
+      const alertBannerDesc = document.getElementById('pendingAlertBannerDesc');
+
+      const totalSt = (state.students || []).length;
+      const evalSt = (state.students || []).filter(s => s.status !== 'পেন্ডিং').length;
+      if (badgeMain) {
+        badgeMain.textContent = evalSt > 0 ? `${toBengaliNumber(evalSt)}/${toBengaliNumber(totalSt)}` : toBengaliNumber(totalSt);
+      }
+
+      const pendingCount = (state.pendingUnmatchedList || []).length;
+      if (badgePending) {
+        badgePending.textContent = toBengaliNumber(pendingCount);
+      }
+
+      if (pendingCount > 0) {
+        if (alertBanner && state.activeResultsTab === 'main') alertBanner.style.display = 'flex';
+        if (alertHint) alertHint.style.display = 'inline-flex';
+        if (alertCountText) alertCountText.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিট অমিল / পেন্ডিং তালিকায় রয়েছে`;
+        if (alertBannerDesc) alertBannerDesc.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিটের রেজিঃ নং মেলেনি বা অপাঠ্য। "Pending List" ট্যাবে গিয়ে শিক্ষার্থীর সঠিক রেজিঃ নং নির্বাচন করে সংশোধন করুন।`;
+      } else {
+        if (alertBanner) alertBanner.style.display = 'none';
+        if (alertHint) alertHint.style.display = 'none';
+      }
+    };
+
+    // Render the Pending List View
+    window.renderPendingList = function() {
+      const container = document.getElementById('pendingListItemsContainer');
+      if (!container) return;
+
+      const list = state.pendingUnmatchedList || [];
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 3.5rem 1rem; background: var(--bg-card); border-radius: var(--radius-md); text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 2rem;">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 style="color: var(--text-main); font-size: 1.25rem; margin-bottom: 6px; font-weight: 700;">কোনো পেন্ডিং বা অমিল ওএমআর শিট নেই</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+              সকল আপলোডকৃত ওএমআর শিটের রেজিঃ নং সফলভাবে যাচাই করা হয়েছে এবং প্রতিটি শিক্ষার্থীর MCQ নম্বর রেজাল্ট শিটে যুক্ত করা হয়েছে।
+            </p>
+            <button type="button" class="btn btn-primary" onclick="switchResultsTab('main')" style="padding: 8px 22px; font-weight: 700; border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+              <i class="fa-solid fa-list-check"></i> রেজাল্ট শিট দেখুন
+            </button>
+          </div>
+        `;
         return;
       }
 
-      runEvaluationProcess(fileCount > 0 ? fileCount : state.students.length);
+      // Group unassigned students in state.students (status === 'পেন্ডিং')
+      const unassignedStudents = (state.students || []).filter(s => s.status === 'পেন্ডিং');
+      const allStudents = state.students || [];
+
+      container.innerHTML = list.map((item, idx) => {
+        const isPassed = item.scoreInfo.correct >= 10;
+        const passBadgeClass = isPassed ? 'status-pass' : 'status-fail';
+        const passBadgeText = isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
+
+        // Suggest matching student if roll matches detected roll
+        let suggestedStudent = null;
+        if (item.detectedRoll) {
+          const detRollNum = parseInt(toEnglishDigits(item.detectedRoll), 10);
+          if (!isNaN(detRollNum)) {
+            suggestedStudent = unassignedStudents.find(s => parseInt(toEnglishDigits(s.roll), 10) === detRollNum) ||
+                               allStudents.find(s => parseInt(toEnglishDigits(s.roll), 10) === detRollNum);
+          }
+        }
+
+        let studentOptionsHtml = '<option value="">-- শিক্ষার্থী নির্বাচন করুন --</option>';
+        if (suggestedStudent) {
+          studentOptionsHtml += `<optgroup label="💡 রোল মিলেছে (প্রস্তাবিত)">`;
+          studentOptionsHtml += `<option value="${suggestedStudent.id}" selected>⭐ প্রস্তাবিত: রেজিঃ ${suggestedStudent.id} — ${suggestedStudent.nameEn || suggestedStudent.name || 'নাম নেই'} (রোল: ${toBengaliNumber(suggestedStudent.roll)})</option>`;
+          studentOptionsHtml += `</optgroup>`;
+        }
+        if (unassignedStudents.length > 0) {
+          studentOptionsHtml += `<optgroup label="⚠️ নম্বর অপেক্ষমাণ শিক্ষার্থী (${unassignedStudents.length} জন)">`;
+          unassignedStudents.forEach(s => {
+            if (suggestedStudent && s.id === suggestedStudent.id) return;
+            studentOptionsHtml += `<option value="${s.id}">রেজিঃ ${s.id} — ${s.nameEn || s.name || 'নাম নেই'} (রোল: ${toBengaliNumber(s.roll)}, শ্রেণি: ${formatClassBangla(s.class)})</option>`;
+          });
+          studentOptionsHtml += `</optgroup>`;
+        }
+        if (allStudents.length > unassignedStudents.length) {
+          studentOptionsHtml += `<optgroup label="অন্যান্য শিক্ষার্থী">`;
+          allStudents.filter(s => s.status !== 'পেন্ডিং').forEach(s => {
+            if (suggestedStudent && s.id === suggestedStudent.id) return;
+            studentOptionsHtml += `<option value="${s.id}">রেজিঃ ${s.id} — ${s.nameEn || s.name || 'নাম নেই'} (রোল: ${toBengaliNumber(s.roll)}, বর্তমান MCQ: ${toBengaliNumber(s.correct)}/৩০)</option>`;
+          });
+          studentOptionsHtml += `</optgroup>`;
+        }
+
+        const previewImgSrc = item.imagePreviewUrl || '';
+        const defaultRegValue = suggestedStudent ? suggestedStudent.id : '';
+
+        return `
+          <div class="pending-card" id="pending_card_${item.uid}">
+            <!-- LEFT SIDE: Student Detected Info & Correction Controls -->
+            <div class="pending-card-left">
+              <!-- Header: File Name, Set, Score Badge -->
+              <div class="pending-header-row">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span class="pending-file-title" title="${item.fileName}">
+                    <i class="fa-regular fa-image" style="color: var(--primary);"></i> ${item.fileName}
+                  </span>
+                  <span class="set-tag" title="সেট">সেট: ${item.detectedSet}</span>
+                </div>
+                <span class="status-badge ${passBadgeClass}">
+                  <i class="fa-solid ${isPassed ? 'fa-check' : 'fa-xmark'}"></i> ${passBadgeText} (MCQ: ${toBengaliNumber(item.scoreInfo.correct)}/৩০)
+                </span>
+              </div>
+
+              <!-- Reason / Warning Box -->
+              <div class="pending-reason-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>${item.reason}</span>
+              </div>
+
+              <!-- Detected Stats Grid -->
+              <div class="pending-stats-grid">
+                <div class="pending-stat-item">
+                  <span class="stat-lbl">পঠিত রেজিঃ</span>
+                  <strong class="stat-val ${item.detectedId ? 'val-reg' : 'val-unclear'}">${item.detectedId ? toBengaliNumber(item.detectedId) : 'সনাক্ত হয়নি'}</strong>
+                </div>
+                <div class="pending-stat-item">
+                  <span class="stat-lbl">পঠিত রোল</span>
+                  <strong class="stat-val">${item.detectedRoll ? toBengaliNumber(item.detectedRoll) : 'নেই'}</strong>
+                </div>
+                <div class="pending-stat-item">
+                  <span class="stat-lbl">MCQ সঠিক</span>
+                  <strong class="stat-val" style="color: #059669;">${toBengaliNumber(item.scoreInfo.correct)} টি</strong>
+                </div>
+                <div class="pending-stat-item">
+                  <span class="stat-lbl">ভুল উত্তর</span>
+                  <strong class="stat-val" style="color: #dc2626;">${toBengaliNumber(item.scoreInfo.wrong)} টি</strong>
+                </div>
+                <div class="pending-stat-item">
+                  <span class="stat-lbl">ফাঁকা</span>
+                  <strong class="stat-val" style="color: var(--text-muted);">${toBengaliNumber(item.scoreInfo.blank)} টি</strong>
+                </div>
+                <div class="pending-stat-item">
+                  <span class="stat-lbl">প্রাপ্ত নম্বর</span>
+                  <strong class="stat-val" style="color: var(--primary);">${toBengaliNumber(item.percentage)}%</strong>
+                </div>
+              </div>
+
+              <!-- Correction / Assignment Form Section -->
+              <div class="pending-action-section">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                  <span style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-user-check" style="color: var(--primary);"></i>
+                    <span>OMR দেখে শিক্ষার্থী নির্বাচন বা রেজিঃ সংশোধন করুন:</span>
+                  </span>
+                  ${suggestedStudent ? `
+                    <button type="button" class="btn btn-xs" onclick="selectPendingStudentDirect('${item.uid}', '${suggestedStudent.id}')" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 12px; font-weight: 700; padding: 2px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                      💡 রোল ${toBengaliNumber(suggestedStudent.roll)} মিলেছে (${suggestedStudent.nameEn || suggestedStudent.name}) — <strong>সরাসরি যুক্ত করুন ➜</strong>
+                    </button>
+                  ` : ''}
+                </div>
+
+                <div class="pending-inputs-row">
+                  <div style="flex: 1; min-width: 220px;">
+                    <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 3px;">শিক্ষার্থী নির্বাচন করুন:</label>
+                    <select class="pending-student-select" id="selectStudent_${item.uid}" onchange="onPendingStudentSelectChange('${item.uid}', this.value)">
+                      ${studentOptionsHtml}
+                    </select>
+                  </div>
+
+                  <div style="width: 150px;">
+                    <label style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 3px;">অথবা রেজিঃ নং:</label>
+                    <input type="text" class="pending-reg-input" id="inputReg_${item.uid}" placeholder="সঠিক রেজিঃ নং..." value="${defaultRegValue}" onkeydown="if(event.key==='Enter') assignPendingOmr('${item.uid}')">
+                  </div>
+                </div>
+
+                <div class="pending-btn-row">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="assignPendingOmr('${item.uid}')" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); font-weight: 700; padding: 8px 18px; border: none; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.35); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-sm);" title="এই শিক্ষার্থীর সাথে ওএমআর নম্বর যুক্ত করুন">
+                    <i class="fa-solid fa-check"></i> সংশোধন ও মার্ক যুক্ত করুন
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="discardPendingOmr('${item.uid}')" title="পেন্ডিং তালিকা থেকে বাদ দিন" style="padding: 8px 12px; border-color: #cbd5e1; color: var(--danger); border-radius: var(--radius-sm); cursor: pointer;">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT SIDE: Prominent OMR Sheet View -->
+            <div class="pending-card-right">
+              <div class="pending-omr-viewer-box" onclick="openPendingOmrLightbox('${previewImgSrc}', '${item.fileName}')" title="ক্লিক করে বড় ভিউ দেখুন (Zoom)">
+                ${previewImgSrc ? `
+                  <img src="${previewImgSrc}" alt="OMR Sheet" class="pending-omr-image">
+                ` : `
+                  <div class="pending-omr-placeholder">
+                    <i class="fa-regular fa-image" style="font-size: 2.5rem; color: #94a3b8;"></i>
+                    <span>ইমেজ পাওয়া যায়নি</span>
+                  </div>
+                `}
+                <div class="pending-omr-hover-overlay">
+                  <i class="fa-solid fa-magnifying-glass-plus"></i>
+                  <span>বড় করে দেখুন</span>
+                </div>
+                <div class="pending-omr-badge">
+                  <i class="fa-regular fa-file-lines"></i> ওএমআর শিট কপি
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    window.onPendingStudentSelectChange = function(uid, selectedId) {
+      if (selectedId) {
+        const inp = document.getElementById('inputReg_' + uid);
+        if (inp) inp.value = selectedId;
+      }
+    };
+
+    window.selectPendingStudentDirect = function(uid, studentId) {
+      const selectEl = document.getElementById('selectStudent_' + uid);
+      if (selectEl) selectEl.value = studentId;
+      const inp = document.getElementById('inputReg_' + uid);
+      if (inp) inp.value = studentId;
+      assignPendingOmr(uid);
+    };
+
+    // Assign a Pending OMR sheet to a student by Registration Number or Roll
+    window.assignPendingOmr = function(uid) {
+      const item = (state.pendingUnmatchedList || []).find(p => p.uid === uid);
+      if (!item) {
+        showToast('পেন্ডিং ওএমআর শিটটি খুঁজে পাওয়া যায়নি!', 'danger');
+        return;
+      }
+
+      const inputEl = document.getElementById('inputReg_' + uid);
+      const selectEl = document.getElementById('selectStudent_' + uid);
+      let targetReg = (inputEl && inputEl.value ? inputEl.value : (selectEl ? selectEl.value : '')).trim();
+      targetReg = toEnglishDigits(targetReg).trim();
+
+      if (!targetReg) {
+        showToast('অনুগ্রহ করে ড্রপডাউন থেকে একজন শিক্ষার্থী নির্বাচন করুন অথবা রেজিঃ নং লিখুন!', 'warning', 'fa-triangle-exclamation');
+        return;
+      }
+
+      // 1. Find in state.students by Registration Number / ID
+      let student = (state.students || []).find(s => 
+        isRegNoMatch(s.id, targetReg) || 
+        isRegNoMatch(s.regNo, targetReg) ||
+        isRegNoMatch(s.studentId, targetReg)
+      );
+
+      // 2. Fallback: If not matched by Reg No, check if it matches student's Roll No in current exam
+      if (!student) {
+        student = (state.students || []).find(s => 
+          toEnglishDigits(String(s.roll || '')).trim() === targetReg ||
+          toEnglishDigits(String(s.roll || '')).trim() === targetReg.replace(/^0+/, '')
+        );
+      }
+
+      // 3. Fallback: Search in master school_students in localStorage/DB
+      if (!student) {
+        let allSchoolStudents = [];
+        try {
+          if (typeof loadStudents === 'function') {
+            allSchoolStudents = loadStudents() || [];
+          } else {
+            allSchoolStudents = safeJsonParse('school_students', []);
+          }
+        } catch(e){}
+
+        const foundSchool = allSchoolStudents.find(st => 
+          isRegNoMatch(st.regNo, targetReg) || 
+          isRegNoMatch(st.studentId, targetReg) || 
+          isRegNoMatch(st.id, targetReg)
+        );
+
+        if (foundSchool) {
+          const enName = (foundSchool.name || foundSchool.nameEn || '').trim();
+          const targetRoll = String(foundSchool.roll || state.students.length + 1);
+          const targetClass = foundSchool.class || '10';
+          const targetSection = foundSchool.section || 'ক';
+
+          student = {
+            id: targetReg,
+            regNo: targetReg,
+            studentId: targetReg,
+            name: enName,
+            nameEn: enName,
+            roll: targetRoll,
+            class: targetClass,
+            section: targetSection,
+            set: item.detectedSet,
+            correct: item.scoreInfo.correct,
+            wrong: item.scoreInfo.wrong,
+            blank: item.scoreInfo.blank,
+            total: 30,
+            percentage: item.percentage,
+            status: item.status,
+            fileName: item.fileName,
+            file: item.file,
+            imagePreviewUrl: item.imagePreviewUrl,
+            answers: item.answers,
+            isRealScanned: true,
+            evaluatedAt: new Date().toISOString()
+          };
+          state.students.push(student);
+        } else {
+          showToast(`রেজিঃ নং বা রোল "${targetReg}" বিশিষ্ট কোনো শিক্ষার্থী ডাটাবেজে খুঁজে পাওয়া যায়নি! সঠিক রেজিঃ নং প্রদান করুন।`, 'danger', 'fa-circle-xmark');
+          return;
+        }
+      } else {
+        // Transfer evaluated marks to the existing student
+        student.correct = item.scoreInfo.correct;
+        student.wrong = item.scoreInfo.wrong;
+        student.blank = item.scoreInfo.blank;
+        student.percentage = item.percentage;
+        student.status = item.status;
+        student.set = item.detectedSet;
+        student.answers = item.answers;
+        student.fileName = item.fileName;
+        student.file = item.file;
+        student.imagePreviewUrl = item.imagePreviewUrl;
+        student.isRealScanned = true;
+        student.evaluatedAt = new Date().toISOString();
+      }
+
+      // Remove from pendingUnmatchedList
+      state.pendingUnmatchedList = state.pendingUnmatchedList.filter(p => p.uid !== uid);
+
+      // Refresh UI
+      renderResultsTable();
+      renderPendingList();
+      updateStatistics();
+      updateTabCounts();
+
+      const stName = student.nameEn || student.name || '';
+      showToast(`শিক্ষার্থী ${stName ? `"${stName}" ` : ''}(রেজিঃ ${toBengaliNumber(student.id)})-এর MCQ নম্বর (${toBengaliNumber(student.correct)}/৩০) সফলভাবে যুক্ত করা হয়েছে!`, 'success', 'fa-circle-check');
+
+      // If all pending items are resolved, celebration & return to results sheet
+      if (state.pendingUnmatchedList.length === 0) {
+        setTimeout(() => {
+          switchResultsTab('main');
+          try {
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+          } catch(e){}
+          showToast('সকল পেন্ডিং ওএমআর শিট সফলভাবে সংশোধন সম্পন্ন হয়েছে!', 'success', 'fa-circle-check');
+        }, 500);
+      }
+    };
+
+    // Discard / Remove a pending item
+    window.discardPendingOmr = function(uid) {
+      if (confirm('আপনি কি নিশ্চিতভাবে এই ওএমআর কপিটি পেন্ডিং তালিকা থেকে বাদ দিতে চান?')) {
+        state.pendingUnmatchedList = (state.pendingUnmatchedList || []).filter(p => p.uid !== uid);
+        renderPendingList();
+        updateTabCounts();
+        showToast('পেন্ডিং তালিকা থেকে ওএমআর কপি বাদ দেওয়া হয়েছে', 'info');
+      }
+    };
+
+    // Lightbox viewer for pending OMR sheet image
+    window.openPendingOmrLightbox = function(imgSrc, title) {
+      const modal = document.getElementById('modalPendingOmrLightbox');
+      const img = document.getElementById('lightboxOmrImage');
+      const titleEl = document.getElementById('lightboxOmrTitle');
+      if (!modal || !img) return;
+
+      img.src = imgSrc || '';
+      if (titleEl) {
+        titleEl.innerHTML = `<i class="fa-regular fa-image" style="color: #60a5fa; margin-right: 6px;"></i>ওএমআর শিট প্রিভিউ: <strong>${title || ''}</strong>`;
+      }
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closePendingOmrLightbox = function() {
+      const modal = document.getElementById('modalPendingOmrLightbox');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    };
+    // Start Evaluation Flow
+    btnStartEvaluation.addEventListener('click', () => {
+      let fileCount = state.studentFiles.length;
+      if (fileCount === 0) {
+        showToast('মূল্যায়ন করার জন্য অনুগ্রহ করে শিক্ষার্থীদের ওএমআর স্ক্যান করা ফাইল ফোল্ডার আপলোড করুন!', 'warning', 'fa-folder-open');
+        return;
+      }
+
+      runEvaluationProcess(fileCount);
     });
 
     async function runEvaluationProcess(totalItems) {
@@ -13702,88 +14602,162 @@
       progressBarInner.style.width = '0%';
       btnStartEvaluation.disabled = true;
 
-      if (state.studentFiles.length > 0) {
-        const files = state.studentFiles;
-        const total = files.length;
-        const generated = [];
-        const sets = ['ক', 'খ', 'গ', 'ঘ'];
-        const sections = ['ক', 'খ', 'গ', 'ঘ'];
+      if (!state.studentFiles || state.studentFiles.length === 0) {
+        progressWrapper.style.display = 'none';
+        btnStartEvaluation.disabled = false;
+        showToast('মূল্যায়নের জন্য কোনো ওএমআর ফাইল আপলোড করা হয়নি!', 'warning', 'fa-triangle-exclamation');
+        return;
+      }
 
-        for (let i = 0; i < total; i++) {
-          const file = files[i];
-          const percent = Math.min(100, Math.round(((i + 1) / total) * 100));
-          progressBarInner.style.width = `${percent}%`;
-          progressPercentText.textContent = `${toBengaliNumber(percent)}%`;
-          progressStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ওএমআর শিট ${toBengaliNumber(i + 1)} / ${toBengaliNumber(total)} স্ক্যান ও সনাক্ত করা হচ্ছে (${file.name})...`;
+      const files = state.studentFiles;
+      const total = files.length;
+      const sets = ['ক', 'খ', 'গ', 'ঘ'];
+      const sections = ['ক', 'খ', 'গ', 'ঘ'];
 
-          let detectedAnswers = null;
-          let detectedSet = sets[i % sets.length];
-          let detectedRoll = null;
-          let detectedId = null;
-          let detectedClass = null;
-          let detectedSection = null;
+      state.pendingUnmatchedList = state.pendingUnmatchedList || [];
 
-          try {
-            const formData = new FormData();
-            formData.append('file', file);
-            const response = await fetch('/api/scan_omr', {
-              method: 'POST',
-              body: formData
-            });
+      const hasImportedStudents = Array.isArray(state.students) && state.students.length > 0;
+      let newlyMatchedCount = 0;
+      let newlyPendingCount = 0;
 
-            if (response.ok) {
-              const data = await response.json();
-              if (data.status === 'success' && data.sets) {
-                detectedSet = Object.keys(data.sets)[0] || detectedSet;
-                const rawAnswers = data.sets[detectedSet] || Object.values(data.sets)[0];
-                if (rawAnswers && Array.isArray(rawAnswers)) {
-                  detectedAnswers = {};
-                  for (let q = 1; q <= 30; q++) {
-                    detectedAnswers[q] = normalizeOption(rawAnswers[q - 1]);
-                  }
-                }
-                if (data.roll_no && data.roll_no !== '000') {
-                  detectedRoll = data.roll_no;
-                }
-                if (data.student_id && data.student_id !== '0000000') {
-                  detectedId = data.student_id;
-                }
-                if (data.class_name && data.class_name !== '00') {
-                  detectedClass = data.class_name;
-                }
-                if (data.section) {
-                  detectedSection = data.section;
+      for (let i = 0; i < total; i++) {
+        const file = files[i];
+        const percent = Math.min(100, Math.round(((i + 1) / total) * 100));
+        progressBarInner.style.width = `${percent}%`;
+        progressPercentText.textContent = `${toBengaliNumber(percent)}%`;
+        progressStatusText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ওএমআর শিট ${toBengaliNumber(i + 1)} / ${toBengaliNumber(total)} স্ক্যান ও মূল্যায়ন করা হচ্ছে (${file.name})...`;
+
+        let detectedAnswers = null;
+        let detectedSet = sets[i % sets.length];
+        let detectedRoll = null;
+        let detectedId = null;
+        let detectedClass = null;
+        let detectedSection = null;
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const response = await fetch('/api/scan_omr', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.sets) {
+              detectedSet = Object.keys(data.sets)[0] || detectedSet;
+              const rawAnswers = data.sets[detectedSet] || Object.values(data.sets)[0];
+              if (rawAnswers && Array.isArray(rawAnswers)) {
+                detectedAnswers = {};
+                for (let q = 1; q <= 30; q++) {
+                  detectedAnswers[q] = normalizeOption(rawAnswers[q - 1]);
                 }
               }
+              if (data.roll_no && data.roll_no !== '000') {
+                detectedRoll = data.roll_no;
+              }
+              if (data.student_id && data.student_id !== '0000000') {
+                detectedId = data.student_id;
+              }
+              if (data.class_name && data.class_name !== '00') {
+                detectedClass = data.class_name;
+              }
+              if (data.section) {
+                detectedSection = data.section;
+              }
             }
-          } catch (scanErr) {
-            console.warn(`Scan error on ${file.name}:`, scanErr);
+          }
+        } catch (scanErr) {
+          console.warn(`Scan error on ${file.name}:`, scanErr);
+        }
+
+        const set = normalizeSet(detectedSet);
+
+        // Answers detected from actual OMR scanning
+        let answers = detectedAnswers || {};
+
+        const scoreInfo = calculateStudentScore(answers, set);
+        const percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
+        const isPassed = scoreInfo.correct >= 10;
+        const fileUrl = URL.createObjectURL(file);
+
+        const rawDetectedId = toEnglishDigits(detectedId || '').trim();
+        const isValidDetectedId = rawDetectedId && !/^0+$/.test(rawDetectedId);
+
+        const fnMatchLong = file.name.match(/\b(\d{4,8})\b/);
+        const fnCandidateReg = fnMatchLong ? fnMatchLong[1] : null;
+
+        const fnMatchRoll = file.name.match(/\b(\d{1,3})\b/);
+        const fnCandidateRoll = fnMatchRoll ? fnMatchRoll[1] : null;
+
+        if (hasImportedStudents) {
+          let matchedStudent = null;
+
+          // 1. Primary: Match strictly by detected Registration Number
+          if (isValidDetectedId) {
+            matchedStudent = state.students.find(s => isRegNoMatch(s.id, rawDetectedId) || isRegNoMatch(s.regNo, rawDetectedId));
           }
 
-          // Fallback if not detected
-          const matchRoll = file.name.match(/\b(\d{1,4})\b/);
-          const roll = (detectedRoll || (matchRoll ? matchRoll[1] : String(i + 1))).padStart(3, '0');
-          const studentId = detectedId || ('1024' + roll);
+          // 2. Secondary: If detectedId was missing, check filename registration number (strictly 4-8 digits)
+          if (!matchedStudent && fnCandidateReg) {
+            matchedStudent = state.students.find(s => isRegNoMatch(s.id, fnCandidateReg) || isRegNoMatch(s.regNo, fnCandidateReg));
+          }
+
+          // Strict Registration matching: Do NOT fall back to roll number.
+          // If registration number does not match, the sheet MUST go to Pending List!
+
+          if (matchedStudent) {
+            matchedStudent.correct = scoreInfo.correct;
+            matchedStudent.wrong = scoreInfo.wrong;
+            matchedStudent.blank = scoreInfo.blank;
+            matchedStudent.percentage = percentage;
+            matchedStudent.status = isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
+            matchedStudent.set = set;
+            matchedStudent.answers = answers;
+            matchedStudent.fileName = file.name;
+            matchedStudent.file = file;
+            matchedStudent.imagePreviewUrl = fileUrl;
+            matchedStudent.isRealScanned = !!detectedAnswers && Object.keys(detectedAnswers).length > 0;
+            matchedStudent.evaluatedAt = new Date().toISOString();
+            newlyMatchedCount++;
+          } else {
+            // Push to Pending List
+            const reason = !isValidDetectedId 
+              ? 'ওএমআর শিটে রেজিঃ নং বাবল সনাক্ত হয়নি / অস্পষ্ট' 
+              : `সনাক্তকৃত রেজিঃ (${toBengaliNumber(rawDetectedId)}) পরীক্ষার শিক্ষার্থী তালিকায় নেই`;
+
+            state.pendingUnmatchedList.push({
+              uid: 'pending_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
+              file: file,
+              fileName: file.name,
+              imagePreviewUrl: fileUrl,
+              detectedId: isValidDetectedId ? rawDetectedId : (fnCandidateReg || ''),
+              detectedRoll: detectedRoll || fnCandidateRoll || '',
+              detectedClass: detectedClass || '',
+              detectedSection: detectedSection || '',
+              detectedSet: set,
+              answers: answers,
+              scoreInfo: scoreInfo,
+              percentage: percentage,
+              status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+              reason: reason
+            });
+            newlyPendingCount++;
+          }
+        } else {
+          // Fallback if no imported exam was loaded
+          const roll = (detectedRoll || fnCandidateRoll || String(i + 1)).padStart(3, '0');
+          const studentId = isValidDetectedId ? rawDetectedId : (fnCandidateReg || ('1024' + roll));
           const studentClass = detectedClass ? String(parseInt(detectedClass, 10)) : "10";
           const section = detectedSection || sections[i % sections.length];
-          const set = normalizeSet(detectedSet);
 
-          let answers = detectedAnswers;
-          if (!answers) {
-            // Fallback simulation if scan service unreachable
-            const targetKey = getActiveAnswerKey(set);
-            answers = {};
-            for (let q = 1; q <= 30; q++) {
-              answers[q] = Math.random() > 0.15 ? targetKey[q - 1] : null;
-            }
-          }
+          const lookupMaps = getStudentsLookupMaps();
+          const sNameEn = lookupMaps.byReg.get(studentId) || lookupMaps.byRollClass.get(`${mapClassToNumber(studentClass)}_${toEnglishDigits(roll)}`) || '';
 
-          const scoreInfo = calculateStudentScore(answers, set);
-          const percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
-          const isPassed = scoreInfo.correct >= 10;
-
-          generated.push({
+          state.students.push({
             id: studentId,
+            name: sNameEn,
+            nameEn: sNameEn,
             roll: roll,
             class: studentClass,
             section: section,
@@ -13797,29 +14771,33 @@
             status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
             fileName: file.name,
             file: file,
-            imagePreviewUrl: URL.createObjectURL(file),
+            imagePreviewUrl: fileUrl,
             isRealScanned: !!detectedAnswers
           });
+          newlyMatchedCount++;
         }
-
-        state.students = generated;
-      } else if (state.students.length === 0) {
-        generateSampleStudents(25);
-      } else {
-        reEvaluateAllStudents();
       }
 
       progressWrapper.style.display = 'none';
       btnStartEvaluation.disabled = false;
-      renderResultsTable();
-      updateStatistics();
       btnExportExcel.disabled = false;
       btnPrintTable.disabled = false;
-      
-      showToast('সকল ওএমআর শিটের বাবল সফলভাবে স্ক্যান ও সনাক্ত সম্পন্ন হয়েছে!', 'success', 'fa-circle-check');
-      try {
-        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-      } catch(e){}
+
+      renderResultsTable();
+      renderPendingList();
+      updateStatistics();
+      updateTabCounts();
+
+      if (newlyPendingCount > 0) {
+        switchResultsTab('pending');
+        showToast(`${toBengaliNumber(newlyMatchedCount)} জন শিক্ষার্থীর MCQ নম্বর যুক্ত হয়েছে। ${toBengaliNumber(newlyPendingCount)} টি ওএমআর শিটের রেজিঃ নং অমিল হওয়ায় পেন্ডিং তালিকায় উন্মুক্ত করা হয়েছে। অনুগ্রহ করে সংশোধন করুন।`, 'warning', 'fa-triangle-exclamation');
+      } else {
+        switchResultsTab('main');
+        showToast(`সকল (${toBengaliNumber(newlyMatchedCount)}) ওএমআর শিটের রেজিঃ নং মিলেছে এবং MCQ নম্বর সফলভাবে যুক্ত হয়েছে!`, 'success', 'fa-circle-check');
+        try {
+          confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        } catch(e){}
+      }
     }
 
     // Load Sample Students Demo Generator
@@ -13886,6 +14864,10 @@
 
     function reEvaluateAllStudents() {
       state.students.forEach(student => {
+        const hasAnswers = student.answers && Object.keys(student.answers).some(k => student.answers[k]);
+        if (!hasAnswers && student.status === 'পেন্ডিং') {
+          return;
+        }
         const scoreInfo = calculateStudentScore(student.answers, student.set);
         student.correct = scoreInfo.correct;
         student.wrong = scoreInfo.wrong;
@@ -13897,18 +14879,27 @@
 
     // 4. Render Table with Search and Filters
     function renderResultsTable() {
+      if (typeof updateTabCounts === 'function') updateTabCounts();
       const searchQuery = inputSearch.value.trim().toLowerCase();
       const selectedClass = filterClass.value;
       const selectedSection = filterSection.value;
       const selectedSet = filterSet.value;
       const selectedStatus = filterStatus.value;
 
+      const lookupMaps = getStudentsLookupMaps();
+
       const filtered = state.students.filter(s => {
+        const rawId = toEnglishDigits(s.id || '').trim();
+        const rawRoll = toEnglishDigits(s.roll || '').trim();
+        const rawCls = mapClassToNumber(s.class);
+        const sNameEn = (s.nameEn || s.name || lookupMaps.byReg.get(rawId) || lookupMaps.byRollClass.get(`${rawCls}_${rawRoll}`) || lookupMaps.byRollClass.get(`_${rawRoll}`) || '').toLowerCase();
+
         const matchesSearch = !searchQuery || 
           s.id.toLowerCase().includes(searchQuery) || 
           s.roll.toLowerCase().includes(searchQuery) ||
           toBengaliNumber(s.roll).includes(searchQuery) ||
-          toBengaliNumber(s.id).includes(searchQuery);
+          toBengaliNumber(s.id).includes(searchQuery) ||
+          sNameEn.includes(searchQuery);
 
         const matchesClass = selectedClass === 'ALL' || s.class === selectedClass;
         const matchesSection = selectedSection === 'ALL' || s.section === selectedSection;
@@ -13937,8 +14928,20 @@
 
       tableResultsBody.innerHTML = filtered.map((student, idx) => {
         const originalIndex = state.students.indexOf(student);
-        const statusBadgeClass = student.status === 'উত্তীর্ণ' ? 'status-pass' : 'status-fail';
-        const statusIcon = student.status === 'উত্তীর্ণ' ? 'fa-check' : 'fa-xmark';
+        const isPending = student.status === 'পেন্ডিং';
+        const statusBadgeClass = isPending ? 'status-pending' : (student.status === 'উত্তীর্ণ' ? 'status-pass' : 'status-fail');
+        const statusIcon = isPending ? 'fa-clock' : (student.status === 'উত্তীর্ণ' ? 'fa-check' : 'fa-xmark');
+
+        const rawId = toEnglishDigits(student.id || '').trim();
+        const rawRoll = toEnglishDigits(student.roll || '').trim();
+        const rawCls = mapClassToNumber(student.class);
+
+        const studentNameEn = student.nameEn || 
+                              student.name || 
+                              lookupMaps.byReg.get(rawId) || 
+                              lookupMaps.byRollClass.get(`${rawCls}_${rawRoll}`) || 
+                              lookupMaps.byRollClass.get(`_${rawRoll}`) || 
+                              '';
 
         return `
           <tr>
@@ -13946,7 +14949,10 @@
               ${toBengaliNumber(idx + 1)}
             </td>
             <td>
-              <span class="student-badge-id">${toBengaliNumber(student.id)}</span>
+              <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px;">
+                <span class="student-badge-id">${toBengaliNumber(student.id)}</span>
+                ${studentNameEn ? `<span class="student-name-en" style="font-size: 0.82rem; font-weight: 600; color: #4338ca; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: 0.1px; line-height: 1.25;" title="শিক্ষার্থীর নাম: ${studentNameEn}"><i class="fa-regular fa-user" style="font-size: 0.72rem; color: #6366f1; margin-right: 4px;"></i>${studentNameEn}</span>` : ''}
+              </div>
             </td>
             <td class="roll-cell">
               ${toBengaliNumber(student.roll)}
@@ -13962,14 +14968,14 @@
             </td>
             <td>
               <div class="score-badge">
-                <span style="color: ${student.correct >= 15 ? '#10b981' : '#ef4444'}; font-size: 1.1rem;">
-                  ${toBengaliNumber(student.correct)}
+                <span style="color: ${isPending ? 'var(--text-muted)' : (student.correct >= 15 ? '#10b981' : '#ef4444')}; font-size: 1.1rem;">
+                  ${isPending ? '০' : toBengaliNumber(student.correct)}
                 </span>
                 <span class="score-total">/ ৩০</span>
               </div>
             </td>
             <td>
-              <strong>${toBengaliNumber(student.percentage)}%</strong>
+              <strong>${isPending ? '০%' : `${toBengaliNumber(student.percentage)}%`}</strong>
             </td>
             <td>
               <span class="status-badge ${statusBadgeClass}">
@@ -14012,11 +15018,15 @@
         return;
       }
 
+      const pending = state.students.filter(s => s.status === 'পেন্ডিং').length;
       const passed = state.students.filter(s => s.status === 'উত্তীর্ণ').length;
-      const totalCorrect = state.students.reduce((acc, cur) => acc + cur.correct, 0);
-      const avgCorrect = (totalCorrect / total).toFixed(1);
-      const highestScore = Math.max(...state.students.map(s => s.correct));
-      const passRate = ((passed / total) * 100).toFixed(1);
+      const evaluated = total - pending;
+
+      const totalCorrect = state.students.reduce((acc, cur) => acc + (cur.status === 'পেন্ডিং' ? 0 : (cur.correct || 0)), 0);
+      const avgCorrect = evaluated > 0 ? (totalCorrect / evaluated).toFixed(1) : '০.০';
+      const evaluatedStudents = state.students.filter(s => s.status !== 'পেন্ডিং');
+      const highestScore = evaluatedStudents.length > 0 ? Math.max(...evaluatedStudents.map(s => s.correct || 0)) : 0;
+      const passRate = evaluated > 0 ? ((passed / evaluated) * 100).toFixed(1) : '০';
 
       document.getElementById('statTotalStudents').textContent = toBengaliNumber(total);
       document.getElementById('statPassedStudents').textContent = toBengaliNumber(passed);
@@ -14052,8 +15062,11 @@
 
       // Ensure answers is cleanly indexed 1..30 with normalized options
       const normalizedAnswers = {};
+      const hasRealAnswers = student.answers && typeof student.answers === 'object' && Object.keys(student.answers).length > 0;
+      const isStudentPendingNoOmr = (student.status === 'পেন্ডিং' && !student.isRealScanned) || !hasRealAnswers;
+
       for (let q = 1; q <= 30; q++) {
-        normalizedAnswers[q] = getStudentAnswer(student, q);
+        normalizedAnswers[q] = isStudentPendingNoOmr ? null : getStudentAnswer(student, q);
       }
       state.tempEditStudent.answers = normalizedAnswers;
       state.tempEditStudent.set = normalizeSet(student.set);
@@ -14080,7 +15093,10 @@
       // Update header info text
       const headerInfo = document.getElementById('textStudentModalHeaderInfo');
       if (headerInfo) {
-        headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(student.roll)}</strong> | রেজিঃ নং: <strong style="color: var(--text-main);">${toBengaliNumber(student.id)}</strong> | সেট: <strong style="color: var(--omr-pink);">${student.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${student.fileName || 'ওএমআর কপি'}</span>`;
+        const studentNameEn = student.nameEn || student.name || getStudentEnglishNameById(student.id, student.roll, student.class);
+        const namePart = studentNameEn ? ` | নাম: <strong style="color: #4f46e5;">${studentNameEn}</strong>` : '';
+        const fileLabel = (student.fileName && student.fileName.trim()) ? student.fileName : '<span style="color: #ef4444;"><i class="fa-solid fa-file-circle-xmark"></i> স্ক্যান অনুপস্থিত</span>';
+        headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(student.roll)}</strong> | রেজিঃ নং: <strong style="color: var(--text-main);">${toBengaliNumber(student.id)}</strong>${namePart} | সেট: <strong style="color: var(--omr-pink);">${student.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${fileLabel}</span>`;
       }
 
       // Update student counter & navigation buttons
@@ -14204,7 +15220,9 @@
       // Update header info text
       const headerInfo = document.getElementById('textStudentModalHeaderInfo');
       if (headerInfo && state.tempEditStudent) {
-        headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(state.tempEditStudent.roll)}</strong> | রেজিঃ নং: <strong style="color: var(--text-main);">${toBengaliNumber(state.tempEditStudent.id)}</strong> | সেট: <strong style="color: var(--omr-pink);">${state.tempEditStudent.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${state.tempEditStudent.fileName || 'ওএমআর কপি'}</span>`;
+        const studentNameEn = state.tempEditStudent.nameEn || state.tempEditStudent.name || getStudentEnglishNameById(state.tempEditStudent.id, state.tempEditStudent.roll, state.tempEditStudent.class);
+        const namePart = studentNameEn ? ` | নাম: <strong style="color: #4f46e5;">${studentNameEn}</strong>` : '';
+        headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(state.tempEditStudent.roll)}</strong> | রেজিঃ নং: <strong style="color: var(--text-main);">${toBengaliNumber(state.tempEditStudent.id)}</strong>${namePart} | সেট: <strong style="color: var(--omr-pink);">${state.tempEditStudent.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${state.tempEditStudent.fileName || 'ওএমআর কপি'}</span>`;
       }
     };
 
@@ -14576,7 +15594,9 @@
               // Update Header Info
               const headerInfo = document.getElementById('textStudentModalHeaderInfo');
               if (headerInfo) {
-                headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(state.tempEditStudent.roll)}</strong> | রেজিঃ নং: <strong style="color: var(--text-main);">${toBengaliNumber(state.tempEditStudent.id)}</strong> | সেট: <strong style="color: var(--omr-pink);">${state.tempEditStudent.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${fileName}</span>`;
+                const studentNameEn = state.tempEditStudent.nameEn || state.tempEditStudent.name || getStudentEnglishNameById(state.tempEditStudent.id, state.tempEditStudent.roll, state.tempEditStudent.class);
+                const namePart = studentNameEn ? ` | নাম: <strong style="color: #4f46e5;">${studentNameEn}</strong>` : '';
+                headerInfo.innerHTML = `রোল: <strong style="color: var(--primary);">${toBengaliNumber(state.tempEditStudent.roll)}</strong> | রেজিঃ নং: <strong style="color: var(--text-main);">${toBengaliNumber(state.tempEditStudent.id)}</strong>${namePart} | সেট: <strong style="color: var(--omr-pink);">${state.tempEditStudent.set}</strong> | ফাইল: <span style="color: var(--text-muted);">${fileName}</span>`;
               }
 
               // Re-evaluate score and re-render bubbles
@@ -15021,20 +16041,29 @@
 
       try {
         // Prepare formatted data for SheetJS
-        const excelRows = state.students.map((s, idx) => ({
-          'ক্রমিক নং': idx + 1,
-          'শিক্ষার্থী রেজিঃ নং': s.id,
-          'রোল নং': s.roll,
-          'শ্রেণি': s.class,
-          'শাখা': s.section,
-          'সেট নং': s.set,
-          'শুদ্ধ উত্তর': s.correct,
-          'ভুল উত্তর': s.wrong,
-          'ফাঁকা উত্তর': s.blank,
-          'মোট নম্বর': s.correct,
-          'শতকরা (%)': s.percentage + '%',
-          'ফলাফল স্ট্যাটাস': s.status
-        }));
+        const lookupMaps = getStudentsLookupMaps();
+        const excelRows = state.students.map((s, idx) => {
+          const rawId = toEnglishDigits(s.id || '').trim();
+          const rawRoll = toEnglishDigits(s.roll || '').trim();
+          const rawCls = mapClassToNumber(s.class);
+          const sName = s.nameEn || s.name || lookupMaps.byReg.get(rawId) || lookupMaps.byRollClass.get(`${rawCls}_${rawRoll}`) || lookupMaps.byRollClass.get(`_${rawRoll}`) || '';
+
+          return {
+            'ক্রমিক নং': idx + 1,
+            'শিক্ষার্থী রেজিঃ নং': s.id,
+            'শিক্ষার্থীর নাম (English)': sName,
+            'রোল নং': s.roll,
+            'শ্রেণি': s.class,
+            'শাখা': s.section,
+            'সেট নং': s.set,
+            'শুদ্ধ উত্তর': s.correct,
+            'ভুল উত্তর': s.wrong,
+            'ফাঁকা উত্তর': s.blank,
+            'মোট নম্বর': s.correct,
+            'শতকরা (%)': s.percentage + '%',
+            'ফলাফল স্ট্যাটাস': s.status
+          };
+        });
 
         const worksheet = XLSX.utils.json_to_sheet(excelRows);
         
@@ -15042,8 +16071,8 @@
         worksheet['!cols'] = [
           { wch: 10 },
           { wch: 18 },
+          { wch: 22 },
           { wch: 12 },
-          { wch: 10 },
           { wch: 10 },
           { wch: 10 },
           { wch: 12 },
@@ -15084,6 +16113,9 @@
         state.students = [];
         state.studentFiles = [];
         state.answerKeyFiles = [];
+        state.pendingUnmatchedList = [];
+        if (typeof renderPendingList === 'function') renderPendingList();
+        if (typeof updateTabCounts === 'function') updateTabCounts();
         
         dropzoneAnswerKey.classList.remove('filled');
         dropzoneStudentOMR.classList.remove('filled');
@@ -15472,6 +16504,35 @@
         const oe = selected.omrData;
         if (oe && oe.students && oe.students.length > 0) {
           state.students = JSON.parse(JSON.stringify(oe.students));
+          state.pendingUnmatchedList = [];
+          state.importedExamInfo = {
+            id: examId,
+            source: 'omr',
+            examName: selected.examName,
+            subject: selected.subject || 'MCQ ওএমআর',
+            class: selected.class || '',
+            section: selected.section || 'সকল শাখা',
+            omrData: oe
+          };
+          try {
+            localStorage.setItem('school_active_omr_imported_exam', JSON.stringify(state.importedExamInfo));
+          } catch(e){}
+
+          if (typeof switchResultsTab === 'function') switchResultsTab('main');
+          if (typeof renderPendingList === 'function') renderPendingList();
+          const lookupMaps = getStudentsLookupMaps();
+          state.students.forEach(st => {
+            if (!st.nameEn) {
+              const rId = toEnglishDigits(st.id || '').trim();
+              const rRoll = toEnglishDigits(st.roll || '').trim();
+              const rCls = mapClassToNumber(st.class);
+              const foundName = lookupMaps.byReg.get(rId) || lookupMaps.byRollClass.get(`${rCls}_${rRoll}`) || lookupMaps.byRollClass.get(`_${rRoll}`);
+              if (foundName) {
+                st.name = foundName;
+                st.nameEn = foundName;
+              }
+            }
+          });
           if (oe.answerKeys) {
             state.answerKeys = JSON.parse(JSON.stringify(oe.answerKeys));
             renderAnswerKeyBubbles();
@@ -15481,7 +16542,7 @@
           btnExportExcel.disabled = false;
           btnPrintTable.disabled = false;
           closeImportExamModal();
-          showToast(`সংরক্ষিত পরীক্ষা "${selected.examName}" (${toBengaliNumber(oe.students.length)} জন) এর তথ্য লোড হয়েছে!`, 'success', 'fa-check');
+          showToast(`সংরক্ষিত পরীক্ষা "${selected.examName}" (${toBengaliNumber(oe.students.length)} জন) এর ফলাফলসহ লোড হয়েছে!`, 'success', 'fa-check');
           
           const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
           if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -15491,6 +16552,19 @@
 
       // Schedule source from Exam List
       const sch = selected.scheduleData;
+      state.importedExamInfo = {
+        id: examId,
+        source: 'schedule',
+        examName: selected.examName,
+        subject: sch.subject || '',
+        class: sch.class || '',
+        section: sch.section || 'All',
+        scheduleData: sch
+      };
+      try {
+        localStorage.setItem('school_active_omr_imported_exam', JSON.stringify(state.importedExamInfo));
+      } catch(e){}
+
       let allStudents = [];
       try {
         if (typeof loadStudents === 'function') {
@@ -15524,77 +16598,342 @@
 
       const activeKey = (state.answerKeys && (state.answerKeys['ক'] || state.answerKeys['A'])) || {};
       const options = ['ক', 'খ', 'গ', 'ঘ'];
+      const targetSubjectCode = sch.subjectCode || sch.subject;
+
+      let totalLoadedWithMarks = 0;
 
       const importedStudents = classStudents.map((student, idx) => {
-        // Look up student mark
-        let studentMarkObj = savedMarks['marks_' + student.id + '_' + sch.id] ||
-                             savedMarks['marks_' + student.studentId + '_' + sch.id] ||
-                             savedMarks['marks_' + student.id + '_' + (sch.examType || '')];
+        // Look up student mark across various standard keys
+        const rawReg = toEnglishDigits(student.regNo || student.id || student.studentId || '').trim();
+        const rawId = toEnglishDigits(student.id || '').trim();
 
-        let correctScore = null;
+        let studentMarkObj = savedMarks['marks_' + rawReg + '_' + sch.id] ||
+                             savedMarks['marks_' + rawId + '_' + sch.id] ||
+                             savedMarks['marks_' + student.id + '_' + sch.id] ||
+                             savedMarks['marks_' + student.studentId + '_' + sch.id] ||
+                             savedMarks['marks_' + rawReg + '_' + (sch.term || sch.examType || '')] ||
+                             savedMarks['marks_' + student.id + '_' + (sch.term || sch.examType || '')];
+
+        let hasRealMark = false;
+        let correctScore = 0;
+        let savedAnswers = null;
+        let savedSet = null;
+        let savedStatus = null;
+        let savedPct = null;
+        let savedFileName = '';
+
         if (studentMarkObj && typeof studentMarkObj === 'object') {
-          const subVal = Object.values(studentMarkObj)[0];
+          const subVal = (targetSubjectCode && studentMarkObj[targetSubjectCode]) ? studentMarkObj[targetSubjectCode] : (studentMarkObj[sch.subject] || Object.values(studentMarkObj)[0]);
           if (subVal && typeof subVal === 'object') {
-            if (subVal.mcq !== undefined && subVal.mcq !== null) {
+            // Strictly check for verified OMR evaluation data
+            const hasRealAnswers = subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0;
+            const isVerifiedOmr = !subVal.isAbsent && hasRealAnswers && !!subVal.omrEvaluatedAt;
+
+            if (isVerifiedOmr && subVal.mcq !== undefined && subVal.mcq !== null && !isNaN(parseInt(subVal.mcq))) {
               correctScore = parseInt(subVal.mcq);
-            } else if (subVal.total !== undefined && subVal.total !== null) {
-              correctScore = Math.min(30, Math.round(parseInt(subVal.total) * 0.3));
+              hasRealMark = true;
+              savedAnswers = subVal.answers;
+              if (subVal.set) savedSet = normalizeSet(subVal.set);
+              if (subVal.percentage) savedPct = subVal.percentage;
+              if (subVal.status) savedStatus = subVal.status;
+              if (subVal.fileName) savedFileName = subVal.fileName;
             }
           }
         }
 
-        if (correctScore === null || isNaN(correctScore)) {
-          // Realistic score distribution
-          const r = parseInt(student.roll) || (idx + 1);
-          correctScore = 18 + (r % 13);
-        }
-        correctScore = Math.max(0, Math.min(30, correctScore));
-
-        // Generate matching answers
-        const studentAnswers = {};
-        for (let q = 1; q <= 30; q++) {
-          const correctOpt = activeKey[q] || options[(q + (parseInt(student.roll) || 0)) % 4];
-          if (q <= correctScore) {
-            studentAnswers[q] = correctOpt;
-          } else {
-            const wrongOpts = options.filter(o => o !== correctOpt);
-            studentAnswers[q] = wrongOpts[(q + (parseInt(student.roll) || 0)) % wrongOpts.length];
-          }
-        }
-
         const totalQ = 30;
-        const pct = ((correctScore / totalQ) * 100).toFixed(1);
-        const passed = correctScore >= 10;
-        const setChoice = ['ক', 'খ', 'গ', 'ঘ'][idx % 4];
+        let pct = '0.0';
+        let status = 'পেন্ডিং';
+        let wrongCount = 0;
+        let blankCount = totalQ;
+        const studentAnswers = {};
 
+        if (hasRealMark && savedAnswers && Object.keys(savedAnswers).length > 0) {
+          correctScore = Math.max(0, Math.min(30, correctScore));
+          for (let q = 1; q <= 30; q++) {
+            studentAnswers[q] = savedAnswers[q] || savedAnswers[String(q)] || null;
+          }
+          const calcScore = calculateStudentScore(studentAnswers, savedSet || 'ক');
+          correctScore = calcScore.correct;
+          wrongCount = calcScore.wrong;
+          blankCount = calcScore.blank;
+          pct = savedPct || ((correctScore / totalQ) * 100).toFixed(1);
+          status = savedStatus || (correctScore >= 10 ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ');
+          totalLoadedWithMarks++;
+        } else {
+          // No OMR evaluated yet - strictly 0 marks, 0 wrong, 30 blank, status Pending
+          correctScore = 0;
+          wrongCount = 0;
+          blankCount = totalQ;
+          pct = '0.0';
+          status = 'পেন্ডিং';
+        }
+
+        const setChoice = savedSet || ['ক', 'খ', 'গ', 'ঘ'][idx % 4];
+        const enName = (student.name || student.nameEn || '').trim();
+
+        const studentRegId = student.regNo || student.studentId || ('2211' + String(student.roll || idx + 1).padStart(3, '0'));
         return {
-          id: student.regNo || student.studentId || ('2211' + String(student.roll || idx + 1).padStart(3, '0')),
+          id: studentRegId,
+          regNo: studentRegId,
+          studentId: student.studentId || studentRegId,
+          name: enName,
+          nameEn: enName,
           roll: String(student.roll || idx + 1),
           class: targetClassNum || '8',
           section: (student.section && student.section !== 'All') ? student.section : 'গ',
           set: setChoice,
           correct: correctScore,
-          wrong: totalQ - correctScore,
-          blank: 0,
+          wrong: wrongCount,
+          blank: blankCount,
           total: totalQ,
           percentage: pct,
-          status: passed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
-          fileName: `${student.roll || idx + 1}.jpg`,
-          answers: studentAnswers
+          status: status,
+          fileName: hasRealMark ? savedFileName : '',
+          answers: studentAnswers,
+          isRealScanned: hasRealMark
         };
       });
 
       state.students = importedStudents;
+      state.pendingUnmatchedList = [];
+      if (typeof switchResultsTab === 'function') switchResultsTab('main');
+      if (typeof renderPendingList === 'function') renderPendingList();
       renderResultsTable();
       updateStatistics();
       btnExportExcel.disabled = false;
       btnPrintTable.disabled = false;
       closeImportExamModal();
 
-      showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন) সফলভাবে লোড হয়েছে!`, 'success', 'fa-check');
+      const markInfoText = totalLoadedWithMarks > 0 
+        ? ` (${toBengaliNumber(totalLoadedWithMarks)} জনের সংরক্ষিত ফলাফল সহ)` 
+        : '';
+      showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন)${markInfoText} সফলভাবে লোড হয়েছে!`, 'success', 'fa-check');
 
       const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
       if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // --- Save & Entry: Permanently save evaluated OMR marks to Exam List & Database ---
+    window.saveAndEntryExamMarks = async function() {
+      if (!state.students || state.students.length === 0) {
+        showToast('সংরক্ষণ করার মতো কোনো শিক্ষার্থীর ফলাফল নেই! প্রথমে ওএমআর শিট মূল্যায়ন করুন।', 'warning', 'fa-triangle-exclamation');
+        return;
+      }
+
+      // Check evaluated students
+      const evaluatedStudents = state.students.filter(s => s.status !== 'পেন্ডিং' || (s.correct && s.correct > 0));
+      if (evaluatedStudents.length === 0) {
+        showToast('এখনও কোনো শিক্ষার্থীর নম্বর মূল্যায়ন করা হয়নি! প্রথমে ওএমআর শিট মূল্যায়ন করুন।', 'warning', 'fa-triangle-exclamation');
+        return;
+      }
+
+      // Check if there are still pending unmatched sheets
+      const pendingCount = (state.pendingUnmatchedList || []).length;
+      if (pendingCount > 0) {
+        const proceed = confirm(`⚠️ পেন্ডিং তালিকায় এখনও ${toBengaliNumber(pendingCount)} টি অমিল ওএমআর শিট রয়েছে।\n\nআপনি কি বর্তমান ${toBengaliNumber(evaluatedStudents.length)} জন শিক্ষার্থীর মূল্যায়নকৃত নম্বর Exam List-এ সংরক্ষণ ও স্থায়ী এন্ট্রি করতে চান?`);
+        if (!proceed) return;
+      }
+
+      // Check imported exam info
+      let examInfo = state.importedExamInfo;
+      if (!examInfo) {
+        try {
+          examInfo = safeJsonParse('school_active_omr_imported_exam', null);
+        } catch(e){}
+      }
+
+      if (!examInfo) {
+        showToast('ফলাফল এন্ট্রি করার জন্য অনুগ্রহ করে প্রথমে "Import Exam" বাটনে ক্লিক করে পরীক্ষার শিডিউল নির্বাচন করুন!', 'warning', 'fa-file-import');
+        if (typeof openImportExamModal === 'function') openImportExamModal();
+        return;
+      }
+
+      const btn = document.getElementById('btnSaveAndEntry');
+      const originalBtnHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+      }
+
+      try {
+        const schId = examInfo.id;
+        const nowIso = new Date().toISOString();
+        const nowFormatted = new Date().toLocaleString('bn-BD');
+
+        // 1. Update schedule in school_exam_schedules
+        let schedules = [];
+        try {
+          if (typeof loadSchedules === 'function') {
+            schedules = loadSchedules() || [];
+          } else {
+            schedules = safeJsonParse('school_exam_schedules', []);
+          }
+        } catch(e){}
+
+        let targetSch = schedules.find(s => String(s.id) === String(schId));
+        if (targetSch) {
+          targetSch.marksEntryTime = nowFormatted;
+          targetSch.hasMarks = true;
+          targetSch.totalEntered = evaluatedStudents.length;
+          targetSch.totalStudents = state.students.length;
+          targetSch.omrEvaluatedAt = nowIso;
+          
+          const schIdx = schedules.findIndex(s => String(s.id) === String(schId));
+          if (schIdx !== -1) {
+            schedules[schIdx] = targetSch;
+          }
+          localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+          fetch('/api/db/set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+          }).catch(() => {});
+        }
+
+        // 2. Update student marks in school_student_marks
+        let savedMarks = {};
+        try {
+          if (typeof loadStudentMarks === 'function') {
+            savedMarks = loadStudentMarks() || {};
+          } else {
+            savedMarks = safeJsonParse('school_student_marks', {});
+          }
+        } catch(e){}
+
+        const subjectCode = (targetSch && (targetSch.subjectCode || targetSch.subject)) || examInfo.subject || 'MCQ';
+        const examVal = targetSch ? targetSch.term : (examInfo.examName || 'Exam');
+
+        state.students.forEach(student => {
+          const rawReg = toEnglishDigits(student.id || student.regNo || '').trim();
+          const rawRoll = toEnglishDigits(student.roll || '').trim();
+          const mcqScore = (student.status === 'পেন্ডিং' && (!student.correct || student.correct === 0)) ? 0 : (student.correct || 0);
+          const isAbsent = student.status === 'পেন্ডিং' && !student.isRealScanned;
+
+          const keysToUpdate = [
+            `marks_${rawReg}_${schId}`,
+            `marks_${student.id}_${schId}`,
+            `marks_${rawReg}_${examVal}`,
+            `marks_${student.id}_${examVal}`
+          ];
+          if (student.studentId) {
+            keysToUpdate.push(`marks_${student.studentId}_${schId}`);
+            keysToUpdate.push(`marks_${student.studentId}_${examVal}`);
+          }
+
+          keysToUpdate.forEach(k => {
+            savedMarks[k] = savedMarks[k] || {};
+            const existingData = savedMarks[k][subjectCode] || Object.values(savedMarks[k])[0] || {};
+            const cqVal = (existingData.cq !== undefined && !isNaN(parseInt(existingData.cq))) ? parseInt(existingData.cq) : 0;
+            const pracVal = (existingData.practical !== undefined && !isNaN(parseInt(existingData.practical))) ? parseInt(existingData.practical) : 0;
+            const totalVal = cqVal + mcqScore + pracVal;
+
+            savedMarks[k][subjectCode] = {
+              total: totalVal,
+              isAbsent: isAbsent,
+              cq: cqVal,
+              mcq: isAbsent ? 0 : mcqScore,
+              practical: pracVal,
+              set: student.set || 'ক',
+              answers: isAbsent ? {} : (student.answers || {}),
+              percentage: isAbsent ? '0.0' : (student.percentage || ((mcqScore / 30) * 100).toFixed(1)),
+              status: isAbsent ? 'পেন্ডিং' : student.status,
+              fileName: isAbsent ? '' : (student.fileName || ''),
+              omrEvaluatedAt: isAbsent ? null : (student.evaluatedAt || nowIso)
+            };
+          });
+        });
+
+        localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
+        fetch('/api/db/set', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'school_student_marks', value: JSON.stringify(savedMarks) })
+        }).catch(() => {});
+
+        // 3. Save to school_omr_exams & /api/exams
+        const examRecord = {
+          id: String(schId),
+          scheduleId: String(schId),
+          source: examInfo.source,
+          examName: examInfo.examName,
+          subject: examInfo.subject,
+          class: examInfo.class,
+          section: examInfo.section,
+          date: targetSch ? targetSch.date : new Date().toLocaleDateString('bn-BD'),
+          totalStudents: state.students.length,
+          evaluatedStudentsCount: evaluatedStudents.length,
+          students: state.students.map(s => {
+            const isAb = (s.status === 'পেন্ডিং' && !s.isRealScanned) || (!s.correct && !s.evaluatedAt);
+            return {
+              ...s,
+              correct: isAb ? 0 : s.correct,
+              wrong: isAb ? 0 : s.wrong,
+              blank: isAb ? 30 : s.blank,
+              percentage: isAb ? '0.0' : s.percentage,
+              status: isAb ? 'পেন্ডিং' : s.status,
+              answers: isAb ? {} : (s.answers || {}),
+              fileName: isAb ? '' : (s.fileName || ''),
+              isRealScanned: !isAb && !!s.isRealScanned
+            };
+          }),
+          answerKeys: state.answerKeys,
+          lastSavedAt: nowIso
+        };
+
+        let omrExams = safeJsonParse('school_omr_exams', []);
+        const oeIdx = omrExams.findIndex(x => String(x.id) === String(schId));
+        if (oeIdx !== -1) {
+          omrExams[oeIdx] = examRecord;
+        } else {
+          omrExams.unshift(examRecord);
+        }
+        localStorage.setItem('school_omr_exams', JSON.stringify(omrExams));
+
+        try {
+          await fetch('/api/exams', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(omrExams)
+          });
+        } catch(e){}
+
+        // Update active cache
+        state.importedExamInfo = examInfo;
+        try {
+          localStorage.setItem('school_active_omr_imported_exam', JSON.stringify(examInfo));
+        } catch(e){}
+
+        // Dispatch sync events to update the rest of the portal
+        window.dispatchEvent(new CustomEvent('dbSynced'));
+        window.dispatchEvent(new Event('storage'));
+        if (typeof renderScheduleList === 'function') renderScheduleList();
+        if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+
+        // Visual confirmation
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved & Entered!';
+          btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+          setTimeout(() => {
+            btn.innerHTML = originalBtnHtml;
+            btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            btn.disabled = false;
+          }, 2500);
+        }
+
+        showToast(`"${examInfo.examName}" পরীক্ষার ${toBengaliNumber(evaluatedStudents.length)} জন শিক্ষার্থীর ওএমআর মার্ক সফলভাবে Exam List-এ স্থায়ীভাবে সংরক্ষণ ও এন্ট্রি করা হয়েছে!`, 'success', 'fa-cloud-arrow-up');
+        try {
+          confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+        } catch(e){}
+
+      } catch(err) {
+        console.error('Error in saveAndEntryExamMarks:', err);
+        if (btn) {
+          btn.innerHTML = originalBtnHtml;
+          btn.disabled = false;
+        }
+        showToast('সংরক্ষণ করার সময় ত্রুটি ঘটেছে: ' + err.message, 'danger');
+      }
     };
 
     window.loadOmrFromExamsApi = async function() {
@@ -15606,6 +16945,19 @@
             const latest = data[0];
             if (latest.students && latest.students.length > 0) {
               state.students = latest.students;
+              const lookupMaps = getStudentsLookupMaps();
+              state.students.forEach(st => {
+                if (!st.nameEn) {
+                  const rId = toEnglishDigits(st.id || '').trim();
+                  const rRoll = toEnglishDigits(st.roll || '').trim();
+                  const rCls = mapClassToNumber(st.class);
+                  const foundName = lookupMaps.byReg.get(rId) || lookupMaps.byRollClass.get(`${rCls}_${rRoll}`) || lookupMaps.byRollClass.get(`_${rRoll}`);
+                  if (foundName) {
+                    st.name = foundName;
+                    st.nameEn = foundName;
+                  }
+                }
+              });
               if (latest.answerKeys) {
                 state.answerKeys = latest.answerKeys;
               }
