@@ -54,6 +54,10 @@
     applyDesktopViewStyle();
 })();
 
+// --- GLOBAL BENGALI & ENGLISH DIGIT CONVERSION UTILITIES ---
+window.toBengaliNumber = window.toBengaliNumber || (num => String(num ?? '').replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]));
+window.toEnglishDigits = window.toEnglishDigits || (str => String(str ?? '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)));
+
 // --- GLOBAL TOAST NOTIFICATION SYSTEM ---
 function showToastNotification(message, type = 'success') {
     let container = document.getElementById('global-toast-container');

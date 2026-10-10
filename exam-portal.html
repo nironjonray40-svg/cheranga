@@ -2041,8 +2041,38 @@
             color: #4338ca;
         }
 
+        .pending-stat-item .val-duplicate {
+            color: #be123c;
+            font-weight: 800;
+        }
+
         .pending-stat-item .val-unclear {
             color: #dc2626;
+        }
+
+        .pending-card.duplicate-reg-card {
+            border-left: 5px solid #ef4444;
+            background: #fffafa;
+        }
+
+        .pending-card.duplicate-reg-card:hover {
+            border-color: #ef4444;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.16);
+        }
+
+        .badge-duplicate-reg {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-weight: 800;
+            font-size: 0.84rem;
+            border: 1.5px solid #f87171;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15);
         }
 
         .pending-action-section {
@@ -2939,6 +2969,34 @@
             color: #ffffff !important;
             font-weight: 800 !important;
             box-shadow: 0 0 7px rgba(220, 38, 38, 0.6) !important;
+        }
+
+        .interactive-bubble.filled-duplicate {
+            background: #dc2626 !important;
+            border-color: #991b1b !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.75) !important;
+            position: relative;
+        }
+
+        .interactive-bubble.filled-duplicate::after {
+            content: '✖';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 8px;
+            background: #991b1b;
+            color: #ffffff;
+            border-radius: 50%;
+            width: 13px;
+            height: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            border: 1px solid #fff;
         }
 
         .interactive-bubble.filled-correct:hover {
@@ -6572,6 +6630,12 @@
     <!-- Shared & Page-specific JS -->
     <script src="main.js?v=5.0"></script>
     <script>
+        // --- GLOBAL BENGALI & ENGLISH DIGIT UTILITIES ---
+        window.toBengaliNumber = window.toBengaliNumber || (num => String(num ?? '').replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]));
+        window.toEnglishDigits = window.toEnglishDigits || (str => String(str ?? '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)));
+        var toBengaliNumber = window.toBengaliNumber;
+        var toEnglishDigits = window.toEnglishDigits;
+
         // --- PAGINATION FOR EXAM LIST ---
         let currentSchedulePage = 1;
         let scheduleRowsPerPage = 20;
@@ -8138,7 +8202,7 @@
 
         function editExamSchedule(id) {
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === id);
+            const sch = schedules.find(s => String(s.id) === String(id));
             if (!sch) return;
 
             // Open the form
@@ -8194,7 +8258,7 @@
 
         function viewExamSchedule(id) {
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === id);
+            const sch = schedules.find(s => String(s.id) === String(id));
             if (!sch) return;
 
             const distText = getScheduleMarksText(sch.class, sch.term, sch.subject, sch.examType);
@@ -8573,9 +8637,12 @@
             }, 3000);
         }
 
-        function openExamMarksEntryModal(scheduleId) {
+        
+
+
+function openExamMarksEntryModal(scheduleId) {
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === scheduleId);
+            const sch = schedules.find(s => String(s.id) === String(scheduleId));
             if (!sch) {
                 alert("Exam Schedule not found!");
                 return;
@@ -8586,8 +8653,8 @@
             // Find matching subject code
             const subMap = loadSubjects();
             const classSubjects = subMap[sch.class] || [];
-            const subObj = classSubjects.find(s => s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
-            const subCode = subObj ? subObj.code : sch.subject;
+            const subObj = classSubjects.find(s => s && s.name && sch && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+            const subCode = subObj ? subObj.code : (sch.subjectCode || sch.subject || '101');
             activeExamSubjectCode = subCode;
 
             // Get Exam Type distribution dynamically according to sch.term and sch.examType
@@ -8640,7 +8707,14 @@
             renderExamMarksModalRows();
 
             // Open modal
-            document.getElementById('exam-marks-entry-modal').classList.add('active');
+            const modal = document.getElementById('exam-marks-entry-modal');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.visibility = 'visible';
+                modal.style.pointerEvents = 'auto';
+            }
         }
 
         let currentMarksEntryViewType = localStorage.getItem('school_exam_marks_entry_view_type') || 'roll';
@@ -8648,7 +8722,7 @@
         function populateActiveExamStudents(viewType = 'roll') {
             if (!activeExamScheduleId) return;
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const allStudents = loadStudents();
@@ -8733,14 +8807,23 @@
                 const rawMcq = mcqIn ? mcqIn.value.trim() : "";
                 const rawPrac = pracIn ? pracIn.value.trim() : "";
 
-                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" ||
-                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" ||
-                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS";
+                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT" ||
+                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT" ||
+                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") return;
-
                 const key = `marks_${student.id}_${activeExamScheduleId}`;
+
+                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
+                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
+                        delete savedMarks[key][activeExamSubjectCode];
+                        if (Object.keys(savedMarks[key]).length === 0) {
+                            delete savedMarks[key];
+                        }
+                    }
+                    return;
+                }
+
                 savedMarks[key] = savedMarks[key] || {};
                 if (isAbsent) {
                     savedMarks[key][activeExamSubjectCode] = {
@@ -8751,15 +8834,19 @@
                         practical: rawPrac ? rawPrac.toUpperCase() : "A"
                     };
                 } else {
-                    const nCq = parseInt(rawCq, 10) || 0;
-                    const nMcq = parseInt(rawMcq, 10) || 0;
-                    const nPrac = parseInt(rawPrac, 10) || 0;
+                    const nCq = parseInt(rawCq, 10);
+                    const nMcq = parseInt(rawMcq, 10);
+                    const nPrac = parseInt(rawPrac, 10);
+                    const hasCq = rawCq !== "" && !isNaN(nCq);
+                    const hasMcq = rawMcq !== "" && !isNaN(nMcq);
+                    const hasPrac = rawPrac !== "" && !isNaN(nPrac);
+
                     savedMarks[key][activeExamSubjectCode] = {
-                        total: nCq + nMcq + nPrac,
+                        total: (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0),
                         isAbsent: false,
-                        cq: cqIn && rawCq !== "" ? nCq : undefined,
-                        mcq: mcqIn && rawMcq !== "" ? nMcq : undefined,
-                        practical: pracIn && rawPrac !== "" ? nPrac : undefined
+                        cq: hasCq ? nCq : undefined,
+                        mcq: hasMcq ? nMcq : undefined,
+                        practical: hasPrac ? nPrac : undefined
                     };
                 }
             });
@@ -8775,7 +8862,14 @@
         }
 
         function closeExamMarksEntryModal() {
-            document.getElementById('exam-marks-entry-modal').classList.remove('active');
+            const modal = document.getElementById('exam-marks-entry-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.style.opacity = '0';
+                modal.style.visibility = 'hidden';
+                modal.style.pointerEvents = 'none';
+            }
             activeExamScheduleId = null;
         }
 
@@ -8791,10 +8885,11 @@
 
             const savedMarks = loadStudentMarks();
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             const examVal = sch ? sch.term : '';
 
-            const searchKey = document.getElementById('modal-student-search-input').value.trim().toLowerCase();
+            const searchInput = document.getElementById('modal-student-search-input');
+            const searchKey = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
             let html = "";
             let lastRenderedSection = null;
@@ -8837,8 +8932,38 @@
                     `;
                 }
 
-                const key = `marks_${student.id}_${activeExamScheduleId}`;
-                const studentExamMarks = savedMarks[key] ? savedMarks[key][activeExamSubjectCode] : null;
+                let studentExamMarks = null;
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawId = toEnglishDigits(student.id || '').trim();
+                const possibleKeys = [
+                    `marks_${student.id}_${activeExamScheduleId}`,
+                    `marks_${rawReg}_${activeExamScheduleId}`,
+                    `marks_${rawId}_${activeExamScheduleId}`,
+                    `marks_${student.regNo}_${activeExamScheduleId}`,
+                    `marks_${student.studentId}_${activeExamScheduleId}`,
+                    `marks_${student.id}_${examVal}`,
+                    `marks_${rawReg}_${examVal}`
+                ];
+                for (const k of possibleKeys) {
+                    if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                        if (savedMarks[k][activeExamSubjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][activeExamSubjectCode];
+                            break;
+                        } else if (sch && sch.subject && savedMarks[k][sch.subject] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subject];
+                            break;
+                        } else if (sch && sch.subjectCode && savedMarks[k][sch.subjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subjectCode];
+                            break;
+                        } else {
+                            const firstVal = Object.values(savedMarks[k])[0];
+                            if (firstVal !== undefined) {
+                                studentExamMarks = firstVal;
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 let isAbsent = false;
                 let cqVal = "";
@@ -8847,27 +8972,62 @@
 
                 if (studentExamMarks !== null && studentExamMarks !== undefined) {
                     if (typeof studentExamMarks === 'object') {
-                        isAbsent = studentExamMarks.isAbsent === true ||
-                            String(studentExamMarks.cq).toUpperCase() === "A" || String(studentExamMarks.cq).toUpperCase() === "ABS" ||
-                            String(studentExamMarks.mcq).toUpperCase() === "A" || String(studentExamMarks.mcq).toUpperCase() === "ABS";
-                        cqVal = studentExamMarks.cq !== undefined ? studentExamMarks.cq : "";
-                        mcqVal = studentExamMarks.mcq !== undefined ? studentExamMarks.mcq : "";
-                        pracVal = studentExamMarks.practical !== undefined ? studentExamMarks.practical : "";
+                        const rawCq = studentExamMarks.cq;
+                        const rawMcq = studentExamMarks.mcq;
+                        const rawPrac = studentExamMarks.practical;
+
+                        // Check if this is an unentered/pending placeholder stub
+                        const isPendingStub = (studentExamMarks.status === 'পেন্ডিং' && !studentExamMarks.fileName && !studentExamMarks.omrEvaluatedAt && (rawMcq === 0 || rawMcq === undefined || rawMcq === "") && (rawCq === 0 || rawCq === undefined || rawCq === ""));
+
+                        if (!isPendingStub) {
+                            const hasACq = String(rawCq).toUpperCase() === "A" || String(rawCq).toUpperCase() === "ABS";
+                            const hasAMcq = String(rawMcq).toUpperCase() === "A" || String(rawMcq).toUpperCase() === "ABS";
+                            const hasAPrac = String(rawPrac).toUpperCase() === "A" || String(rawPrac).toUpperCase() === "ABS";
+
+                            isAbsent = (studentExamMarks.isAbsent === true && (hasACq || hasAMcq || hasAPrac || (rawCq === undefined && rawMcq === undefined && rawPrac === undefined))) ||
+                                hasACq || hasAMcq || hasAPrac;
+
+                            if (rawCq !== undefined && rawCq !== null && rawCq !== "") {
+                                // If from OMR evaluation where CQ was defaulted to 0 without manual entry, leave CQ blank
+                                if (rawCq === 0 && studentExamMarks.omrEvaluatedAt && studentExamMarks.fileName && (studentExamMarks.mcq !== undefined && studentExamMarks.mcq !== null)) {
+                                    cqVal = "";
+                                } else {
+                                    cqVal = String(rawCq);
+                                }
+                            }
+                            if (rawMcq !== undefined && rawMcq !== null && rawMcq !== "") {
+                                mcqVal = String(rawMcq);
+                            }
+                            if (rawPrac !== undefined && rawPrac !== null && rawPrac !== "") {
+                                pracVal = String(rawPrac);
+                            }
+                        }
                     } else {
-                        cqVal = studentExamMarks;
+                        cqVal = studentExamMarks !== "" ? String(studentExamMarks) : "";
                         isAbsent = String(cqVal).toUpperCase() === "A" || String(cqVal).toUpperCase() === "ABS";
                     }
                 }
 
                 // Calculate initial total, grade, status
-                const numCq = parseInt(cqVal, 10) || 0;
-                const numMcq = parseInt(mcqVal, 10) || 0;
-                const numPrac = parseInt(pracVal, 10) || 0;
-                const hasEnteredAny = isAbsent || cqVal !== "" || mcqVal !== "" || pracVal !== "";
-                const totalMark = isAbsent ? "A" : (hasEnteredAny ? (numCq + numMcq + numPrac) : "");
+                const numCq = parseInt(cqVal, 10);
+                const numMcq = parseInt(mcqVal, 10);
+                const numPrac = parseInt(pracVal, 10);
+
+                const hasCq = cqVal !== "" && !isNaN(numCq);
+                const hasMcq = mcqVal !== "" && !isNaN(numMcq);
+                const hasPrac = pracVal !== "" && !isNaN(numPrac);
+
+                const hasEnteredAny = isAbsent || hasCq || hasMcq || hasPrac;
+
+                let totalMark = "";
+                if (isAbsent) {
+                    totalMark = "A";
+                } else if (hasEnteredAny) {
+                    totalMark = (hasCq ? numCq : 0) + (hasMcq ? numMcq : 0) + (hasPrac ? numPrac : 0);
+                }
 
                 const gradeInfo = hasEnteredAny ? (isAbsent ? { name: "F", gp: 0 } : getGradeDetails(totalMark, activeExamDist.total, activeExamDist.passPercent, { cq: cqVal, mcq: mcqVal, practical: pracVal }, activeExamDist)) : { name: "-", gp: 0 };
-                const isPassed = !isAbsent && gradeInfo.gp > 0;
+                const isPassed = !isAbsent && hasEnteredAny && gradeInfo.gp > 0;
 
                 // ID / Reg display text depending on current view type
                 let idDisplay = "";
@@ -9101,7 +9261,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const examVal = sch.term;
@@ -9128,9 +9288,18 @@
                     rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") return;
-
                 const key = `marks_${student.id}_${activeExamScheduleId}`;
+
+                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
+                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
+                        delete savedMarks[key][activeExamSubjectCode];
+                        if (Object.keys(savedMarks[key]).length === 0) {
+                            delete savedMarks[key];
+                        }
+                    }
+                    return;
+                }
+
                 savedMarks[key] = savedMarks[key] || {};
 
                 if (isAbsent) {
@@ -9143,20 +9312,26 @@
                     };
                     countSaved++;
                 } else {
-                    const nCq = parseInt(rawCq, 10) || 0;
-                    const nMcq = parseInt(rawMcq, 10) || 0;
-                    const nPrac = parseInt(rawPrac, 10) || 0;
+                    const nCq = parseInt(rawCq, 10);
+                    const nMcq = parseInt(rawMcq, 10);
+                    const nPrac = parseInt(rawPrac, 10);
 
-                    if (rawCq !== "" && (isNaN(nCq) || nCq < 0 || nCq > activeExamDist.cq)) isValid = false;
-                    if (rawMcq !== "" && (isNaN(nMcq) || nMcq < 0 || nMcq > activeExamDist.mcq)) isValid = false;
-                    if (rawPrac !== "" && (isNaN(nPrac) || nPrac < 0 || nPrac > activeExamDist.practical)) isValid = false;
+                    const hasCq = rawCq !== "" && !isNaN(nCq);
+                    const hasMcq = rawMcq !== "" && !isNaN(nMcq);
+                    const hasPrac = rawPrac !== "" && !isNaN(nPrac);
+
+                    if (rawCq !== "" && (!hasCq || nCq < 0 || nCq > activeExamDist.cq)) isValid = false;
+                    if (rawMcq !== "" && (!hasMcq || nMcq < 0 || nMcq > activeExamDist.mcq)) isValid = false;
+                    if (rawPrac !== "" && (!hasPrac || nPrac < 0 || nPrac > activeExamDist.practical)) isValid = false;
+
+                    const totalVal = (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0);
 
                     savedMarks[key][activeExamSubjectCode] = {
-                        total: nCq + nMcq + nPrac,
+                        total: totalVal,
                         isAbsent: false,
-                        cq: cqIn && rawCq !== "" ? nCq : undefined,
-                        mcq: mcqIn && rawMcq !== "" ? nMcq : undefined,
-                        practical: pracIn && rawPrac !== "" ? nPrac : undefined
+                        cq: hasCq ? nCq : undefined,
+                        mcq: hasMcq ? nMcq : undefined,
+                        practical: hasPrac ? nPrac : undefined
                     };
                     countSaved++;
                 }
@@ -9183,9 +9358,11 @@
 
             if (sch) {
                 sch.marksEntryTime = formattedTimestamp;
-                const scheduleIdx = schedules.findIndex(s => s.id === activeExamScheduleId);
+                sch.hasMarks = true;
+                const scheduleIdx = schedules.findIndex(s => String(s.id) === String(activeExamScheduleId));
                 if (scheduleIdx !== -1) {
                     schedules[scheduleIdx].marksEntryTime = formattedTimestamp;
+                    schedules[scheduleIdx].hasMarks = true;
                 }
                 localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
                 if (sch.term) {
@@ -9206,7 +9383,7 @@
         function downloadExamMarksTemplate() {
             if (!activeExamScheduleId) return;
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const savedMarks = loadStudentMarks();
@@ -9229,8 +9406,32 @@
             const rowsAoa = [line1, line2, line3, line4, line5, headers];
 
             activeExamStudents.forEach((student, idx) => {
-                const key = `marks_${student.id}_${activeExamScheduleId}`;
-                const studentExamMarks = savedMarks[key] ? savedMarks[key][activeExamSubjectCode] : null;
+                let studentExamMarks = null;
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawId = toEnglishDigits(student.id || '').trim();
+                const possibleKeys = [
+                    `marks_${student.id}_${activeExamScheduleId}`,
+                    `marks_${rawReg}_${activeExamScheduleId}`,
+                    `marks_${rawId}_${activeExamScheduleId}`,
+                    `marks_${student.regNo}_${activeExamScheduleId}`,
+                    `marks_${student.studentId}_${activeExamScheduleId}`,
+                    `marks_${student.id}_${examVal}`,
+                    `marks_${rawReg}_${examVal}`
+                ];
+                for (const k of possibleKeys) {
+                    if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                        if (savedMarks[k][activeExamSubjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][activeExamSubjectCode];
+                            break;
+                        } else if (sch && sch.subject && savedMarks[k][sch.subject] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subject];
+                            break;
+                        } else if (sch && sch.subjectCode && savedMarks[k][sch.subjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subjectCode];
+                            break;
+                        }
+                    }
+                }
 
                 let isAbsent = false;
                 let cqVal = "";
@@ -9341,6 +9542,18 @@
             XLSX.writeFile(workbook, fileName);
             showExamToast("Exam Marks Excel (.xlsx) Template downloaded successfully!", true);
         }
+
+                window.openExamMarksEntryModal = openExamMarksEntryModal;
+        window.closeExamMarksEntryModal = closeExamMarksEntryModal;
+        window.saveExamMarksModal = saveExamMarksModal;
+        window.downloadExamMarksTemplate = downloadExamMarksTemplate;
+        window.filterExamMarksModalStudents = filterExamMarksModalStudents;
+        window.changeMarksEntryViewType = changeMarksEntryViewType;
+        window.onExamMarkInputChange = onExamMarkInputChange;
+        window.handleInputKeyNavigation = handleInputKeyNavigation;
+        window.editExamSchedule = editExamSchedule;
+        window.viewExamSchedule = viewExamSchedule;
+        window.deleteExamSchedule = deleteExamSchedule;
 
         function triggerImportExamMarks() {
             const fileIn = document.getElementById('exam-marks-import-file');
@@ -9491,7 +9704,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             // Populate Section Filter Dropdown
@@ -9532,7 +9745,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const sectionFilter = document.getElementById('marksheet-filter-section') ? document.getElementById('marksheet-filter-section').value : 'All';
@@ -9946,7 +10159,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const sectionFilter = document.getElementById('marksheet-filter-section') ? document.getElementById('marksheet-filter-section').value : 'All';
@@ -14089,15 +14302,54 @@
                 return 'ক';
             }
 
-            // Helper: Normalize any option representation to Bengali 'ক', 'খ', 'গ', 'ঘ'
-            function normalizeOption(val) {
+            // Helper: Normalize single option to Bengali 'ক', 'খ', 'গ', 'ঘ'
+            function normalizeSingleOption(val) {
                 if (val === null || val === undefined) return null;
                 const str = String(val).trim().toUpperCase();
-                if (str === 'ক' || str === 'A' || str === '1' || str === '১' || str.startsWith('ক') || str.startsWith('A')) return 'ক';
-                if (str === 'খ' || str === 'B' || str === '2' || str === '২' || str.startsWith('খ') || str.startsWith('B')) return 'খ';
-                if (str === 'গ' || str === 'C' || str === '3' || str === '৩' || str.startsWith('গ') || str.startsWith('C')) return 'গ';
-                if (str === 'ঘ' || str === 'D' || str === '4' || str === '৪' || str.startsWith('ঘ') || str.startsWith('D')) return 'ঘ';
+                if (str === 'ক' || str === 'A' || str === '1' || str === '১') return 'ক';
+                if (str === 'খ' || str === 'B' || str === '2' || str === '২') return 'খ';
+                if (str === 'গ' || str === 'C' || str === '3' || str === '৩') return 'গ';
+                if (str === 'ঘ' || str === 'D' || str === '4' || str === '৪') return 'ঘ';
                 return null;
+            }
+
+            // Helper: Normalize option representation (supports single option or multiple/duplicate options array)
+            function normalizeOption(val) {
+                if (val === null || val === undefined) return null;
+                if (Array.isArray(val)) {
+                    const normList = [];
+                    val.forEach(v => {
+                        const n = normalizeSingleOption(v);
+                        if (n && !normList.includes(n)) normList.push(n);
+                    });
+                    normList.sort((a, b) => optionsBengali.indexOf(a) - optionsBengali.indexOf(b));
+                    if (normList.length === 0) return null;
+                    if (normList.length === 1) return normList[0];
+                    return normList; // Multiple bubbles filled (Duplicate)
+                }
+                const str = String(val).trim();
+                // Check for comma, slash, space separated multiple options
+                if (str.includes(',') || str.includes('/') || str.includes('+') || str.includes(';') || (str.length > 1 && !['ক', 'খ', 'গ', 'ঘ', 'A', 'B', 'C', 'D'].includes(str.toUpperCase()))) {
+                    const parts = str.split(/[,/+;\s]+/);
+                    const normList = [];
+                    parts.forEach(p => {
+                        const n = normalizeSingleOption(p);
+                        if (n && !normList.includes(n)) normList.push(n);
+                    });
+                    normList.sort((a, b) => optionsBengali.indexOf(a) - optionsBengali.indexOf(b));
+                    if (normList.length === 0) return null;
+                    if (normList.length === 1) return normList[0];
+                    return normList;
+                }
+                return normalizeSingleOption(str);
+            }
+
+            // Helper: Check if an answer has multiple filled bubbles (Duplicate)
+            function isDuplicateOption(ans) {
+                if (!ans) return false;
+                if (Array.isArray(ans) && ans.length > 1) return true;
+                if (typeof ans === 'string' && ans.includes(',')) return true;
+                return false;
             }
 
             // Helper: Retrieve active answer key for a set with intelligent fallback
@@ -14141,6 +14393,18 @@
                     }
                 }
                 return normalizeOption(val);
+            }
+
+            // Helper: Get student answer as an array of selected options
+            function getStudentAnswerOptions(student, q) {
+                const ans = getStudentAnswer(student, q);
+                if (!ans) return [];
+                if (Array.isArray(ans)) return ans;
+                if (typeof ans === 'string') {
+                    if (ans.includes(',')) return ans.split(',').map(s => s.trim()).filter(Boolean);
+                    return [ans];
+                }
+                return [];
             }
 
             // Application Global State
@@ -14801,6 +15065,7 @@
                 let correct = 0;
                 let wrong = 0;
                 let blank = 0;
+                let duplicate = 0;
 
                 for (let q = 1; q <= 30; q++) {
                     let studentAns = null;
@@ -14814,17 +15079,21 @@
                             }
                         }
                     }
-                    const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+                    const correctAns = normalizeSingleOption(targetKey ? targetKey[q - 1] : null);
 
-                    if (!studentAns) {
+                    if (!studentAns || (Array.isArray(studentAns) && studentAns.length === 0)) {
                         blank++;
+                    } else if (isDuplicateOption(studentAns)) {
+                        // একাধিক বাবল ভরাট -> ডুপ্লিকেট হিসেবে চিহ্নিত হবে এবং উক্ত প্রশ্নে কোনো মার্ক যুক্ত হবে না (০ নম্বর)
+                        duplicate++;
+                        wrong++;
                     } else if (correctAns && studentAns === correctAns) {
                         correct++;
                     } else {
                         wrong++;
                     }
                 }
-                return { correct, wrong, blank, total: 30 };
+                return { correct, wrong, blank, duplicate, total: 30 };
             }
 
             // Registration Number Matching Utility
@@ -14889,10 +15158,12 @@
                 }
 
                 if (pendingCount > 0) {
+                    const dupCount = (state.pendingUnmatchedList || []).filter(p => p.isDuplicateReg).length;
+                    const dupNote = dupCount > 0 ? ` (যার মধ্যে ${toBengaliNumber(dupCount)} টিতে ডুপ্লিকেট রেজিঃ রয়েছে)` : '';
                     if (alertBanner && state.activeResultsTab === 'main') alertBanner.style.display = 'flex';
                     if (alertHint) alertHint.style.display = 'inline-flex';
-                    if (alertCountText) alertCountText.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিট অমিল / পেন্ডিং তালিকায় রয়েছে`;
-                    if (alertBannerDesc) alertBannerDesc.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিটের রেজিঃ নং মেলেনি বা অপাঠ্য। "Pending List" ট্যাবে গিয়ে শিক্ষার্থীর সঠিক রেজিঃ নং নির্বাচন করে সংশোধন করুন।`;
+                    if (alertCountText) alertCountText.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিট অমিল / পেন্ডিং তালিকায় রয়েছে${dupNote}`;
+                    if (alertBannerDesc) alertBannerDesc.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিটের রেজিঃ নং মেলেনি বা একাধিক ওএমআরে একই রেজিঃ (ডুপ্লিকেট) ব্যবহার করা হয়েছে। "Pending List" ট্যাবে গিয়ে শিক্ষার্থীর সঠিক রেজিঃ নং নির্বাচন করে সংশোধন করুন।`;
                 } else {
                     if (alertBanner) alertBanner.style.display = 'none';
                     if (alertHint) alertHint.style.display = 'none';
@@ -14969,7 +15240,7 @@
                     const defaultRegValue = suggestedStudent ? suggestedStudent.id : '';
 
                     return `
-          <div class="pending-card" id="pending_card_${item.uid}">
+          <div class="pending-card ${item.isDuplicateReg ? 'duplicate-reg-card' : ''}" id="pending_card_${item.uid}">
             <!-- LEFT SIDE: Student Detected Info & Correction Controls -->
             <div class="pending-card-left">
               <!-- Header: File Name, Set, Score Badge -->
@@ -14978,6 +15249,11 @@
                   <span class="pending-file-title" title="${item.fileName}">
                     <i class="fa-regular fa-image" style="color: var(--primary);"></i> ${item.fileName}
                   </span>
+                  ${item.isDuplicateReg ? `
+                    <span class="badge-duplicate-reg" title="ডুপ্লিকেট রেজিঃ - একাধিক ওএমআরে একই রেজিঃ ব্যবহার করা হয়েছে">
+                      <i class="fa-solid fa-triangle-exclamation"></i> ডুপ্লিকেট রেজিঃ (${toEnglishDigits(item.detectedId || item.duplicateRegId)})
+                    </span>
+                  ` : ''}
                   <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; background: var(--omr-pink-light); color: var(--omr-pink); font-weight: 700; font-size: 0.84rem; border: 1.5px solid var(--omr-pink); white-space: nowrap; box-shadow: 0 1px 3px rgba(217, 28, 132, 0.12);" title="সনাক্তকৃত সেট: ${item.detectedSet}">
                     <i class="fa-solid fa-layer-group" style="font-size: 0.75rem;"></i> সেট: <strong style="font-size: 0.95rem; margin-left: 2px;">${item.detectedSet}</strong>
                   </span>
@@ -14988,16 +15264,19 @@
               </div>
 
               <!-- Reason / Warning Box -->
-              <div class="pending-reason-box">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+              <div class="pending-reason-box" style="${item.isDuplicateReg ? 'background: #fef2f2; border: 1.5px solid #f87171; color: #991b1b;' : ''}">
+                <i class="fa-solid fa-triangle-exclamation" style="${item.isDuplicateReg ? 'color: #dc2626; font-size: 1.15rem; flex-shrink: 0;' : ''}"></i>
                 <span>${item.reason}</span>
               </div>
 
               <!-- Detected Stats Grid -->
               <div class="pending-stats-grid">
-                <div class="pending-stat-item">
-                  <span class="stat-lbl">পঠিত রেজিঃ</span>
-                  <strong class="stat-val ${item.detectedId ? 'val-reg' : 'val-unclear'}">${item.detectedId ? toEnglishDigits(item.detectedId) : 'সনাক্ত হয়নি'}</strong>
+                <div class="pending-stat-item" style="${item.isDuplicateReg ? 'background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 2px 6px;' : ''}">
+                  <span class="stat-lbl" style="${item.isDuplicateReg ? 'color: #9f1239; font-weight: 700;' : ''}">পঠিত রেজিঃ</span>
+                  <strong class="stat-val ${item.detectedId ? (item.isDuplicateReg ? 'val-duplicate' : 'val-reg') : 'val-unclear'}" style="${item.isDuplicateReg ? 'color: #be123c; font-weight: 800;' : ''}">
+                    ${item.detectedId ? toEnglishDigits(item.detectedId) : 'সনাক্ত হয়নি'}
+                    ${item.isDuplicateReg ? '<span style="font-size: 0.7rem; background: #e11d48; color: #fff; padding: 1px 6px; border-radius: 4px; vertical-align: middle; margin-left: 3px; font-weight: 700;">ডুপ্লিকেট</span>' : ''}
+                  </strong>
                 </div>
                 <div class="pending-stat-item">
                   <span class="stat-lbl">পঠিত রোল</span>
@@ -15075,8 +15354,8 @@
                   <i class="fa-solid fa-magnifying-glass-plus"></i>
                   <span>বড় করে দেখুন</span>
                 </div>
-                <div class="pending-omr-badge">
-                  <i class="fa-regular fa-file-lines"></i> ওএমআর শিট কপি
+                <div class="pending-omr-badge" style="${item.isDuplicateReg ? 'background: #b91c1c; color: #fff;' : ''}">
+                  <i class="fa-regular ${item.isDuplicateReg ? 'fa-triangle-exclamation' : 'fa-file-lines'}"></i> ${item.isDuplicateReg ? 'ডুপ্লিকেট রেজিঃ ওএমআর কপি' : 'ওএমআর শিট কপি'}
                 </div>
               </div>
             </div>
@@ -15295,6 +15574,8 @@
                 let newlyMatchedCount = 0;
                 let newlyPendingCount = 0;
 
+                const scannedBatch = [];
+
                 for (let i = 0; i < total; i++) {
                     const file = files[i];
                     const percent = Math.min(100, Math.round(((i + 1) / total) * 100));
@@ -15347,10 +15628,7 @@
                     }
 
                     const set = normalizeSet(detectedSet);
-
-                    // Answers detected from actual OMR scanning
                     let answers = detectedAnswers || {};
-
                     const scoreInfo = calculateStudentScore(answers, set);
                     const percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
                     const isPassed = scoreInfo.correct >= 10;
@@ -15365,66 +15643,159 @@
                     const fnMatchRoll = file.name.match(/\b(\d{1,3})\b/);
                     const fnCandidateRoll = fnMatchRoll ? fnMatchRoll[1] : null;
 
-                    if (hasImportedStudents) {
+                    const candidateReg = isValidDetectedId ? rawDetectedId : (fnCandidateReg || '');
+                    const candidateRoll = detectedRoll || fnCandidateRoll || '';
+
+                    scannedBatch.push({
+                        file: file,
+                        fileName: file.name,
+                        fileUrl: fileUrl,
+                        detectedAnswers: detectedAnswers,
+                        answers: answers,
+                        detectedSet: detectedSet,
+                        set: set,
+                        detectedRoll: detectedRoll,
+                        detectedId: detectedId,
+                        detectedClass: detectedClass,
+                        detectedSection: detectedSection,
+                        scoreInfo: scoreInfo,
+                        percentage: percentage,
+                        isPassed: isPassed,
+                        rawDetectedId: rawDetectedId,
+                        isValidDetectedId: isValidDetectedId,
+                        fnCandidateReg: fnCandidateReg,
+                        candidateReg: candidateReg,
+                        candidateRoll: candidateRoll
+                    });
+                }
+
+                // 2. Frequency Analysis for Duplicate Registration Number Detection
+                const regFrequency = {};
+                scannedBatch.forEach(item => {
+                    const r = toEnglishDigits(item.candidateReg || '').trim();
+                    if (r && !/^0+$/.test(r)) {
+                        regFrequency[r] = (regFrequency[r] || 0) + 1;
+                    }
+                });
+
+                // Also check if existing evaluated students already possess this registration
+                if (hasImportedStudents) {
+                    state.students.forEach(st => {
+                        if (st.status !== 'পেন্ডিং' && st.isRealScanned) {
+                            const r = toEnglishDigits(st.id || st.regNo || '').trim();
+                            if (r && !/^0+$/.test(r)) {
+                                const inBatch = scannedBatch.some(it => it.fileName === st.fileName);
+                                if (!inBatch && regFrequency[r]) {
+                                    regFrequency[r] = (regFrequency[r] || 0) + 1;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 3. Routing & Evaluation Phase
+                for (let i = 0; i < scannedBatch.length; i++) {
+                    const item = scannedBatch[i];
+                    const rawReg = toEnglishDigits(item.candidateReg || '').trim();
+                    const isDupReg = (rawReg && !/^0+$/.test(rawReg) && regFrequency[rawReg] > 1);
+
+                    if (isDupReg) {
+                        // একাধিক শিক্ষার্থী একই রেজিঃ নং ভুলবশত ব্যবহার করেছে -> ফলাফল Pending List এ যুক্ত হবে এবং "ডুপ্লিকেট রেজিঃ" দেখাবে
+                        state.pendingUnmatchedList.push({
+                            uid: 'pending_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
+                            file: item.file,
+                            fileName: item.fileName,
+                            imagePreviewUrl: item.fileUrl,
+                            detectedId: rawReg,
+                            duplicateRegId: rawReg,
+                            isDuplicateReg: true,
+                            detectedRoll: item.detectedRoll || item.candidateRoll || '',
+                            detectedClass: item.detectedClass || '',
+                            detectedSection: item.detectedSection || '',
+                            detectedSet: item.set,
+                            answers: item.answers,
+                            scoreInfo: item.scoreInfo,
+                            percentage: item.percentage,
+                            status: item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+                            reason: `⚠️ ডুপ্লিকেট রেজিঃ নং (${toBengaliNumber(rawReg)}) — একাধিক ওএমআর শিটে একই রেজিঃ বাবল পূরণ করা হয়েছে!`
+                        });
+                        newlyPendingCount++;
+
+                        // Reset any imported student who has this duplicate registration number back to pending
+                        if (hasImportedStudents) {
+                            const dupStudent = state.students.find(s => isRegNoMatch(s.id, rawReg) || isRegNoMatch(s.regNo, rawReg));
+                            if (dupStudent) {
+                                dupStudent.correct = 0;
+                                dupStudent.wrong = 0;
+                                dupStudent.blank = 30;
+                                dupStudent.percentage = '0.0';
+                                dupStudent.status = 'পেন্ডিং';
+                                dupStudent.answers = {};
+                                dupStudent.fileName = '';
+                                dupStudent.file = null;
+                                dupStudent.imagePreviewUrl = '';
+                                dupStudent.isRealScanned = false;
+                            }
+                        }
+                    } else if (hasImportedStudents) {
                         let matchedStudent = null;
 
                         // 1. Primary: Match strictly by detected Registration Number
-                        if (isValidDetectedId) {
-                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, rawDetectedId) || isRegNoMatch(s.regNo, rawDetectedId));
+                        if (item.isValidDetectedId) {
+                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, item.rawDetectedId) || isRegNoMatch(s.regNo, item.rawDetectedId));
                         }
 
                         // 2. Secondary: If detectedId was missing, check filename registration number (strictly 4-8 digits)
-                        if (!matchedStudent && fnCandidateReg) {
-                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, fnCandidateReg) || isRegNoMatch(s.regNo, fnCandidateReg));
+                        if (!matchedStudent && item.fnCandidateReg) {
+                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, item.fnCandidateReg) || isRegNoMatch(s.regNo, item.fnCandidateReg));
                         }
 
-                        // Strict Registration matching: Do NOT fall back to roll number.
-                        // If registration number does not match, the sheet MUST go to Pending List!
-
                         if (matchedStudent) {
-                            matchedStudent.correct = scoreInfo.correct;
-                            matchedStudent.wrong = scoreInfo.wrong;
-                            matchedStudent.blank = scoreInfo.blank;
-                            matchedStudent.percentage = percentage;
-                            matchedStudent.status = isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
-                            matchedStudent.set = set;
-                            matchedStudent.answers = answers;
-                            matchedStudent.fileName = file.name;
-                            matchedStudent.file = file;
-                            matchedStudent.imagePreviewUrl = fileUrl;
-                            matchedStudent.isRealScanned = !!detectedAnswers && Object.keys(detectedAnswers).length > 0;
+                            matchedStudent.correct = item.scoreInfo.correct;
+                            matchedStudent.wrong = item.scoreInfo.wrong;
+                            matchedStudent.blank = item.scoreInfo.blank;
+                            matchedStudent.percentage = item.percentage;
+                            matchedStudent.status = item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
+                            matchedStudent.set = item.set;
+                            matchedStudent.answers = item.answers;
+                            matchedStudent.fileName = item.fileName;
+                            matchedStudent.file = item.file;
+                            matchedStudent.imagePreviewUrl = item.fileUrl;
+                            matchedStudent.isRealScanned = !!item.detectedAnswers && Object.keys(item.detectedAnswers).length > 0;
                             matchedStudent.evaluatedAt = new Date().toISOString();
                             newlyMatchedCount++;
                         } else {
                             // Push to Pending List
-                            const reason = !isValidDetectedId
+                            const reason = !item.isValidDetectedId
                                 ? 'ওএমআর শিটে রেজিঃ নং বাবল সনাক্ত হয়নি / অস্পষ্ট'
-                                : `সনাক্তকৃত রেজিঃ (${toBengaliNumber(rawDetectedId)}) পরীক্ষার শিক্ষার্থী তালিকায় নেই`;
+                                : `সনাক্তকৃত রেজিঃ (${toBengaliNumber(item.rawDetectedId)}) পরীক্ষার শিক্ষার্থী তালিকায় নেই`;
 
                             state.pendingUnmatchedList.push({
                                 uid: 'pending_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
-                                file: file,
-                                fileName: file.name,
-                                imagePreviewUrl: fileUrl,
-                                detectedId: isValidDetectedId ? rawDetectedId : (fnCandidateReg || ''),
-                                detectedRoll: detectedRoll || fnCandidateRoll || '',
-                                detectedClass: detectedClass || '',
-                                detectedSection: detectedSection || '',
-                                detectedSet: set,
-                                answers: answers,
-                                scoreInfo: scoreInfo,
-                                percentage: percentage,
-                                status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+                                file: item.file,
+                                fileName: item.fileName,
+                                imagePreviewUrl: item.fileUrl,
+                                detectedId: item.isValidDetectedId ? item.rawDetectedId : (item.fnCandidateReg || ''),
+                                duplicateRegId: '',
+                                isDuplicateReg: false,
+                                detectedRoll: item.detectedRoll || item.candidateRoll || '',
+                                detectedClass: item.detectedClass || '',
+                                detectedSection: item.detectedSection || '',
+                                detectedSet: item.set,
+                                answers: item.answers,
+                                scoreInfo: item.scoreInfo,
+                                percentage: item.percentage,
+                                status: item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
                                 reason: reason
                             });
                             newlyPendingCount++;
                         }
                     } else {
                         // Fallback if no imported exam was loaded
-                        const roll = (detectedRoll || fnCandidateRoll || String(i + 1)).padStart(3, '0');
-                        const studentId = isValidDetectedId ? rawDetectedId : (fnCandidateReg || ('1024' + roll));
-                        const studentClass = detectedClass ? String(parseInt(detectedClass, 10)) : "10";
-                        const section = detectedSection || sections[i % sections.length];
+                        const roll = (item.detectedRoll || item.candidateRoll || String(i + 1)).padStart(3, '0');
+                        const studentId = item.isValidDetectedId ? item.rawDetectedId : (item.fnCandidateReg || ('1024' + roll));
+                        const studentClass = item.detectedClass ? String(parseInt(item.detectedClass, 10)) : "10";
+                        const section = item.detectedSection || sections[i % sections.length];
 
                         const lookupMaps = getStudentsLookupMaps();
                         const sNameEn = lookupMaps.byReg.get(studentId) || lookupMaps.byRollClass.get(`${mapClassToNumber(studentClass)}_${toEnglishDigits(roll)}`) || '';
@@ -15436,18 +15807,18 @@
                             roll: roll,
                             class: studentClass,
                             section: section,
-                            set: set,
-                            answers: answers,
-                            correct: scoreInfo.correct,
-                            wrong: scoreInfo.wrong,
-                            blank: scoreInfo.blank,
+                            set: item.set,
+                            answers: item.answers,
+                            correct: item.scoreInfo.correct,
+                            wrong: item.scoreInfo.wrong,
+                            blank: item.scoreInfo.blank,
                             total: 30,
-                            percentage: percentage,
-                            status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
-                            fileName: file.name,
-                            file: file,
-                            imagePreviewUrl: fileUrl,
-                            isRealScanned: !!detectedAnswers
+                            percentage: item.percentage,
+                            status: item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+                            fileName: item.fileName,
+                            file: item.file,
+                            imagePreviewUrl: item.fileUrl,
+                            isRealScanned: !!item.detectedAnswers
                         });
                         newlyMatchedCount++;
                     }
@@ -15943,15 +16314,21 @@
 
                 // Update Standard view score
                 if (editCurrentScoreDisplay) {
+                    const dupText = score.duplicate > 0 ? `, ডুপ্লিকেট: ${toBengaliNumber(score.duplicate)}` : '';
                     editCurrentScoreDisplay.innerHTML = `
           <span style="color: #16a34a;">${toBengaliNumber(score.correct)}</span> 
-          <span style="color: var(--text-muted); font-size: 0.95rem;">/ ৩০ (ভুল: ${toBengaliNumber(score.wrong)}, ফাঁকা: ${toBengaliNumber(score.blank)})</span>
+          <span style="color: var(--text-muted); font-size: 0.95rem;">/ ৩০ (ভুল: ${toBengaliNumber(score.wrong)}${dupText}, ফাঁকা: ${toBengaliNumber(score.blank)})</span>
         `;
                 }
 
                 // Update Split view score badge
                 const splitBadge = document.getElementById('splitScoreBadgeDisplay');
                 if (splitBadge) {
+                    const dupBadgeHtml = score.duplicate > 0 ? `
+          <span style="background: #fef2f2; color: #b91c1c; padding: 2px 7px; border-radius: 6px; border: 1.5px solid #f87171; margin-right: 4px;" title="একাধিক বাবল ভরাটকৃত প্রশ্ন (কোনো মার্ক যুক্ত হবে না)">
+            <i class="fa-solid fa-clone"></i> ডুপ্লিকেট: <strong>${toBengaliNumber(score.duplicate)}</strong>
+          </span>` : '';
+
                     splitBadge.innerHTML = `
           <span style="background: #ecfdf5; color: #15803d; padding: 2px 7px; border-radius: 6px; border: 1px solid #a7f3d0; margin-right: 4px;" title="সঠিক উত্তর (সবুজ)">
             <i class="fa-solid fa-check"></i> <strong>${toBengaliNumber(score.correct)}</strong>
@@ -15959,6 +16336,7 @@
           <span style="background: #fef2f2; color: #b91c1c; padding: 2px 7px; border-radius: 6px; border: 1px solid #fecaca; margin-right: 4px;" title="ভুল উত্তর (লাল)">
             <i class="fa-solid fa-xmark"></i> <strong>${toBengaliNumber(score.wrong)}</strong>
           </span>
+          ${dupBadgeHtml}
           <span style="background: #f8fafc; color: #64748b; padding: 2px 7px; border-radius: 6px; border: 1px solid #e2e8f0;" title="অনুত্তরিত">
             <i class="fa-solid fa-circle-dot"></i> ফাঁকা: <strong>${toBengaliNumber(score.blank)}</strong>
           </span>
@@ -15975,15 +16353,22 @@
                 for (let q = 1; q <= 30; q++) {
                     const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
                     const studentAns = getStudentAnswer(state.tempEditStudent, q);
-                    const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+                    const selectedOpts = getStudentAnswerOptions(state.tempEditStudent, q);
+                    const isDup = isDuplicateOption(studentAns);
+                    const correctAns = normalizeSingleOption(targetKey ? targetKey[q - 1] : null);
 
                     let bubblesHtml = optionsBengali.map(opt => {
                         let extraClass = '';
                         let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
 
-                        if (studentAns === opt) {
-                            // শিক্ষার্থীর ভরাট করা OMR বাবল উত্তর পত্রের বাবলের সাথে মিললে সবুজ, মিল না থাকলে লাল
-                            if (correctAns && opt === correctAns) {
+                        const isSelectedByStudent = selectedOpts.includes(opt);
+
+                        if (isSelectedByStudent) {
+                            if (isDup) {
+                                // একাধিক বাবল ভরাট (ডুপ্লিকেট) -> লাল রঙে চিহ্নিত এবং কোনো মার্ক পাবে না
+                                extraClass = 'filled-wrong filled-duplicate';
+                                titleText += ' (শিক্ষার্থীর ভরাটকৃত - ডুপ্লিকেট বাবল ✗, কোনো মার্ক যুক্ত হবে না)';
+                            } else if (correctAns && opt === correctAns) {
                                 extraClass = 'filled-correct';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
                             } else {
@@ -16005,9 +16390,11 @@
           `;
                     }).join('');
 
+                    const dupTagHtml = isDup ? `<span style="font-size: 0.65rem; color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; padding: 0 4px; border-radius: 4px; font-weight: 700; margin-left: 2px;" title="একাধিক বাবল ভরাট (ডুপ্লিকেট - ০ মার্ক)">ডুপ্লিকেট</span>` : '';
+
                     colsHtml[colIdx] += `
           <div class="omr-q-row">
-            <span class="q-number-label">${toBengaliNumber(q)}.</span>
+            <span class="q-number-label">${toBengaliNumber(q)}.${dupTagHtml}</span>
             <div class="bubbles-interactive-group">
               ${bubblesHtml}
             </div>
@@ -16038,15 +16425,21 @@
                 for (let q = 1; q <= 30; q++) {
                     const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
                     const studentAns = getStudentAnswer(state.tempEditStudent, q);
-                    const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+                    const selectedOpts = getStudentAnswerOptions(state.tempEditStudent, q);
+                    const isDup = isDuplicateOption(studentAns);
+                    const correctAns = normalizeSingleOption(targetKey ? targetKey[q - 1] : null);
 
                     let bubblesHtml = optionsBengali.map(opt => {
                         let extraClass = '';
                         let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
 
-                        if (studentAns === opt) {
-                            // শিক্ষার্থীর ভরাট করা OMR বাবল উত্তর পত্রের বাবলের সাথে মিললে সবুজ, মিল না থাকলে লাল
-                            if (correctAns && opt === correctAns) {
+                        const isSelectedByStudent = selectedOpts.includes(opt);
+
+                        if (isSelectedByStudent) {
+                            if (isDup) {
+                                extraClass = 'filled-wrong filled-duplicate';
+                                titleText += ' (শিক্ষার্থীর ভরাটকৃত - ডুপ্লিকেট বাবল ✗, কোনো মার্ক যুক্ত হবে না)';
+                            } else if (correctAns && opt === correctAns) {
                                 extraClass = 'filled-correct';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
                             } else {
@@ -16054,7 +16447,6 @@
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
                             }
                         } else if (correctAns && opt === correctAns) {
-                            // আসল উত্তর নির্দেশক
                             extraClass = 'filled-key-answer';
                             titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
                         }
@@ -16068,9 +16460,11 @@
           `;
                     }).join('');
 
+                    const dupTagHtml = isDup ? `<span style="font-size: 0.62rem; color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; padding: 0 3px; border-radius: 3px; font-weight: 700; margin-left: 2px;" title="একাধিক বাবল ভরাট (ডুপ্লিকেট - ০ মার্ক)">ডুপ্লিকেট</span>` : '';
+
                     colsHtml[colIdx] += `
           <div class="omr-q-row" style="padding: 2px 0;">
-            <span class="q-number-label" style="min-width: 22px; font-size: 0.8rem;">${toBengaliNumber(q)}.</span>
+            <span class="q-number-label" style="min-width: 22px; font-size: 0.8rem;">${toBengaliNumber(q)}.${dupTagHtml}</span>
             <div class="bubbles-interactive-group">
               ${bubblesHtml}
             </div>
@@ -16092,13 +16486,29 @@
                 if (!state.tempEditStudent) return;
                 if (!state.tempEditStudent.answers) state.tempEditStudent.answers = {};
 
-                const normOpt = normalizeOption(selectedOption);
-                const current = getStudentAnswer(state.tempEditStudent, questionNumber);
+                const normOpt = normalizeSingleOption(selectedOption);
+                if (!normOpt) return;
 
-                if (current === normOpt) {
-                    state.tempEditStudent.answers[questionNumber] = null;
+                const currentOpts = getStudentAnswerOptions(state.tempEditStudent, questionNumber);
+
+                if (currentOpts.includes(normOpt)) {
+                    // Option was already selected -> remove it
+                    const updated = currentOpts.filter(o => o !== normOpt);
+                    if (updated.length === 0) {
+                        state.tempEditStudent.answers[questionNumber] = null;
+                    } else if (updated.length === 1) {
+                        state.tempEditStudent.answers[questionNumber] = updated[0];
+                    } else {
+                        state.tempEditStudent.answers[questionNumber] = updated;
+                    }
                 } else {
-                    state.tempEditStudent.answers[questionNumber] = normOpt;
+                    // Option was not selected -> add it
+                    const updated = [...currentOpts, normOpt].sort((a, b) => optionsBengali.indexOf(a) - optionsBengali.indexOf(b));
+                    if (updated.length === 1) {
+                        state.tempEditStudent.answers[questionNumber] = updated[0];
+                    } else {
+                        state.tempEditStudent.answers[questionNumber] = updated;
+                    }
                 }
 
                 updateModalScorePreview();
@@ -16962,6 +17372,70 @@
             // --- IMPORT EXAM MODAL LOGIC (Exam List Selection) ---
             let cachedAvailableExams = [];
 
+            // Helper: Check if an exam schedule from Exam List already has MCQ marks entered
+            window.checkIfScheduleHasMcqMarks = function (sch, savedMarks = {}, omrExams = []) {
+                if (!sch || !sch.id) return false;
+                const schId = String(sch.id).trim();
+
+                // 1. Explicit flags on schedule
+                if (sch.hasMcqMarks === true || sch.omrEvaluatedAt) {
+                    return true;
+                }
+
+                // 2. Check if schedule is already in saved OMR exams list
+                if (Array.isArray(omrExams) && omrExams.length > 0) {
+                    const inOmr = omrExams.some(oe => String(oe.id) === schId || String(oe.scheduleId) === schId);
+                    if (inOmr) return true;
+                }
+
+                // 3. Inspect saved student marks in school_student_marks
+                if (savedMarks && typeof savedMarks === 'object') {
+                    const targetSubCode = (sch.subjectCode || sch.subject || '').trim().toLowerCase();
+                    const targetSubName = (sch.subject || '').trim().toLowerCase();
+
+                    for (const [key, studentData] of Object.entries(savedMarks)) {
+                        if (key.startsWith('timestamp_')) continue;
+                        // Match key ending or containing _scheduleId
+                        if (key.endsWith('_' + schId) || key.includes('_' + schId)) {
+                            if (studentData && typeof studentData === 'object') {
+                                for (const [subKey, subVal] of Object.entries(studentData)) {
+                                    if (!subVal || typeof subVal !== 'object') continue;
+                                    
+                                    const subKeyClean = subKey.trim().toLowerCase();
+                                    const isMatch = !targetSubCode || 
+                                        subKeyClean === targetSubCode || 
+                                        subKeyClean === targetSubName || 
+                                        Object.keys(studentData).length === 1;
+
+                                    if (isMatch) {
+                                        if (subVal.omrEvaluatedAt) return true;
+                                        if (subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0) {
+                                            return true;
+                                        }
+                                        if (subVal.mcq !== undefined && subVal.mcq !== null && subVal.mcq !== '') {
+                                            const mcqStr = String(subVal.mcq).trim().toUpperCase();
+                                            if (!isNaN(Number(mcqStr)) || mcqStr === 'A' || mcqStr === 'ABS') {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 4. If sch.marksEntryTime is present, check if there are student marks
+                    if (sch.marksEntryTime) {
+                        const hasMarksKeys = Object.keys(savedMarks).some(k => !k.startsWith('timestamp_') && (k.endsWith('_' + schId) || k.includes('_' + schId)));
+                        if (hasMarksKeys) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            };
+
             window.openImportExamModal = async function () {
                 const modal = document.getElementById('modalImportExam');
                 if (!modal) return;
@@ -16988,7 +17462,23 @@
                 try {
                     const exams = [];
 
-                    // 1. Fetch schedules from Exam List (school_exam_schedules)
+                    // 1. Fetch saved OMR evaluations first to know which exams already have OMR evaluations
+                    let omrExams = [];
+                    try {
+                        const res = await fetch('/api/exams');
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (Array.isArray(data)) omrExams = data;
+                        }
+                    } catch (e) { }
+
+                    if (omrExams.length === 0) {
+                        try {
+                            omrExams = safeJsonParse('school_omr_exams', []);
+                        } catch (e) { }
+                    }
+
+                    // 2. Fetch schedules from Exam List (school_exam_schedules)
                     let schedules = [];
                     try {
                         if (typeof loadSchedules === 'function') {
@@ -17021,19 +17511,17 @@
                     } catch (e) { }
 
                     schedules.forEach(sch => {
+                        // "Exam List" এ যে সকল exam এর MCQ নাম্বার এন্ট্রি করা থাকবে, সে সকল পরীক্ষা "Import Exam" এ আসবে না।
+                        const hasMcqMarks = checkIfScheduleHasMcqMarks(sch, savedMarks, omrExams);
+                        if (hasMcqMarks) {
+                            return; // Exclude exams that already have MCQ marks entered
+                        }
+
                         const targetClassNum = mapClassToNumber(sch.class);
                         const studentCount = allStudents.filter(s => {
                             return mapClassToNumber(s.class) === targetClassNum ||
                                 (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
                         }).length;
-
-                        // Check if marks are already entered
-                        let hasMarks = false;
-                        if (sch.marksEntryTime) {
-                            hasMarks = true;
-                        } else {
-                            hasMarks = Object.keys(savedMarks).some(k => k.includes('_' + sch.id));
-                        }
 
                         exams.push({
                             id: sch.id,
@@ -17045,27 +17533,12 @@
                             section: sch.section || 'All',
                             date: sch.date || '',
                             totalStudents: studentCount > 0 ? studentCount : (sch.totalStudents || 0),
-                            hasMarks: hasMarks,
+                            hasMarks: false,
                             scheduleData: sch
                         });
                     });
 
-                    // 2. Fetch saved OMR evaluations from /api/exams and localStorage
-                    let omrExams = [];
-                    try {
-                        const res = await fetch('/api/exams');
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (Array.isArray(data)) omrExams = data;
-                        }
-                    } catch (e) { }
-
-                    if (omrExams.length === 0) {
-                        try {
-                            omrExams = safeJsonParse('school_omr_exams', []);
-                        } catch (e) { }
-                    }
-
+                    // 3. Fetch saved OMR evaluations if any
                     omrExams.forEach(oe => {
                         if (exams.some(x => x.id === oe.id)) return;
                         const firstStudent = (oe.students && oe.students[0]) ? oe.students[0] : null;
@@ -17491,6 +17964,7 @@
                     if (targetSch) {
                         targetSch.marksEntryTime = nowFormatted;
                         targetSch.hasMarks = true;
+                        targetSch.hasMcqMarks = true;
                         targetSch.totalEntered = evaluatedStudents.length;
                         targetSch.totalStudents = state.students.length;
                         targetSch.omrEvaluatedAt = nowIso;
@@ -17507,7 +17981,17 @@
                         }).catch(() => { });
                     }
 
-                    // 2. Update student marks in school_student_marks
+                    // 2. Load all school students to guarantee matching master student records
+                    let allStudents = [];
+                    try {
+                        if (typeof loadStudents === 'function') {
+                            allStudents = loadStudents() || [];
+                        } else {
+                            allStudents = safeJsonParse('school_students', []);
+                        }
+                    } catch (e) { }
+
+                    // 3. Update student marks in school_student_marks
                     let savedMarks = {};
                     try {
                         if (typeof loadStudentMarks === 'function') {
@@ -17517,48 +18001,148 @@
                         }
                     } catch (e) { }
 
-                    const subjectCode = (targetSch && (targetSch.subjectCode || targetSch.subject)) || examInfo.subject || 'MCQ';
+                    const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+                    const schClass = targetSch ? targetSch.class : (examInfo.class || '');
+                    const classSubjects = subMap[schClass] || [];
+                    const subObj = classSubjects.find(s => s.name && targetSch && s.name.trim().toLowerCase() === (targetSch.subject || '').trim().toLowerCase());
+                    const activeExamSubjectCode = subObj ? subObj.code : ((targetSch && (targetSch.subjectCode || targetSch.subject)) || examInfo.subject || 'MCQ');
+                    
+                    const targetSubjectKeys = new Set([
+                        activeExamSubjectCode,
+                        targetSch ? targetSch.subject : null,
+                        targetSch ? targetSch.subjectCode : null,
+                        examInfo.subject
+                    ].filter(Boolean));
+
                     const examVal = targetSch ? targetSch.term : (examInfo.examName || 'Exam');
 
                     state.students.forEach(student => {
                         const rawReg = toEnglishDigits(student.id || student.regNo || '').trim();
                         const rawRoll = toEnglishDigits(student.roll || '').trim();
-                        const mcqScore = (student.status === 'পেন্ডিং' && (!student.correct || student.correct === 0)) ? 0 : (student.correct || 0);
-                        const isAbsent = student.status === 'পেন্ডিং' && !student.isRealScanned;
+                        const isPending = (student.status === 'পেন্ডিং' && !student.isRealScanned && (!student.correct || student.correct === 0));
+                        
+                        // Do not create unentered/absent dummy entries for students whose OMR was not evaluated
+                        if (isPending) return;
 
-                        const keysToUpdate = [
-                            `marks_${rawReg}_${schId}`,
-                            `marks_${student.id}_${schId}`,
-                            `marks_${rawReg}_${examVal}`,
-                            `marks_${student.id}_${examVal}`
-                        ];
-                        if (student.studentId) {
-                            keysToUpdate.push(`marks_${student.studentId}_${schId}`);
-                            keysToUpdate.push(`marks_${student.studentId}_${examVal}`);
+                        const mcqScore = typeof student.correct === 'number' ? student.correct : (parseInt(student.correct, 10) || 0);
+
+                        // Strict Step 1: Find master student record by Registration Number / Student ID / ID first (Unique Exact Match)
+                        let masterSt = allStudents.find(st =>
+                            isRegNoMatch(st.regNo, rawReg) ||
+                            isRegNoMatch(st.studentId, rawReg) ||
+                            isRegNoMatch(st.id, rawReg)
+                        );
+
+                        // Strict Step 2: Fallback ONLY if no match found by RegNo: Match by Class + Section + Roll
+                        if (!masterSt) {
+                            const sSec = (student.section || '').trim().toLowerCase();
+                            const sCls = mapClassToNumber(student.class);
+                            masterSt = allStudents.find(st =>
+                                mapClassToNumber(st.class) === sCls &&
+                                (String(st.section || '').trim().toLowerCase() === sSec) &&
+                                toEnglishDigits(String(st.roll || '')).trim() === rawRoll
+                            );
                         }
 
-                        keysToUpdate.forEach(k => {
-                            savedMarks[k] = savedMarks[k] || {};
-                            const existingData = savedMarks[k][subjectCode] || Object.values(savedMarks[k])[0] || {};
-                            const cqVal = (existingData.cq !== undefined && !isNaN(parseInt(existingData.cq))) ? parseInt(existingData.cq) : 0;
-                            const pracVal = (existingData.practical !== undefined && !isNaN(parseInt(existingData.practical))) ? parseInt(existingData.practical) : 0;
-                            const totalVal = cqVal + mcqScore + pracVal;
+                        // Strict Step 3: Fallback ONLY if still no match and section is not specified/All: Match by Class + Roll
+                        if (!masterSt) {
+                            const sCls = mapClassToNumber(student.class);
+                            masterSt = allStudents.find(st =>
+                                mapClassToNumber(st.class) === sCls &&
+                                toEnglishDigits(String(st.roll || '')).trim() === rawRoll
+                            );
+                        }
 
-                            savedMarks[k][subjectCode] = {
-                                total: totalVal,
-                                isAbsent: isAbsent,
-                                cq: cqVal,
-                                mcq: isAbsent ? 0 : mcqScore,
-                                practical: pracVal,
-                                set: student.set || 'ক',
-                                answers: isAbsent ? {} : (student.answers || {}),
-                                percentage: isAbsent ? '0.0' : (student.percentage || ((mcqScore / 30) * 100).toFixed(1)),
-                                status: isAbsent ? 'পেন্ডিং' : student.status,
-                                fileName: isAbsent ? '' : (student.fileName || ''),
-                                omrEvaluatedAt: isAbsent ? null : (student.evaluatedAt || nowIso)
-                            };
+                        const targetStudentIds = new Set();
+                        if (masterSt) {
+                            if (masterSt.id !== undefined && masterSt.id !== null) targetStudentIds.add(String(masterSt.id));
+                            if (masterSt.studentId) targetStudentIds.add(String(masterSt.studentId));
+                            if (masterSt.regNo) targetStudentIds.add(String(masterSt.regNo));
+                        }
+                        if (student.id) targetStudentIds.add(String(student.id));
+                        if (student.regNo) targetStudentIds.add(String(student.regNo));
+                        if (student.studentId) targetStudentIds.add(String(student.studentId));
+                        if (rawReg) targetStudentIds.add(rawReg);
+
+                        // Discover authoritative existing CQ and Practical marks across all candidate lookup keys
+                        let authoritativeExistingCq = undefined;
+                        let authoritativeExistingPrac = undefined;
+
+                        const candidateLookupKeys = [];
+                        targetStudentIds.forEach(idVal => {
+                            candidateLookupKeys.push(`marks_${idVal}_${schId}`);
+                            candidateLookupKeys.push(`marks_${idVal}_${examVal}`);
+                        });
+
+                        for (const lookupKey of candidateLookupKeys) {
+                            const record = savedMarks[lookupKey];
+                            if (record && typeof record === 'object') {
+                                for (const subKey of targetSubjectKeys) {
+                                    const subObj = record[subKey];
+                                    if (subObj && typeof subObj === 'object') {
+                                        if (authoritativeExistingCq === undefined && subObj.cq !== undefined && subObj.cq !== null && subObj.cq !== '') {
+                                            authoritativeExistingCq = subObj.cq;
+                                        }
+                                        if (authoritativeExistingPrac === undefined && subObj.practical !== undefined && subObj.practical !== null && subObj.practical !== '') {
+                                            authoritativeExistingPrac = subObj.practical;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        let cleanCq = undefined;
+                        if (authoritativeExistingCq !== undefined && authoritativeExistingCq !== null && authoritativeExistingCq !== '') {
+                            if (authoritativeExistingCq === 'A' || authoritativeExistingCq === 'ABS' || authoritativeExistingCq === 'ABSENT') {
+                                cleanCq = 'A';
+                            } else if (!isNaN(parseInt(authoritativeExistingCq, 10))) {
+                                cleanCq = parseInt(authoritativeExistingCq, 10);
+                            }
+                        }
+
+                        let cleanPrac = undefined;
+                        if (authoritativeExistingPrac !== undefined && authoritativeExistingPrac !== null && authoritativeExistingPrac !== '') {
+                            if (authoritativeExistingPrac === 'A' || authoritativeExistingPrac === 'ABS' || authoritativeExistingPrac === 'ABSENT') {
+                                cleanPrac = 'A';
+                            } else if (!isNaN(parseInt(authoritativeExistingPrac, 10))) {
+                                cleanPrac = parseInt(authoritativeExistingPrac, 10);
+                            }
+                        }
+
+                        const numCq = typeof cleanCq === 'number' ? cleanCq : 0;
+                        const numPrac = typeof cleanPrac === 'number' ? cleanPrac : 0;
+                        const totalVal = numCq + mcqScore + numPrac;
+
+                        const studentMarkPayload = {
+                            total: totalVal,
+                            isAbsent: false,
+                            cq: cleanCq,
+                            mcq: mcqScore,
+                            practical: cleanPrac,
+                            set: student.set || 'ক',
+                            answers: student.answers || {},
+                            percentage: student.percentage || ((mcqScore / 30) * 100).toFixed(1),
+                            status: student.status,
+                            fileName: student.fileName || '',
+                            omrEvaluatedAt: student.evaluatedAt || nowIso
+                        };
+
+                        targetStudentIds.forEach(stId => {
+                            // 1. Update schedule-specific key: marks_${stId}_${schId}
+                            const schKey = `marks_${stId}_${schId}`;
+                            savedMarks[schKey] = savedMarks[schKey] || {};
+                            targetSubjectKeys.forEach(sKey => {
+                                savedMarks[schKey][sKey] = studentMarkPayload;
+                            });
+
+                            // 2. Update term-level key: marks_${stId}_${examVal} (preserving all other subjects in the term)
+                            const termKey = `marks_${stId}_${examVal}`;
+                            savedMarks[termKey] = savedMarks[termKey] || {};
+                            savedMarks[termKey][activeExamSubjectCode] = studentMarkPayload;
                         });
                     });
+
+                    savedMarks[`timestamp_${schId}`] = nowFormatted;
 
                     localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
                     fetch('/api/db/set', {

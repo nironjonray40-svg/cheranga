@@ -892,12 +892,25 @@ def process_omr_image(image_data, filename="Memory Stream"):
                 implied_x0s = [x - s * bubble_spacing for x, s in valid_slots]
                 expected_A_x = float(np.median(implied_x0s))
         
+        row_marked_options = [[] for _ in range(10)]
         for b in bubbles:
             row_idx = int(round((b["y"] - expected_row_0_y) / row_spacing))
             if 0 <= row_idx < 10:
                 slot = int(round((b["x"] - expected_A_x) / bubble_spacing))
                 idx = max(0, min(3, slot))
-                col_ans[row_idx] = bengali_options[idx]
+                opt = bengali_options[idx]
+                if opt not in row_marked_options[row_idx]:
+                    row_marked_options[row_idx].append(opt)
+            
+        for r in range(10):
+            opts = row_marked_options[r]
+            if len(opts) == 0:
+                col_ans[r] = None
+            elif len(opts) == 1:
+                col_ans[r] = opts[0]
+            else:
+                # Multiple bubbles filled -> Duplicate/Invalid
+                col_ans[r] = sorted(opts, key=lambda x: bengali_options.index(x) if x in bengali_options else 99)
             
         total_answers.extend(col_ans)
 
@@ -987,7 +1000,8 @@ def process_omr_image(image_data, filename="Memory Stream"):
                 header = ['Timestamp', 'Set'] + [f'Q{i+1}' for i in range(30)]
                 writer.writerow(header)
             for s_name, answers in result.get('sets', {}).items():
-                row = [timestamp, s_name] + answers
+                formatted_ans = [",".join(a) if isinstance(a, list) else (str(a) if a is not None else "") for a in answers]
+                row = [timestamp, s_name] + formatted_ans
                 writer.writerow(row)
                 
         conn = sqlite3.connect(os.path.join(BASE_DIR, 'omr_results.db'))
@@ -995,7 +1009,8 @@ def process_omr_image(image_data, filename="Memory Stream"):
         placeholders = ", ".join(["?"] * 32)
         columns = ", ".join([f"Q{i+1}" for i in range(30)])
         for s_name, answers in result.get('sets', {}).items():
-            row = [timestamp, s_name] + answers
+            formatted_ans = [",".join(a) if isinstance(a, list) else (str(a) if a is not None else "") for a in answers]
+            row = [timestamp, s_name] + formatted_ans
             c.execute(f"INSERT INTO results (timestamp, set_name, {columns}) VALUES ({placeholders})", row)
         conn.commit()
         conn.close()
