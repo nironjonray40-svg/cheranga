@@ -180,7 +180,7 @@
         function findSubjectCodeInMap(subMap, className, subjectName) {
             if (!subMap || !subjectName) return '';
             const sNameClean = subjectName.trim().toLowerCase();
-            
+
             // 1. Direct class match
             if (className && subMap[className]) {
                 const found = subMap[className].find(s => s.name && s.name.trim().toLowerCase() === sNameClean);
@@ -190,7 +190,7 @@
             // 2. Scan all classes in map
             for (const clsKey of Object.keys(subMap)) {
                 const list = subMap[clsKey] || [];
-                const found = list.find(s => 
+                const found = list.find(s =>
                     (s.name && s.name.trim().toLowerCase() === sNameClean) ||
                     (s.shortName && s.shortName.trim().toLowerCase() === sNameClean)
                 );
@@ -1123,8 +1123,8 @@
 
         function applyBulkDateToAllSelected(isSequential = false) {
             let baseDateStr = document.getElementById('bulk-base-date')?.value?.trim() ||
-                              document.getElementById('schedule-date')?.value?.trim() ||
-                              getFormattedCurrentDate();
+                document.getElementById('schedule-date')?.value?.trim() ||
+                getFormattedCurrentDate();
 
             const rows = document.querySelectorAll('#bulk-subjects-table-tbody tr');
             let currentDate = parseDateString(baseDateStr);
@@ -2239,12 +2239,12 @@
                 }
 
                 const currentSec = (student.section || 'A').trim();
-                
+
                 // Show Section Header Row above the first student of each section only in "Student ID/Roll" mode
                 if (currentMarksEntryViewType === 'roll' && currentSec !== lastRenderedSection) {
                     lastRenderedSection = currentSec;
                     const secStudentsCount = activeExamStudents.filter(s => (s.section || 'A').trim() === currentSec).length;
-                    
+
                     html += `
                         <tr class="modal-section-header-row" style="background:#f8fafc; border-top:2px solid #e2e8f0; border-bottom:1.5px solid #cbd5e1;">
                             <td colspan="9" style="padding:8px 16px; text-align:left; background:linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%);">
@@ -2678,8 +2678,8 @@
                     }
                 }
 
-                const idVal = currentMarksEntryViewType === 'reg_no' ? 
-                    (student.regNo || student.registrationNo || student.studentId || student.id || '') : 
+                const idVal = currentMarksEntryViewType === 'reg_no' ?
+                    (student.regNo || student.registrationNo || student.studentId || student.id || '') :
                     (student.studentId || student.id || (student.roll ? `Roll-${student.roll}` : ''));
 
                 const rData = [
@@ -5153,7 +5153,7 @@
 
             // Find which senior classes (Nine/Ten) are currently checked
             const checkedClasses = Array.from(document.querySelectorAll('.subject-target-class-chk:checked')).map(cb => cb.value);
-            
+
             // Get all sections for checked senior classes
             const sectionsForChecked = new Set();
             if (Array.isArray(classSections)) {
@@ -5302,7 +5302,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ key: 'school_subjects', value: subStr })
-                }).catch(() => {});
+                }).catch(() => { });
                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
                 window.dispatchEvent(new Event('storage'));
             } catch (e) {
@@ -5510,9 +5510,9 @@
             if (containerSec) {
                 const allChk = document.getElementById('section-chk-all');
                 const otherChks = containerSec.querySelectorAll('.subject-target-section-chk');
-                
+
                 const sections = (sub.section || 'All').split(',').map(s => s.trim());
-                
+
                 if (sections.includes('All')) {
                     if (allChk) allChk.checked = true;
                     otherChks.forEach(cb => cb.checked = false);
@@ -5602,8 +5602,8 @@
                             <td style="text-align:center; color:#0f172a; font-weight:700; font-size:0.98rem; padding: 9px 8px; border-bottom:1px solid #e2e8f0;">${sub.shortName || sub.name}</td>
                             <td style="text-align:center; padding: 9px 8px; border-bottom:1px solid #e2e8f0;">
                                 ${sub.isOptional
-                                    ? '<span style="background:#d97706; font-size:0.78rem; padding:3px 8px; border-radius:12px; color:#ffffff; font-weight:800; display:inline-block; box-shadow: 0 1px 2px rgba(217,119,6,0.2);">Optional</span>'
-                                    : '<span style="background:#0284c7; font-size:0.78rem; padding:3px 8px; border-radius:12px; color:#ffffff; font-weight:800; display:inline-block; box-shadow: 0 1px 2px rgba(2,132,199,0.2);">Compulsory</span>'}
+                            ? '<span style="background:#d97706; font-size:0.78rem; padding:3px 8px; border-radius:12px; color:#ffffff; font-weight:800; display:inline-block; box-shadow: 0 1px 2px rgba(217,119,6,0.2);">Optional</span>'
+                            : '<span style="background:#0284c7; font-size:0.78rem; padding:3px 8px; border-radius:12px; color:#ffffff; font-weight:800; display:inline-block; box-shadow: 0 1px 2px rgba(2,132,199,0.2);">Compulsory</span>'}
                             </td>
                             <td style="text-align:center; white-space: nowrap; padding: 9px 8px; border-bottom:1px solid #e2e8f0;">
                                 <button class="action-btn-sm btn-view-card" onclick="event.stopPropagation(); editSubject('${cls}', '${sub.code}')" style="padding:6px 9px; margin-right:4px;" title="Edit Subject">
@@ -6339,14 +6339,14 @@
 
                         <!-- Subject Overrides Count -->
                         <td style="text-align: center;">
-                            ${examTotalOverrides > 0 
-                                ? `<span class="badge-override-active" onclick="toggleExamDetail('${escapeHtmlExam(t.id)}', event)" title="ক্লিক করে বিস্তারিত দেখুন">
+                            ${examTotalOverrides > 0
+                        ? `<span class="badge-override-active" onclick="toggleExamDetail('${escapeHtmlExam(t.id)}', event)" title="ক্লিক করে বিস্তারিত দেখুন">
                                      ⚡ ${examTotalOverrides}টি বিষয়ের বিশেষ বণ্টন
                                    </span>`
-                                : `<span class="badge-override-none">
+                        : `<span class="badge-override-none">
                                      সকল বিষয়ে ডিফল্ট
                                    </span>`
-                            }
+                    }
                         </td>
 
                         <!-- Master Actions -->
@@ -6398,18 +6398,18 @@
                                 <!-- List of all Exam Types under this Exam Name -->
                                 <div style="display: flex; flex-direction: column; gap: 16px; padding: 0 10px 10px 10px;">
                                     ${subTypes.map((st, sIdx) => {
-                                        const stCQ = st.defaultCQ !== undefined ? st.defaultCQ : 70;
-                                        const stMCQ = st.defaultMCQ !== undefined ? st.defaultMCQ : 30;
-                                        const stPrac = st.defaultPractical !== undefined ? st.defaultPractical : 0;
-                                        const stTotal = stCQ + stMCQ + stPrac;
-                                        const stPassPercent = st.passMarkPercent !== undefined ? st.passMarkPercent : 33;
-                                        const stPassTotal = ((stTotal * stPassPercent) / 100).toFixed(1);
-                                        const stPassCQ = ((stCQ * stPassPercent) / 100).toFixed(1);
-                                        const stPassMCQ = ((stMCQ * stPassPercent) / 100).toFixed(1);
-                                        const stPassPrac = ((stPrac * stPassPercent) / 100).toFixed(1);
-                                        const stOverrides = Array.isArray(st.overrides) ? st.overrides : [];
+                        const stCQ = st.defaultCQ !== undefined ? st.defaultCQ : 70;
+                        const stMCQ = st.defaultMCQ !== undefined ? st.defaultMCQ : 30;
+                        const stPrac = st.defaultPractical !== undefined ? st.defaultPractical : 0;
+                        const stTotal = stCQ + stMCQ + stPrac;
+                        const stPassPercent = st.passMarkPercent !== undefined ? st.passMarkPercent : 33;
+                        const stPassTotal = ((stTotal * stPassPercent) / 100).toFixed(1);
+                        const stPassCQ = ((stCQ * stPassPercent) / 100).toFixed(1);
+                        const stPassMCQ = ((stMCQ * stPassPercent) / 100).toFixed(1);
+                        const stPassPrac = ((stPrac * stPassPercent) / 100).toFixed(1);
+                        const stOverrides = Array.isArray(st.overrides) ? st.overrides : [];
 
-                                        return `
+                        return `
                                             <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:12px; padding:16px 18px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
                                                 
                                                 <!-- Sub Type Header & Action -->
@@ -6490,16 +6490,16 @@
                                                                 </thead>
                                                                 <tbody>
                                                                     ${stOverrides.map((o, oIdx) => {
-                                                                        const oCQ = o.cq !== undefined ? o.cq : 0;
-                                                                        const oMCQ = o.mcq !== undefined ? o.mcq : 0;
-                                                                        const oPrac = o.practical !== undefined ? o.practical : 0;
-                                                                        const oTotal = oCQ + oMCQ + oPrac;
-                                                                        const oPassTotal = ((oTotal * stPassPercent) / 100).toFixed(1);
-                                                                        const oPassCQ = ((oCQ * stPassPercent) / 100).toFixed(1);
-                                                                        const oPassMCQ = ((oMCQ * stPassPercent) / 100).toFixed(1);
-                                                                        const oPassPrac = ((oPrac * stPassPercent) / 100).toFixed(1);
+                            const oCQ = o.cq !== undefined ? o.cq : 0;
+                            const oMCQ = o.mcq !== undefined ? o.mcq : 0;
+                            const oPrac = o.practical !== undefined ? o.practical : 0;
+                            const oTotal = oCQ + oMCQ + oPrac;
+                            const oPassTotal = ((oTotal * stPassPercent) / 100).toFixed(1);
+                            const oPassCQ = ((oCQ * stPassPercent) / 100).toFixed(1);
+                            const oPassMCQ = ((oMCQ * stPassPercent) / 100).toFixed(1);
+                            const oPassPrac = ((oPrac * stPassPercent) / 100).toFixed(1);
 
-                                                                        return `
+                            return `
                                                                             <tr>
                                                                                 <td style="font-weight:700; color:#64748b;">${oIdx + 1}</td>
                                                                                 <td style="text-align:left;">
@@ -6521,7 +6521,7 @@
                                                                                 </td>
                                                                             </tr>
                                                                         `;
-                                                                    }).join('')}
+                        }).join('')}
                                                                 </tbody>
                                                             </table>
                                                         </div>
@@ -6533,7 +6533,7 @@
                                                 </div>
                                             </div>
                                         `;
-                                    }).join('')}
+                    }).join('')}
                                 </div>
                             </div>
                         </td>
@@ -6665,7 +6665,7 @@
             }
 
             const types = loadExamTypes();
-            
+
             // Find existing Exam Name object
             let exam = null;
             if (examId) {
@@ -7081,7 +7081,7 @@
                 alert(`No registered students found in ${classVal}. Add students in the Student Portal first!`);
                 return;
             }
- 
+
             // Load configured BulkSMSBD settings
             let smsConfig = {
                 provider: "BulkSMSBD",
@@ -7135,9 +7135,9 @@
                         let formattedNum = cleanPhone.replace(/[^0-9]/g, '');
                         if (formattedNum.startsWith('01')) formattedNum = '88' + formattedNum;
                         if (formattedNum.length === 10 && formattedNum.startsWith('1')) formattedNum = '880' + formattedNum;
-                        
+
                         const apiReqUrl = `${smsConfig.apiUrl || 'http://bulksmsbd.net/api/smsapi'}?api_key=${encodeURIComponent(smsConfig.apiKey)}&type=${encodeURIComponent(smsConfig.smsType || 'text')}&number=${encodeURIComponent(formattedNum)}&senderid=${encodeURIComponent(smsConfig.senderId)}&message=${encodeURIComponent(personalText)}`;
-                        
+
                         fetch(apiReqUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
                         const ping = new Image();
                         ping.src = apiReqUrl + '&_ts=' + Date.now();
@@ -7373,7 +7373,7 @@
             if (e.key === 'school_class_sections' || e.key === 'school_classes' || e.key === 'school_subjects') {
                 populateDropdownsForSubjects();
                 renderSubjectList();
-                
+
                 const modal = document.getElementById('add-academic-subject-modal');
                 const isModalOpen = modal && modal.classList.contains('active');
                 if (!isModalOpen) {
