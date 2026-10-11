@@ -1,4 +1,10 @@
 
+        // --- GLOBAL BENGALI & ENGLISH DIGIT UTILITIES ---
+        window.toBengaliNumber = window.toBengaliNumber || (num => String(num ?? '').replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]));
+        window.toEnglishDigits = window.toEnglishDigits || (str => String(str ?? '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)));
+        var toBengaliNumber = window.toBengaliNumber;
+        var toEnglishDigits = window.toEnglishDigits;
+
         // --- PAGINATION FOR EXAM LIST ---
         let currentSchedulePage = 1;
         let scheduleRowsPerPage = 20;
@@ -2170,14 +2176,23 @@ function openExamMarksEntryModal(scheduleId) {
                 const rawMcq = mcqIn ? mcqIn.value.trim() : "";
                 const rawPrac = pracIn ? pracIn.value.trim() : "";
 
-                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" ||
-                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" ||
-                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS";
+                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT" ||
+                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT" ||
+                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") return;
-
                 const key = `marks_${student.id}_${activeExamScheduleId}`;
+
+                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
+                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
+                        delete savedMarks[key][activeExamSubjectCode];
+                        if (Object.keys(savedMarks[key]).length === 0) {
+                            delete savedMarks[key];
+                        }
+                    }
+                    return;
+                }
+
                 savedMarks[key] = savedMarks[key] || {};
                 if (isAbsent) {
                     savedMarks[key][activeExamSubjectCode] = {
@@ -2188,15 +2203,19 @@ function openExamMarksEntryModal(scheduleId) {
                         practical: rawPrac ? rawPrac.toUpperCase() : "A"
                     };
                 } else {
-                    const nCq = parseInt(rawCq, 10) || 0;
-                    const nMcq = parseInt(rawMcq, 10) || 0;
-                    const nPrac = parseInt(rawPrac, 10) || 0;
+                    const nCq = parseInt(rawCq, 10);
+                    const nMcq = parseInt(rawMcq, 10);
+                    const nPrac = parseInt(rawPrac, 10);
+                    const hasCq = rawCq !== "" && !isNaN(nCq);
+                    const hasMcq = rawMcq !== "" && !isNaN(nMcq);
+                    const hasPrac = rawPrac !== "" && !isNaN(nPrac);
+
                     savedMarks[key][activeExamSubjectCode] = {
-                        total: nCq + nMcq + nPrac,
+                        total: (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0),
                         isAbsent: false,
-                        cq: cqIn && rawCq !== "" ? nCq : undefined,
-                        mcq: mcqIn && rawMcq !== "" ? nMcq : undefined,
-                        practical: pracIn && rawPrac !== "" ? nPrac : undefined
+                        cq: hasCq ? nCq : undefined,
+                        mcq: hasMcq ? nMcq : undefined,
+                        practical: hasPrac ? nPrac : undefined
                     };
                 }
             });
@@ -2322,27 +2341,62 @@ function openExamMarksEntryModal(scheduleId) {
 
                 if (studentExamMarks !== null && studentExamMarks !== undefined) {
                     if (typeof studentExamMarks === 'object') {
-                        isAbsent = studentExamMarks.isAbsent === true ||
-                            String(studentExamMarks.cq).toUpperCase() === "A" || String(studentExamMarks.cq).toUpperCase() === "ABS" ||
-                            String(studentExamMarks.mcq).toUpperCase() === "A" || String(studentExamMarks.mcq).toUpperCase() === "ABS";
-                        cqVal = studentExamMarks.cq !== undefined ? studentExamMarks.cq : "";
-                        mcqVal = studentExamMarks.mcq !== undefined ? studentExamMarks.mcq : "";
-                        pracVal = studentExamMarks.practical !== undefined ? studentExamMarks.practical : "";
+                        const rawCq = studentExamMarks.cq;
+                        const rawMcq = studentExamMarks.mcq;
+                        const rawPrac = studentExamMarks.practical;
+
+                        // Check if this is an unentered/pending placeholder stub
+                        const isPendingStub = (studentExamMarks.status === 'পেন্ডিং' && !studentExamMarks.fileName && !studentExamMarks.omrEvaluatedAt && (rawMcq === 0 || rawMcq === undefined || rawMcq === "") && (rawCq === 0 || rawCq === undefined || rawCq === ""));
+
+                        if (!isPendingStub) {
+                            const hasACq = String(rawCq).toUpperCase() === "A" || String(rawCq).toUpperCase() === "ABS";
+                            const hasAMcq = String(rawMcq).toUpperCase() === "A" || String(rawMcq).toUpperCase() === "ABS";
+                            const hasAPrac = String(rawPrac).toUpperCase() === "A" || String(rawPrac).toUpperCase() === "ABS";
+
+                            isAbsent = (studentExamMarks.isAbsent === true && (hasACq || hasAMcq || hasAPrac || (rawCq === undefined && rawMcq === undefined && rawPrac === undefined))) ||
+                                hasACq || hasAMcq || hasAPrac;
+
+                            if (rawCq !== undefined && rawCq !== null && rawCq !== "") {
+                                // If from OMR evaluation where CQ was defaulted to 0 without manual entry, leave CQ blank
+                                if (rawCq === 0 && studentExamMarks.omrEvaluatedAt && studentExamMarks.fileName && (studentExamMarks.mcq !== undefined && studentExamMarks.mcq !== null)) {
+                                    cqVal = "";
+                                } else {
+                                    cqVal = String(rawCq);
+                                }
+                            }
+                            if (rawMcq !== undefined && rawMcq !== null && rawMcq !== "") {
+                                mcqVal = String(rawMcq);
+                            }
+                            if (rawPrac !== undefined && rawPrac !== null && rawPrac !== "") {
+                                pracVal = String(rawPrac);
+                            }
+                        }
                     } else {
-                        cqVal = studentExamMarks;
+                        cqVal = studentExamMarks !== "" ? String(studentExamMarks) : "";
                         isAbsent = String(cqVal).toUpperCase() === "A" || String(cqVal).toUpperCase() === "ABS";
                     }
                 }
 
                 // Calculate initial total, grade, status
-                const numCq = parseInt(cqVal, 10) || 0;
-                const numMcq = parseInt(mcqVal, 10) || 0;
-                const numPrac = parseInt(pracVal, 10) || 0;
-                const hasEnteredAny = isAbsent || cqVal !== "" || mcqVal !== "" || pracVal !== "";
-                const totalMark = isAbsent ? "A" : (hasEnteredAny ? (numCq + numMcq + numPrac) : "");
+                const numCq = parseInt(cqVal, 10);
+                const numMcq = parseInt(mcqVal, 10);
+                const numPrac = parseInt(pracVal, 10);
+
+                const hasCq = cqVal !== "" && !isNaN(numCq);
+                const hasMcq = mcqVal !== "" && !isNaN(numMcq);
+                const hasPrac = pracVal !== "" && !isNaN(numPrac);
+
+                const hasEnteredAny = isAbsent || hasCq || hasMcq || hasPrac;
+
+                let totalMark = "";
+                if (isAbsent) {
+                    totalMark = "A";
+                } else if (hasEnteredAny) {
+                    totalMark = (hasCq ? numCq : 0) + (hasMcq ? numMcq : 0) + (hasPrac ? numPrac : 0);
+                }
 
                 const gradeInfo = hasEnteredAny ? (isAbsent ? { name: "F", gp: 0 } : getGradeDetails(totalMark, activeExamDist.total, activeExamDist.passPercent, { cq: cqVal, mcq: mcqVal, practical: pracVal }, activeExamDist)) : { name: "-", gp: 0 };
-                const isPassed = !isAbsent && gradeInfo.gp > 0;
+                const isPassed = !isAbsent && hasEnteredAny && gradeInfo.gp > 0;
 
                 // ID / Reg display text depending on current view type
                 let idDisplay = "";
@@ -2603,9 +2657,18 @@ function openExamMarksEntryModal(scheduleId) {
                     rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") return;
-
                 const key = `marks_${student.id}_${activeExamScheduleId}`;
+
+                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
+                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
+                        delete savedMarks[key][activeExamSubjectCode];
+                        if (Object.keys(savedMarks[key]).length === 0) {
+                            delete savedMarks[key];
+                        }
+                    }
+                    return;
+                }
+
                 savedMarks[key] = savedMarks[key] || {};
 
                 if (isAbsent) {
@@ -2618,20 +2681,26 @@ function openExamMarksEntryModal(scheduleId) {
                     };
                     countSaved++;
                 } else {
-                    const nCq = parseInt(rawCq, 10) || 0;
-                    const nMcq = parseInt(rawMcq, 10) || 0;
-                    const nPrac = parseInt(rawPrac, 10) || 0;
+                    const nCq = parseInt(rawCq, 10);
+                    const nMcq = parseInt(rawMcq, 10);
+                    const nPrac = parseInt(rawPrac, 10);
 
-                    if (rawCq !== "" && (isNaN(nCq) || nCq < 0 || nCq > activeExamDist.cq)) isValid = false;
-                    if (rawMcq !== "" && (isNaN(nMcq) || nMcq < 0 || nMcq > activeExamDist.mcq)) isValid = false;
-                    if (rawPrac !== "" && (isNaN(nPrac) || nPrac < 0 || nPrac > activeExamDist.practical)) isValid = false;
+                    const hasCq = rawCq !== "" && !isNaN(nCq);
+                    const hasMcq = rawMcq !== "" && !isNaN(nMcq);
+                    const hasPrac = rawPrac !== "" && !isNaN(nPrac);
+
+                    if (rawCq !== "" && (!hasCq || nCq < 0 || nCq > activeExamDist.cq)) isValid = false;
+                    if (rawMcq !== "" && (!hasMcq || nMcq < 0 || nMcq > activeExamDist.mcq)) isValid = false;
+                    if (rawPrac !== "" && (!hasPrac || nPrac < 0 || nPrac > activeExamDist.practical)) isValid = false;
+
+                    const totalVal = (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0);
 
                     savedMarks[key][activeExamSubjectCode] = {
-                        total: nCq + nMcq + nPrac,
+                        total: totalVal,
                         isAbsent: false,
-                        cq: cqIn && rawCq !== "" ? nCq : undefined,
-                        mcq: mcqIn && rawMcq !== "" ? nMcq : undefined,
-                        practical: pracIn && rawPrac !== "" ? nPrac : undefined
+                        cq: hasCq ? nCq : undefined,
+                        mcq: hasMcq ? nMcq : undefined,
+                        practical: hasPrac ? nPrac : undefined
                     };
                     countSaved++;
                 }

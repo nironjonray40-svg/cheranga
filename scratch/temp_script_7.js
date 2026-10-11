@@ -3223,7 +3223,6 @@
 
                     for (const [key, studentData] of Object.entries(savedMarks)) {
                         if (key.startsWith('timestamp_')) continue;
-                        // Match key ending or containing _scheduleId
                         if (key.endsWith('_' + schId) || key.includes('_' + schId)) {
                             if (studentData && typeof studentData === 'object') {
                                 for (const [subKey, subVal] of Object.entries(studentData)) {
@@ -3252,7 +3251,6 @@
                         }
                     }
 
-                    // 4. If sch.marksEntryTime is present, check if there are student marks
                     if (sch.marksEntryTime) {
                         const hasMarksKeys = Object.keys(savedMarks).some(k => !k.startsWith('timestamp_') && (k.endsWith('_' + schId) || k.includes('_' + schId)));
                         if (hasMarksKeys) {
@@ -3271,6 +3269,24 @@
                 modal.style.display = 'flex';
                 modal.classList.add('active');
 
+                // Populate Class filter dropdown dynamically
+                const classSelect = document.getElementById('selectImportExamClass');
+                if (classSelect) {
+                    let classes = [];
+                    try {
+                        classes = (typeof loadClasses === 'function') ? loadClasses() : safeJsonParse('school_classes', []);
+                    } catch (e) { }
+                    if (!classes || classes.length === 0) {
+                        classes = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+                    }
+                    let classOptions = '<option value="ALL">সকল শ্রেণি (All Classes)</option>';
+                    classes.forEach(cls => {
+                        const bnCls = (typeof formatClassBangla === 'function') ? formatClassBangla(cls) : cls;
+                        classOptions += `<option value="${cls}">${bnCls} (${cls})</option>`;
+                    });
+                    classSelect.innerHTML = classOptions;
+                }
+
                 const searchInput = document.getElementById('inputImportExamSearch');
                 if (searchInput) {
                     searchInput.value = '';
@@ -3280,17 +3296,17 @@
                 const listContainer = document.getElementById('importExamListContainer');
                 if (listContainer) {
                     listContainer.innerHTML = `
-          <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #4f46e5; margin-bottom: 10px;"></i>
-            <p style="margin: 0; font-size: 0.95rem;">Exam List এবং সংরক্ষিত পরীক্ষার তালিকা লোড হচ্ছে...</p>
-          </div>
-        `;
+                      <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #4f46e5; margin-bottom: 10px;"></i>
+                        <p style="margin: 0; font-size: 0.95rem; font-weight: 600;">Exam List এবং পরীক্ষার তালিকা লোড হচ্ছে...</p>
+                      </div>
+                    `;
                 }
 
                 try {
                     const exams = [];
 
-                    // 1. Fetch saved OMR evaluations first to know which exams already have OMR evaluations
+                    // 1. Fetch saved OMR evaluations
                     let omrExams = [];
                     try {
                         const res = await fetch('/api/exams');
@@ -3306,7 +3322,7 @@
                         } catch (e) { }
                     }
 
-                    // 2. Fetch schedules from Exam List (school_exam_schedules)
+                    // 2. Fetch all schedules from Exam List (school_exam_schedules)
                     let schedules = [];
                     try {
                         if (typeof loadSchedules === 'function') {
@@ -3318,7 +3334,7 @@
                         console.warn('Error reading schedules:', e);
                     }
 
-                    // Fetch students to count students per class
+                    // Fetch students to accurately count students per class & section
                     let allStudents = [];
                     try {
                         if (typeof loadStudents === 'function') {
@@ -3328,7 +3344,7 @@
                         }
                     } catch (e) { }
 
-                    // Fetch saved student marks to check mark status
+                    // Fetch saved student marks to determine mark status
                     let savedMarks = {};
                     try {
                         if (typeof loadStudentMarks === 'function') {
@@ -3338,52 +3354,76 @@
                         }
                     } catch (e) { }
 
+                    // Process all schedules from Exam List - Include EVERY schedule from Exam Portal!
                     schedules.forEach(sch => {
-                        // "Exam List" এ যে সকল exam এর MCQ নাম্বার এন্ট্রি করা থাকবে, সে সকল পরীক্ষা "Import Exam" এ আসবে না।
                         const hasMcqMarks = checkIfScheduleHasMcqMarks(sch, savedMarks, omrExams);
-                        if (hasMcqMarks) {
-                            return; // Exclude exams that already have MCQ marks entered
-                        }
 
                         const targetClassNum = mapClassToNumber(sch.class);
-                        const studentCount = allStudents.filter(s => {
-                            return mapClassToNumber(s.class) === targetClassNum ||
+                        const targetSections = sch.section && sch.section !== 'All'
+                            ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
+
+                        const classStudents = allStudents.filter(s => {
+                            const sClassNum = mapClassToNumber(s.class);
+                            const isClassMatch = (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
                                 (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
-                        }).length;
+                            if (!isClassMatch) return false;
+
+                            if (targetSections.length > 0 && s.section) {
+                                return targetSections.includes(s.section.trim().toUpperCase());
+                            }
+                            return true;
+                        });
+
+                        const studentCount = classStudents.length > 0 ? classStudents.length : (sch.totalStudents || 0);
 
                         exams.push({
                             id: sch.id,
                             source: 'schedule',
                             sourceLabel: 'Exam List শিডিউল',
                             examName: sch.term || 'পরীক্ষা',
+                            examType: sch.examType || '',
                             subject: sch.subject || '',
                             class: sch.class || '',
                             section: sch.section || 'All',
                             date: sch.date || '',
-                            totalStudents: studentCount > 0 ? studentCount : (sch.totalStudents || 0),
-                            hasMarks: false,
+                            teacher: sch.teacher || '',
+                            slNo: sch.slNo || '',
+                            totalStudents: studentCount,
+                            hasMarks: hasMcqMarks,
+                            createdAt: sch.createdAt || sch.id,
                             scheduleData: sch
                         });
                     });
 
-                    // 3. Fetch saved OMR evaluations if any
+                    // 3. Include historical OMR evaluations (if any not linked to a schedule)
                     omrExams.forEach(oe => {
-                        if (exams.some(x => x.id === oe.id)) return;
+                        if (exams.some(x => String(x.id) === String(oe.id) || String(x.id) === String(oe.scheduleId))) return;
                         const firstStudent = (oe.students && oe.students[0]) ? oe.students[0] : null;
-                        const classLabel = firstStudent ? formatClassBangla(firstStudent.class) : 'সকল শ্রেণি';
+                        const classLabel = firstStudent ? formatClassBangla(firstStudent.class) : (oe.class || 'সকল শ্রেণি');
                         exams.push({
                             id: oe.id,
                             source: 'omr',
                             sourceLabel: 'OMR সংরক্ষিত',
                             examName: oe.examName || ('OMR পরীক্ষা ' + (oe.id || '')),
+                            examType: '',
                             subject: oe.subject || 'MCQ ওএমআর',
                             class: classLabel,
-                            section: 'সকল শাখা',
+                            section: oe.section || 'সকল শাখা',
                             date: oe.date || '',
+                            teacher: oe.teacher || '',
+                            slNo: '',
                             totalStudents: oe.totalStudents || (oe.students ? oe.students.length : 0),
                             hasMarks: true,
+                            createdAt: oe.date || oe.id,
                             omrData: oe
                         });
+                    });
+
+                    // Sort: newest first
+                    exams.sort((a, b) => {
+                        const numA = parseFloat(a.createdAt) || 0;
+                        const numB = parseFloat(b.createdAt) || 0;
+                        return numB - numA;
                     });
 
                     cachedAvailableExams = exams;
@@ -3393,11 +3433,11 @@
                     console.error('Error loading available exams:', err);
                     if (listContainer) {
                         listContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--danger);">
-              <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 8px;"></i>
-              <p>পরীক্ষার তালিকা লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।</p>
-            </div>
-          `;
+                            <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                              <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                              <p>পরীক্ষার তালিকা লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।</p>
+                            </div>
+                        `;
                     }
                 }
             };
@@ -3413,23 +3453,36 @@
             window.renderImportExamList = function () {
                 const listContainer = document.getElementById('importExamListContainer');
                 const searchInput = document.getElementById('inputImportExamSearch');
+                const classSelect = document.getElementById('selectImportExamClass');
                 const sourceSelect = document.getElementById('selectImportExamSource');
                 const countEl = document.getElementById('totalAvailableExamsCount');
                 if (!listContainer) return;
 
                 const query = (searchInput ? searchInput.value.trim().toLowerCase() : '');
+                const filterClass = (classSelect ? classSelect.value : 'ALL');
                 const filterSource = (sourceSelect ? sourceSelect.value : 'ALL');
 
                 const filtered = cachedAvailableExams.filter(exam => {
                     if (filterSource === 'SCHEDULE' && exam.source !== 'schedule') return false;
                     if (filterSource === 'OMR' && exam.source !== 'omr') return false;
 
+                    if (filterClass !== 'ALL') {
+                        const targetClsNum = mapClassToNumber(filterClass);
+                        const examClsNum = mapClassToNumber(exam.class);
+                        const isClassMatch = (targetClsNum && examClsNum && targetClsNum === examClsNum) ||
+                            (exam.class && String(exam.class).toLowerCase() === String(filterClass).toLowerCase());
+                        if (!isClassMatch) return false;
+                    }
+
                     if (!query) return true;
                     const examName = (exam.examName || '').toLowerCase();
+                    const examType = (exam.examType || '').toLowerCase();
                     const subject = (exam.subject || '').toLowerCase();
                     const cls = (exam.class || '').toLowerCase();
                     const date = (exam.date || '').toLowerCase();
-                    return examName.includes(query) || subject.includes(query) || cls.includes(query) || date.includes(query);
+                    const teacher = (exam.teacher || '').toLowerCase();
+                    const section = (exam.section || '').toLowerCase();
+                    return examName.includes(query) || examType.includes(query) || subject.includes(query) || cls.includes(query) || date.includes(query) || teacher.includes(query) || section.includes(query);
                 });
 
                 if (countEl) {
@@ -3438,14 +3491,14 @@
 
                 if (filtered.length === 0) {
                     listContainer.innerHTML = `
-          <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 1.5rem; color: #94a3b8;">
-              <i class="fa-solid fa-folder-open"></i>
-            </div>
-            <h4 style="margin: 0 0 6px 0; color: var(--text-main); font-size: 1.05rem;">কোনো পরীক্ষা পাওয়া যায়নি</h4>
-            <p style="margin: 0; font-size: 0.85rem;">অন্য কোনো নাম দিয়ে অনুসন্ধান করুন অথবা Exam List এ নতুন পরীক্ষার শিডিউল যুক্ত করুন।</p>
-          </div>
-        `;
+                      <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 1.5rem; color: #94a3b8;">
+                          <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h4 style="margin: 0 0 6px 0; color: var(--text-main); font-size: 1.05rem; font-weight: 700;">কোনো পরীক্ষার শিডিউল পাওয়া যায়নি</h4>
+                        <p style="margin: 0; font-size: 0.85rem;">অন্য কোনো নাম দিয়ে অনুসন্ধান করুন অথবা Exam List এ নতুন পরীক্ষার শিডিউল যুক্ত করুন।</p>
+                      </div>
+                    `;
                     return;
                 }
 
@@ -3458,54 +3511,62 @@
                     const badgeColor = isSchedule ? '#3730a3' : '#065f46';
 
                     const marksStatusHtml = exam.hasMarks
-                        ? `<span style="font-size: 0.73rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-check"></i> নম্বর সম্পন্ন</span>`
-                        : `<span style="font-size: 0.73rem; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-clock"></i> পেন্ডিং</span>`;
+                        ? `<span style="font-size: 0.75rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 3px 9px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-check"></i> নম্বর এন্ট্রি সম্পন্ন</span>`
+                        : `<span style="font-size: 0.75rem; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 3px 9px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-clock"></i> মূল্যায়ন পেন্ডিং</span>`;
 
-                    const displayClass = exam.class ? (exam.class.includes('শ্রেণি') ? exam.class : (formatClassBangla(exam.class))) : 'শ্রেণি: -';
+                    const displayClass = exam.class ? (exam.class.includes('শ্রেণি') ? exam.class : (formatClassBangla(exam.class) + ` (${exam.class})`)) : 'শ্রেণি: -';
+                    const classColor = typeof getClassColor === 'function' ? getClassColor(exam.class) : '#4f46e5';
+
+                    const examTypeBadge = exam.examType ? `<span style="font-size: 0.74rem; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px; font-weight: 600;">${exam.examType}</span>` : '';
+                    const sectionBadge = exam.section ? `<span style="font-size: 0.74rem; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 2px 7px; border-radius: 6px; font-weight: 600;">শাখা: ${exam.section}</span>` : '';
+                    const teacherHtml = exam.teacher ? `<span><i class="fa-solid fa-chalkboard-user" style="color: #8b5cf6;"></i> ${exam.teacher}</span>` : '';
 
                     return `
-          <div class="import-exam-item-card" 
-               style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 12px; background: #ffffff; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03); cursor: pointer; gap: 14px;"
-               onmouseover="this.style.borderColor='#4f46e5'; this.style.transform='translateY(-2px)';"
-               onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)';"
-               onclick="selectAndImportExam('${exam.id}', '${exam.source}')">
-            
-            <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
-              <div style="width: 44px; height: 44px; border-radius: 10px; background: ${sourceBg}; color: ${sourceColor}; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
-                <i class="fa-solid ${sourceIcon}"></i>
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
-                  <strong style="font-size: 1.05rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    ${exam.examName} ${exam.subject ? `— ${exam.subject}` : ''}
-                  </strong>
-                  <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor};">
-                    ${exam.sourceLabel}
-                  </span>
-                  ${marksStatusHtml}
-                </div>
-                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 0.83rem; color: #64748b;">
-                  <span><i class="fa-solid fa-graduation-cap" style="color: #6366f1;"></i> ${displayClass}</span>
-                  ${exam.subject ? `<span><i class="fa-solid fa-book" style="color: #0ea5e9;"></i> ${exam.subject}</span>` : ''}
-                  <span><i class="fa-regular fa-calendar" style="color: #f59e0b;"></i> ${exam.date || 'তারিখ নেই'}</span>
-                  <span><i class="fa-solid fa-users" style="color: #10b981;"></i> ${toBengaliNumber(exam.totalStudents)} জন পরীক্ষার্থী</span>
-                </div>
-              </div>
-            </div>
+                      <div class="import-exam-item-card" 
+                           style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-radius: 12px; background: #ffffff; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03); cursor: pointer; gap: 14px; transition: all 0.2s ease;"
+                           onmouseover="this.style.borderColor='#4f46e5'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(79, 70, 229, 0.12)';"
+                           onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.03)';"
+                           onclick="selectAndImportExam('${exam.id}', '${exam.source}')">
+                        
+                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
+                          <div style="width: 46px; height: 46px; border-radius: 12px; background: ${sourceBg}; color: ${sourceColor}; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                            <i class="fa-solid ${sourceIcon}"></i>
+                          </div>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                              <strong style="font-size: 1.08rem; color: #0f172a; font-family: 'Outfit', 'Hind Siliguri', sans-serif;">
+                                ${exam.examName} ${exam.subject ? `— <span style="color: #4f46e5;">${exam.subject}</span>` : ''}
+                              </strong>
+                              <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor};">
+                                ${exam.sourceLabel}
+                              </span>
+                              ${examTypeBadge}
+                              ${marksStatusHtml}
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 0.84rem; color: #64748b;">
+                              <span style="font-weight: 700; color: ${classColor};"><i class="fa-solid fa-graduation-cap"></i> ${displayClass}</span>
+                              ${sectionBadge}
+                              <span><i class="fa-regular fa-calendar" style="color: #f59e0b;"></i> ${exam.date || 'তারিখ নির্ধারিত নেই'}</span>
+                              ${teacherHtml}
+                              <span style="font-weight: 600; color: #059669;"><i class="fa-solid fa-users"></i> ${toBengaliNumber(exam.totalStudents)} জন পরীক্ষার্থী</span>
+                            </div>
+                          </div>
+                        </div>
 
-            <div style="flex-shrink: 0;">
-              <button type="button" class="btn btn-sm" 
-                      style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff; font-weight: 700; border-radius: 8px; padding: 7px 16px; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3); font-size: 0.88rem; cursor: pointer;">
-                <i class="fa-solid fa-arrow-down-to-bracket"></i> নির্বাচন করুন
-              </button>
-            </div>
-          </div>
-        `;
+                        <div style="flex-shrink: 0;">
+                          <button type="button" class="btn btn-sm" 
+                                  style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff; font-weight: 700; border-radius: 8px; padding: 8px 18px; border: none; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3); font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;"
+                                  onclick="event.stopPropagation(); selectAndImportExam('${exam.id}', '${exam.source}')">
+                            <i class="fa-solid fa-file-import"></i> Import Exam
+                          </button>
+                        </div>
+                      </div>
+                    `;
                 }).join('');
             };
 
             window.selectAndImportExam = function (examId, source) {
-                const selected = cachedAvailableExams.find(x => x.id === examId && x.source === source);
+                const selected = cachedAvailableExams.find(x => String(x.id) === String(examId) && x.source === source);
                 if (!selected) return;
 
                 if (source === 'omr') {
@@ -3598,10 +3659,28 @@
                 } catch (e) { }
 
                 const targetClassNum = mapClassToNumber(sch.class);
+                const targetSections = sch.section && sch.section !== 'All'
+                    ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
+
                 let classStudents = allStudents.filter(s => {
-                    return mapClassToNumber(s.class) === targetClassNum ||
+                    const sClassNum = mapClassToNumber(s.class);
+                    const isClassMatch = (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
                         (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
+                    if (!isClassMatch) return false;
+
+                    if (targetSections.length > 0 && s.section) {
+                        return targetSections.includes(s.section.trim().toUpperCase());
+                    }
+                    return true;
                 });
+
+                if (classStudents.length === 0) {
+                    classStudents = allStudents.filter(s => {
+                        const sClassNum = mapClassToNumber(s.class);
+                        return (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
+                            (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
+                    });
+                }
 
                 if (classStudents.length === 0) {
                     classStudents = allStudents.slice(0, 30);
@@ -3696,7 +3775,7 @@
                         nameEn: enName,
                         roll: String(student.roll || idx + 1),
                         class: targetClassNum || '8',
-                        section: (student.section && student.section !== 'All') ? student.section : 'গ',
+                        section: (student.section && student.section !== 'All') ? student.section : (sch.section && sch.section !== 'All' ? sch.section.split(',')[0].trim() : 'A'),
                         set: setChoice,
                         correct: correctScore,
                         wrong: wrongCount,
@@ -3725,7 +3804,7 @@
                 const markInfoText = totalLoadedWithMarks > 0
                     ? ` (${toBengaliNumber(totalLoadedWithMarks)} জনের সংরক্ষিত ফলাফল সহ)`
                     : '';
-                showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন)${markInfoText} সফলভাবে লোড হয়েছে!`, 'success', 'fa-check');
+                showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন শিক্ষার্থী)${markInfoText} সফলভাবে OMR এ ইমপোর্ট করা হয়েছে!`, 'success', 'fa-check');
 
                 const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
                 if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3848,8 +3927,11 @@
                         const rawReg = toEnglishDigits(student.id || student.regNo || '').trim();
                         const rawRoll = toEnglishDigits(student.roll || '').trim();
                         const isPending = (student.status === 'পেন্ডিং' && !student.isRealScanned && (!student.correct || student.correct === 0));
-                        const isAbsent = isPending;
-                        const mcqScore = isAbsent ? 0 : (typeof student.correct === 'number' ? student.correct : (parseInt(student.correct, 10) || 0));
+                        
+                        // Do not create unentered/absent dummy entries for students whose OMR was not evaluated
+                        if (isPending) return;
+
+                        const mcqScore = typeof student.correct === 'number' ? student.correct : (parseInt(student.correct, 10) || 0);
 
                         // Strict Step 1: Find master student record by Registration Number / Student ID / ID first (Unique Exact Match)
                         let masterSt = allStudents.find(st =>
@@ -3889,38 +3971,81 @@
                         if (student.studentId) targetStudentIds.add(String(student.studentId));
                         if (rawReg) targetStudentIds.add(rawReg);
 
+                        // Discover authoritative existing CQ and Practical marks across all candidate lookup keys
+                        let authoritativeExistingCq = undefined;
+                        let authoritativeExistingPrac = undefined;
+
+                        const candidateLookupKeys = [];
+                        targetStudentIds.forEach(idVal => {
+                            candidateLookupKeys.push(`marks_${idVal}_${schId}`);
+                            candidateLookupKeys.push(`marks_${idVal}_${examVal}`);
+                        });
+
+                        for (const lookupKey of candidateLookupKeys) {
+                            const record = savedMarks[lookupKey];
+                            if (record && typeof record === 'object') {
+                                for (const subKey of targetSubjectKeys) {
+                                    const subObj = record[subKey];
+                                    if (subObj && typeof subObj === 'object') {
+                                        if (authoritativeExistingCq === undefined && subObj.cq !== undefined && subObj.cq !== null && subObj.cq !== '') {
+                                            authoritativeExistingCq = subObj.cq;
+                                        }
+                                        if (authoritativeExistingPrac === undefined && subObj.practical !== undefined && subObj.practical !== null && subObj.practical !== '') {
+                                            authoritativeExistingPrac = subObj.practical;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        let cleanCq = undefined;
+                        if (authoritativeExistingCq !== undefined && authoritativeExistingCq !== null && authoritativeExistingCq !== '') {
+                            if (authoritativeExistingCq === 'A' || authoritativeExistingCq === 'ABS' || authoritativeExistingCq === 'ABSENT') {
+                                cleanCq = 'A';
+                            } else if (!isNaN(parseInt(authoritativeExistingCq, 10))) {
+                                cleanCq = parseInt(authoritativeExistingCq, 10);
+                            }
+                        }
+
+                        let cleanPrac = undefined;
+                        if (authoritativeExistingPrac !== undefined && authoritativeExistingPrac !== null && authoritativeExistingPrac !== '') {
+                            if (authoritativeExistingPrac === 'A' || authoritativeExistingPrac === 'ABS' || authoritativeExistingPrac === 'ABSENT') {
+                                cleanPrac = 'A';
+                            } else if (!isNaN(parseInt(authoritativeExistingPrac, 10))) {
+                                cleanPrac = parseInt(authoritativeExistingPrac, 10);
+                            }
+                        }
+
+                        const numCq = typeof cleanCq === 'number' ? cleanCq : 0;
+                        const numPrac = typeof cleanPrac === 'number' ? cleanPrac : 0;
+                        const totalVal = numCq + mcqScore + numPrac;
+
+                        const studentMarkPayload = {
+                            total: totalVal,
+                            isAbsent: false,
+                            cq: cleanCq,
+                            mcq: mcqScore,
+                            practical: cleanPrac,
+                            set: student.set || 'ক',
+                            answers: student.answers || {},
+                            percentage: student.percentage || ((mcqScore / 30) * 100).toFixed(1),
+                            status: student.status,
+                            fileName: student.fileName || '',
+                            omrEvaluatedAt: student.evaluatedAt || nowIso
+                        };
+
                         targetStudentIds.forEach(stId => {
-                            const keysToUpdate = [
-                                `marks_${stId}_${schId}`,
-                                `marks_${stId}_${examVal}`
-                            ];
-
-                            keysToUpdate.forEach(k => {
-                                savedMarks[k] = savedMarks[k] || {};
-
-                                targetSubjectKeys.forEach(sKey => {
-                                    const existingData = savedMarks[k][sKey] || {};
-                                    const cqVal = (existingData.cq !== undefined && !isNaN(parseInt(existingData.cq))) ? parseInt(existingData.cq) : (existingData.cq || 0);
-                                    const pracVal = (existingData.practical !== undefined && !isNaN(parseInt(existingData.practical))) ? parseInt(existingData.practical) : (existingData.practical || 0);
-                                    const numCq = typeof cqVal === 'number' ? cqVal : (parseInt(cqVal, 10) || 0);
-                                    const numPrac = typeof pracVal === 'number' ? pracVal : (parseInt(pracVal, 10) || 0);
-                                    const totalVal = numCq + (isAbsent ? 0 : mcqScore) + numPrac;
-
-                                    savedMarks[k][sKey] = {
-                                        total: totalVal,
-                                        isAbsent: isAbsent,
-                                        cq: cqVal,
-                                        mcq: isAbsent ? 0 : mcqScore,
-                                        practical: pracVal,
-                                        set: student.set || 'ক',
-                                        answers: isAbsent ? {} : (student.answers || {}),
-                                        percentage: isAbsent ? '0.0' : (student.percentage || ((mcqScore / 30) * 100).toFixed(1)),
-                                        status: isAbsent ? 'পেন্ডিং' : student.status,
-                                        fileName: isAbsent ? '' : (student.fileName || ''),
-                                        omrEvaluatedAt: isAbsent ? null : (student.evaluatedAt || nowIso)
-                                    };
-                                });
+                            // 1. Update schedule-specific key: marks_${stId}_${schId}
+                            const schKey = `marks_${stId}_${schId}`;
+                            savedMarks[schKey] = savedMarks[schKey] || {};
+                            targetSubjectKeys.forEach(sKey => {
+                                savedMarks[schKey][sKey] = studentMarkPayload;
                             });
+
+                            // 2. Update term-level key: marks_${stId}_${examVal} (preserving all other subjects in the term)
+                            const termKey = `marks_${stId}_${examVal}`;
+                            savedMarks[termKey] = savedMarks[termKey] || {};
+                            savedMarks[termKey][activeExamSubjectCode] = studentMarkPayload;
                         });
                     });
 
