@@ -1518,6 +1518,8 @@ async def asgi_app(scope, receive, send):
                 ctype = 'image/x-icon'
             elif filepath.endswith('.png'):
                 ctype = 'image/png'
+            elif filepath.endswith('.jpg') or filepath.endswith('.jpeg'):
+                ctype = 'image/jpeg'
 
             # High-speed RAM cache for static assets
             if not filepath.endswith('.html') and filepath in STATIC_FILE_CACHE:

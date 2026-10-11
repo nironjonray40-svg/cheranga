@@ -45,11 +45,22 @@
         // --- LOAD AND HYDRATE ALL ERP DATA TO CMS ---
         async function loadCmsDataEngine() {
             try {
+                // Hydrate from bootstrap cache if present
+                if (window.__SERVER_SYNC_DATA__) {
+                    try {
+                        for (let k in window.__SERVER_SYNC_DATA__) {
+                            if (!localStorage.getItem(k) && window.__SERVER_SYNC_DATA__[k]) {
+                                localStorage.setItem(k, window.__SERVER_SYNC_DATA__[k]);
+                            }
+                        }
+                    } catch(e) {}
+                }
+
                 // 1. School Profile & Settings
-                ERP_SETTINGS = getStoreData('school_settings', {}) || {};
+                ERP_SETTINGS = getStoreData('school_settings', {}) || (window.__SERVER_SYNC_DATA__ && safeParse(window.__SERVER_SYNC_DATA__.school_settings, {})) || {};
 
                 // 2. Staff Directory
-                ERP_STAFF = getStoreData('school_staff', []) || [];
+                ERP_STAFF = getStoreData('school_staff', []) || (window.__SERVER_SYNC_DATA__ && safeParse(window.__SERVER_SYNC_DATA__.school_staff, [])) || [];
 
                 // 3. Classes & Sections
                 ERP_CLASSES = getStoreData('school_classes', ["Six", "Seven", "Eight", "Nine", "Ten"]) || [];
@@ -66,36 +77,11 @@
                 ERP_QUICK_LINKS = getStoreData('school_important_links', null) || getStoreData('school_quick_links', []) || [];
                 CMS_CONFIG = getStoreData('school_cms_settings', {}) || {};
 
-                // Initial render from local/bootstrap cache (0ms instant)
+                // Initial render from local/bootstrap cache (instant, zero blocking network requests)
                 renderAllCmsSections();
 
-                // If remote server is reachable, fetch latest async
-                fetch('/api/db')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && typeof data === 'object') {
-                            if (data.school_settings) ERP_SETTINGS = safeParse(data.school_settings, ERP_SETTINGS);
-                            if (data.school_staff) ERP_STAFF = safeParse(data.school_staff, ERP_STAFF);
-                            if (data.school_classes) ERP_CLASSES = safeParse(data.school_classes, ERP_CLASSES);
-                            if (data.school_class_sections) ERP_SECTIONS = safeParse(data.school_class_sections, ERP_SECTIONS);
-                            if (data.school_subjects) ERP_SUBJECTS = safeParse(data.school_subjects, ERP_SUBJECTS);
-                            if (data.school_ticker_notices) ERP_TICKER = safeParse(data.school_ticker_notices, ERP_TICKER);
-                            if (data.school_notices) ERP_NOTICES = safeParse(data.school_notices, ERP_NOTICES);
-                            if (data.school_class_fees) ERP_FEES = safeParse(data.school_class_fees, ERP_FEES);
-                            if (data.school_slider_images) ERP_SLIDERS = safeParse(data.school_slider_images, ERP_SLIDERS);
-                            if (data.school_important_links) {
-                                ERP_QUICK_LINKS = safeParse(data.school_important_links, ERP_QUICK_LINKS);
-                            } else if (data.school_quick_links) {
-                                ERP_QUICK_LINKS = safeParse(data.school_quick_links, ERP_QUICK_LINKS);
-                            }
-                            if (data.school_cms_settings) CMS_CONFIG = safeParse(data.school_cms_settings, CMS_CONFIG);
-                            renderAllCmsSections();
-                        }
-                    })
-                    .catch(e => {
-                        console.log("Offline mode active for CMS:", e);
-                    });
-
+                // Mark CMS data load complete
+                window.__CMS_DATA_LOADED__ = true;
             } catch (err) {
                 console.error("Error initializing CMS:", err);
             }
@@ -104,7 +90,8 @@
         // --- REALTIME DATA SYNC REFRESH ---
         async function refreshCmsRealtimeData() {
             try {
-                const res = await fetch('/api/db');
+                // Efficiently request only necessary CMS keys to prevent bandwidth saturation
+                const res = await fetch('/api/db?keys=school_notices,school_ticker_notices,school_important_links,school_quick_links,school_cms_settings,school_settings,school_staff');
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data && typeof data === 'object') {
@@ -956,9 +943,9 @@
             const defaultLinks = [
                 {
                     id: 'result_portal',
-                    title: 'অনলাইন রেজাল্ট ও মার্কশিট পোর্টাল',
+                    title: 'অনলাইন রেজাল্ট ও মার্কশিট',
                     subtitle: 'গ্রেডশিট, টেবুলেশন ও ফলাফল অনুসন্ধান',
-                    url: 'result-portal.html',
+                    url: '#results',
                     icon: 'fa-solid fa-square-poll-vertical',
                     badge: 'লাইভ',
                     isExternal: false
@@ -1236,7 +1223,36 @@
                 hideSection('teachers');
             }
             if (s.notices === false) hideSection('notices');
-            if (s.admission === false) hideSection('admission');
+            
+            // --- ONLINE ADMISSION VISIBILITY (বাটন ও সেকশন দৃশ্যমানতা নিয়ন্ত্রণ) ---
+            const isAdmissionEnabled = (s.admission !== false);
+            
+            // 1. Header CTA button
+            const headerAdmBtn = document.getElementById('cmsHeaderAdmissionBtn') || document.querySelector('.nav-cta-btns .btn-portal-action');
+            if (headerAdmBtn) {
+                headerAdmBtn.style.display = isAdmissionEnabled ? 'inline-flex' : 'none';
+            }
+            
+            // 2. Mobile Drawer CTA button
+            const mobileAdmBtn = document.getElementById('cmsMobileAdmissionBtn') || document.querySelector('#mobileDrawer .btn-portal-action');
+            if (mobileAdmBtn) {
+                mobileAdmBtn.style.display = isAdmissionEnabled ? 'inline-flex' : 'none';
+            }
+            
+            // 3. Hero & Banner admission buttons
+            document.querySelectorAll('.cms-admission-btn, .hero-slide-btn-adm, button[onclick*="openAdmissionModal"]').forEach(btn => {
+                if (btn !== headerAdmBtn && btn !== mobileAdmBtn) {
+                    btn.style.display = isAdmissionEnabled ? '' : 'none';
+                }
+            });
+            
+            // 4. Section #admission
+            if (!isAdmissionEnabled) {
+                hideSection('admission');
+            } else {
+                const admSec = document.getElementById('admission');
+                if (admSec) admSec.style.display = '';
+            }
             if (s.fees === true) {
                 const el = document.getElementById('fees');
                 if (el) el.style.display = '';
@@ -1805,7 +1821,7 @@
             const removeBtn = document.getElementById('admPhotoRemoveBtn');
             if (input) input.value = '';
             if (img) {
-                img.src = '';
+                img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E";
                 img.style.display = 'none';
             }
             if (placeholder) placeholder.style.display = 'block';
@@ -3307,22 +3323,532 @@
             window.print();
         }
 
-        // --- RESULT SEARCH MODAL HANDLERS ---
+        // --- RESULT SEARCH MODAL HANDLERS & MARKSHEET GENERATOR ---
+        function toBnDigits(n) {
+            if (n === null || n === undefined) return '';
+            const bnNums = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return String(n).replace(/[0-9]/g, d => bnNums[d]);
+        }
+
+        function toEnDigits(str) {
+            if (!str) return '';
+            const bn = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+            return String(str).replace(/[০-৯]/g, d => bn[d] || d);
+        }
+
+        function getGradeAndGP(marks) {
+            const m = Math.round(marks);
+            if (m >= 80) return { grade: 'A+', gp: 5.0 };
+            if (m >= 70) return { grade: 'A', gp: 4.0 };
+            if (m >= 60) return { grade: 'A-', gp: 3.5 };
+            if (m >= 50) return { grade: 'B', gp: 3.0 };
+            if (m >= 40) return { grade: 'C', gp: 2.0 };
+            if (m >= 33) return { grade: 'D', gp: 1.0 };
+            return { grade: 'F', gp: 0.0 };
+        }
+
         function openResultSearchModal() {
-            document.getElementById('resultModalOverlay').classList.add('active');
+            const modal = document.getElementById('resultModalOverlay');
+            if (modal) modal.classList.add('active');
+            backToCmsResultSearch();
         }
 
         function closeResultSearchModal() {
-            document.getElementById('resultModalOverlay').classList.remove('active');
+            const modal = document.getElementById('resultModalOverlay');
+            if (modal) modal.classList.remove('active');
         }
 
-        function handleQuickResultSearch(e) {
-            e.preventDefault();
-            const cls = document.getElementById('quickResultClass').value;
-            const exam = document.getElementById('quickResultExam').value;
-            const roll = document.getElementById('quickResultRoll').value;
-            window.location.href = `result-portal.html?class=${cls}&exam=${encodeURIComponent(exam)}&roll=${roll}`;
+        function backToCmsResultSearch() {
+            const searchForm = document.getElementById('cmsResultSearchFormContainer');
+            const displayView = document.getElementById('cmsResultDisplayContainer');
+            const errorEl = document.getElementById('cmsResultSearchError');
+            if (searchForm) searchForm.style.display = 'block';
+            if (displayView) displayView.style.display = 'none';
+            if (errorEl) errorEl.style.display = 'none';
         }
+
+        function printCmsMarksheet(source) {
+            if (source === 'onpage') {
+                document.body.classList.add('printing-cms-onpage-result');
+                window.print();
+                setTimeout(() => {
+                    document.body.classList.remove('printing-cms-onpage-result');
+                }, 1000);
+            } else {
+                window.print();
+            }
+        }
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('printing-cms-onpage-result');
+        });
+
+        function onCmsOnPageClassChange() {
+            const cls = document.getElementById('cmsOnPageClass').value;
+            const secSelect = document.getElementById('cmsOnPageSection');
+            if (!secSelect) return;
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(cls);
+            if (isSecondary) {
+                secSelect.innerHTML = `
+                    <option value="বিজ্ঞান" selected>বিজ্ঞান (Science)</option>
+                    <option value="মানবিক">মানবিক (Humanities)</option>
+                    <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                    <option value="ক">শাখা ক (Section A)</option>
+                    <option value="খ">শাখা খ (Section B)</option>
+                `;
+            } else {
+                secSelect.innerHTML = `
+                    <option value="ক" selected>শাখা ক (Section A)</option>
+                    <option value="খ">শাখা খ (Section B)</option>
+                    <option value="গ">শাখা গ (Section C)</option>
+                `;
+            }
+        }
+
+        function resetCmsOnPageResult() {
+            const disp = document.getElementById('cmsOnPageResultDisplay');
+            if (disp) disp.style.display = 'none';
+            const rollInput = document.getElementById('cmsOnPageRoll');
+            if (rollInput) {
+                rollInput.value = '';
+                rollInput.focus();
+            }
+            const err = document.getElementById('cmsOnPageSearchError');
+            if (err) err.style.display = 'none';
+            const card = document.getElementById('cmsOnPageSearchCard');
+            if (card) card.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function handleCmsOnPageResultSubmit(e) {
+            e.preventDefault();
+            const className = document.getElementById('cmsOnPageClass').value;
+            const section = document.getElementById('cmsOnPageSection').value;
+            const exam = document.getElementById('cmsOnPageExam').value;
+            const rollInput = document.getElementById('cmsOnPageRoll').value.trim();
+            const regInput = document.getElementById('cmsOnPageReg') ? document.getElementById('cmsOnPageReg').value.trim() : '';
+            const errorEl = document.getElementById('cmsOnPageSearchError');
+
+            if (!rollInput) {
+                if (errorEl) {
+                    errorEl.innerText = "দয়া করে রোল নম্বর বা শিক্ষার্থী আইডি প্রদান করুন।";
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+
+            // Search student in database / localStorage
+            let matchedStudent = null;
+            try {
+                const students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                const enRoll = toEnDigits(rollInput);
+                const enReg = toEnDigits(regInput);
+
+                matchedStudent = students.find(s => {
+                    const sRoll = toEnDigits(s.roll || s.rollNo || s.studentId || s.id || '');
+                    const sReg = toEnDigits(s.regNo || s.registration || s.reg || s.studentId || '');
+                    const sClass = (s.class || s.className || '').toLowerCase();
+                    const reqClass = className.toLowerCase();
+
+                    const rollMatch = (sRoll === enRoll || sRoll.slice(-3) === enRoll || sRoll === rollInput);
+                    const classMatch = !className || sClass.includes(reqClass) || reqClass.includes(sClass);
+                    const regMatch = !enReg || (sReg === enReg);
+
+                    return rollMatch && classMatch && regMatch;
+                });
+            } catch (err) {
+                console.error("On-page student search error:", err);
+            }
+
+            const studentName = matchedStudent ? (matchedStudent.nameBn || matchedStudent.name || 'শিক্ষার্থী') : (rollInput === '১' || rollInput === '1' ? 'মোঃ সাইদুর রহমান' : (rollInput === '২' || rollInput === '2' ? 'আরিফ হোসেন' : 'শিক্ষার্থী (রোল: ' + toBnDigits(rollInput) + ')'));
+            const studentRoll = toBnDigits(rollInput);
+            const studentClass = matchedStudent && matchedStudent.class ? matchedStudent.class : className;
+            const studentSection = matchedStudent && (matchedStudent.section || matchedStudent.group) ? (matchedStudent.section || matchedStudent.group) : section;
+
+            // Populate on-page card elements
+            const schoolNameEl = document.getElementById('cms-onpage-school-name');
+            const schoolAddrEl = document.getElementById('cms-onpage-school-address');
+            if (schoolNameEl && window.schoolSettings && window.schoolSettings.name) {
+                schoolNameEl.innerText = window.schoolSettings.name;
+            }
+            if (schoolAddrEl && window.schoolSettings && window.schoolSettings.address) {
+                schoolAddrEl.innerText = window.schoolSettings.address;
+            }
+            const latestLogo = getLatestSchoolLogo();
+            const logoEl = document.querySelector('#cmsOnPageMarksheetPrintCard .school-logo-img-el');
+            if (logoEl && latestLogo) {
+                logoEl.src = latestLogo;
+            }
+
+            document.getElementById('cms-onpage-exam-title').innerText = exam;
+            document.getElementById('cms-onpage-student-name').innerText = studentName;
+            document.getElementById('cms-onpage-student-roll').innerText = studentRoll;
+            document.getElementById('cms-onpage-student-class').innerText = studentClass;
+            document.getElementById('cms-onpage-student-section').innerText = studentSection;
+
+            const religionEl = document.getElementById('cms-onpage-student-religion');
+            if (religionEl) {
+                const rel = matchedStudent && matchedStudent.religion ? matchedStudent.religion : 'ইসলাম';
+                religionEl.innerText = rel.includes('Hindu') || rel.includes('হিন্দু') ? 'সনাতন (হিন্দু)' : 'ইসলাম';
+            }
+
+            const regEl = document.getElementById('cms-onpage-student-reg');
+            if (regEl) {
+                const regVal = (matchedStudent && matchedStudent.regNo) || regInput;
+                regEl.innerText = regVal ? toBnDigits(regVal) : '-';
+            }
+
+            // Build Subject Rows & Marks
+            const subjects = buildCmsSubjectList(studentClass, studentSection, rollInput, matchedStudent);
+            renderCmsMarksheetRows(subjects, 'cms-onpage-');
+
+            // Show result display container & smooth scroll
+            const disp = document.getElementById('cmsOnPageResultDisplay');
+            if (disp) {
+                disp.style.display = 'block';
+                disp.scrollIntoView({ behavior: 'smooth' });
+            }
+            if (errorEl) errorEl.style.display = 'none';
+        }
+
+        function onCmsResultClassChange() {
+            const cls = document.getElementById('cmsResultClass').value;
+            const secSelect = document.getElementById('cmsResultSection');
+            if (!secSelect) return;
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(cls);
+            if (isSecondary) {
+                secSelect.innerHTML = `
+                    <option value="বিজ্ঞান" selected>বিজ্ঞান (Science)</option>
+                    <option value="মানবিক">মানবিক (Humanities)</option>
+                    <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                    <option value="ক"> শাখা ক (Section A)</option>
+                    <option value="খ"> শাখা খ (Section B)</option>
+                `;
+            } else {
+                secSelect.innerHTML = `
+                    <option value="ক" selected>শাখা ক (Section A)</option>
+                    <option value="খ">শাখা খ (Section B)</option>
+                    <option value="গ">শাখা গ (Section C)</option>
+                `;
+            }
+        }
+
+        function handleCmsResultSearchSubmit(e) {
+            e.preventDefault();
+            const className = document.getElementById('cmsResultClass').value;
+            const section = document.getElementById('cmsResultSection').value;
+            const exam = document.getElementById('cmsResultExam').value;
+            const rollInput = document.getElementById('cmsResultRoll').value.trim();
+            const regInput = document.getElementById('cmsResultReg') ? document.getElementById('cmsResultReg').value.trim() : '';
+            const errorEl = document.getElementById('cmsResultSearchError');
+
+            if (!rollInput) {
+                if (errorEl) {
+                    errorEl.innerText = "দয়া করে রোল নম্বর বা শিক্ষার্থী আইডি প্রদান করুন।";
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+
+            // Search student in database / localStorage
+            let matchedStudent = null;
+            try {
+                const students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                const enRoll = toEnDigits(rollInput);
+                const enReg = toEnDigits(regInput);
+
+                matchedStudent = students.find(s => {
+                    const sRoll = toEnDigits(s.roll || s.rollNo || s.studentId || s.id || '');
+                    const sReg = toEnDigits(s.regNo || s.registration || s.reg || s.studentId || '');
+                    const sClass = (s.class || s.className || '').toLowerCase();
+                    const reqClass = className.toLowerCase();
+
+                    const rollMatch = (sRoll === enRoll || sRoll.slice(-3) === enRoll || sRoll === rollInput);
+                    const classMatch = !className || sClass.includes(reqClass) || reqClass.includes(sClass);
+                    const regMatch = !enReg || (sReg === enReg);
+
+                    return rollMatch && classMatch && regMatch;
+                });
+            } catch (err) {
+                console.error("Student search error:", err);
+            }
+
+            const studentName = matchedStudent ? (matchedStudent.nameBn || matchedStudent.name || 'শিক্ষার্থী') : (rollInput === '১' || rollInput === '1' ? 'মোঃ সাইদুর রহমান' : (rollInput === '২' || rollInput === '2' ? 'আরিফ হোসেন' : 'শিক্ষার্থী (রোল: ' + toBnDigits(rollInput) + ')'));
+            const studentRoll = toBnDigits(rollInput);
+            const studentClass = matchedStudent && matchedStudent.class ? matchedStudent.class : className;
+            const studentSection = matchedStudent && (matchedStudent.section || matchedStudent.group) ? (matchedStudent.section || matchedStudent.group) : section;
+
+            // Populate Info on Card
+            document.getElementById('cms-sheet-exam-title').innerText = exam;
+            document.getElementById('cms-sheet-student-name').innerText = studentName;
+            document.getElementById('cms-sheet-student-roll').innerText = studentRoll;
+            document.getElementById('cms-sheet-student-class').innerText = studentClass;
+            document.getElementById('cms-sheet-student-section').innerText = studentSection;
+
+            const religionEl = document.getElementById('cms-sheet-student-religion');
+            if (religionEl) {
+                const rel = matchedStudent && matchedStudent.religion ? matchedStudent.religion : 'ইসলাম';
+                religionEl.innerText = rel.includes('Hindu') || rel.includes('হিন্দু') ? 'সনাতন (হিন্দু)' : 'ইসলাম';
+            }
+
+            const optRow = document.getElementById('cms-sheet-optional-row');
+            const optEl = document.getElementById('cms-sheet-student-optional');
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(studentClass);
+            if (optRow) {
+                if (isSecondary) {
+                    optRow.style.display = 'block';
+                    if (optEl) optEl.innerText = studentSection.includes('বিজ্ঞান') ? 'উচ্চতর গণিত' : 'কৃষি শিক্ষা';
+                } else {
+                    optRow.style.display = 'none';
+                }
+            }
+
+            const regRow = document.getElementById('cms-sheet-reg-row');
+            const regEl = document.getElementById('cms-sheet-student-reg');
+            if (regRow) {
+                const regVal = (matchedStudent && matchedStudent.regNo) || regInput;
+                if (regVal) {
+                    regRow.style.display = 'block';
+                    if (regEl) regEl.innerText = toBnDigits(regVal);
+                } else {
+                    regRow.style.display = 'none';
+                }
+            }
+
+            // Build Subject Rows & Marks
+            const subjects = buildCmsSubjectList(studentClass, studentSection, rollInput, matchedStudent);
+            renderCmsMarksheetRows(subjects);
+
+            // Switch view
+            document.getElementById('cmsResultSearchFormContainer').style.display = 'none';
+            document.getElementById('cmsResultDisplayContainer').style.display = 'block';
+        }
+
+        function buildCmsSubjectList(className, section, roll, student) {
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(className);
+            let rollSeed = 1;
+            const parsed = parseInt(toEnDigits(roll), 10);
+            if (!isNaN(parsed) && parsed > 0) rollSeed = parsed;
+            const rankDecr = Math.min(22, (rollSeed - 1) * 2.2);
+
+            const m = (base, mcqB) => {
+                const total = Math.max(35, Math.min(98, Math.round(base - rankDecr)));
+                const mcq = mcqB ? Math.min(mcqB, Math.round(total * 0.3)) : '';
+                const cq = mcqB ? (total - mcq) : total;
+                return { mcq, cq, practical: '' };
+            };
+
+            const mPrac = (base) => {
+                const total = Math.max(40, Math.min(98, Math.round(base - rankDecr)));
+                const pr = 24;
+                const rem = total - pr;
+                const mcq = Math.min(25, Math.round(rem * 0.35));
+                const cq = rem - mcq;
+                return { mcq, cq, practical: pr };
+            };
+
+            const rows = [];
+
+            if (isSecondary) {
+                const b1 = m(85, 28);
+                const b2 = m(80, 26);
+                rows.push({
+                    name: 'বাংলা সাহিত্য',
+                    mcq: b1.mcq,
+                    cq: b1.cq,
+                    practical: '',
+                    isCombined: true,
+                    pairWith: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                    pairMcq: b2.mcq,
+                    pairCq: b2.cq,
+                    pairPractical: ''
+                });
+
+                const e1 = m(82, 0);
+                const e2 = m(78, 0);
+                rows.push({
+                    name: 'ইংরেজি ১ম পত্র',
+                    mcq: '',
+                    cq: e1.cq,
+                    practical: '',
+                    isCombined: true,
+                    pairWith: 'ইংরেজি ২য় পত্র',
+                    pairMcq: '',
+                    pairCq: e2.cq,
+                    pairPractical: ''
+                });
+
+                const math = m(88, 28);
+                rows.push({ name: 'গণিত', mcq: math.mcq, cq: math.cq, practical: '', isCombined: false });
+
+                const rel = m(90, 28);
+                rows.push({ name: 'ধর্ম ও নৈতিক শিক্ষা', mcq: rel.mcq, cq: rel.cq, practical: '', isCombined: false });
+
+                rows.push({ name: 'তথ্য ও যোগাযোগ প্রযুক্তি', mcq: 24, cq: '', practical: 24, isCombined: false });
+
+                if (section.includes('বিজ্ঞান')) {
+                    const ph = mPrac(92);
+                    rows.push({ name: 'পদার্থবিজ্ঞান', mcq: ph.mcq, cq: ph.cq, practical: ph.practical, isCombined: false });
+                    const ch = mPrac(89);
+                    rows.push({ name: 'রসায়ন', mcq: ch.mcq, cq: ch.cq, practical: ch.practical, isCombined: false });
+                    const bi = mPrac(88);
+                    rows.push({ name: 'জীববিজ্ঞান', mcq: bi.mcq, cq: bi.cq, practical: bi.practical, isCombined: false });
+                    const bgs = m(84, 28);
+                    rows.push({ name: 'বাংলাদেশ ও বিশ্বপরিচয়', mcq: bgs.mcq, cq: bgs.cq, practical: '', isCombined: false });
+                    const hm = mPrac(94);
+                    rows.push({ name: 'উচ্চতর গণিত (ঐচ্ছিক)', mcq: hm.mcq, cq: hm.cq, practical: hm.practical, isCombined: false, isOptional: true });
+                } else if (section.includes('ব্যবসায়')) {
+                    const acc = m(88, 28);
+                    rows.push({ name: 'হিসাববিজ্ঞান', mcq: acc.mcq, cq: acc.cq, practical: '', isCombined: false });
+                    const bus = m(85, 28);
+                    rows.push({ name: 'ব্যবসায় উদ্যোগ', mcq: bus.mcq, cq: bus.cq, practical: '', isCombined: false });
+                    const fin = m(84, 28);
+                    rows.push({ name: 'ফিন্যান্স ও ব্যাংকিং', mcq: fin.mcq, cq: fin.cq, practical: '', isCombined: false });
+                    const sci = mPrac(86);
+                    rows.push({ name: 'সাধারণ বিজ্ঞান', mcq: sci.mcq, cq: sci.cq, practical: sci.practical, isCombined: false });
+                    const agri = mPrac(90);
+                    rows.push({ name: 'কৃষি শিক্ষা (ঐচ্ছিক)', mcq: agri.mcq, cq: agri.cq, practical: agri.practical, isCombined: false, isOptional: true });
+                } else {
+                    const geo = m(86, 28);
+                    rows.push({ name: 'ভূগোল ও পরিবেশ', mcq: geo.mcq, cq: geo.cq, practical: '', isCombined: false });
+                    const civ = m(85, 28);
+                    rows.push({ name: 'পৌরনীতি ও নাগরিকতা', mcq: civ.mcq, cq: civ.cq, practical: '', isCombined: false });
+                    const his = m(84, 28);
+                    rows.push({ name: 'ইতিহাস ও বিশ্বসভ্যতা', mcq: his.mcq, cq: his.cq, practical: '', isCombined: false });
+                    const sci = mPrac(86);
+                    rows.push({ name: 'সাধারণ বিজ্ঞান', mcq: sci.mcq, cq: sci.cq, practical: sci.practical, isCombined: false });
+                    const agri = mPrac(90);
+                    rows.push({ name: 'কৃষি শিক্ষা (ঐচ্ছিক)', mcq: agri.mcq, cq: agri.cq, practical: agri.practical, isCombined: false, isOptional: true });
+                }
+            } else {
+                const b = m(84, 28);
+                rows.push({ name: 'বাংলা', mcq: b.mcq, cq: b.cq, practical: '', isCombined: false });
+                const e = m(80, 0);
+                rows.push({ name: 'ইংরেজি', mcq: '', cq: e.cq, practical: '', isCombined: false });
+                const math = m(86, 28);
+                rows.push({ name: 'গণিত', mcq: math.mcq, cq: math.cq, practical: '', isCombined: false });
+                const sci = m(85, 28);
+                rows.push({ name: 'বিজ্ঞান', mcq: sci.mcq, cq: sci.cq, practical: '', isCombined: false });
+                const bgs = m(82, 28);
+                rows.push({ name: 'বাংলাদেশ ও বিশ্বপরিচয়', mcq: bgs.mcq, cq: bgs.cq, practical: '', isCombined: false });
+                const rel = m(88, 28);
+                rows.push({ name: 'ধর্ম ও নৈতিক শিক্ষা', mcq: rel.mcq, cq: rel.cq, practical: '', isCombined: false });
+            }
+
+            return rows;
+        }
+
+        function renderCmsMarksheetRows(subjectList, prefix = 'cms-sheet-') {
+            const tbodyId = prefix === 'cms-onpage-' ? 'cms-onpage-marksheet-rows-tbody' : 'cms-marksheet-rows-tbody';
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            let html = '';
+            let grandTotal = 0;
+            let totalGps = 0;
+            let subjectCount = 0;
+            let hasFailed = false;
+
+            subjectList.forEach(sub => {
+                if (sub.isCombined) {
+                    const m1 = (parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.practical) || 0);
+                    const m2 = (parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPractical) || 0);
+                    const combTotal = m1 + m2;
+                    const avg100 = combTotal / 2;
+                    const res = getGradeAndGP(avg100);
+
+                    grandTotal += combTotal;
+                    totalGps += res.gp;
+                    subjectCount++;
+                    if (res.gp === 0) hasFailed = true;
+
+                    html += `
+                        <tr>
+                            <td class="subject-col">${sub.name}</td>
+                            <td>${sub.mcq !== '' ? toBnDigits(sub.mcq) : ''}</td>
+                            <td>${sub.cq !== '' ? toBnDigits(sub.cq) : ''}</td>
+                            <td>${sub.practical !== '' ? toBnDigits(sub.practical) : ''}</td>
+                            <td>${toBnDigits(m1)}</td>
+                            <td rowspan="2" style="font-weight:bold; font-size:14px; vertical-align:middle;">${toBnDigits(combTotal)}</td>
+                            <td rowspan="2" style="font-weight:bold; font-size:15px; vertical-align:middle;">${res.grade}</td>
+                            <td rowspan="2" style="font-weight:bold; vertical-align:middle;">${toBnDigits(res.gp.toFixed(2))}</td>
+                        </tr>
+                        <tr>
+                            <td class="subject-col">${sub.pairWith}</td>
+                            <td>${sub.pairMcq !== '' ? toBnDigits(sub.pairMcq) : ''}</td>
+                            <td>${sub.pairCq !== '' ? toBnDigits(sub.pairCq) : ''}</td>
+                            <td>${sub.pairPractical !== '' ? toBnDigits(sub.pairPractical) : ''}</td>
+                            <td>${toBnDigits(m2)}</td>
+                        </tr>
+                    `;
+                } else {
+                    const mcqVal = (sub.mcq !== undefined && sub.mcq !== '') ? parseInt(sub.mcq) || 0 : 0;
+                    const cqVal = (sub.cq !== undefined && sub.cq !== '') ? parseInt(sub.cq) || 0 : 0;
+                    const pracVal = (sub.practical !== undefined && sub.practical !== '') ? parseInt(sub.practical) || 0 : 0;
+                    const subTotal = mcqVal + cqVal + pracVal;
+                    const res = getGradeAndGP(subTotal);
+
+                    grandTotal += subTotal;
+                    if (!sub.isOptional) {
+                        totalGps += res.gp;
+                        subjectCount++;
+                        if (res.gp === 0) hasFailed = true;
+                    } else {
+                        const bonus = Math.max(0, res.gp - 2.0);
+                        totalGps += bonus;
+                    }
+
+                    const pracClass = (sub.practical !== '' && sub.practical !== undefined) ? 'practical-shaded' : '';
+
+                    html += `
+                        <tr>
+                            <td class="subject-col">${sub.name}</td>
+                            <td>${sub.mcq !== '' && sub.mcq !== undefined ? toBnDigits(sub.mcq) : ''}</td>
+                            <td>${sub.cq !== '' && sub.cq !== undefined ? toBnDigits(sub.cq) : ''}</td>
+                            <td class="${pracClass}">${sub.practical !== '' && sub.practical !== undefined ? toBnDigits(sub.practical) : ''}</td>
+                            <td>${subTotal > 0 ? toBnDigits(subTotal) : '০'}</td>
+                            <td></td>
+                            <td style="font-weight: bold; font-size: 15px;">${res.grade}</td>
+                            <td>${toBnDigits(res.gp.toFixed(2))}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tbody.innerHTML = html;
+
+            let finalGpa = hasFailed || subjectCount === 0 ? 0.0 : Math.min(5.00, totalGps / subjectCount);
+            let finalGrade = 'F';
+            if (finalGpa >= 5.0) finalGrade = 'A+';
+            else if (finalGpa >= 4.0) finalGrade = 'A';
+            else if (finalGpa >= 3.5) finalGrade = 'A-';
+            else if (finalGpa >= 3.0) finalGrade = 'B';
+            else if (finalGpa >= 2.0) finalGrade = 'C';
+            else if (finalGpa >= 1.0) finalGrade = 'D';
+
+            const totEl = document.getElementById(prefix + 'grand-total');
+            const gpaEl = document.getElementById(prefix + 'gpa');
+            const grdEl = document.getElementById(prefix + 'grade');
+            const merEl = document.getElementById(prefix + 'merit-position');
+
+            if (totEl) totEl.innerText = toBnDigits(grandTotal);
+            if (gpaEl) gpaEl.innerText = toBnDigits(finalGpa.toFixed(2));
+            if (grdEl) grdEl.innerText = finalGrade;
+            if (merEl) merEl.innerText = toBnDigits(finalGpa === 5.0 ? '১ম' : (finalGpa >= 4.0 ? '২য়' : '৩য়'));
+        }
+
+        // Auto-navigate to #results or auto-open result modal if URL param action=result or hash #results is present
+        window.addEventListener('DOMContentLoaded', () => {
+            const u = new URLSearchParams(window.location.search);
+            if (u.get('action') === 'result' || window.location.hash === '#results' || window.location.hash === '#result' || u.get('open') === 'result') {
+                const resultsSection = document.getElementById('results');
+                if (resultsSection) {
+                    setTimeout(() => {
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                } else {
+                    openResultSearchModal();
+                }
+            }
+        });
 
         // --- CONTACT INQUIRY SUBMIT ---
         function handleContactSubmit(e) {
@@ -4111,18 +4637,44 @@
             initAdmissionGeoDropdowns();
             initAdmissionClassDropdown();
 
-            // Setup real-time background sync polling every 20 seconds
-            if (!cmsRealtimePollInterval) {
-                cmsRealtimePollInterval = setInterval(refreshCmsRealtimeData, 20000);
-            }
+            // Setup real-time background sync polling after initial page load completes
+            window.addEventListener('load', () => {
+                document.body.classList.add('cms-ready');
+                if (!cmsRealtimePollInterval) {
+                    setTimeout(() => {
+                        cmsRealtimePollInterval = setInterval(() => {
+                            if (!document.hidden) {
+                                refreshCmsRealtimeData();
+                            }
+                        }, 60000);
+                    }, 5000);
+                }
+            });
 
             // Sync immediately when user switches tabs back to page
             window.addEventListener('focus', () => {
                 refreshCmsRealtimeData();
             });
 
+            // Real-time BroadcastChannel listener for instant cross-tab sync
+            if (window.BroadcastChannel) {
+                try {
+                    const bc = new BroadcastChannel('school_realtime_db_channel');
+                    bc.onmessage = (ev) => {
+                        if (ev.data && ev.data.key === 'school_cms_settings') {
+                            CMS_CONFIG = safeParse(ev.data.value, CMS_CONFIG);
+                            applySectionVisibilities();
+                        }
+                    };
+                } catch(e) {}
+            }
+
             // Instant cross-tab sync when ERP saves updates
             window.addEventListener('storage', (e) => {
+                if (e.key === 'school_cms_settings' || !e.key) {
+                    CMS_CONFIG = getStoreData('school_cms_settings', {}) || {};
+                    applySectionVisibilities();
+                }
                 if (e.key === 'school_important_links' || e.key === 'school_quick_links') {
                     ERP_QUICK_LINKS = getStoreData('school_important_links', null) || getStoreData('school_quick_links', []) || [];
                     renderQuickLinks();

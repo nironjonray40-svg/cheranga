@@ -3792,7 +3792,7 @@
                     <div class="speech-person">
                         <div class="speech-avatar-wrap"
                             style="position: relative; width: 70px; height: 70px; flex-shrink: 0;">
-                            <img id="chairmanPhotoImg" class="speech-avatar" src="" alt="সভাপতি"
+                            <img id="chairmanPhotoImg" class="speech-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="সভাপতি"
                                 style="display: none; width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); background: #ffffff; padding: 2px; box-shadow: 0 4px 12px rgba(0,82,255,0.25);">
                             <div id="chairmanAvatarFallback" class="speech-avatar"
                                 style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.8rem; box-shadow: 0 4px 12px rgba(0,82,255,0.25);">
@@ -3818,7 +3818,7 @@
                     <div class="speech-person">
                         <div class="speech-avatar-wrap"
                             style="position: relative; width: 70px; height: 70px; flex-shrink: 0;">
-                            <img id="headmasterPhotoImg" class="speech-avatar" src="" alt="প্রধান শিক্ষক"
+                            <img id="headmasterPhotoImg" class="speech-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="প্রধান শিক্ষক"
                                 style="display: none; width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #10b981; background: #ffffff; padding: 2px; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
                             <div id="headmasterAvatarFallback" class="speech-avatar"
                                 style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.8rem; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
@@ -4077,7 +4077,7 @@
                                 <div class="school-name" id="cms-onpage-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</div>
                                 <div class="school-address" id="cms-onpage-school-address">মাথাভাঙ্গা, জলঢাকা, নীলফামারী।</div>
                                 <div class="school-logo-container">
-                                    <img src="school_logo.svg" alt="School Logo" class="school-logo-img-el" onerror="this.src='school_logo.svg'">
+                                    <img src="school_logo.svg" alt="School Logo" class="school-logo-img-el" onerror="this.onerror=null;">
                                 </div>
                             </td>
                             <td style="width: 20%;">
@@ -4526,7 +4526,7 @@
                         class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body" style="text-align: center;">
-                <img id="modalSpeechPhoto" src="" alt="Person Photo"
+                <img id="modalSpeechPhoto" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Person Photo"
                     style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-bottom: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.1);">
                 <h3 id="modalSpeechPersonName" style="font-size: 1.4rem; margin-bottom: 4px;">নাম</h3>
                 <p id="modalSpeechPersonTitle" style="color: var(--primary); font-weight: 700; margin-bottom: 20px;">
@@ -4709,7 +4709,7 @@
                                 <div class="adm-photo-box"
                                     style="background: rgba(255, 255, 255, 0.85); border: 1.5px dashed #10b981;">
                                     <div class="adm-photo-preview" id="admPhotoPreviewBox">
-                                        <img id="admPhotoImgPreview" src="" alt="Student Photo" style="display: none;">
+                                        <img id="admPhotoImgPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Student Photo" style="display: none;">
                                         <div id="admPhotoPlaceholder" class="placeholder-icon">
                                             <i class="fa-solid fa-user-tie"></i>
                                         </div>
@@ -5509,7 +5509,7 @@
                                     <div class="school-name" id="cms-sheet-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</div>
                                     <div class="school-address" id="cms-sheet-school-address">মাথাভাঙ্গা, জলঢাকা, নীলফামারী।</div>
                                     <div class="school-logo-container">
-                                        <img src="school_logo.svg" alt="School Logo" onerror="this.src='school_logo.svg'">
+                                        <img src="school_logo.svg" alt="School Logo" onerror="this.onerror=null;">
                                     </div>
                                 </td>
                                 <td style="width: 20%;">
@@ -5980,11 +5980,22 @@
         // --- LOAD AND HYDRATE ALL ERP DATA TO CMS ---
         async function loadCmsDataEngine() {
             try {
+                // Hydrate from bootstrap cache if present
+                if (window.__SERVER_SYNC_DATA__) {
+                    try {
+                        for (let k in window.__SERVER_SYNC_DATA__) {
+                            if (!localStorage.getItem(k) && window.__SERVER_SYNC_DATA__[k]) {
+                                localStorage.setItem(k, window.__SERVER_SYNC_DATA__[k]);
+                            }
+                        }
+                    } catch(e) {}
+                }
+
                 // 1. School Profile & Settings
-                ERP_SETTINGS = getStoreData('school_settings', {}) || {};
+                ERP_SETTINGS = getStoreData('school_settings', {}) || (window.__SERVER_SYNC_DATA__ && safeParse(window.__SERVER_SYNC_DATA__.school_settings, {})) || {};
 
                 // 2. Staff Directory
-                ERP_STAFF = getStoreData('school_staff', []) || [];
+                ERP_STAFF = getStoreData('school_staff', []) || (window.__SERVER_SYNC_DATA__ && safeParse(window.__SERVER_SYNC_DATA__.school_staff, [])) || [];
 
                 // 3. Classes & Sections
                 ERP_CLASSES = getStoreData('school_classes', ["Six", "Seven", "Eight", "Nine", "Ten"]) || [];
@@ -6001,36 +6012,11 @@
                 ERP_QUICK_LINKS = getStoreData('school_important_links', null) || getStoreData('school_quick_links', []) || [];
                 CMS_CONFIG = getStoreData('school_cms_settings', {}) || {};
 
-                // Initial render from local/bootstrap cache (0ms instant)
+                // Initial render from local/bootstrap cache (instant, zero blocking network requests)
                 renderAllCmsSections();
 
-                // If remote server is reachable, fetch latest async
-                fetch('/api/db')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && typeof data === 'object') {
-                            if (data.school_settings) ERP_SETTINGS = safeParse(data.school_settings, ERP_SETTINGS);
-                            if (data.school_staff) ERP_STAFF = safeParse(data.school_staff, ERP_STAFF);
-                            if (data.school_classes) ERP_CLASSES = safeParse(data.school_classes, ERP_CLASSES);
-                            if (data.school_class_sections) ERP_SECTIONS = safeParse(data.school_class_sections, ERP_SECTIONS);
-                            if (data.school_subjects) ERP_SUBJECTS = safeParse(data.school_subjects, ERP_SUBJECTS);
-                            if (data.school_ticker_notices) ERP_TICKER = safeParse(data.school_ticker_notices, ERP_TICKER);
-                            if (data.school_notices) ERP_NOTICES = safeParse(data.school_notices, ERP_NOTICES);
-                            if (data.school_class_fees) ERP_FEES = safeParse(data.school_class_fees, ERP_FEES);
-                            if (data.school_slider_images) ERP_SLIDERS = safeParse(data.school_slider_images, ERP_SLIDERS);
-                            if (data.school_important_links) {
-                                ERP_QUICK_LINKS = safeParse(data.school_important_links, ERP_QUICK_LINKS);
-                            } else if (data.school_quick_links) {
-                                ERP_QUICK_LINKS = safeParse(data.school_quick_links, ERP_QUICK_LINKS);
-                            }
-                            if (data.school_cms_settings) CMS_CONFIG = safeParse(data.school_cms_settings, CMS_CONFIG);
-                            renderAllCmsSections();
-                        }
-                    })
-                    .catch(e => {
-                        console.log("Offline mode active for CMS:", e);
-                    });
-
+                // Mark CMS data load complete
+                window.__CMS_DATA_LOADED__ = true;
             } catch (err) {
                 console.error("Error initializing CMS:", err);
             }
@@ -6039,7 +6025,8 @@
         // --- REALTIME DATA SYNC REFRESH ---
         async function refreshCmsRealtimeData() {
             try {
-                const res = await fetch('/api/db');
+                // Efficiently request only necessary CMS keys to prevent bandwidth saturation
+                const res = await fetch('/api/db?keys=school_notices,school_ticker_notices,school_important_links,school_quick_links,school_cms_settings,school_settings,school_staff');
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data && typeof data === 'object') {
@@ -7769,7 +7756,7 @@
             const removeBtn = document.getElementById('admPhotoRemoveBtn');
             if (input) input.value = '';
             if (img) {
-                img.src = '';
+                img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E";
                 img.style.display = 'none';
             }
             if (placeholder) placeholder.style.display = 'block';
@@ -8575,7 +8562,7 @@
                             <div class="voucher-header" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; padding-bottom: 6px !important; border-bottom: 2px solid #0f172a !important; margin-bottom: 6px !important; width: 100% !important;">
                                 <!-- Left Side: Updated School Logo (Red Arrow Left Spot) -->
                                 <div class="voucher-header-left" style="flex: 0 0 76px !important; width: 76px !important; text-align: left !important; display: flex !important; align-items: center !important; justify-content: flex-start !important;">
-                                    <img class="voucher-school-logo-img" src="${schoolLogo}" onerror="this.src='school_logo.svg'" style="width: 70px !important; height: 70px !important; object-fit: contain !important; display: block !important;" alt="School Logo">
+                                    <img class="voucher-school-logo-img" src="${schoolLogo}" onerror="this.onerror=null; if(this.src!=='school_logo.svg') this.src='school_logo.svg';" style="width: 70px !important; height: 70px !important; object-fit: contain !important; display: block !important;" alt="School Logo">
                                 </div>
                                 <!-- Center: School Information -->
                                 <div class="voucher-school-info voucher-header-center" style="flex: 1 1 auto !important; text-align: center !important; padding: 0 6px !important;">
@@ -8796,7 +8783,7 @@
                             <div class="voucher-header" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; padding-bottom: 6px !important; border-bottom: 2px solid #0f172a !important; margin-bottom: 6px !important; width: 100% !important;">
                                 <!-- Left Side: Updated School Logo (Red Arrow Left Spot) -->
                                 <div class="voucher-header-left" style="flex: 0 0 76px !important; width: 76px !important; text-align: left !important; display: flex !important; align-items: center !important; justify-content: flex-start !important;">
-                                    <img class="voucher-school-logo-img" src="${schoolLogo}" onerror="this.src='school_logo.svg'" style="width: 70px !important; height: 70px !important; object-fit: contain !important; display: block !important;" alt="School Logo">
+                                    <img class="voucher-school-logo-img" src="${schoolLogo}" onerror="this.onerror=null; if(this.src!=='school_logo.svg') this.src='school_logo.svg';" style="width: 70px !important; height: 70px !important; object-fit: contain !important; display: block !important;" alt="School Logo">
                                 </div>
                                 <!-- Center: School Information -->
                                 <div class="voucher-school-info voucher-header-center" style="flex: 1 1 auto !important; text-align: center !important; padding: 0 6px !important;">
@@ -10585,10 +10572,19 @@
             initAdmissionGeoDropdowns();
             initAdmissionClassDropdown();
 
-            // Setup real-time background sync polling every 20 seconds
-            if (!cmsRealtimePollInterval) {
-                cmsRealtimePollInterval = setInterval(refreshCmsRealtimeData, 20000);
-            }
+            // Setup real-time background sync polling after initial page load completes
+            window.addEventListener('load', () => {
+                document.body.classList.add('cms-ready');
+                if (!cmsRealtimePollInterval) {
+                    setTimeout(() => {
+                        cmsRealtimePollInterval = setInterval(() => {
+                            if (!document.hidden) {
+                                refreshCmsRealtimeData();
+                            }
+                        }, 60000);
+                    }, 5000);
+                }
+            });
 
             // Sync immediately when user switches tabs back to page
             window.addEventListener('focus', () => {
