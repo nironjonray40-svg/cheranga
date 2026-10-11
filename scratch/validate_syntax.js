@@ -1,23 +1,21 @@
 const fs = require('fs');
 
-const content = fs.readFileSync('exam-portal.html', 'utf8');
-
-// Extract script blocks
-const scriptMatches = content.match(/<script[\s\S]*?<\/script>/gi);
-console.log(`Found ${scriptMatches ? scriptMatches.length : 0} script tags`);
-
-let errorCount = 0;
-scriptMatches.forEach((scriptTag, idx) => {
-    // Remove <script ...> and </script>
-    const js = scriptTag.replace(/^<script[\s\S]*?>/i, '').replace(/<\/script>$/i, '');
-    try {
-        new Function(js);
-    } catch (err) {
-        console.error(`Syntax Error in script #${idx + 1}:`, err.message);
-        errorCount++;
-    }
+['cms.html', 'teachers.html', 'result-portal.html', 'student-portal.html'].forEach(filename => {
+    console.log(`\n--- Checking ${filename} ---`);
+    const html = fs.readFileSync(filename, 'utf8');
+    const scriptMatches = [...html.matchAll(/<script(?:\s+[^>]*)?>([\s\S]*?)<\/script>/gi)];
+    console.log(`Found ${scriptMatches.length} script blocks.`);
+    scriptMatches.forEach((m, idx) => {
+        const fullTag = m[0];
+        if (fullTag.includes('src=')) return;
+        const code = m[1].trim();
+        if (!code) return;
+        try {
+            new Function(code);
+            console.log(`  Script block ${idx + 1}: Syntax VALID.`);
+        } catch (err) {
+            console.error(`  Script block ${idx + 1}: Syntax ERROR:`, err.message);
+        }
+    });
 });
 
-if (errorCount === 0) {
-    console.log("All scripts compiled successfully without syntax errors!");
-}

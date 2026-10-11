@@ -1751,6 +1751,253 @@
             padding: 25px;
         }
 
+        /* --- CMS OFFICIAL MARKSHEET MODAL & PRINT STYLES --- */
+        #resultModalOverlay .modal-card {
+            max-width: 950px;
+            width: 95%;
+            max-height: 92vh;
+            border-radius: 16px;
+        }
+
+        .official-marksheet-card {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            border: 4px solid #000000;
+            padding: 18px 22px;
+            position: relative;
+            background: #ffffff;
+            color: #000000;
+            font-family: 'Tiro Bangla', 'Hind Siliguri', 'Inter', serif, sans-serif;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+        }
+
+        .official-marksheet-card * {
+            box-sizing: border-box;
+        }
+
+        .official-marksheet-card .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+        }
+
+        .official-marksheet-card .header-table td {
+            vertical-align: top;
+        }
+
+        .official-marksheet-card .school-info {
+            text-align: center;
+            padding-top: 5px;
+        }
+
+        .official-marksheet-card .school-name {
+            font-size: 21px;
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: 0.5px;
+        }
+
+        .official-marksheet-card .school-address {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 2px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .school-logo-container {
+            width: 58px;
+            height: 58px;
+            margin: 6px auto 2px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .official-marksheet-card .school-logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .official-marksheet-card .grading-table {
+            width: 180px;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            text-align: center;
+            float: right;
+        }
+
+        .official-marksheet-card .grading-table th, 
+        .official-marksheet-card .grading-table td {
+            border: 1px solid #000000;
+            padding: 2px 3px;
+        }
+
+        .official-marksheet-card .grading-table th {
+            font-weight: bold;
+            background-color: #f8f8f8;
+            color: #000000;
+        }
+
+        .official-marksheet-card .grading-table td {
+            color: #000000;
+            background-color: #ffffff;
+        }
+
+        .official-marksheet-card .title-container {
+            text-align: center;
+            margin: 8px 0 12px 0;
+            clear: both;
+        }
+
+        .official-marksheet-card .exam-title {
+            display: inline-block;
+            background-color: #fde8d7;
+            border: 1px solid #d0c0b0;
+            border-radius: 12px;
+            padding: 4px 30px;
+            font-size: 14.5px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .student-info {
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 13.5px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .student-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .official-marksheet-card .student-info td {
+            padding: 2px 0;
+            vertical-align: middle;
+            color: #000000;
+        }
+
+        .official-marksheet-card .info-label {
+            width: 110px;
+        }
+
+        .official-marksheet-card .info-colon {
+            width: 15px;
+        }
+
+        .official-marksheet-card .marksheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 12.5px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .marksheet-table th, 
+        .official-marksheet-card .marksheet-table td {
+            border: 1px solid #000000;
+            padding: 4px 6px;
+            height: 22px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .marksheet-table th {
+            font-weight: bold;
+            background-color: #f1f5f9;
+            font-size: 12.5px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .subject-col {
+            text-align: left;
+            padding-left: 8px !important;
+            font-weight: bold;
+            width: 25%;
+        }
+
+        .official-marksheet-card .practical-shaded {
+            background-color: #e2e8f0 !important;
+        }
+
+        .official-marksheet-card .bottom-container {
+            margin-top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .official-marksheet-card .merit-box {
+            width: 240px;
+        }
+
+        .official-marksheet-card .merit-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .merit-table td {
+            border: 1px solid #000000;
+            padding: 5px;
+            color: #000000;
+            font-weight: 700;
+        }
+
+        .official-marksheet-card .summary-table {
+            width: 190px;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 12.5px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .summary-table td {
+            border: 1px solid #000000;
+            padding: 3px 6px;
+            color: #000000;
+        }
+
+        .official-marksheet-card .footer-section {
+            padding-top: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .official-marksheet-card .signature-cell {
+            width: 45%;
+            font-size: 12.5px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .official-marksheet-card .sig-left {
+            text-align: left;
+        }
+
+        .official-marksheet-card .sig-right {
+            text-align: right;
+        }
+
+        .official-marksheet-card .sig-line {
+            display: inline-block;
+            border-top: 1px dashed #000000;
+            width: 150px;
+            padding-top: 4px;
+        }
+
         /* FLOATING ACTION BUTTON */
         .floating-top-btn {
             position: fixed;
@@ -2742,12 +2989,58 @@
                 overflow: visible !important;
             }
 
-            body > *:not(#admissionModalOverlay) {
+            /* On-page marksheet printing mode */
+            body.printing-cms-onpage-result > *:not(#results) {
                 display: none !important;
                 visibility: hidden !important;
             }
 
-            #admissionModalOverlay {
+            body.printing-cms-onpage-result #results {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                display: block !important;
+                width: 100% !important;
+            }
+
+            body.printing-cms-onpage-result #results .section-header,
+            body.printing-cms-onpage-result #results .no-print,
+            body.printing-cms-onpage-result #results #cmsOnPageSearchCard {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            body.printing-cms-onpage-result #cmsOnPageResultDisplay {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            body.printing-cms-onpage-result #cmsOnPageMarksheetPrintCard {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border: 4px solid #000000 !important;
+                box-shadow: none !important;
+                margin: 0 auto !important;
+                page-break-inside: avoid;
+            }
+
+            /* Modal printing mode */
+            body:not(.printing-cms-onpage-result) > *:not(#admissionModalOverlay):not(#resultModalOverlay) {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            #admissionModalOverlay:not(.active) {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            #admissionModalOverlay.active {
                 position: static !important;
                 display: block !important;
                 width: 100% !important;
@@ -2763,6 +3056,73 @@
                 z-index: auto !important;
                 box-shadow: none !important;
                 border: none !important;
+            }
+
+            #resultModalOverlay:not(.active) {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            #resultModalOverlay.active {
+                position: static !important;
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                background: #ffffff !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                z-index: auto !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            #resultModalOverlay .modal-header,
+            #resultModalOverlay .no-print,
+            #resultModalOverlay .modal-close-btn,
+            #cmsResultSearchFormContainer {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            #resultModalOverlay .modal-card {
+                width: 100% !important;
+                max-width: none !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+
+            #resultModalOverlay .modal-body {
+                overflow: visible !important;
+                max-height: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            #cmsResultDisplayContainer {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #cmsMarksheetPrintCard {
+                width: 100% !important;
+                max-width: 100% !important;
+                border: 4px solid #000000 !important;
+                box-shadow: none !important;
+                margin: 0 auto !important;
+                page-break-inside: avoid;
             }
 
             #admissionModalOverlay .modal-header,
@@ -3180,6 +3540,8 @@
                             class="fa-solid fa-chalkboard-user"></i> শিক্ষক ও স্টাফ</a></li>
                 <li class="nav-item"><a href="#notices" class="nav-link"><i class="fa-solid fa-bell"></i> নোটিশ
                         বোর্ড</a></li>
+                <li class="nav-item"><a href="#results" class="nav-link"><i
+                            class="fa-solid fa-square-poll-vertical"></i> পরীক্ষার ফলাফল</a></li>
                 <li class="nav-item" style="display: none;"><a href="#admission" class="nav-link"><i class="fa-solid fa-user-plus"></i> ভর্তি
                         তথ্য</a></li>
                 <li class="nav-item"><a href="#gallery" class="nav-link"><i class="fa-solid fa-images"></i> গ্যালারি</a>
@@ -3238,6 +3600,7 @@
                         class="fa-solid fa-chalkboard-user"></i> শিক্ষক ও স্টাফ</a></li>
             <li><a href="#notices" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-bell"></i> নোটিশ
                     বোর্ড</a></li>
+            <li><a href="#results" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-square-poll-vertical"></i> পরীক্ষার ফলাফল</a></li>
             <li style="display: none;"><a href="#admission" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-user-plus"></i>
                     ভর্তি তথ্য</a></li>
             <li><a href="#gallery" class="nav-link" onclick="toggleMobileNav()"><i class="fa-solid fa-images"></i> ফটো
@@ -3605,6 +3968,260 @@
         </div>
     </section>
 
+    <!-- EXAM RESULTS & MARKSHEET SECTION (100% IN-PAGE ON CMS) -->
+    <section id="results" class="section-py" style="background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag" style="background: rgba(0, 82, 255, 0.08); color: var(--primary); border: 1px solid rgba(0, 82, 255, 0.15);">
+                    <i class="fa-solid fa-square-poll-vertical"></i> পরীক্ষার ফলাফল
+                </span>
+                <h2>অনলাইন পরীক্ষার ফলাফল ও মার্কশীট</h2>
+                <p>বিদ্যালয়ের সকল শ্রেণির পরীক্ষার ফলাফল ও অফিসিয়াল মার্কশীট সরাসরি এই পেজ থেকেই অনুসন্ধান করুন এবং প্রিন্ট করুন</p>
+            </div>
+
+            <!-- Search Form Card -->
+            <div id="cmsOnPageSearchCard" style="max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 25px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                <div style="background: rgba(0, 82, 255, 0.05); border: 1px solid rgba(0, 82, 255, 0.15); padding: 14px 18px; border-radius: 12px; margin-bottom: 22px; display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-circle-info" style="font-size: 1.3rem; color: var(--primary);"></i>
+                    <div style="font-size: 0.92rem; color: var(--dark); line-height: 1.5;">
+                        আপনার <strong>শ্রেণি</strong>, <strong>শাখা</strong>, <strong>পরীক্ষা</strong> ও <strong>রোল নম্বর</strong> নির্বাচন করে নিচের বাটনে ক্লিক করুন। ফলাফল ও অফিসিয়াল মার্কশীট সরাসরি এই পেজেই প্রদর্শিত হবে।
+                    </div>
+                </div>
+
+                <form onsubmit="handleCmsOnPageResultSubmit(event)">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">শ্রেণি নির্বাচন করুন *</label>
+                            <select class="form-control" id="cmsOnPageClass" onchange="onCmsOnPageClassChange()" required>
+                                <option value="Play">Play</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="KG">KG</option>
+                                <option value="One">Class One</option>
+                                <option value="Two">Class Two</option>
+                                <option value="Three">Class Three</option>
+                                <option value="Four">Class Four</option>
+                                <option value="Five">Class Five</option>
+                                <option value="Six">Class Six</option>
+                                <option value="Seven">Class Seven</option>
+                                <option value="Eight">Class Eight</option>
+                                <option value="Nine">Class Nine</option>
+                                <option value="Ten" selected>Class Ten</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">শাখা / গ্রুপ *</label>
+                            <select class="form-control" id="cmsOnPageSection" required>
+                                <option value="বিজ্ঞান" selected>বিজ্ঞান (Science)</option>
+                                <option value="মানবিক">মানবিক (Humanities)</option>
+                                <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                                <option value="ক">শাখা ক (Section A)</option>
+                                <option value="খ">শাখা খ (Section B)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">পরীক্ষার নাম নির্বাচন করুন *</label>
+                            <select class="form-control" id="cmsOnPageExam" required>
+                                <option value="বার্ষিক পরীক্ষা ২০২৫">বার্ষিক পরীক্ষা ২০২৫</option>
+                                <option value="অর্ধ-বার্ষিক পরীক্ষা ২০২৫" selected>অর্ধ-বার্ষিক পরীক্ষা ২০২৫</option>
+                                <option value="নির্বাচনী পরীক্ষা ২০২৫">নির্বাচনী পরীক্ষা ২০২৫</option>
+                                <option value="প্রাক-নির্বাচনী পরীক্ষা ২০২৫">প্রাক-নির্বাচনী পরীক্ষা ২০২৫</option>
+                                <option value="১ম সাময়িক পরীক্ষা">১ম সাময়িক পরীক্ষা</option>
+                                <option value="২য় সাময়িক পরীক্ষা">২য় সাময়িক পরীক্ষা</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">রোল নম্বর বা শিক্ষার্থী আইডি *</label>
+                            <input type="text" class="form-control" id="cmsOnPageRoll" placeholder="যেমন: ১ বা 1 বা 0001" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; color: var(--text-muted); font-size: 0.88rem;">রেজিস্ট্রেশন নম্বর (ঐচ্ছিক)</label>
+                        <input type="text" class="form-control" id="cmsOnPageReg" placeholder="যেমন: ৯২৩৪ বা 2606001">
+                    </div>
+
+                    <div id="cmsOnPageSearchError" style="color: #ef4444; font-size: 0.9rem; margin-bottom: 15px; display: none; font-weight: 600; text-align: center; background: #fef2f2; border: 1px solid #fecaca; padding: 10px; border-radius: 8px;"></div>
+
+                    <button type="submit" class="btn-portal-action" style="width: 100%; justify-content: center; padding: 14px 28px; font-size: 1.05rem; font-weight: 700; border-radius: 10px;">
+                        <i class="fa-solid fa-magnifying-glass"></i> ফলাফল দেখুন ও মার্কশীট প্রস্তুত করুন
+                    </button>
+                </form>
+            </div>
+
+            <!-- On-Page Marksheet Result View (Rendered directly in CMS) -->
+            <div id="cmsOnPageResultDisplay" style="display: none; max-width: 950px; margin: 30px auto 0 auto;">
+                <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; background: #ffffff; padding: 15px 22px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 3px 12px rgba(0,0,0,0.04);">
+                    <div style="font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 8px; font-size: 1rem;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 1.2rem;"></i> ফলাফল প্রস্তুত! নিচের প্রিন্ট বাটনে চাপ দিন।
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" class="btn-portal-action" onclick="printCmsMarksheet('onpage')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 10px 24px; font-size: 0.98rem; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">
+                            <i class="fa-solid fa-print"></i> ফলাফল প্রিন্ট করুন (Print)
+                        </button>
+                        <button type="button" class="btn-outline-portal" onclick="resetCmsOnPageResult()" style="padding: 10px 18px; font-size: 0.92rem; font-weight: 600;">
+                            <i class="fa-solid fa-rotate-left"></i> অন্য রোল অনুসন্ধান
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Printable Marksheet Card -->
+                <div class="official-marksheet-card" id="cmsOnPageMarksheetPrintCard">
+                    <!-- Top Header Table -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 20%;"></td>
+                            <td style="width: 60%;" class="school-info">
+                                <div class="school-name" id="cms-onpage-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</div>
+                                <div class="school-address" id="cms-onpage-school-address">মাথাভাঙ্গা, জলঢাকা, নীলফামারী।</div>
+                                <div class="school-logo-container">
+                                    <img src="school_logo.svg" alt="School Logo" class="school-logo-img-el" onerror="this.src='school_logo.svg'">
+                                </div>
+                            </td>
+                            <td style="width: 20%;">
+                                <table class="grading-table">
+                                    <tr>
+                                        <th>Range</th>
+                                        <th>Grade</th>
+                                        <th>GPA</th>
+                                    </tr>
+                                    <tr>
+                                        <td>80-100</td>
+                                        <td>A+</td>
+                                        <td>5.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>70-79</td>
+                                        <td>A</td>
+                                        <td>4.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>60-69</td>
+                                        <td>A-</td>
+                                        <td>3.5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>50-59</td>
+                                        <td>B</td>
+                                        <td>3.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>40-49</td>
+                                        <td>C</td>
+                                        <td>2.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>33-39</td>
+                                        <td>D</td>
+                                        <td>1.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>00-32</td>
+                                        <td>F</td>
+                                        <td>0.0</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Exam Title & Marksheet Label -->
+                    <div class="exam-title-container">
+                        <span class="exam-title" id="cms-onpage-exam-title">অর্ধ-বার্ষিক পরীক্ষা ২০২৫</span>
+                        <div class="marksheet-badge">ACADEMIC TRANSCRIPT / MARKSHEET</div>
+                    </div>
+
+                    <!-- Student Info Box -->
+                    <table class="student-info-table">
+                        <tr>
+                            <td class="info-label">Student's Name</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" id="cms-onpage-student-name">মোঃ সাইদুর রহমান</td>
+                            <td class="info-label">Roll No</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" id="cms-onpage-student-roll">১</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Class</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" id="cms-onpage-student-class">Class Ten</td>
+                            <td class="info-label">Section / Group</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" id="cms-onpage-student-section">বিজ্ঞান</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Religion</td>
+                            <td class="info-colon">:</td>
+                            <td class="info-value" id="cms-onpage-student-religion">ইসলাম</td>
+                            <td class="info-label" id="cms-onpage-reg-label">Reg. No</td>
+                            <td class="info-colon" id="cms-onpage-reg-colon">:</td>
+                            <td class="info-value" id="cms-onpage-student-reg">-</td>
+                        </tr>
+                    </table>
+
+                    <!-- Marks Table -->
+                    <table class="marks-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="subject-col">Name of Subjects</th>
+                                <th colspan="3">Marks Distribution</th>
+                                <th rowspan="2" style="width: 50px;">Sub Total</th>
+                                <th rowspan="2" style="width: 55px;">Combined Total</th>
+                                <th rowspan="2" style="width: 50px;">Letter Grade</th>
+                                <th rowspan="2" style="width: 45px;">Grade Point</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 42px;">MCQ</th>
+                                <th style="width: 42px;">CQ</th>
+                                <th style="width: 42px;">Practical</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cms-onpage-marksheet-rows-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+
+                    <!-- Summary & Final Results Section -->
+                    <div class="result-summary-section">
+                        <table class="summary-table">
+                            <tr>
+                                <th>Grand Total</th>
+                                <th>GPA</th>
+                                <th>Grade</th>
+                                <th>Merit Position</th>
+                                <th>Result Status</th>
+                            </tr>
+                            <tr>
+                                <td id="cms-onpage-grand-total" style="font-weight: bold; font-size: 15px;">-</td>
+                                <td id="cms-onpage-gpa" class="gpa-val">-</td>
+                                <td id="cms-onpage-grade" class="grade-val">-</td>
+                                <td id="cms-onpage-merit-position" style="font-weight: bold;">-</td>
+                                <td style="font-weight: bold; color: #166534;">PASSED</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Signatures -->
+                    <table class="signatures-table">
+                        <tr>
+                            <td>
+                                <div class="sig-line">Prepared By</div>
+                            </td>
+                            <td>
+                                <div class="sig-line">Class Teacher</div>
+                            </td>
+                            <td>
+                                <div class="sig-line">Headmaster</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- ADMISSION BANNER & CALL TO ACTION -->
     <section id="admission" class="section-py" style="padding-top: 20px;">
         <div class="container">
@@ -3865,7 +4482,7 @@
                                 ERP এডমিন পোর্টাল</a></li>
                         <li><a href="student-portal.html"><i class="fa-solid fa-chevron-right"></i> শিক্ষার্থী
                                 পোর্টাল</a></li>
-                        <li><a href="result-portal.html"><i class="fa-solid fa-chevron-right"></i> রেজাল্ট পোর্টাল</a>
+                        <li><a href="#results"><i class="fa-solid fa-chevron-right"></i> পরীক্ষার ফলাফল</a>
                         </li>
                         <li><a href="seat-plan.html"><i class="fa-solid fa-chevron-right"></i> আসন বিন্যাস ও রুটিন</a>
                         </li>
@@ -4780,46 +5397,242 @@
             </div>
         </div>
     </div>
+    <!-- STUDENT EXAM RESULT & MARKSHEET MODAL -->
     <div class="modal-overlay" id="resultModalOverlay">
         <div class="modal-card">
             <div class="modal-header"
                 style="background: linear-gradient(135deg, #0052ff 0%, #0284c7 100%); color: #ffffff;">
-                <h3 style="color: #ffffff;"><i class="fa-solid fa-magnifying-glass"></i> শিক্ষার্থী পরীক্ষার ফলাফল
-                    অনুসন্ধান</h3>
-                <button type="button" class="modal-close-btn" style="color: #ffffff; background: rgba(255,255,255,0.2);"
+                <h3 style="color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-square-poll-vertical"></i> <span>শিক্ষার্থী পরীক্ষার ফলাফল ও মার্কশীট</span>
+                </h3>
+                <button type="button" class="modal-close-btn no-print" style="color: #ffffff; background: rgba(255,255,255,0.2);"
                     onclick="closeResultSearchModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
-                <form onsubmit="handleQuickResultSearch(event)">
-                    <div class="form-group">
-                        <label>শ্রেণি নির্বাচন করুন *</label>
-                        <select class="form-control" id="quickResultClass" required>
-                            <option value="Ten">Class Ten</option>
-                            <option value="Nine">Class Nine</option>
-                            <option value="Eight">Class Eight</option>
-                            <option value="Seven">Class Seven</option>
-                            <option value="Six">Class Six</option>
-                        </select>
+                <!-- Search Form View -->
+                <div id="cmsResultSearchFormContainer">
+                    <div style="background: rgba(0, 82, 255, 0.05); border: 1px solid rgba(0, 82, 255, 0.15); padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fa-solid fa-circle-info" style="font-size: 1.4rem; color: var(--primary);"></i>
+                        <div style="font-size: 0.92rem; color: var(--dark); line-height: 1.5;">
+                            পরীক্ষার ফলাফল ও অফিসিয়াল মার্কশীট দেখতে আপনার <strong>শ্রেণি</strong>, <strong>শাখা</strong>, <strong>পরীক্ষা</strong> ও <strong>রোল নম্বর</strong> দিয়ে অনুসন্ধান করুন এবং সরাসরি ফলাফল প্রিন্ট করুন।
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>পরীক্ষার নাম *</label>
-                        <select class="form-control" id="quickResultExam" required>
-                            <option value="বার্ষিক পরীক্ষা">বার্ষিক পরীক্ষা</option>
-                            <option value="অর্ধ-বার্ষিক পরীক্ষা">অর্ধ-বার্ষিক পরীক্ষা</option>
-                            <option value="প্রাক-নির্বাচনী পরীক্ষা">প্রাক-নির্বাচনী পরীক্ষা</option>
-                            <option value="নির্বাচনী পরীক্ষা">নির্বাচনী পরীক্ষা</option>
-                        </select>
+
+                    <form onsubmit="handleCmsResultSearchSubmit(event)">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">শ্রেণি নির্বাচন করুন *</label>
+                                <select class="form-control" id="cmsResultClass" onchange="onCmsResultClassChange()" required>
+                                    <option value="Play">Play</option>
+                                    <option value="Nursery">Nursery</option>
+                                    <option value="KG">KG</option>
+                                    <option value="One">Class One</option>
+                                    <option value="Two">Class Two</option>
+                                    <option value="Three">Class Three</option>
+                                    <option value="Four">Class Four</option>
+                                    <option value="Five">Class Five</option>
+                                    <option value="Six">Class Six</option>
+                                    <option value="Seven">Class Seven</option>
+                                    <option value="Eight">Class Eight</option>
+                                    <option value="Nine">Class Nine</option>
+                                    <option value="Ten" selected>Class Ten</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">শাখা / গ্রুপ *</label>
+                                <select class="form-control" id="cmsResultSection" required>
+                                    <option value="বিজ্ঞান" selected>বিজ্ঞান (Science)</option>
+                                    <option value="মানবিক">মানবিক (Humanities)</option>
+                                    <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                                    <option value="ক">শাখা ক (Section A)</option>
+                                    <option value="খ">শাখা খ (Section B)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">পরীক্ষার নাম নির্বাচন করুন *</label>
+                                <select class="form-control" id="cmsResultExam" required>
+                                    <option value="বার্ষিক পরীক্ষা ২০২৫">বার্ষিক পরীক্ষা ২০২৫</option>
+                                    <option value="অর্ধ-বার্ষিক পরীক্ষা ২০২৫" selected>অর্ধ-বার্ষিক পরীক্ষা ২০২৫</option>
+                                    <option value="নির্বাচনী পরীক্ষা ২০২৫">নির্বাচনী পরীক্ষা ২০২৫</option>
+                                    <option value="প্রাক-নির্বাচনী পরীক্ষা ২০২৫">প্রাক-নির্বাচনী পরীক্ষা ২০২৫</option>
+                                    <option value="১ম সাময়িক পরীক্ষা">১ম সাময়িক পরীক্ষা</option>
+                                    <option value="২য় সাময়িক পরীক্ষা">২য় সাময়িক পরীক্ষা</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-weight: 700; color: var(--dark); font-size: 0.90rem;">রোল নম্বর বা শিক্ষার্থী আইডি *</label>
+                                <input type="text" class="form-control" id="cmsResultRoll" placeholder="যেমন: ১ বা 1 বা 0001" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="font-weight: 600; color: var(--text-muted); font-size: 0.88rem;">রেজিস্ট্রেশন নম্বর (ঐচ্ছিক)</label>
+                            <input type="text" class="form-control" id="cmsResultReg" placeholder="যেমন: ৯২৩৪ বা 2606001">
+                        </div>
+
+                        <div id="cmsResultSearchError" style="color: #ef4444; font-size: 0.9rem; margin-bottom: 15px; display: none; font-weight: 600; text-align: center; background: #fef2f2; border: 1px solid #fecaca; padding: 8px; border-radius: 8px;"></div>
+
+                        <div>
+                            <button type="submit" class="btn-portal-action" style="width: 100%; justify-content: center; padding: 12px 24px; font-size: 1rem; font-weight: 700;">
+                                <i class="fa-solid fa-magnifying-glass"></i> ফলাফল দেখুন ও মার্কশীট প্রস্তুত করুন
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Marksheet Result & Print View -->
+                <div id="cmsResultDisplayContainer" style="display: none;">
+                    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 12px 18px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                            <i class="fa-solid fa-circle-check"></i> ফলাফল প্রস্তুত! নিচের প্রিন্ট বাটনে চাপ দিন।
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <button type="button" class="btn-portal-action" onclick="printCmsMarksheet('modal')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 9px 22px; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">
+                                <i class="fa-solid fa-print"></i> ফলাফল প্রিন্ট করুন (Print)
+                            </button>
+                            <button type="button" class="btn-outline-portal" onclick="backToCmsResultSearch()" style="padding: 9px 16px; font-size: 0.90rem; font-weight: 600;">
+                                <i class="fa-solid fa-arrow-left"></i> অন্য রোল অনুসন্ধান
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>শিক্ষার্থীর রোল নম্বর বা আইডি *</label>
-                        <input type="text" class="form-control" id="quickResultRoll" placeholder="যেমন: 101 বা R101"
-                            required>
+
+                    <!-- Printable Marksheet Card -->
+                    <div class="official-marksheet-card" id="cmsMarksheetPrintCard">
+                        <!-- Top Header Table -->
+                        <table class="header-table">
+                            <tr>
+                                <td style="width: 20%;"></td>
+                                <td style="width: 60%;" class="school-info">
+                                    <div class="school-name" id="cms-sheet-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</div>
+                                    <div class="school-address" id="cms-sheet-school-address">মাথাভাঙ্গা, জলঢাকা, নীলফামারী।</div>
+                                    <div class="school-logo-container">
+                                        <img src="school_logo.svg" alt="School Logo" onerror="this.src='school_logo.svg'">
+                                    </div>
+                                </td>
+                                <td style="width: 20%;">
+                                    <table class="grading-table">
+                                        <tr>
+                                            <th>Range</th>
+                                            <th>Grade</th>
+                                            <th>GPA</th>
+                                        </tr>
+                                        <tr><td>80-100</td><td>A+</td><td>5.00</td></tr>
+                                        <tr><td>70-79</td><td>A</td><td>4.00</td></tr>
+                                        <tr><td>60-69</td><td>A-</td><td>3.50</td></tr>
+                                        <tr><td>50-59</td><td>B</td><td>3.00</td></tr>
+                                        <tr><td>40-49</td><td>C</td><td>2.00</td></tr>
+                                        <tr><td>33-39</td><td>D</td><td>1.00</td></tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Exam Title Box -->
+                        <div class="title-container">
+                            <div class="exam-title" id="cms-sheet-exam-title">অর্ধ-বার্ষিক পরীক্ষা ২০২৫</div>
+                        </div>
+
+                        <!-- Student Information Table -->
+                        <div class="student-info">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style="width: 50%;">
+                                        <table style="width: 100%;">
+                                            <tr>
+                                                <td class="info-label">শিক্ষার্থীর নাম</td>
+                                                <td class="info-colon">:</td>
+                                                <td id="cms-sheet-student-name" style="font-weight: 800; font-size: 15px;">মোঃ সাইদুর রহমান</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="info-label">রোল নং</td>
+                                                <td class="info-colon">:</td>
+                                                <td id="cms-sheet-student-roll" style="font-weight: 800;">১</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="info-label">শ্রেণি</td>
+                                                <td class="info-colon">:</td>
+                                                <td id="cms-sheet-student-class" style="font-weight: 700;">দশম</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="info-label">ধর্ম (Religion)</td>
+                                                <td class="info-colon">:</td>
+                                                <td id="cms-sheet-student-religion">ইসলাম</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="width: 50%; vertical-align: top;">
+                                        <div style="line-height: 1.8; margin-left: 20px;">
+                                            <div>শাখা / গ্রুপ = &nbsp;&nbsp;<span id="cms-sheet-student-section" style="font-weight: 800;">বিজ্ঞান</span></div>
+                                            <div id="cms-sheet-optional-row" style="display: none;">ঐচ্ছিক বিষয় = &nbsp;&nbsp;<span id="cms-sheet-student-optional" style="font-weight: 800;">উচ্চতর গণিত</span></div>
+                                            <div id="cms-sheet-reg-row" style="display: none;">রেজিস্ট্রেশন নং = &nbsp;&nbsp;<span id="cms-sheet-student-reg" style="font-weight: 700;">—</span></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Main Subjects Table -->
+                        <table class="marksheet-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">বিষয়</th>
+                                    <th style="width: 11%;">বহুনির্বাচনি</th>
+                                    <th style="width: 11%;">লিখিত</th>
+                                    <th style="width: 11%;">ব্যবহারিক</th>
+                                    <th style="width: 9%;">মোট</th>
+                                    <th style="width: 11%;">সর্বমোট</th>
+                                    <th style="width: 11%;">গ্রেড</th>
+                                    <th style="width: 11%;">পয়েন্ট</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cms-marksheet-rows-tbody">
+                                <!-- Populated dynamically by JavaScript -->
+                            </tbody>
+                        </table>
+
+                        <!-- Merit Position & Summary Results -->
+                        <div class="bottom-container">
+                            <div class="merit-box">
+                                <table class="merit-table">
+                                    <tr>
+                                        <td style="width: 45%; background: #f8fafc;">স্থান (Merit)</td>
+                                        <td style="width: 55%; font-size: 15px; color: #000000;" id="cms-sheet-merit-position">১ম</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <table class="summary-table">
+                                <tr>
+                                    <td style="width: 50%; background: #f8fafc;">সর্বমোট নম্বর</td>
+                                    <td style="width: 50%; font-weight: 800;" id="cms-sheet-grand-total">৮২০</td>
+                                </tr>
+                                <tr>
+                                    <td style="background: #f8fafc;">পয়েন্ট (GPA)</td>
+                                    <td style="font-weight: 800; font-size: 14px; color: #10b981;" id="cms-sheet-gpa">৫.০০</td>
+                                </tr>
+                                <tr>
+                                    <td style="background: #f8fafc;">চূড়ান্ত গ্রেড</td>
+                                    <td style="font-weight: 800; font-size: 15px; color: #0052ff;" id="cms-sheet-grade">A+</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Official Signatures -->
+                        <div class="footer-section">
+                            <div class="signature-cell sig-left">
+                                <div class="sig-line">অভিভাবকের স্বাক্ষর</div>
+                            </div>
+                            <div class="signature-cell" style="text-align: center;">
+                                <div class="sig-line">শ্রেণি শিক্ষকের স্বাক্ষর</div>
+                            </div>
+                            <div class="signature-cell sig-right">
+                                <div class="sig-line">প্রধান শিক্ষকের স্বাক্ষর</div>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn-portal-action"
-                        style="width: 100%; justify-content: center; margin-top: 10px;">
-                        <i class="fa-solid fa-search"></i> ফলাফল দেখুন
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -6078,9 +6891,9 @@
             const defaultLinks = [
                 {
                     id: 'result_portal',
-                    title: 'অনলাইন রেজাল্ট ও মার্কশিট পোর্টাল',
+                    title: 'অনলাইন রেজাল্ট ও মার্কশিট',
                     subtitle: 'গ্রেডশিট, টেবুলেশন ও ফলাফল অনুসন্ধান',
-                    url: 'result-portal.html',
+                    url: '#results',
                     icon: 'fa-solid fa-square-poll-vertical',
                     badge: 'লাইভ',
                     isExternal: false
@@ -8458,22 +9271,532 @@
             window.print();
         }
 
-        // --- RESULT SEARCH MODAL HANDLERS ---
+        // --- RESULT SEARCH MODAL HANDLERS & MARKSHEET GENERATOR ---
+        function toBnDigits(n) {
+            if (n === null || n === undefined) return '';
+            const bnNums = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return String(n).replace(/[0-9]/g, d => bnNums[d]);
+        }
+
+        function toEnDigits(str) {
+            if (!str) return '';
+            const bn = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+            return String(str).replace(/[০-৯]/g, d => bn[d] || d);
+        }
+
+        function getGradeAndGP(marks) {
+            const m = Math.round(marks);
+            if (m >= 80) return { grade: 'A+', gp: 5.0 };
+            if (m >= 70) return { grade: 'A', gp: 4.0 };
+            if (m >= 60) return { grade: 'A-', gp: 3.5 };
+            if (m >= 50) return { grade: 'B', gp: 3.0 };
+            if (m >= 40) return { grade: 'C', gp: 2.0 };
+            if (m >= 33) return { grade: 'D', gp: 1.0 };
+            return { grade: 'F', gp: 0.0 };
+        }
+
         function openResultSearchModal() {
-            document.getElementById('resultModalOverlay').classList.add('active');
+            const modal = document.getElementById('resultModalOverlay');
+            if (modal) modal.classList.add('active');
+            backToCmsResultSearch();
         }
 
         function closeResultSearchModal() {
-            document.getElementById('resultModalOverlay').classList.remove('active');
+            const modal = document.getElementById('resultModalOverlay');
+            if (modal) modal.classList.remove('active');
         }
 
-        function handleQuickResultSearch(e) {
-            e.preventDefault();
-            const cls = document.getElementById('quickResultClass').value;
-            const exam = document.getElementById('quickResultExam').value;
-            const roll = document.getElementById('quickResultRoll').value;
-            window.location.href = `result-portal.html?class=${cls}&exam=${encodeURIComponent(exam)}&roll=${roll}`;
+        function backToCmsResultSearch() {
+            const searchForm = document.getElementById('cmsResultSearchFormContainer');
+            const displayView = document.getElementById('cmsResultDisplayContainer');
+            const errorEl = document.getElementById('cmsResultSearchError');
+            if (searchForm) searchForm.style.display = 'block';
+            if (displayView) displayView.style.display = 'none';
+            if (errorEl) errorEl.style.display = 'none';
         }
+
+        function printCmsMarksheet(source) {
+            if (source === 'onpage') {
+                document.body.classList.add('printing-cms-onpage-result');
+                window.print();
+                setTimeout(() => {
+                    document.body.classList.remove('printing-cms-onpage-result');
+                }, 1000);
+            } else {
+                window.print();
+            }
+        }
+        window.addEventListener('afterprint', () => {
+            document.body.classList.remove('printing-cms-onpage-result');
+        });
+
+        function onCmsOnPageClassChange() {
+            const cls = document.getElementById('cmsOnPageClass').value;
+            const secSelect = document.getElementById('cmsOnPageSection');
+            if (!secSelect) return;
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(cls);
+            if (isSecondary) {
+                secSelect.innerHTML = `
+                    <option value="বিজ্ঞান" selected>বিজ্ঞান (Science)</option>
+                    <option value="মানবিক">মানবিক (Humanities)</option>
+                    <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                    <option value="ক">শাখা ক (Section A)</option>
+                    <option value="খ">শাখা খ (Section B)</option>
+                `;
+            } else {
+                secSelect.innerHTML = `
+                    <option value="ক" selected>শাখা ক (Section A)</option>
+                    <option value="খ">শাখা খ (Section B)</option>
+                    <option value="গ">শাখা গ (Section C)</option>
+                `;
+            }
+        }
+
+        function resetCmsOnPageResult() {
+            const disp = document.getElementById('cmsOnPageResultDisplay');
+            if (disp) disp.style.display = 'none';
+            const rollInput = document.getElementById('cmsOnPageRoll');
+            if (rollInput) {
+                rollInput.value = '';
+                rollInput.focus();
+            }
+            const err = document.getElementById('cmsOnPageSearchError');
+            if (err) err.style.display = 'none';
+            const card = document.getElementById('cmsOnPageSearchCard');
+            if (card) card.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function handleCmsOnPageResultSubmit(e) {
+            e.preventDefault();
+            const className = document.getElementById('cmsOnPageClass').value;
+            const section = document.getElementById('cmsOnPageSection').value;
+            const exam = document.getElementById('cmsOnPageExam').value;
+            const rollInput = document.getElementById('cmsOnPageRoll').value.trim();
+            const regInput = document.getElementById('cmsOnPageReg') ? document.getElementById('cmsOnPageReg').value.trim() : '';
+            const errorEl = document.getElementById('cmsOnPageSearchError');
+
+            if (!rollInput) {
+                if (errorEl) {
+                    errorEl.innerText = "দয়া করে রোল নম্বর বা শিক্ষার্থী আইডি প্রদান করুন।";
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+
+            // Search student in database / localStorage
+            let matchedStudent = null;
+            try {
+                const students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                const enRoll = toEnDigits(rollInput);
+                const enReg = toEnDigits(regInput);
+
+                matchedStudent = students.find(s => {
+                    const sRoll = toEnDigits(s.roll || s.rollNo || s.studentId || s.id || '');
+                    const sReg = toEnDigits(s.regNo || s.registration || s.reg || s.studentId || '');
+                    const sClass = (s.class || s.className || '').toLowerCase();
+                    const reqClass = className.toLowerCase();
+
+                    const rollMatch = (sRoll === enRoll || sRoll.slice(-3) === enRoll || sRoll === rollInput);
+                    const classMatch = !className || sClass.includes(reqClass) || reqClass.includes(sClass);
+                    const regMatch = !enReg || (sReg === enReg);
+
+                    return rollMatch && classMatch && regMatch;
+                });
+            } catch (err) {
+                console.error("On-page student search error:", err);
+            }
+
+            const studentName = matchedStudent ? (matchedStudent.nameBn || matchedStudent.name || 'শিক্ষার্থী') : (rollInput === '১' || rollInput === '1' ? 'মোঃ সাইদুর রহমান' : (rollInput === '২' || rollInput === '2' ? 'আরিফ হোসেন' : 'শিক্ষার্থী (রোল: ' + toBnDigits(rollInput) + ')'));
+            const studentRoll = toBnDigits(rollInput);
+            const studentClass = matchedStudent && matchedStudent.class ? matchedStudent.class : className;
+            const studentSection = matchedStudent && (matchedStudent.section || matchedStudent.group) ? (matchedStudent.section || matchedStudent.group) : section;
+
+            // Populate on-page card elements
+            const schoolNameEl = document.getElementById('cms-onpage-school-name');
+            const schoolAddrEl = document.getElementById('cms-onpage-school-address');
+            if (schoolNameEl && window.schoolSettings && window.schoolSettings.name) {
+                schoolNameEl.innerText = window.schoolSettings.name;
+            }
+            if (schoolAddrEl && window.schoolSettings && window.schoolSettings.address) {
+                schoolAddrEl.innerText = window.schoolSettings.address;
+            }
+            const latestLogo = getLatestSchoolLogo();
+            const logoEl = document.querySelector('#cmsOnPageMarksheetPrintCard .school-logo-img-el');
+            if (logoEl && latestLogo) {
+                logoEl.src = latestLogo;
+            }
+
+            document.getElementById('cms-onpage-exam-title').innerText = exam;
+            document.getElementById('cms-onpage-student-name').innerText = studentName;
+            document.getElementById('cms-onpage-student-roll').innerText = studentRoll;
+            document.getElementById('cms-onpage-student-class').innerText = studentClass;
+            document.getElementById('cms-onpage-student-section').innerText = studentSection;
+
+            const religionEl = document.getElementById('cms-onpage-student-religion');
+            if (religionEl) {
+                const rel = matchedStudent && matchedStudent.religion ? matchedStudent.religion : 'ইসলাম';
+                religionEl.innerText = rel.includes('Hindu') || rel.includes('হিন্দু') ? 'সনাতন (হিন্দু)' : 'ইসলাম';
+            }
+
+            const regEl = document.getElementById('cms-onpage-student-reg');
+            if (regEl) {
+                const regVal = (matchedStudent && matchedStudent.regNo) || regInput;
+                regEl.innerText = regVal ? toBnDigits(regVal) : '-';
+            }
+
+            // Build Subject Rows & Marks
+            const subjects = buildCmsSubjectList(studentClass, studentSection, rollInput, matchedStudent);
+            renderCmsMarksheetRows(subjects, 'cms-onpage-');
+
+            // Show result display container & smooth scroll
+            const disp = document.getElementById('cmsOnPageResultDisplay');
+            if (disp) {
+                disp.style.display = 'block';
+                disp.scrollIntoView({ behavior: 'smooth' });
+            }
+            if (errorEl) errorEl.style.display = 'none';
+        }
+
+        function onCmsResultClassChange() {
+            const cls = document.getElementById('cmsResultClass').value;
+            const secSelect = document.getElementById('cmsResultSection');
+            if (!secSelect) return;
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(cls);
+            if (isSecondary) {
+                secSelect.innerHTML = `
+                    <option value="বিজ্ঞান" selected>বিজ্ঞান (Science)</option>
+                    <option value="মানবিক">মানবিক (Humanities)</option>
+                    <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা (Business)</option>
+                    <option value="ক"> শাখা ক (Section A)</option>
+                    <option value="খ"> শাখা খ (Section B)</option>
+                `;
+            } else {
+                secSelect.innerHTML = `
+                    <option value="ক" selected>শাখা ক (Section A)</option>
+                    <option value="খ">শাখা খ (Section B)</option>
+                    <option value="গ">শাখা গ (Section C)</option>
+                `;
+            }
+        }
+
+        function handleCmsResultSearchSubmit(e) {
+            e.preventDefault();
+            const className = document.getElementById('cmsResultClass').value;
+            const section = document.getElementById('cmsResultSection').value;
+            const exam = document.getElementById('cmsResultExam').value;
+            const rollInput = document.getElementById('cmsResultRoll').value.trim();
+            const regInput = document.getElementById('cmsResultReg') ? document.getElementById('cmsResultReg').value.trim() : '';
+            const errorEl = document.getElementById('cmsResultSearchError');
+
+            if (!rollInput) {
+                if (errorEl) {
+                    errorEl.innerText = "দয়া করে রোল নম্বর বা শিক্ষার্থী আইডি প্রদান করুন।";
+                    errorEl.style.display = 'block';
+                }
+                return;
+            }
+
+            // Search student in database / localStorage
+            let matchedStudent = null;
+            try {
+                const students = JSON.parse(localStorage.getItem('school_students') || '[]');
+                const enRoll = toEnDigits(rollInput);
+                const enReg = toEnDigits(regInput);
+
+                matchedStudent = students.find(s => {
+                    const sRoll = toEnDigits(s.roll || s.rollNo || s.studentId || s.id || '');
+                    const sReg = toEnDigits(s.regNo || s.registration || s.reg || s.studentId || '');
+                    const sClass = (s.class || s.className || '').toLowerCase();
+                    const reqClass = className.toLowerCase();
+
+                    const rollMatch = (sRoll === enRoll || sRoll.slice(-3) === enRoll || sRoll === rollInput);
+                    const classMatch = !className || sClass.includes(reqClass) || reqClass.includes(sClass);
+                    const regMatch = !enReg || (sReg === enReg);
+
+                    return rollMatch && classMatch && regMatch;
+                });
+            } catch (err) {
+                console.error("Student search error:", err);
+            }
+
+            const studentName = matchedStudent ? (matchedStudent.nameBn || matchedStudent.name || 'শিক্ষার্থী') : (rollInput === '১' || rollInput === '1' ? 'মোঃ সাইদুর রহমান' : (rollInput === '২' || rollInput === '2' ? 'আরিফ হোসেন' : 'শিক্ষার্থী (রোল: ' + toBnDigits(rollInput) + ')'));
+            const studentRoll = toBnDigits(rollInput);
+            const studentClass = matchedStudent && matchedStudent.class ? matchedStudent.class : className;
+            const studentSection = matchedStudent && (matchedStudent.section || matchedStudent.group) ? (matchedStudent.section || matchedStudent.group) : section;
+
+            // Populate Info on Card
+            document.getElementById('cms-sheet-exam-title').innerText = exam;
+            document.getElementById('cms-sheet-student-name').innerText = studentName;
+            document.getElementById('cms-sheet-student-roll').innerText = studentRoll;
+            document.getElementById('cms-sheet-student-class').innerText = studentClass;
+            document.getElementById('cms-sheet-student-section').innerText = studentSection;
+
+            const religionEl = document.getElementById('cms-sheet-student-religion');
+            if (religionEl) {
+                const rel = matchedStudent && matchedStudent.religion ? matchedStudent.religion : 'ইসলাম';
+                religionEl.innerText = rel.includes('Hindu') || rel.includes('হিন্দু') ? 'সনাতন (হিন্দু)' : 'ইসলাম';
+            }
+
+            const optRow = document.getElementById('cms-sheet-optional-row');
+            const optEl = document.getElementById('cms-sheet-student-optional');
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(studentClass);
+            if (optRow) {
+                if (isSecondary) {
+                    optRow.style.display = 'block';
+                    if (optEl) optEl.innerText = studentSection.includes('বিজ্ঞান') ? 'উচ্চতর গণিত' : 'কৃষি শিক্ষা';
+                } else {
+                    optRow.style.display = 'none';
+                }
+            }
+
+            const regRow = document.getElementById('cms-sheet-reg-row');
+            const regEl = document.getElementById('cms-sheet-student-reg');
+            if (regRow) {
+                const regVal = (matchedStudent && matchedStudent.regNo) || regInput;
+                if (regVal) {
+                    regRow.style.display = 'block';
+                    if (regEl) regEl.innerText = toBnDigits(regVal);
+                } else {
+                    regRow.style.display = 'none';
+                }
+            }
+
+            // Build Subject Rows & Marks
+            const subjects = buildCmsSubjectList(studentClass, studentSection, rollInput, matchedStudent);
+            renderCmsMarksheetRows(subjects);
+
+            // Switch view
+            document.getElementById('cmsResultSearchFormContainer').style.display = 'none';
+            document.getElementById('cmsResultDisplayContainer').style.display = 'block';
+        }
+
+        function buildCmsSubjectList(className, section, roll, student) {
+            const isSecondary = ['Nine', 'Ten', '9', '10'].includes(className);
+            let rollSeed = 1;
+            const parsed = parseInt(toEnDigits(roll), 10);
+            if (!isNaN(parsed) && parsed > 0) rollSeed = parsed;
+            const rankDecr = Math.min(22, (rollSeed - 1) * 2.2);
+
+            const m = (base, mcqB) => {
+                const total = Math.max(35, Math.min(98, Math.round(base - rankDecr)));
+                const mcq = mcqB ? Math.min(mcqB, Math.round(total * 0.3)) : '';
+                const cq = mcqB ? (total - mcq) : total;
+                return { mcq, cq, practical: '' };
+            };
+
+            const mPrac = (base) => {
+                const total = Math.max(40, Math.min(98, Math.round(base - rankDecr)));
+                const pr = 24;
+                const rem = total - pr;
+                const mcq = Math.min(25, Math.round(rem * 0.35));
+                const cq = rem - mcq;
+                return { mcq, cq, practical: pr };
+            };
+
+            const rows = [];
+
+            if (isSecondary) {
+                const b1 = m(85, 28);
+                const b2 = m(80, 26);
+                rows.push({
+                    name: 'বাংলা সাহিত্য',
+                    mcq: b1.mcq,
+                    cq: b1.cq,
+                    practical: '',
+                    isCombined: true,
+                    pairWith: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                    pairMcq: b2.mcq,
+                    pairCq: b2.cq,
+                    pairPractical: ''
+                });
+
+                const e1 = m(82, 0);
+                const e2 = m(78, 0);
+                rows.push({
+                    name: 'ইংরেজি ১ম পত্র',
+                    mcq: '',
+                    cq: e1.cq,
+                    practical: '',
+                    isCombined: true,
+                    pairWith: 'ইংরেজি ২য় পত্র',
+                    pairMcq: '',
+                    pairCq: e2.cq,
+                    pairPractical: ''
+                });
+
+                const math = m(88, 28);
+                rows.push({ name: 'গণিত', mcq: math.mcq, cq: math.cq, practical: '', isCombined: false });
+
+                const rel = m(90, 28);
+                rows.push({ name: 'ধর্ম ও নৈতিক শিক্ষা', mcq: rel.mcq, cq: rel.cq, practical: '', isCombined: false });
+
+                rows.push({ name: 'তথ্য ও যোগাযোগ প্রযুক্তি', mcq: 24, cq: '', practical: 24, isCombined: false });
+
+                if (section.includes('বিজ্ঞান')) {
+                    const ph = mPrac(92);
+                    rows.push({ name: 'পদার্থবিজ্ঞান', mcq: ph.mcq, cq: ph.cq, practical: ph.practical, isCombined: false });
+                    const ch = mPrac(89);
+                    rows.push({ name: 'রসায়ন', mcq: ch.mcq, cq: ch.cq, practical: ch.practical, isCombined: false });
+                    const bi = mPrac(88);
+                    rows.push({ name: 'জীববিজ্ঞান', mcq: bi.mcq, cq: bi.cq, practical: bi.practical, isCombined: false });
+                    const bgs = m(84, 28);
+                    rows.push({ name: 'বাংলাদেশ ও বিশ্বপরিচয়', mcq: bgs.mcq, cq: bgs.cq, practical: '', isCombined: false });
+                    const hm = mPrac(94);
+                    rows.push({ name: 'উচ্চতর গণিত (ঐচ্ছিক)', mcq: hm.mcq, cq: hm.cq, practical: hm.practical, isCombined: false, isOptional: true });
+                } else if (section.includes('ব্যবসায়')) {
+                    const acc = m(88, 28);
+                    rows.push({ name: 'হিসাববিজ্ঞান', mcq: acc.mcq, cq: acc.cq, practical: '', isCombined: false });
+                    const bus = m(85, 28);
+                    rows.push({ name: 'ব্যবসায় উদ্যোগ', mcq: bus.mcq, cq: bus.cq, practical: '', isCombined: false });
+                    const fin = m(84, 28);
+                    rows.push({ name: 'ফিন্যান্স ও ব্যাংকিং', mcq: fin.mcq, cq: fin.cq, practical: '', isCombined: false });
+                    const sci = mPrac(86);
+                    rows.push({ name: 'সাধারণ বিজ্ঞান', mcq: sci.mcq, cq: sci.cq, practical: sci.practical, isCombined: false });
+                    const agri = mPrac(90);
+                    rows.push({ name: 'কৃষি শিক্ষা (ঐচ্ছিক)', mcq: agri.mcq, cq: agri.cq, practical: agri.practical, isCombined: false, isOptional: true });
+                } else {
+                    const geo = m(86, 28);
+                    rows.push({ name: 'ভূগোল ও পরিবেশ', mcq: geo.mcq, cq: geo.cq, practical: '', isCombined: false });
+                    const civ = m(85, 28);
+                    rows.push({ name: 'পৌরনীতি ও নাগরিকতা', mcq: civ.mcq, cq: civ.cq, practical: '', isCombined: false });
+                    const his = m(84, 28);
+                    rows.push({ name: 'ইতিহাস ও বিশ্বসভ্যতা', mcq: his.mcq, cq: his.cq, practical: '', isCombined: false });
+                    const sci = mPrac(86);
+                    rows.push({ name: 'সাধারণ বিজ্ঞান', mcq: sci.mcq, cq: sci.cq, practical: sci.practical, isCombined: false });
+                    const agri = mPrac(90);
+                    rows.push({ name: 'কৃষি শিক্ষা (ঐচ্ছিক)', mcq: agri.mcq, cq: agri.cq, practical: agri.practical, isCombined: false, isOptional: true });
+                }
+            } else {
+                const b = m(84, 28);
+                rows.push({ name: 'বাংলা', mcq: b.mcq, cq: b.cq, practical: '', isCombined: false });
+                const e = m(80, 0);
+                rows.push({ name: 'ইংরেজি', mcq: '', cq: e.cq, practical: '', isCombined: false });
+                const math = m(86, 28);
+                rows.push({ name: 'গণিত', mcq: math.mcq, cq: math.cq, practical: '', isCombined: false });
+                const sci = m(85, 28);
+                rows.push({ name: 'বিজ্ঞান', mcq: sci.mcq, cq: sci.cq, practical: '', isCombined: false });
+                const bgs = m(82, 28);
+                rows.push({ name: 'বাংলাদেশ ও বিশ্বপরিচয়', mcq: bgs.mcq, cq: bgs.cq, practical: '', isCombined: false });
+                const rel = m(88, 28);
+                rows.push({ name: 'ধর্ম ও নৈতিক শিক্ষা', mcq: rel.mcq, cq: rel.cq, practical: '', isCombined: false });
+            }
+
+            return rows;
+        }
+
+        function renderCmsMarksheetRows(subjectList, prefix = 'cms-sheet-') {
+            const tbodyId = prefix === 'cms-onpage-' ? 'cms-onpage-marksheet-rows-tbody' : 'cms-marksheet-rows-tbody';
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            let html = '';
+            let grandTotal = 0;
+            let totalGps = 0;
+            let subjectCount = 0;
+            let hasFailed = false;
+
+            subjectList.forEach(sub => {
+                if (sub.isCombined) {
+                    const m1 = (parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.practical) || 0);
+                    const m2 = (parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPractical) || 0);
+                    const combTotal = m1 + m2;
+                    const avg100 = combTotal / 2;
+                    const res = getGradeAndGP(avg100);
+
+                    grandTotal += combTotal;
+                    totalGps += res.gp;
+                    subjectCount++;
+                    if (res.gp === 0) hasFailed = true;
+
+                    html += `
+                        <tr>
+                            <td class="subject-col">${sub.name}</td>
+                            <td>${sub.mcq !== '' ? toBnDigits(sub.mcq) : ''}</td>
+                            <td>${sub.cq !== '' ? toBnDigits(sub.cq) : ''}</td>
+                            <td>${sub.practical !== '' ? toBnDigits(sub.practical) : ''}</td>
+                            <td>${toBnDigits(m1)}</td>
+                            <td rowspan="2" style="font-weight:bold; font-size:14px; vertical-align:middle;">${toBnDigits(combTotal)}</td>
+                            <td rowspan="2" style="font-weight:bold; font-size:15px; vertical-align:middle;">${res.grade}</td>
+                            <td rowspan="2" style="font-weight:bold; vertical-align:middle;">${toBnDigits(res.gp.toFixed(2))}</td>
+                        </tr>
+                        <tr>
+                            <td class="subject-col">${sub.pairWith}</td>
+                            <td>${sub.pairMcq !== '' ? toBnDigits(sub.pairMcq) : ''}</td>
+                            <td>${sub.pairCq !== '' ? toBnDigits(sub.pairCq) : ''}</td>
+                            <td>${sub.pairPractical !== '' ? toBnDigits(sub.pairPractical) : ''}</td>
+                            <td>${toBnDigits(m2)}</td>
+                        </tr>
+                    `;
+                } else {
+                    const mcqVal = (sub.mcq !== undefined && sub.mcq !== '') ? parseInt(sub.mcq) || 0 : 0;
+                    const cqVal = (sub.cq !== undefined && sub.cq !== '') ? parseInt(sub.cq) || 0 : 0;
+                    const pracVal = (sub.practical !== undefined && sub.practical !== '') ? parseInt(sub.practical) || 0 : 0;
+                    const subTotal = mcqVal + cqVal + pracVal;
+                    const res = getGradeAndGP(subTotal);
+
+                    grandTotal += subTotal;
+                    if (!sub.isOptional) {
+                        totalGps += res.gp;
+                        subjectCount++;
+                        if (res.gp === 0) hasFailed = true;
+                    } else {
+                        const bonus = Math.max(0, res.gp - 2.0);
+                        totalGps += bonus;
+                    }
+
+                    const pracClass = (sub.practical !== '' && sub.practical !== undefined) ? 'practical-shaded' : '';
+
+                    html += `
+                        <tr>
+                            <td class="subject-col">${sub.name}</td>
+                            <td>${sub.mcq !== '' && sub.mcq !== undefined ? toBnDigits(sub.mcq) : ''}</td>
+                            <td>${sub.cq !== '' && sub.cq !== undefined ? toBnDigits(sub.cq) : ''}</td>
+                            <td class="${pracClass}">${sub.practical !== '' && sub.practical !== undefined ? toBnDigits(sub.practical) : ''}</td>
+                            <td>${subTotal > 0 ? toBnDigits(subTotal) : '০'}</td>
+                            <td></td>
+                            <td style="font-weight: bold; font-size: 15px;">${res.grade}</td>
+                            <td>${toBnDigits(res.gp.toFixed(2))}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tbody.innerHTML = html;
+
+            let finalGpa = hasFailed || subjectCount === 0 ? 0.0 : Math.min(5.00, totalGps / subjectCount);
+            let finalGrade = 'F';
+            if (finalGpa >= 5.0) finalGrade = 'A+';
+            else if (finalGpa >= 4.0) finalGrade = 'A';
+            else if (finalGpa >= 3.5) finalGrade = 'A-';
+            else if (finalGpa >= 3.0) finalGrade = 'B';
+            else if (finalGpa >= 2.0) finalGrade = 'C';
+            else if (finalGpa >= 1.0) finalGrade = 'D';
+
+            const totEl = document.getElementById(prefix + 'grand-total');
+            const gpaEl = document.getElementById(prefix + 'gpa');
+            const grdEl = document.getElementById(prefix + 'grade');
+            const merEl = document.getElementById(prefix + 'merit-position');
+
+            if (totEl) totEl.innerText = toBnDigits(grandTotal);
+            if (gpaEl) gpaEl.innerText = toBnDigits(finalGpa.toFixed(2));
+            if (grdEl) grdEl.innerText = finalGrade;
+            if (merEl) merEl.innerText = toBnDigits(finalGpa === 5.0 ? '১ম' : (finalGpa >= 4.0 ? '২য়' : '৩য়'));
+        }
+
+        // Auto-navigate to #results or auto-open result modal if URL param action=result or hash #results is present
+        window.addEventListener('DOMContentLoaded', () => {
+            const u = new URLSearchParams(window.location.search);
+            if (u.get('action') === 'result' || window.location.hash === '#results' || window.location.hash === '#result' || u.get('open') === 'result') {
+                const resultsSection = document.getElementById('results');
+                if (resultsSection) {
+                    setTimeout(() => {
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                } else {
+                    openResultSearchModal();
+                }
+            }
+        });
 
         // --- CONTACT INQUIRY SUBMIT ---
         function handleContactSubmit(e) {

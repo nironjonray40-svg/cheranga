@@ -3,7 +3,9 @@
 
 <head>
     <script>
-        if (localStorage.getItem('isLoggedIn') !== 'true') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPublicResult = urlParams.has('roll') || urlParams.get('public') === 'true' || urlParams.has('class') || urlParams.has('exam');
+        if (!isPublicResult && localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.replace('cms.html?login=required');
         }
     </script>
@@ -1721,6 +1723,31 @@
         document.addEventListener('DOMContentLoaded', () => {
             initSearchDropdowns();
             updateSchoolIdentity();
+
+            // Auto-search if query parameters are present
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('class')) {
+                const clsSelect = document.getElementById('result-class');
+                if (clsSelect) {
+                    clsSelect.value = params.get('class');
+                    if (typeof onPortalClassChange === 'function') onPortalClassChange();
+                }
+            }
+            if (params.has('exam')) {
+                const examSelect = document.getElementById('result-exam');
+                if (examSelect) examSelect.value = params.get('exam');
+            }
+            if (params.has('section')) {
+                const secSelect = document.getElementById('result-section');
+                if (secSelect) secSelect.value = params.get('section');
+            }
+            if (params.has('roll')) {
+                const rollInput = document.getElementById('result-roll');
+                if (rollInput) rollInput.value = params.get('roll');
+                setTimeout(() => {
+                    searchResult();
+                }, 100);
+            }
         });
 
         window.addEventListener('storage', (e) => {

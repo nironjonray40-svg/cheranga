@@ -1,22 +1,19 @@
 import sqlite3
 import json
 import sys
+from collections import Counter
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-con = sqlite3.connect('school.db')
-cur = con.cursor()
-cur.execute("SELECT key, length(value) FROM local_storage_sync WHERE key LIKE '%student%' OR key LIKE '%seat%' OR key LIKE '%admit%'")
-rows = cur.fetchall()
-for r in rows:
-    print(r)
-
-cur.execute("SELECT value FROM local_storage_sync WHERE key = 'school_students'")
-row = cur.fetchone()
-if row:
-    data = json.loads(row[0])
-    print('Total students in school_students:', len(data) if isinstance(data, list) else type(data))
-    if isinstance(data, list) and len(data) > 0:
-        print('First 5 students:')
-        for s in data[:5]:
-            print(json.dumps(s, ensure_ascii=False, indent=2))
+conn = sqlite3.connect('school.db')
+cursor = conn.cursor()
+cursor.execute("SELECT value FROM local_storage_sync WHERE key = 'school_students'")
+r = cursor.fetchone()
+if r:
+    students = json.loads(r[0])
+    print(f"Total students: {len(students)}")
+    classes = Counter(s.get('class') for s in students)
+    print("Students count per class:", classes)
+    for cls in classes:
+        sample_st = [s for s in students if s.get('class') == cls]
+        print(f"Class '{cls}': {len(sample_st)} students. Sample names: {[s.get('name') for s in sample_st[:3]]}")
