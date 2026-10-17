@@ -3321,12 +3321,11 @@
                     <a href="exam-portal?view=exam-entry">Exam Portal</a>
                     <ul class="dropdown-menu">
                         <li><a href="exam-portal?view=exam-entry">Exam List</a></li>
-                        <li><a href="exam-portal?view=exam-names" onclick="if(typeof navigateExamView==='function'){ navigateExamView('exam-names'); return false; }">Exam Names</a></li>
-                        <li><a href="exam-portal?view=result-report">Result Report</a></li>
-                        <li><a href="exam-portal?view=marking-system">Marking System</a></li>
-                        <li><a href="exam-portal?view=all-subject">All Subject</a></li>
-                        <li><a href="exam-portal?view=sms">SMS</a></li>
                         <li><a href="exam-portal?view=omr-reader">Omr Reder</a></li>
+                        <li><a href="exam-portal?view=sms">SMS</a></li>
+                        <li><a href="exam-portal?view=all-subject">All Subject</a></li>
+                        <li><a href="exam-portal?view=exam-names" onclick="if(typeof navigateExamView==='function'){ navigateExamView('exam-names'); return false; }">Exam Names</a></li>
+                        <li><a href="exam-portal?view=marking-system">Marking System</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown" data-tab="result-portal">
@@ -3385,20 +3384,14 @@
             <div class="sub-nav-tabs">
                 <button class="sub-tab-btn" id="btn-tab-dashboard"
                     onclick="navigateExamView('dashboard')">Dashboard</button>
-                <button class="sub-tab-btn active" id="btn-tab-exam-entry" onclick="navigateExamView('exam-entry')">Exam
-                    List</button>
+                <button class="sub-tab-btn active" id="btn-tab-exam-entry" onclick="navigateExamView('exam-entry')">Exam List</button>
+                <button class="sub-tab-btn" id="btn-tab-omr-reader" onclick="navigateExamView('omr-reader')">Omr Reder</button>
+                <button class="sub-tab-btn" id="btn-tab-sms" onclick="navigateExamView('sms')">SMS</button>
+                <button class="sub-tab-btn" id="btn-tab-all-subject" onclick="navigateExamView('all-subject')">All Subject</button>
                 <button class="sub-tab-btn" id="btn-tab-exam-names" onclick="navigateExamView('exam-names')">Exam Names</button>
-                <button class="sub-tab-btn" id="btn-tab-exam-types" onclick="navigateExamView('exam-types')">Types of
-                    Exams</button>
-                <button class="sub-tab-btn" id="btn-tab-result-report"
-                    onclick="navigateExamView('result-report')">Result Report</button>
-                <button class="sub-tab-btn" id="btn-tab-marking-system"
-                    onclick="navigateExamView('marking-system')">Marking System</button>
-                <button class="sub-tab-btn" id="btn-tab-all-subject" onclick="navigateExamView('all-subject')">All
-                    Subject</button>
-                <button class="sub-tab-btn" id="btn-tab-sms" onclick="navigateExamView('sms')">SMS Center</button>
-                <button class="sub-tab-btn" id="btn-tab-omr-reader" onclick="navigateExamView('omr-reader')">Omr
-                    Reder</button>
+                <button class="sub-tab-btn" id="btn-tab-marking-system" onclick="navigateExamView('marking-system')">Marking System</button>
+                <button class="sub-tab-btn" id="btn-tab-exam-types" onclick="navigateExamView('exam-types')" style="display:none;"></button>
+                <button class="sub-tab-btn" id="btn-tab-result-report" onclick="navigateExamView('result-report')" style="display:none;"></button>
             </div>
 
             <!-- SUB-VIEW 0: DASHBOARD (DEFAULT OVERVIEW) -->
@@ -3414,46 +3407,25 @@
                         <h4>Exam List</h4>
                         <p>Manage exam schedules & routines</p>
                     </div>
-                    <div class="quick-nav-card" onclick="navigateExamView('result-report')">
-                        <div class="quick-nav-icon" style="color:var(--neon-cyan);">
+                    <div class="quick-nav-card" onclick="navigateExamView('omr-reader')">
+                        <div class="quick-nav-icon" style="color: #ec4899;">
                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
                                 <path
                                     d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
                             </svg>
                         </div>
-                    <div class="quick-nav-card" onclick="navigateExamView('exam-names')">
-                        <div class="quick-nav-icon" style="color:var(--neon-purple);">
-                            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                        </div>
-                        <h4>Exam Names</h4>
-                        <p>পরীক্ষার নাম আপডেট ও পরিচালনা করুন</p>
+                        <h4>Omr Reder</h4>
+                        <p>ওএমআর শিট মূল্যায়ন ও রেজাল্ট প্রসেসর</p>
                     </div>
-                    
-                        <h4>Result Report</h4>
-                        <p>Search & print transcripts</p>
-                    </div>
-                    <div class="quick-nav-card" onclick="navigateExamView('marking-system')">
+                    <div class="quick-nav-card" onclick="navigateExamView('sms')">
                         <div class="quick-nav-icon" style="color:var(--neon-green);">
                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
                                 <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm1.01 16h-2v-2h2v2zm1.44-6.39l-.9.9c-.72.73-1.15 1.24-1.15 2.49h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.42 0-1.1-.9-2-2-2s-2 .9-2 2h-2c0-2.2 1.8-4 4-4s4 1.8 4 4c0 .88-.36 1.68-.96 2.3z" />
+                                    d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
                             </svg>
                         </div>
-                        <h4>Marking System</h4>
-                        <p>Configure GPA scale & rules</p>
-                    </div>
-                    <div class="quick-nav-card" onclick="navigateExamView('exam-types')">
-                        <div class="quick-nav-icon" style="color:var(--neon-purple);">
-                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-                                <path
-                                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-                            </svg>
-                        </div>
-                        <h4>Types of Exams</h4>
-                        <p>Configure CQ, MCQ, and Practical marks</p>
+                        <h4>SMS</h4>
+                        <p>Notify guardians in real-time</p>
                     </div>
                     <div class="quick-nav-card" onclick="navigateExamView('all-subject')">
                         <div class="quick-nav-icon" style="color:var(--neon-pink);">
@@ -3464,25 +3436,25 @@
                         <h4>All Subject</h4>
                         <p>List & assign class subjects</p>
                     </div>
-                    <div class="quick-nav-card" onclick="navigateExamView('sms')">
+                    <div class="quick-nav-card" onclick="navigateExamView('exam-names')">
+                        <div class="quick-nav-icon" style="color:var(--neon-purple);">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </div>
+                        <h4>Exam Names</h4>
+                        <p>পরীক্ষার নাম আপডেট ও পরিচালনা করুন</p>
+                    </div>
+                    <div class="quick-nav-card" onclick="navigateExamView('marking-system')">
                         <div class="quick-nav-icon" style="color:var(--neon-green);">
                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
                                 <path
-                                    d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm1.01 16h-2v-2h2v2zm1.44-6.39l-.9.9c-.72.73-1.15 1.24-1.15 2.49h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.42 0-1.1-.9-2-2-2s-2 .9-2 2h-2c0-2.2 1.8-4 4-4s4 1.8 4 4c0 .88-.36 1.68-.96 2.3z" />
                             </svg>
                         </div>
-                        <h4>SMS Center</h4>
-                        <p>Notify guardians in real-time</p>
-                    </div>
-                    <div class="quick-nav-card" onclick="navigateExamView('omr-reader')">
-                        <div class="quick-nav-icon" style="color: #ec4899;">
-                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-                                <path
-                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-                            </svg>
-                        </div>
-                        <h4>Omr Reder</h4>
-                        <p>ওএমআর শিট মূল্যায়ন ও রেজাল্ট প্রসেসর</p>
+                        <h4>Marking System</h4>
+                        <p>Configure GPA scale & rules</p>
                     </div>
                 </div>
 
