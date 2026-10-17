@@ -217,6 +217,22 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
         }
 
+        @keyframes fadeInExamFilter {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #toggle-exam-filter-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+        }
+
         .modern-light-exam-table {
             width: 100%;
             border-collapse: collapse;
@@ -3549,6 +3565,22 @@
                         </span>
                     </div>
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <button id="toggle-exam-filter-btn" type="button" class="btn-secondary"
+                            style="background:#ffffff; border:1.5px solid #2563eb; box-shadow:0 2px 8px rgba(37,99,235,0.12); padding:9px 20px; border-radius:20px; font-weight:700; font-size:0.95rem; cursor:pointer; color:#2563eb; display:inline-flex; align-items:center; gap:8px; transition:all 0.25s ease;"
+                            onclick="toggleExamFilterSection()" title="ফিল্টার ও শ্রেণি ওভারভিউ দেখুন বা লুকান">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span id="exam-filter-btn-text">Filter</span>
+                            <span id="exam-filter-active-count-badge"
+                                style="display:none; background:#ef4444; color:#ffffff; font-size:0.75rem; font-weight:800; padding:2px 7px; border-radius:12px; margin-left:2px;"></span>
+                            <svg id="exam-filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                style="transition: transform 0.25s ease;">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
                         <button id="toggle-schedule-form-btn" class="btn-primary"
                             style="background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border:none; box-shadow:0 4px 14px rgba(37,99,235,0.25); padding:10px 22px; border-radius:22px; font-size:0.98rem; font-weight:700; cursor:pointer; color:#ffffff; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s ease;"
                             onclick="toggleCreateScheduleForm()">
@@ -3581,14 +3613,6 @@
                             </svg>
                             <span>Back</span>
                         </button>
-                    </div>
-                </div>
-
-                <!-- Class Summary Cards Row -->
-                <div style="margin-bottom:16px;">
-                    <div id="class-summary-cards-container"
-                        style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start;">
-                        <!-- Dynamic Class Info Cards -->
                     </div>
                 </div>
 
@@ -3878,86 +3902,127 @@
 
                     <div id="exam-schedules-list-card">
 
-                        <!-- Dynamic Filters Grid & Status Filter Bar (Modern Clean Light) -->
-                        <div class="exam-entry-light-filters">
+                        <!-- Collapsible Filter Section (Default: Hidden) -->
+                        <div id="exam-schedules-filter-section" style="display: none; margin-bottom: 20px; animation: fadeInExamFilter 0.25s ease;">
+                            <div class="exam-entry-light-filters" style="margin-bottom: 0;">
 
-                            <!-- Dropdown Filters Grid -->
-                            <div
-                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px;">
-                                <div class="form-group" style="margin: 0;">
-                                    <label for="filter-schedule-class">Class</label>
-                                    <select id="filter-schedule-class" class="form-control"
-                                        onchange="onScheduleFilterChange()">
-                                        <option value="All">All Classes</option>
-                                    </select>
+                                <!-- Filter Panel Header: Title, Active Badge, Reset & Close -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 2px; flex-wrap: wrap; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 1.05rem; font-weight: 800; color: #1e293b; display: inline-flex; align-items: center; gap: 8px; font-family: 'Outfit', 'Tiro Bangla', sans-serif;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                            </svg>
+                                            ফিল্টার ও শ্রেণি ওভারভিউ (Filter & Class Overview)
+                                        </span>
+                                        <span id="active-filter-indicator-text" style="display:none; font-size: 0.82rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 2px 10px; border-radius: 20px;">
+                                            সক্রিয় ফিল্টার
+                                        </span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <button type="button" onclick="resetAllScheduleFilters()"
+                                            style="background: #f8fafc; border: 1.5px solid #cbd5e1; color: #475569; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                                <path d="M3 3v5h5"></path>
+                                            </svg>
+                                            <span>Reset Filter</span>
+                                        </button>
+                                        <button type="button" onclick="toggleExamFilterSection(false)"
+                                            style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;" title="ফিল্টার লুকান">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                            <span>Close</span>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="form-group" style="margin: 0;">
-                                    <label for="filter-schedule-exam">Exam Name</label>
-                                    <select id="filter-schedule-exam" class="form-control"
-                                        onchange="onScheduleFilterChange()">
-                                        <option value="All">All Exams</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" style="margin: 0;">
-                                    <label for="filter-schedule-date">Date</label>
-                                    <input type="text" id="filter-schedule-date" class="form-control"
-                                        placeholder="dd/mm/yyyy" oninput="onScheduleFilterChange()">
-                                </div>
-                                <div class="form-group" style="margin: 0;">
-                                    <label for="filter-schedule-subject">Subject</label>
-                                    <select id="filter-schedule-subject" class="form-control"
-                                        onchange="onScheduleFilterChange()">
-                                        <option value="All">All Subjects</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" style="margin: 0;">
-                                    <label for="filter-schedule-teacher">Teacher Name</label>
-                                    <select id="filter-schedule-teacher" class="form-control"
-                                        onchange="onScheduleFilterChange()">
-                                        <option value="All">All Teachers</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <!-- Status Filter Pills Row (Centered) -->
-                            <div
-                                style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
-                                <span
-                                    style="font-size: 0.98rem; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 6px;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.5">
-                                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                                    </svg>
-                                    স্ট্যাটাস:
-                                </span>
-                                <div class="status-filter-pills"
-                                    style="display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; background: transparent; padding: 0; border: none;">
-                                    <button class="status-pill active" data-status="All"
-                                        onclick="setStatusFilter('All')"
-                                        style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #2563eb; background: #2563eb; color: #ffffff; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(37,99,235,0.25); display: inline-flex; align-items: center; gap: 7px;">
-                                        <span
-                                            style="display:inline-block; width:7px; height:7px; background:#ffffff; border-radius:50%;"></span>
-                                        সব
-                                    </button>
-                                    <button class="status-pill" data-status="all" onclick="setStatusFilter('all')"
-                                        style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #bbf7d0; background: #f0fdf4; color: #16a34a; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;">
-                                        <span
-                                            style="display:inline-block; width:7px; height:7px; background:#16a34a; border-radius:50%;"></span>
-                                        এন্ট্রি সম্পন্ন
-                                    </button>
-                                    <button class="status-pill" data-status="partial"
-                                        onclick="setStatusFilter('partial')"
-                                        style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #fde68a; background: #fffbeb; color: #d97706; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;">
-                                        <span
-                                            style="display:inline-block; width:7px; height:7px; background:#d97706; border-radius:50%;"></span>
-                                        আংশিক সম্পন্ন
-                                    </button>
-                                    <button class="status-pill" data-status="none" onclick="setStatusFilter('none')"
-                                        style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #fecaca; background: #fef2f2; color: #dc2626; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;">
-                                        <span
-                                            style="display:inline-block; width:7px; height:7px; background:#dc2626; border-radius:50%;"></span>
-                                        পেন্ডিং
-                                    </button>
+                                <!-- Class Summary Cards Row -->
+                                <div id="class-summary-cards-container"
+                                    style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start; padding: 4px 0 8px 0; border-bottom: 1.5px solid #f1f5f9;">
+                                    <!-- Dynamic Class Info Cards -->
+                                </div>
+
+                                <!-- Dropdown Filters Grid -->
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px;">
+                                    <div class="form-group" style="margin: 0;">
+                                        <label for="filter-schedule-class">Class</label>
+                                        <select id="filter-schedule-class" class="form-control"
+                                            onchange="onScheduleFilterChange()">
+                                            <option value="All">All Classes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin: 0;">
+                                        <label for="filter-schedule-exam">Exam Name</label>
+                                        <select id="filter-schedule-exam" class="form-control"
+                                            onchange="onScheduleFilterChange()">
+                                            <option value="All">All Exams</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin: 0;">
+                                        <label for="filter-schedule-date">Date</label>
+                                        <input type="text" id="filter-schedule-date" class="form-control"
+                                            placeholder="dd/mm/yyyy" oninput="onScheduleFilterChange()">
+                                    </div>
+                                    <div class="form-group" style="margin: 0;">
+                                        <label for="filter-schedule-subject">Subject</label>
+                                        <select id="filter-schedule-subject" class="form-control"
+                                            onchange="onScheduleFilterChange()">
+                                            <option value="All">All Subjects</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin: 0;">
+                                        <label for="filter-schedule-teacher">Teacher Name</label>
+                                        <select id="filter-schedule-teacher" class="form-control"
+                                            onchange="onScheduleFilterChange()">
+                                            <option value="All">All Teachers</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Status Filter Pills Row (Centered) -->
+                                <div
+                                    style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                                    <span
+                                        style="font-size: 0.98rem; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 6px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2.5">
+                                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                        </svg>
+                                        স্ট্যাটাস:
+                                    </span>
+                                    <div class="status-filter-pills"
+                                        style="display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; background: transparent; padding: 0; border: none;">
+                                        <button class="status-pill active" data-status="All"
+                                            onclick="setStatusFilter('All')"
+                                            style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #2563eb; background: #2563eb; color: #ffffff; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(37,99,235,0.25); display: inline-flex; align-items: center; gap: 7px;">
+                                            <span
+                                                style="display:inline-block; width:7px; height:7px; background:#ffffff; border-radius:50%;"></span>
+                                            সব
+                                        </button>
+                                        <button class="status-pill" data-status="all" onclick="setStatusFilter('all')"
+                                            style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #bbf7d0; background: #f0fdf4; color: #16a34a; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;">
+                                            <span
+                                                style="display:inline-block; width:7px; height:7px; background:#16a34a; border-radius:50%;"></span>
+                                            এন্ট্রি সম্পন্ন
+                                        </button>
+                                        <button class="status-pill" data-status="partial"
+                                            onclick="setStatusFilter('partial')"
+                                            style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #fde68a; background: #fffbeb; color: #d97706; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;">
+                                            <span
+                                                style="display:inline-block; width:7px; height:7px; background:#d97706; border-radius:50%;"></span>
+                                            আংশিক সম্পন্ন
+                                        </button>
+                                        <button class="status-pill" data-status="none" onclick="setStatusFilter('none')"
+                                            style="padding: 7px 18px; border-radius: 20px; border: 1.5px solid #fecaca; background: #fef2f2; color: #dc2626; font-size: 0.94rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;">
+                                            <span
+                                                style="display:inline-block; width:7px; height:7px; background:#dc2626; border-radius:50%;"></span>
+                                            পেন্ডিং
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -6645,10 +6710,119 @@
         var toBengaliNumber = window.toBengaliNumber;
         var toEnglishDigits = window.toEnglishDigits;
 
-        // --- PAGINATION FOR EXAM LIST ---
+        // --- PAGINATION & FILTERS FOR EXAM LIST ---
         let currentSchedulePage = 1;
         let scheduleRowsPerPage = 20;
         let currentStatusFilter = 'All';
+
+        // --- EXAM LIST FILTER TOGGLE & ACTIONS ---
+        function toggleExamFilterSection(forceState) {
+            const filterSection = document.getElementById('exam-schedules-filter-section');
+            const btn = document.getElementById('toggle-exam-filter-btn');
+            const chevron = document.getElementById('exam-filter-chevron');
+            if (!filterSection) return;
+
+            let willShow;
+            if (typeof forceState === 'boolean') {
+                willShow = forceState;
+            } else {
+                willShow = (filterSection.style.display === 'none' || filterSection.style.display === '');
+            }
+
+            if (willShow) {
+                filterSection.style.display = 'block';
+                if (btn) {
+                    btn.style.background = '#2563eb';
+                    btn.style.color = '#ffffff';
+                    btn.style.borderColor = '#2563eb';
+                    btn.style.boxShadow = '0 4px 14px rgba(37,99,235,0.3)';
+                    const svg = btn.querySelector('svg');
+                    if (svg) svg.style.stroke = '#ffffff';
+                }
+                if (chevron) {
+                    chevron.style.transform = 'rotate(180deg)';
+                    chevron.style.stroke = '#ffffff';
+                }
+            } else {
+                filterSection.style.display = 'none';
+                if (btn) {
+                    btn.style.background = '#ffffff';
+                    btn.style.color = '#2563eb';
+                    btn.style.borderColor = '#2563eb';
+                    btn.style.boxShadow = '0 2px 8px rgba(37,99,235,0.12)';
+                    const svg = btn.querySelector('svg');
+                    if (svg) svg.style.stroke = 'currentColor';
+                }
+                if (chevron) {
+                    chevron.style.transform = 'rotate(0deg)';
+                    chevron.style.stroke = 'currentColor';
+                }
+            }
+        }
+
+        function resetAllScheduleFilters() {
+            const classEl = document.getElementById('filter-schedule-class');
+            const examEl = document.getElementById('filter-schedule-exam');
+            const dateEl = document.getElementById('filter-schedule-date');
+            const subEl = document.getElementById('filter-schedule-subject');
+            const teachEl = document.getElementById('filter-schedule-teacher');
+
+            if (classEl) classEl.value = 'All';
+            if (examEl) examEl.value = 'All';
+            if (dateEl) dateEl.value = '';
+            if (subEl) subEl.value = 'All';
+            if (teachEl) teachEl.value = 'All';
+
+            setStatusFilter('All');
+            onScheduleFilterChange();
+            updateFilterActiveIndicator();
+        }
+
+        function filterByClassFromCard(cls) {
+            const classSelect = document.getElementById('filter-schedule-class');
+            if (!classSelect) return;
+            if (classSelect.value === cls) {
+                classSelect.value = 'All';
+            } else {
+                classSelect.value = cls;
+            }
+            onScheduleFilterChange();
+        }
+
+        function updateFilterActiveIndicator() {
+            const classEl = document.getElementById('filter-schedule-class');
+            const examEl = document.getElementById('filter-schedule-exam');
+            const dateEl = document.getElementById('filter-schedule-date');
+            const subEl = document.getElementById('filter-schedule-subject');
+            const teachEl = document.getElementById('filter-schedule-teacher');
+
+            let activeCount = 0;
+            if (classEl && classEl.value !== 'All') activeCount++;
+            if (examEl && examEl.value !== 'All') activeCount++;
+            if (dateEl && dateEl.value && dateEl.value.trim() !== '') activeCount++;
+            if (subEl && subEl.value !== 'All') activeCount++;
+            if (teachEl && teachEl.value !== 'All') activeCount++;
+            if (currentStatusFilter && currentStatusFilter !== 'All') activeCount++;
+
+            const badge = document.getElementById('exam-filter-active-count-badge');
+            const panelBadge = document.getElementById('active-filter-indicator-text');
+            if (badge) {
+                if (activeCount > 0) {
+                    badge.textContent = activeCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+            if (panelBadge) {
+                if (activeCount > 0) {
+                    panelBadge.textContent = `${activeCount}টি ফিল্টার সক্রিয়`;
+                    panelBadge.style.display = 'inline-block';
+                } else {
+                    panelBadge.style.display = 'none';
+                }
+            }
+        }
 
         function onScheduleFilterChange() {
             currentSchedulePage = 1;
@@ -6660,6 +6834,7 @@
                 } catch (e) { }
             }
             renderScheduleList();
+            updateFilterActiveIndicator();
         }
 
         function navigateToTabulationSheet() {
@@ -6715,6 +6890,7 @@
             });
 
             renderScheduleList();
+            updateFilterActiveIndicator();
         }
 
         // Returns 'all' | 'partial' | 'none' based on how many students have marks entered for a given exam schedule
@@ -7547,10 +7723,12 @@
             const listCard = document.getElementById('exam-schedules-list-card');
             const btn = document.getElementById('toggle-schedule-form-btn');
             const icon = btn.querySelector('svg');
+            const filterBtn = document.getElementById('toggle-exam-filter-btn');
 
             if (formCard.style.display === 'none') {
                 formCard.style.display = 'block';
                 if (listCard) listCard.style.display = 'none';
+                if (filterBtn) filterBtn.style.display = 'none';
                 btn.querySelector('span').textContent = 'View Exam List';
                 icon.style.transform = 'rotate(45deg)';
 
@@ -7572,6 +7750,7 @@
             } else {
                 formCard.style.display = 'none';
                 if (listCard) listCard.style.display = 'block';
+                if (filterBtn) filterBtn.style.display = 'inline-flex';
                 btn.querySelector('span').textContent = 'Create Exam Schedule';
                 icon.style.transform = 'rotate(0deg)';
             }
@@ -8222,6 +8401,8 @@
 
             formCard.style.display = 'block';
             if (listCard) listCard.style.display = 'none';
+            const filterBtn = document.getElementById('toggle-exam-filter-btn');
+            if (filterBtn) filterBtn.style.display = 'none';
             btn.querySelector('span').textContent = 'View Exam List';
             icon.style.transform = 'rotate(45deg)';
 
@@ -8380,24 +8561,28 @@
                     }
                 });
 
+                const currentSelectedClass = document.getElementById('filter-schedule-class')?.value;
                 activeClasses.forEach(cls => {
                     const stats = classSummaryMap[cls];
                     const classColor = getClassColor(cls);
+                    const isClassSelected = (currentSelectedClass === cls);
                     cardsHtml += `
                         <div style="
-                            background: #ffffff;
-                            border: 1.5px solid #e2e8f0;
+                            background: ${isClassSelected ? '#eff6ff' : '#ffffff'};
+                            border: ${isClassSelected ? '2px solid #2563eb' : '1.5px solid #e2e8f0'};
                             border-radius: 12px;
                             padding: 10px 18px;
                             display: flex;
                             flex-direction: column;
                             min-width: 160px;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+                            box-shadow: ${isClassSelected ? '0 4px 14px rgba(37,99,235,0.18)' : '0 2px 8px rgba(0,0,0,0.03)'};
                             transition: all 0.2s ease;
                             cursor: pointer;
                         "
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.07)'; this.style.borderColor='#cbd5e1';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.03)'; this.style.borderColor='#e2e8f0';"
+                        onclick="filterByClassFromCard('${cls}')"
+                        title="${cls} শ্রেণির পরীক্ষার তালিকা ফিল্টার করতে ক্লিক করুন"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.07)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='${isClassSelected ? '0 4px 14px rgba(37,99,235,0.18)' : '0 2px 8px rgba(0,0,0,0.03)'}';"
                         >
                             <!-- Header -->
                             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 8px;">
@@ -8576,6 +8761,11 @@
             // Keep Dashboard Upcoming Exam Summary in continuous sync
             if (typeof renderDashboardRoutineSummary === 'function') {
                 renderDashboardRoutineSummary();
+            }
+
+            // Keep Filter indicator badge and active state in sync
+            if (typeof updateFilterActiveIndicator === 'function') {
+                updateFilterActiveIndicator();
             }
         }
 
