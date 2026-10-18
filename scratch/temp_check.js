@@ -194,6 +194,356 @@ function toEnDigits(n) {
     return String(n).replace(/[০-৯]/g, d => en[d]);
 }
 
+// Bilingual Support System
+let currentLanguage = 'bn';
+try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam === 'en' || langParam === 'bn') {
+        currentLanguage = langParam;
+    } else {
+        currentLanguage = 'bn'; // Strict default on initial launch
+    }
+} catch(e) {
+    currentLanguage = 'bn';
+}
+window.currentLanguage = currentLanguage;
+
+function formatDigits(n) {
+    if (n === null || n === undefined || n === '') return '';
+    return currentLanguage === 'en' ? toEnDigits(n) : toBnDigits(n);
+}
+
+function switchLanguage(lang) {
+    currentLanguage = (lang === 'en') ? 'en' : 'bn';
+    try {
+        window.currentLanguage = currentLanguage;
+        localStorage.setItem('marksheet_language', currentLanguage);
+    } catch(e) {}
+    const sLang = document.getElementById('filter-language');
+    if (sLang && sLang.value !== currentLanguage) sLang.value = currentLanguage;
+    if (typeof updateLanguageUI === 'function') updateLanguageUI();
+    if (typeof updateLanguageUI1 === 'function') updateLanguageUI1();
+    syncCascadingFilters('language_switched');
+}
+
+const subjectTranslations = {
+    'bangla 1st paper': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'bangla 1st': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'bangla 2nd paper': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'bangla 2nd': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'bangla sahitya': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'bangla': { bn: 'বাংলা', en: 'Bangla' },
+    'বাংলা ১ম পত্র': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'বাংলা ২য় পত্র': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'বাংলা সাহিত্য': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'বাংলা ব্যাকরণ': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'বাংলা ভাষার ব্যাকরণ ও নির্মিতি': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'বাংলা': { bn: 'বাংলা', en: 'Bangla' },
+    'english 1st paper': { bn: 'ইংরেজি ১ম পত্র', en: 'English 1st Paper' },
+    'english 1st': { bn: 'ইংরেজি ১ম পত্র', en: 'English 1st Paper' },
+    'english for today': { bn: 'English For Today', en: 'English For Today' },
+    'english 2nd paper': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'english 2nd': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'english grammar': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'english': { bn: 'ইংরেজি', en: 'English' },
+    'ইংরেজি ১ম পত্র': { bn: 'ইংরেজি ১ম পত্র', en: 'English 1st Paper' },
+    'ইংরেজি ২য় পত্র': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'ইংরেজি': { bn: 'ইংরেজি', en: 'English' },
+    'mathematics': { bn: 'গণিত', en: 'Mathematics' },
+    'math': { bn: 'গণিত', en: 'Mathematics' },
+    'general mathematics': { bn: 'সাধারণ গণিত', en: 'General Mathematics' },
+    'গণিত': { bn: 'গণিত', en: 'Mathematics' },
+    'সাধারণ গণিত': { bn: 'সাধারণ গণিত', en: 'General Mathematics' },
+    'science': { bn: 'বিজ্ঞান', en: 'Science' },
+    'general science': { bn: 'সাধারণ বিজ্ঞান', en: 'General Science' },
+    'বিজ্ঞান': { bn: 'বিজ্ঞান', en: 'Science' },
+    'সাধারণ বিজ্ঞান': { bn: 'সাধারণ বিজ্ঞান', en: 'General Science' },
+    'bangladesh and global studies': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'bangladesh & global studies': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'বাংলাদেশ ও বিশ্বপরিচয়': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'বাংলাদেশ ও বিশ্ব পরিচয়': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'islamic studies': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'islam and moral education': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'islam': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'ইসলাম ও নৈতিক শিক্ষা': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'ইসলাম': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'hindu religion studies': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'hindu and moral education': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'hinduism studies': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'hindu': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'হিন্দুধর্ম ও নৈতিক শিক্ষা': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'হিন্দুধর্ম': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'buddhist and moral education': { bn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা', en: 'Buddhist & Moral Education' },
+    'বৌদ্ধধর্ম ও নৈতিক শিক্ষা': { bn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা', en: 'Buddhist & Moral Education' },
+    'christian and moral education': { bn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা', en: 'Christian & Moral Education' },
+    'খ্রিস্টধর্ম ও নৈতিক শিক্ষা': { bn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা', en: 'Christian & Moral Education' },
+    'information and communication technology': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'ict': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'তথ্য ও যোগাযোগ প্রযুক্তি (ict)': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'তথ্য ও যোগাযোগ প্রযুক্তি': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'physics': { bn: 'পদার্থবিজ্ঞান', en: 'Physics' },
+    'পদার্থবিজ্ঞান': { bn: 'পদার্থবিজ্ঞান', en: 'Physics' },
+    'পদার্থ': { bn: 'পদার্থবিজ্ঞান', en: 'Physics' },
+    'chemistry': { bn: 'রসায়ন', en: 'Chemistry' },
+    'রসায়ন': { bn: 'রসায়ন', en: 'Chemistry' },
+    'biology': { bn: 'জীববিজ্ঞান', en: 'Biology' },
+    'জীববিজ্ঞান': { bn: 'জীববিজ্ঞান', en: 'Biology' },
+    'higher mathematics': { bn: 'উচ্চতর গণিত', en: 'Higher Mathematics' },
+    'higher math': { bn: 'উচ্চতর গণিত', en: 'Higher Mathematics' },
+    'উচ্চতর গণিত': { bn: 'উচ্চতর গণিত', en: 'Higher Mathematics' },
+    'agriculture studies': { bn: 'কৃষি শিক্ষা', en: 'Agriculture Studies' },
+    'agriculture': { bn: 'কৃষি শিক্ষা', en: 'Agriculture Studies' },
+    'কৃষি শিক্ষা': { bn: 'কৃষি শিক্ষা', en: 'Agriculture Studies' },
+    'home science': { bn: 'গার্হস্থ্য বিজ্ঞান', en: 'Home Science' },
+    'গার্হস্থ্য বিজ্ঞান': { bn: 'গার্হস্থ্য বিজ্ঞান', en: 'Home Science' },
+    'accounting': { bn: 'হিসাববিজ্ঞান', en: 'Accounting' },
+    'হিসাববিজ্ঞান': { bn: 'হিসাববিজ্ঞান', en: 'Accounting' },
+    'business entrepreneurship': { bn: 'ব্যবসায় উদ্যোগ', en: 'Business Entrepreneurship' },
+    'ব্যবসায় উদ্যোগ': { bn: 'ব্যবসায় উদ্যোগ', en: 'Business Entrepreneurship' },
+    'ব্যবসায় উদ্যোগ': { bn: 'ব্যবসায় উদ্যোগ', en: 'Business Entrepreneurship' },
+    'finance and banking': { bn: 'ফিন্যান্স ও ব্যাংকিং', en: 'Finance & Banking' },
+    'finance & banking': { bn: 'ফিন্যান্স ও ব্যাংকিং', en: 'Finance & Banking' },
+    'ফিন্যান্স ও ব্যাংকিং': { bn: 'ফিন্যান্স ও ব্যাংকিং', en: 'Finance & Banking' },
+    'history of bangladesh and world civilization': { bn: 'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা', en: 'History of Bangladesh & World Civilization' },
+    'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা': { bn: 'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা', en: 'History of Bangladesh & World Civilization' },
+    'history and social science': { bn: 'ইতিহাস ও সামাজিক বিজ্ঞান', en: 'History & Social Science' },
+    'ইতিহাস ও সামাজিক বিজ্ঞান': { bn: 'ইতিহাস ও সামাজিক বিজ্ঞান', en: 'History & Social Science' },
+    'civics and citizenship': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'civics': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'পৌরনীতি ও নাগরিকতা': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'পৌরনীতি': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'geography and environment': { bn: 'ভূগোল ও পরিবেশ', en: 'Geography & Environment' },
+    'ভূগোল ও পরিবেশ': { bn: 'ভূগোল ও পরিবেশ', en: 'Geography & Environment' },
+    'physical education': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education' },
+    'physical education and health': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education & Health' },
+    'শারীরিক শিক্ষা ও স্বাস্থ্য': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education & Health' },
+    'শারীরিক শিক্ষা': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education' },
+    'arts and crafts': { bn: 'চারু ও কারুকলা', en: 'Arts & Crafts' },
+    'চারু ও কারুকলা': { bn: 'চারু ও কারুকলা', en: 'Arts & Crafts' },
+    'career education': { bn: 'ক্যারিয়ার শিক্ষা', en: 'Career Education' },
+    'ক্যারিয়ার শিক্ষা': { bn: 'ক্যারিয়ার শিক্ষা', en: 'Career Education' },
+    'কর্ম ও জীবনমুখী শিক্ষা': { bn: 'কর্ম ও জীবনমুখী শিক্ষা', en: 'Work & Life-Oriented Education' },
+    'work and life-oriented education': { bn: 'কর্ম ও জীবনমুখী শিক্ষা', en: 'Work & Life-Oriented Education' }
+};
+
+function getDisplaySubjectName(name) {
+    if (!name) return '';
+    const clean = String(name).trim();
+    const norm = clean.toLowerCase().replace(/[-_()]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (subjectTranslations[norm]) {
+        return currentLanguage === 'en' ? subjectTranslations[norm].en : subjectTranslations[norm].bn;
+    }
+    for (const key of Object.keys(subjectTranslations)) {
+        if (norm === key || norm.includes(key) || key.includes(norm)) {
+            return currentLanguage === 'en' ? subjectTranslations[key].en : subjectTranslations[key].bn;
+        }
+    }
+    if (currentLanguage === 'en') {
+        return toEnDigits(clean);
+    } else {
+        return (typeof getSubjectNameBangla === 'function' ? getSubjectNameBangla(clean) : clean) || clean;
+    }
+}
+
+function getEnglishExamName(examName) {
+    if (!examName) return '';
+    let name = String(examName).trim();
+    const map = [
+        [/অর্ধ-বার্ষিক\s*পরীক্ষা/gi, 'Half-Yearly Examination'],
+        [/বার্ষিক\s*পরীক্ষা/gi, 'Annual Examination'],
+        [/প্রাক-নির্বাচনী\s*পরীক্ষা/gi, 'Pre-Test Examination'],
+        [/নির্বাচনী\s*পরীক্ষা/gi, 'Test Examination'],
+        [/১ম\s*সাময়িক\s*পরীক্ষা/gi, '1st Terminal Examination'],
+        [/২য়\s*সাময়িক\s*পরীক্ষা/gi, '2nd Terminal Examination'],
+        [/মডেল\s*টেস্ট/gi, 'Model Test Examination'],
+        [/ক্লাস\s*টেষ্ট\s*পরীক্ষা/gi, 'Class Test Examination'],
+        [/টিউটোরিয়াল\s*পরীক্ষা/gi, 'Tutorial Examination'],
+        [/মাসিক\s*পরীক্ষা/gi, 'Monthly Examination'],
+        [/পরীক্ষা/gi, 'Examination']
+    ];
+    for (const [re, rep] of map) {
+        name = name.replace(re, rep);
+    }
+    name = toEnDigits(name);
+    return name;
+}
+
+function getDisplayExamName(examName) {
+    if (!examName) return '';
+    return currentLanguage === 'en' ? getEnglishExamName(examName) : examName;
+}
+
+function getEnglishClassName(cls) {
+    const norm = normalizeClassString(cls);
+    const map = {
+        'play': 'Play',
+        'nursery': 'Nursery',
+        'kg': 'KG',
+        '1': 'One',
+        '2': 'Two',
+        '3': 'Three',
+        '4': 'Four',
+        '5': 'Five',
+        '6': 'Six',
+        '7': 'Seven',
+        '8': 'Eight',
+        '9': 'Nine',
+        '10': 'Ten'
+    };
+    return map[norm] || cls || '';
+}
+
+function getBanglaClassName(cls) {
+    const norm = normalizeClassString(cls);
+    const map = {
+        'play': 'প্লে',
+        'nursery': 'নার্সারি',
+        'kg': 'কেজি',
+        '1': 'প্রথম',
+        '2': 'দ্বিতীয়',
+        '3': 'তৃতীয়',
+        '4': 'চতুর্থ',
+        '5': 'পঞ্চম',
+        '6': 'ষষ্ঠ',
+        '7': 'সপ্তম',
+        '8': 'অষ্টম',
+        '9': 'নবম',
+        '10': 'দশম'
+    };
+    return map[norm] || cls || '';
+}
+
+function getDisplayClassName(cls) {
+    return currentLanguage === 'en' ? getEnglishClassName(cls) : getBanglaClassName(cls);
+}
+
+function getEnglishSectionName(sec) {
+    if (!sec) return '';
+    const s = String(sec).trim().toLowerCase();
+    if (s.includes('বিজ্ঞান') || s === 'science') return 'Science';
+    if (s.includes('মানবিক') || s === 'humanities') return 'Humanities';
+    if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business')) return 'Business Studies';
+    if (s === 'ক' || s === 'a') return 'A';
+    if (s === 'খ' || s === 'b') return 'B';
+    if (s === 'গ' || s === 'c') return 'C';
+    if (s === 'ঘ' || s === 'd') return 'D';
+    return sec;
+}
+
+function getDisplaySectionName(sec) {
+    if (!sec) return '';
+    if (currentLanguage === 'en') {
+        return getEnglishSectionName(sec);
+    } else {
+        const s = String(sec).trim();
+        if (s.toLowerCase() === 'science') return 'বিজ্ঞান';
+        if (s.toLowerCase() === 'humanities') return 'মানবিক';
+        if (s.toLowerCase() === 'business' || s.toLowerCase() === 'commerce') return 'ব্যবসায় শিক্ষা';
+        return s;
+    }
+}
+
+
+function updateLanguageUI1() {
+    const isEn = (currentLanguage === 'en');
+    
+    // 1. Toolbar Labels
+    const lExam = document.getElementById('label-exam');
+    if (lExam) lExam.innerText = isEn ? 'Exam:' : 'পরীক্ষা:';
+    const lClass = document.getElementById('label-class');
+    if (lClass) lClass.innerText = isEn ? 'Class:' : 'শ্রেণি:';
+    const lSec = document.getElementById('label-section');
+    if (lSec) lSec.innerText = isEn ? 'Section:' : 'শাখা:';
+    const lSearch = document.getElementById('label-search');
+    if (lSearch) lSearch.innerText = isEn ? 'Search:' : 'খুঁজুন:';
+    const sInput = document.getElementById('filter-student-search');
+    if (sInput) sInput.placeholder = isEn ? 'Roll / Name / ID...' : 'রোল / নাম / আইডি লিখুন...';
+    const lLang = document.getElementById('label-language');
+    if (lLang) lLang.innerText = isEn ? 'Language:' : 'ভাষা:';
+    const sLang = document.getElementById('filter-language');
+    if (sLang && sLang.value !== currentLanguage) sLang.value = currentLanguage;
+    const lTemp = document.getElementById('label-template');
+    if (lTemp) lTemp.innerText = isEn ? 'Filter:' : 'Filter:';
+    const btnAllText = document.getElementById('create-all-btn-text');
+    if (btnAllText) {
+        if (isCreateAllMode) {
+            btnAllText.innerText = isEn ? 'All Students' : 'সকল শিক্ষার্থী (All)';
+        } else {
+            btnAllText.innerText = isEn ? 'Single Student' : 'একক শিক্ষার্থী (Single)';
+        }
+    }
+    const btnPrint = document.getElementById('btn-print-text');
+    if (btnPrint) btnPrint.innerText = isEn ? 'Print' : 'প্রিন্ট (Print)';
+
+    // 2. Profile Card Labels
+    const pName = document.getElementById('p-label-name');
+    if (pName) pName.innerText = isEn ? 'Student Name' : 'শিক্ষার্থীর নাম';
+    const pCls = document.getElementById('p-label-class');
+    if (pCls) pCls.innerText = isEn ? 'Class' : 'শ্রেণি';
+    const pSec = document.getElementById('p-label-section');
+    if (pSec) pSec.innerText = isEn ? 'Section / Group' : 'শাখা / গ্রুপ';
+    const pId = document.getElementById('p-label-id');
+    if (pId) pId.innerText = isEn ? 'ID / Reg' : 'আইডি / রেজি';
+    const pRoll = document.getElementById('p-label-roll');
+    if (pRoll) pRoll.innerText = isEn ? 'Roll No' : 'রোল নং';
+    const pRel = document.getElementById('p-label-religion');
+    if (pRel) pRel.innerText = isEn ? 'Religion' : 'ধর্ম (Religion)';
+    const pOpt = document.getElementById('label-opt-val');
+    if (pOpt) pOpt.innerText = isEn ? 'Optional Subject' : 'ঐচ্ছিক বিষয়';
+
+    // 3. Legend Table Labels
+    const legTitle = document.getElementById('legend-title-1');
+    if (legTitle) legTitle.innerText = isEn ? 'Grading Scale' : 'গ্রেডিং নির্দেশিকা (Grading Scale)';
+    const legRange = document.getElementById('legend-th-range-1');
+    if (legRange) legRange.innerText = isEn ? 'Marks Range' : 'নম্বর সীমা';
+    const legGrd = document.getElementById('legend-th-grade-1');
+    if (legGrd) legGrd.innerText = isEn ? 'Grade' : 'গ্রেড';
+    const legGp = document.getElementById('legend-th-gp-1');
+    if (legGp) legGp.innerText = isEn ? 'GPA' : 'পয়েন্ট';
+
+    // 4. Transcript Table Headers
+    const thSub = document.getElementById('th-header-sub-1');
+    if (thSub) thSub.innerText = isEn ? 'Subjects' : 'পাঠ্য বিষয়সমূহ';
+    const thFull = document.getElementById('th-header-full-1');
+    if (thFull) thFull.innerText = isEn ? 'Full Marks' : 'পূর্ণমান';
+    const thObt = document.getElementById('th-header-obtained-1');
+    if (thObt) thObt.innerText = isEn ? 'Marks Obtained' : 'প্রাপ্ত নম্বর';
+    const thMcq = document.getElementById('th-header-mcq-1');
+    if (thMcq) thMcq.innerText = isEn ? 'MCQ' : 'বহুনির্বাচনি';
+    const thCq = document.getElementById('th-header-cq-1');
+    if (thCq) thCq.innerText = isEn ? 'CQ' : 'লিখিত';
+    const thPrac = document.getElementById('th-header-prac-1');
+    if (thPrac) thPrac.innerText = isEn ? 'Prac.' : 'ব্যবহারিক';
+    const thTot = document.getElementById('th-header-total-1');
+    if (thTot) thTot.innerText = isEn ? 'Total' : 'মোট নম্বর';
+    const thComb = document.getElementById('th-header-combined-1');
+    if (thComb) thComb.innerText = isEn ? 'Grand Total' : 'সর্বমোট';
+    const thGrdTbl = document.getElementById('th-header-grade-1');
+    if (thGrdTbl) thGrdTbl.innerText = isEn ? 'Letter Grade' : 'লেটার গ্রেড';
+    const thGpTbl = document.getElementById('th-header-gp-1');
+    if (thGpTbl) thGpTbl.innerText = isEn ? 'Grade Point (GP)' : 'গ্রেড পয়েন্ট (GP)';
+
+    // 5. KPI Row Labels
+    const kpiTot = document.getElementById('kpi-label-total');
+    if (kpiTot) kpiTot.innerText = isEn ? 'Total Marks Obtained' : 'সর্বমোট প্রাপ্ত নম্বর';
+    const kpiGpa = document.getElementById('kpi-label-gpa');
+    if (kpiGpa) kpiGpa.innerText = isEn ? 'GPA' : 'জিপিএ (GPA)';
+    const kpiGrd = document.getElementById('kpi-label-grade');
+    if (kpiGrd) kpiGrd.innerText = isEn ? 'Final Grade' : 'চূড়ান্ত গ্রেড';
+    const kpiPos = document.getElementById('kpi-label-pos');
+    if (kpiPos) kpiPos.innerText = isEn ? 'Merit Position' : 'মেধাক্রম (Merit Position)';
+
+    // 6. Signatures Labels
+    const sigG = document.getElementById('label-sig-guardian-1');
+    if (sigG) sigG.innerText = isEn ? "Guardian's Signature" : 'অভিভাবকের স্বাক্ষর';
+    const sigT = document.getElementById('label-sig-teacher-1');
+    if (sigT) sigT.innerText = isEn ? "Class Teacher's Signature" : 'শ্রেণি শিক্ষকের স্বাক্ষর';
+    const sigH = document.getElementById('label-sig-head-1');
+    if (sigH) sigH.innerText = isEn ? "Head Teacher's Signature & Seal" : 'প্রধান শিক্ষকের স্বাক্ষর ও সিল';
+}
+
+
 function normalizeSectionString(str) {
     if (!str) return 'science';
     const s = String(str).toLowerCase().trim();
@@ -274,9 +624,9 @@ function renderGradingScaleLegend1() {
     if (tbody) {
         let rowsHtml = '';
         sorted.forEach(r => {
-            const minStr = toBnDigits(String(r.min).padStart(2, '০'));
-            const maxStr = toBnDigits(String(r.max));
-            const gpStr = toBnDigits(parseFloat(r.gp || 0).toFixed(2));
+            const minStr = formatDigits(String(r.min).padStart(2, '0'));
+            const maxStr = formatDigits(String(r.max));
+            const gpStr = formatDigits(parseFloat(r.gp || 0).toFixed(2));
             rowsHtml += `<tr><td>${minStr}-${maxStr}</td><td><strong>${r.name}</strong></td><td>${gpStr}</td></tr>`;
         });
         tbody.innerHTML = rowsHtml;
@@ -287,9 +637,9 @@ function getGradingScaleLegendRowsHTML1() {
     const rules = loadMarkingSystem();
     const sorted = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
     return sorted.map(r => {
-        const minStr = toBnDigits(String(r.min).padStart(2, '০'));
-        const maxStr = toBnDigits(String(r.max));
-        const gpStr = toBnDigits(parseFloat(r.gp || 0).toFixed(2));
+        const minStr = formatDigits(String(r.min).padStart(2, '0'));
+        const maxStr = formatDigits(String(r.max));
+        const gpStr = formatDigits(parseFloat(r.gp || 0).toFixed(2));
         return `<tr><td>${minStr}-${maxStr}</td><td><strong>${r.name}</strong></td><td>${gpStr}</td></tr>`;
     }).join('');
 }
@@ -419,25 +769,29 @@ function getStudentReligionInfo(student) {
         return {
             name: 'Hindu Religion Studies',
             nameBn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
-            display: 'হিন্দু (সনাতন)'
+            display: 'হিন্দু (সনাতন)',
+            en: 'Hinduism'
         };
     } else if (r.includes('buddh') || r.includes('বৌদ্ধ')) {
         return {
             name: 'Buddhist Religion Studies',
             nameBn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা',
-            display: 'বৌদ্ধ'
+            display: 'বৌদ্ধ',
+            en: 'Buddhism'
         };
     } else if (r.includes('christ') || r.includes('খ্রিস্ট') || r.includes('ঈসায়ী')) {
         return {
             name: 'Christian Religion Studies',
             nameBn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা',
-            display: 'খ্রিস্টান'
+            display: 'খ্রিস্টান',
+            en: 'Christianity'
         };
     }
     return {
         name: 'Islamic Studies',
         nameBn: 'ইসলাম ও নৈতিক শিক্ষা',
-        display: 'ইসলাম'
+        display: 'ইসলাম',
+        en: 'Islam'
     };
 }
 
@@ -698,39 +1052,64 @@ function getSubjectsForClass(selectedClass, selectedSection, selectedExam, stude
 
                         if (!subjectGroups.has(groupKey)) {
                             let subFull = parseInt(sc.totalMarks || sc.fullMarks) || 0;
-                            if (!subFull && sc.examType) {
-                                try {
-                                    const rawTypes = localStorage.getItem('school_exam_types');
-                                    if (rawTypes) {
-                                        const exTypes = JSON.parse(rawTypes);
-                                        const exMatch = exTypes.find(t => isExamMatch(t.name, selectedExam));
-                                        if (exMatch && Array.isArray(exMatch.examTypes)) {
-                                            const stMatch = exMatch.examTypes.find(t => (t.typeName || '').trim().toLowerCase() === (sc.examType || '').trim().toLowerCase());
-                                            if (stMatch) {
-                                                subFull = (Number(stMatch.defaultCQ) || 0) + (Number(stMatch.defaultMCQ) || 0) + (Number(stMatch.defaultPractical) || 0);
-                                            }
+                        let subCqFull = null;
+                        let subMcqFull = null;
+                        let subPracFull = null;
+                        if (sc.examType) {
+                            try {
+                                const rawTypes = localStorage.getItem('school_exam_types');
+                                if (rawTypes) {
+                                    const exTypes = JSON.parse(rawTypes);
+                                    const exMatch = exTypes.find(t => isExamMatch(t.name, selectedExam));
+                                    if (exMatch && Array.isArray(exMatch.examTypes)) {
+                                        const stMatch = exMatch.examTypes.find(t => (t.typeName || '').trim().toLowerCase() === (sc.examType || '').trim().toLowerCase());
+                                        if (stMatch) {
+                                            if (stMatch.defaultCQ !== undefined && stMatch.defaultCQ !== null) subCqFull = Number(stMatch.defaultCQ);
+                                            if (stMatch.defaultMCQ !== undefined && stMatch.defaultMCQ !== null) subMcqFull = Number(stMatch.defaultMCQ);
+                                            if (stMatch.defaultPractical !== undefined && stMatch.defaultPractical !== null) subPracFull = Number(stMatch.defaultPractical);
+                                            subFull = (subCqFull || 0) + (subMcqFull || 0) + (subPracFull || 0);
                                         }
                                     }
-                                } catch(e) {}
-                            }
-                            if (!subFull) {
-                                const curDist = getExamDistribution(selectedExam, selectedClass);
-                                if (curDist && curDist.total) subFull = curDist.total;
-                            }
-                            if (!subFull) {
-                                subFull = (normSub.includes('ict') || normSub.includes('আইসিটি')) ? 50 : 100;
-                            }
+                                    if (subCqFull === null && exMatch) {
+                                        if (exMatch.defaultCQ !== undefined && exMatch.defaultCQ !== null) subCqFull = Number(exMatch.defaultCQ);
+                                        if (exMatch.defaultMCQ !== undefined && exMatch.defaultMCQ !== null) subMcqFull = Number(exMatch.defaultMCQ);
+                                        if (exMatch.defaultPractical !== undefined && exMatch.defaultPractical !== null) subPracFull = Number(exMatch.defaultPractical);
+                                    }
+                                }
+                            } catch(e) {}
+                        }
+
+                        const normSubName = exactSubName.toLowerCase();
+                        const isEngSub = normSubName.includes('english') || normSubName.includes('ইংরেজি');
+                        if (isEngSub) {
+                            if (subCqFull === null || subCqFull === undefined) subCqFull = subFull || 100;
+                            subMcqFull = 0;
+                            subPracFull = 0;
+                            if (!subFull) subFull = subCqFull;
+                        } else if (subCqFull === null || subMcqFull === null || subPracFull === null) {
+                            const curDist = getExamDistribution(selectedExam, selectedClass);
+                            if (subCqFull === null) subCqFull = curDist.cq;
+                            if (subMcqFull === null) subMcqFull = curDist.mcq;
+                            if (subPracFull === null) subPracFull = curDist.prac;
+                            if (!subFull && curDist.total) subFull = curDist.total;
+                        }
+                        if (!subFull) {
+                            subFull = (normSubName.includes('ict') || normSubName.includes('আইসিটি')) ? 50 : 100;
+                        }
 
                             subjectGroups.set(groupKey, {
-                                schedule: sc,
-                                scheduleIds: [sc.id],
-                                name: exactSubName,
-                                rawName: exactSubName,
-                                nameBn: exactSubName,
-                                code: sc.code || '',
-                                fullMarks: subFull,
-                                isOptional: !!sc.isOptional
-                            });
+                                        schedule: sc,
+                                        scheduleIds: [sc.id],
+                                        name: exactSubName,
+                                        rawName: exactSubName,
+                                        nameBn: exactSubName,
+                                        code: sc.code || '',
+                                        fullMarks: subFull,
+                                        cqFull: subCqFull,
+                                        mcqFull: subMcqFull,
+                                        pracFull: subPracFull,
+                                        isOptional: !!sc.isOptional
+                                    });
                         } else {
                             const grp = subjectGroups.get(groupKey);
                             if (sc.id && !grp.scheduleIds.includes(sc.id)) {
@@ -744,18 +1123,21 @@ function getSubjectsForClass(selectedClass, selectedSection, selectedExam, stude
                     });
 
                     subjectGroups.forEach(grp => {
-                        const sc = grp.schedule;
-                        rawList.push({
-                            scheduleId: grp.scheduleId || sc.id,
-                            scheduleIds: grp.scheduleIds,
-                            name: grp.name,
-                            rawName: grp.rawName,
-                            nameBn: grp.name,
-                            code: grp.code,
-                            fullMarks: grp.fullMarks,
-                            isOptional: grp.isOptional
-                        });
-                    });
+                                const sc = grp.schedule;
+                                rawList.push({
+                                    scheduleId: grp.scheduleId || sc.id,
+                                    scheduleIds: grp.scheduleIds,
+                                    name: grp.name,
+                                    rawName: grp.rawName,
+                                    nameBn: grp.name,
+                                    code: grp.code,
+                                    fullMarks: grp.fullMarks,
+                                    cqFull: grp.cqFull,
+                                    mcqFull: grp.mcqFull,
+                                    pracFull: grp.pracFull,
+                                    isOptional: grp.isOptional
+                                });
+                            });
                 }
             }
         }
@@ -860,14 +1242,23 @@ function getSubjectsForClass(selectedClass, selectedSection, selectedExam, stude
 
     // Extract real student marks from savedMarks for each subject in rawList
     rawList.forEach(item => {
-        const markRes = getStudentMarksForSubject(student, item, selectedExam, savedMarks);
-        item.mcq = markRes.mcq;
-        item.cq = markRes.cq;
-        item.pr = markRes.pr;
-        item.total = markRes.total;
-        item.isAbsent = markRes.isAbsent;
-        item.hasMarks = markRes.hasMarks;
-    });
+                const markRes = getStudentMarksForSubject(student, item, selectedExam, savedMarks);
+                item.mcq = markRes.mcq;
+                item.cq = markRes.cq;
+                item.pr = markRes.pr;
+                item.total = markRes.total;
+                item.isAbsent = markRes.isAbsent;
+                item.hasMarks = markRes.hasMarks;
+
+                const normN = (item.name || '').toLowerCase();
+                const isEng = normN.includes('english') || normN.includes('ইংরেজি');
+                if (item.mcqFull === 0 || isEng) {
+                    item.mcq = '';
+                }
+                if (item.pracFull === 0 || isEng) {
+                    item.pr = '';
+                }
+            });
 
     // Format rawList into structured marksheet rows (combining 1st & 2nd papers where applicable)
     const rows = [];
@@ -918,41 +1309,50 @@ function getSubjectsForClass(selectedClass, selectedSection, selectedExam, stude
             const pairFull = parseInt(pairItem.fullMarks || pairItem.totalMarks) || 100;
 
             rows.push({
-                name: curName,
-                fullMarks: curFull,
-                mcq: current.mcq,
-                cq: current.cq,
-                pr: current.pr,
-                total: current.total,
-                hasMarks: current.hasMarks,
-                isAbsent: current.isAbsent,
-                isCombined: true,
-                pairWith: pairName,
-                pairFull: pairFull,
-                pairMcq: pairItem.mcq,
-                pairCq: pairItem.cq,
-                pairPr: pairItem.pr,
-                pairTotal: pairItem.total,
-                pairHasMarks: pairItem.hasMarks,
-                pairIsAbsent: pairItem.isAbsent,
-                group: groupType,
-                isOptional: false
-            });
+                        name: curName,
+                        fullMarks: curFull,
+                        cqFull: current.cqFull !== undefined ? current.cqFull : null,
+                        mcqFull: current.mcqFull !== undefined ? current.mcqFull : null,
+                        pracFull: current.pracFull !== undefined ? current.pracFull : null,
+                        mcq: current.mcq,
+                        cq: current.cq,
+                        pr: current.pr,
+                        total: current.total,
+                        hasMarks: current.hasMarks,
+                        isAbsent: current.isAbsent,
+                        isCombined: true,
+                        pairWith: pairName,
+                        pairFull: pairFull,
+                        pairCqFull: pairItem.cqFull !== undefined ? pairItem.cqFull : null,
+                        pairMcqFull: pairItem.mcqFull !== undefined ? pairItem.mcqFull : null,
+                        pairPracFull: pairItem.pracFull !== undefined ? pairItem.pracFull : null,
+                        pairMcq: pairItem.mcq,
+                        pairCq: pairItem.cq,
+                        pairPr: pairItem.pr,
+                        pairTotal: pairItem.total,
+                        pairHasMarks: pairItem.hasMarks,
+                        pairIsAbsent: pairItem.isAbsent,
+                        group: groupType,
+                        isOptional: false
+                    });
         } else {
             pairedIndices.add(i);
             rows.push({
-                name: curName,
-                fullMarks: curFull,
-                mcq: current.mcq,
-                cq: current.cq,
-                pr: current.pr,
-                total: current.total,
-                hasMarks: current.hasMarks,
-                isAbsent: current.isAbsent,
-                isCombined: false,
-                group: groupType,
-                isOptional: current.isOptional || groupType === 'optional'
-            });
+                        name: curName,
+                        fullMarks: curFull,
+                        cqFull: current.cqFull !== undefined ? current.cqFull : null,
+                        mcqFull: current.mcqFull !== undefined ? current.mcqFull : null,
+                        pracFull: current.pracFull !== undefined ? current.pracFull : null,
+                        mcq: current.mcq,
+                        cq: current.cq,
+                        pr: current.pr,
+                        total: current.total,
+                        hasMarks: current.hasMarks,
+                        isAbsent: current.isAbsent,
+                        isCombined: false,
+                        group: groupType,
+                        isOptional: current.isOptional || groupType === 'optional'
+                    });
         }
     }
 
@@ -1042,11 +1442,12 @@ function updateTableHeaderMarks(exam, selectedClass) {
     const thCq = document.getElementById('th-header-cq-1');
     const thPrac = document.getElementById('th-header-prac-1');
     const thTotal = document.getElementById('th-header-total-1');
+    const isEn = (currentLanguage === 'en');
 
-    if (thMcq) thMcq.innerText = `বহুনির্বাচনি (${toBnDigits(dist.mcq)})`;
-    if (thCq) thCq.innerText = `লিখিত (${toBnDigits(dist.cq)})`;
-    if (thPrac) thPrac.innerText = `ব্যবহারিক (${toBnDigits(dist.prac)})`;
-    if (thTotal) thTotal.innerText = `মোট নম্বর (${toBnDigits(dist.total)})`;
+    if (thMcq) thMcq.innerText = isEn ? `MCQ (${formatDigits(dist.mcq)})` : `বহুনির্বাচনি (${formatDigits(dist.mcq)})`;
+    if (thCq) thCq.innerText = isEn ? `CQ (${formatDigits(dist.cq)})` : `লিখিত (${formatDigits(dist.cq)})`;
+    if (thPrac) thPrac.innerText = isEn ? `Prac. (${formatDigits(dist.prac)})` : `ব্যবহারিক (${formatDigits(dist.prac)})`;
+    if (thTotal) thTotal.innerText = isEn ? `Total (${formatDigits(dist.total)})` : `মোট নম্বর (${formatDigits(dist.total)})`;
 }
 
 function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
@@ -1056,6 +1457,7 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
     }
     if (!tbody) return;
 
+    const isEn = (currentLanguage === 'en');
     const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
     let html = '';
     let grandTotal = 0;
@@ -1076,13 +1478,13 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
     subjects.forEach((sub, idx) => {
         const isOpt = !!(sub.isOptional || sub.group === 'optional');
         if (!hasCompulsoryHeader && (!sub.group || sub.group === 'compulsory')) {
-            html += `<tr class="group-header-row"><td colspan="9">১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)</td></tr>`;
+            html += `<tr class="group-header-row"><td colspan="9">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
             hasCompulsoryHeader = true;
         } else if (!hasElectiveHeader && sub.group === 'elective') {
-            html += `<tr class="group-header-row"><td colspan="9">২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)</td></tr>`;
+            html += `<tr class="group-header-row"><td colspan="9">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
             hasElectiveHeader = true;
         } else if (!hasOptionalHeader && sub.group === 'optional') {
-            html += `<tr class="group-header-row"><td colspan="9">৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)</td></tr>`;
+            html += `<tr class="group-header-row"><td colspan="9">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
             hasOptionalHeader = true;
         }
 
@@ -1109,23 +1511,28 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
                 }
             }
 
-            const p1McqDisplay = sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : toBnDigits(sub.mcq)) : '<span class="blank-field">—</span>';
-            const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : toBnDigits(sub.cq)) : '<span class="blank-field">—</span>';
-            const p1PrDisplay = sub.pr !== '' ? (sub.pr === 'A' ? 'A' : toBnDigits(sub.pr)) : '<span class="blank-field">—</span>';
-            const p1TotDisplay = sub.hasMarks ? toBnDigits(m1) : '<span class="blank-field">—</span>';
+            const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                          (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+                    const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+                                          (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
 
-            const p2McqDisplay = sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : toBnDigits(sub.pairMcq)) : '<span class="blank-field">—</span>';
-            const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : toBnDigits(sub.pairCq)) : '<span class="blank-field">—</span>';
-            const p2PrDisplay = sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : toBnDigits(sub.pairPr)) : '<span class="blank-field">—</span>';
-            const p2TotDisplay = sub.pairHasMarks ? toBnDigits(m2) : '<span class="blank-field">—</span>';
+                    const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+                    const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+                    const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+                    const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '<span class="blank-field">—</span>';
 
-            const combTotDisplay = hasPaperMarks ? toBnDigits(combTotal) : '<span class="blank-field">—</span>';
+                    const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '<span class="blank-field">—</span>');
+                    const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '<span class="blank-field">—</span>';
+                    const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '<span class="blank-field">—</span>');
+                    const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '<span class="blank-field">—</span>';
+
+            const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '<span class="blank-field">—</span>';
             const combGradeDisplay = hasPaperMarks ? res.grade : '—';
-            const combGpDisplay = hasPaperMarks ? toBnDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+            const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
             html += `<tr>
-                <td class="sub-name">${sub.name}</td>
-                <td>${toBnDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
+                <td>${formatDigits(sub.fullMarks)}</td>
                 <td>${p1McqDisplay}</td>
                 <td>${p1CqDisplay}</td>
                 <td>${p1PrDisplay}</td>
@@ -1135,8 +1542,8 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combGpDisplay}</td>
             </tr>
             <tr>
-                <td class="sub-name">${sub.pairWith}</td>
-                <td>${toBnDigits(sub.pairFull || sub.fullMarks)}</td>
+                <td class="sub-name">${getDisplaySubjectName(sub.pairWith)}</td>
+                <td>${formatDigits(sub.pairFull || sub.fullMarks)}</td>
                 <td>${p2McqDisplay}</td>
                 <td>${p2CqDisplay}</td>
                 <td>${p2PrDisplay}</td>
@@ -1162,16 +1569,20 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
             }
 
             const isOptional = sub.group === 'optional';
-            const mcqDisplay = sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : toBnDigits(sub.mcq)) : '<span class="blank-field">—</span>';
-            const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : toBnDigits(sub.cq)) : '<span class="blank-field">—</span>';
-            const prDisplay = sub.pr !== '' ? (sub.pr === 'A' ? 'A' : toBnDigits(sub.pr)) : '<span class="blank-field">—</span>';
-            const totDisplay = sub.hasMarks ? toBnDigits(tot) : '<span class="blank-field">—</span>';
+            const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                        (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+
+                    const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+                    const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+                    const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+                    const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+                    const totDisplay = sub.hasMarks ? formatDigits(tot) : '<span class="blank-field">—</span>';
             const gradeDisplay = sub.hasMarks ? res.grade : '—';
-            const gpDisplay = sub.hasMarks ? toBnDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+            const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
             html += `<tr style="${isOptional ? 'background:#f0fdf4;' : ''}">
-                <td class="sub-name">${sub.name}</td>
-                <td>${toBnDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
+                <td>${formatDigits(sub.fullMarks)}</td>
                 <td>${mcqDisplay}</td>
                 <td>${cqDisplay}</td>
                 <td>${prDisplay}</td>
@@ -1190,17 +1601,18 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
     const maxGP = getMaxScaleGP();
     const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
     const boundedGpa = Math.min(maxGP, rawGpa);
-    const finalGpaStr = hasAnyMarks ? (hasFailed ? '০.০০' : toBnDigits(boundedGpa.toFixed(2))) : '—';
+    const zeroGpaStr = isEn ? '0.00' : '০.০০';
+    const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
     const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
 
     const gtEl = document.getElementById('display-grand-total-1');
-    if (gtEl) gtEl.innerText = hasAnyMarks ? (toBnDigits(grandTotal) + ' / ' + toBnDigits(totalFullMarks)) : '—';
+    if (gtEl) gtEl.innerText = hasAnyMarks ? (formatDigits(grandTotal) + ' / ' + formatDigits(totalFullMarks)) : '—';
     const gpaEl = document.getElementById('display-gpa-1');
     if (gpaEl) gpaEl.innerText = finalGpaStr;
     const gradeEl = document.getElementById('display-final-grade-1');
     if (gradeEl) gradeEl.innerText = finalGrade;
     const meritEl = document.getElementById('display-merit-pos-1');
-    if (meritEl) meritEl.innerText = (student && student.roll ? toBnDigits(student.roll) : '১');
+    if (meritEl) meritEl.innerText = (student && student.roll ? formatDigits(student.roll) : formatDigits('1'));
 }
 
 
@@ -1804,33 +2216,46 @@ function syncCascadingFilters(trigger = 'all') {
         const effectiveNormClass = normalizeClassString(effectiveClass);
         const effectiveNormSec = normalizeSectionString(effectiveSec);
 
-        const studentName = matchedStudent ? (matchedStudent.nameBn || matchedStudent.name || matchedStudent.studentName || 'মো: আব্দুল্লাহ আল নোমান') : 'মো: আব্দুল্লাহ আল নোমান';
-        const rollNo = matchedStudent ? (matchedStudent.roll || matchedStudent.rollNo || '০১') : '০১';
+        const isEn = (currentLanguage === 'en');
+        let studentName = 'মো: আব্দুল্লাহ আল নোমান';
+        if (matchedStudent) {
+            studentName = isEn && matchedStudent.nameEn ? matchedStudent.nameEn : (matchedStudent.nameBn || matchedStudent.name || matchedStudent.studentName || (isEn ? 'Student Name' : 'মো: আব্দুল্লাহ আল নোমান'));
+        } else if (isEn) {
+            studentName = 'MD. ABDULLAH AL NOMAN';
+        }
+
+        const rollNo = matchedStudent ? (matchedStudent.roll || matchedStudent.rollNo || '01') : '01';
         const studentId = getEffectiveStudentId(matchedStudent, effectiveClass, rollNo);
 
         const sVal = document.getElementById('display-student-val');
         if (sVal && sVal.innerText !== studentName) sVal.innerText = studentName;
         const rVal = document.getElementById('display-roll-val');
-        if (rVal) rVal.innerText = toBnDigits(rollNo);
+        if (rVal) rVal.innerText = formatDigits(rollNo);
         const idVal = document.getElementById('display-id-val');
-        if (idVal) idVal.innerText = toBnDigits(studentId);
+        if (idVal) idVal.innerText = formatDigits(studentId);
+
+        if (cVal) cVal.innerText = getDisplayClassName(effectiveClass);
+        if (scVal) scVal.innerText = isEn ? getEnglishSectionName(effectiveSec) : effectiveSec;
+
+        const pillTitle = document.getElementById('display-exam-name-pill');
+        if (pillTitle) pillTitle.innerText = getDisplayExamName(selectedExam);
 
         const isSecondary = ['9', '10'].includes(effectiveNormClass);
         const relInfo = getStudentReligionInfo(matchedStudent);
         const optInfo = getStudentOptionalSubjectInfo(matchedStudent, effectiveNormSec);
 
         const relVal = document.getElementById('display-religion-val');
-        if (relVal) relVal.innerText = relInfo.display;
+        if (relVal) relVal.innerText = isEn ? (relInfo.en || 'Islam') : relInfo.display;
 
         const optVal = document.getElementById('display-optional-val');
         const optLbl = document.getElementById('label-opt-val');
         const optCol = document.getElementById('colon-opt-val');
         if (optVal) {
             if (isSecondary) {
-                if (optLbl) optLbl.style.visibility = 'visible';
+                if (optLbl) { optLbl.style.visibility = 'visible'; optLbl.innerText = isEn ? 'Optional Subject' : 'ঐচ্ছিক বিষয়'; }
                 if (optCol) optCol.style.visibility = 'visible';
                 optVal.style.visibility = 'visible';
-                optVal.innerText = optInfo.nameBn;
+                optVal.innerText = isEn ? optInfo.name : optInfo.nameBn;
             } else {
                 if (optLbl) optLbl.style.visibility = 'hidden';
                 if (optCol) optCol.style.visibility = 'hidden';
@@ -1914,6 +2339,7 @@ function getAllStudentsForClassAndSection(selectedClass, selectedSection) {
 }
 
 function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exam, rankNum) {
+    const isEn = (currentLanguage === 'en');
     const examDist = getExamDistribution(exam, selectedClass);
     const normClass = normalizeClassString(selectedClass);
     const normSec = normalizeSectionString(selectedSection);
@@ -1921,9 +2347,14 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
     const relInfo = getStudentReligionInfo(student);
     const optInfo = getStudentOptionalSubjectInfo(student, normSec);
 
-    const studentName = student.nameBn || student.name || 'শিক্ষার্থী';
-    const rollNo = student.roll || student.rollNo || String(rankNum);
+    const studentName = student ? (isEn && student.nameEn ? student.nameEn : (student.nameBn || student.name || (isEn ? 'Student' : 'শিক্ষার্থী'))) : (isEn ? 'Student' : 'শিক্ষার্থী');
+    const rollNo = student ? (student.roll || student.rollNo || rankNum) : rankNum;
     const studentId = getEffectiveStudentId(student, selectedClass, rankNum);
+    const displayCls = getDisplayClassName(selectedClass);
+    const displaySec = isEn ? getEnglishSectionName(selectedSection) : (selectedSection || 'বিজ্ঞান');
+    const displayExam = getDisplayExamName(exam);
+    const displayRel = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+    const displayOpt = isEn ? optInfo.name : optInfo.nameBn;
 
     let rawSettings = localStorage.getItem('school_settings');
     let settings = {};
@@ -1970,13 +2401,13 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
     subjects.forEach(sub => {
         const isOpt = !!(sub.isOptional || sub.group === 'optional');
         if (!hasCompulsoryHeader && (!sub.group || sub.group === 'compulsory')) {
-            tableHtml += `<tr class="group-header-row"><td colspan="9">১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)</td></tr>`;
+            tableHtml += `<tr class="group-header-row"><td colspan="9">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
             hasCompulsoryHeader = true;
         } else if (!hasElectiveHeader && sub.group === 'elective') {
-            tableHtml += `<tr class="group-header-row"><td colspan="9">২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)</td></tr>`;
+            tableHtml += `<tr class="group-header-row"><td colspan="9">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
             hasElectiveHeader = true;
         } else if (!hasOptionalHeader && sub.group === 'optional') {
-            tableHtml += `<tr class="group-header-row"><td colspan="9">৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)</td></tr>`;
+            tableHtml += `<tr class="group-header-row"><td colspan="9">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
             hasOptionalHeader = true;
         }
 
@@ -2003,23 +2434,28 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
                 }
             }
 
-            const p1McqDisplay = sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : toBnDigits(sub.mcq)) : '<span class="blank-field">—</span>';
-            const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : toBnDigits(sub.cq)) : '<span class="blank-field">—</span>';
-            const p1PrDisplay = sub.pr !== '' ? (sub.pr === 'A' ? 'A' : toBnDigits(sub.pr)) : '<span class="blank-field">—</span>';
-            const p1TotDisplay = sub.hasMarks ? toBnDigits(m1) : '<span class="blank-field">—</span>';
+            const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                          (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+                    const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+                                          (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
 
-            const p2McqDisplay = sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : toBnDigits(sub.pairMcq)) : '<span class="blank-field">—</span>';
-            const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : toBnDigits(sub.pairCq)) : '<span class="blank-field">—</span>';
-            const p2PrDisplay = sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : toBnDigits(sub.pairPr)) : '<span class="blank-field">—</span>';
-            const p2TotDisplay = sub.pairHasMarks ? toBnDigits(m2) : '<span class="blank-field">—</span>';
+                    const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+                    const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+                    const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+                    const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '<span class="blank-field">—</span>';
 
-            const combTotDisplay = hasPaperMarks ? toBnDigits(combTotal) : '<span class="blank-field">—</span>';
+                    const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '<span class="blank-field">—</span>');
+                    const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '<span class="blank-field">—</span>';
+                    const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '<span class="blank-field">—</span>');
+                    const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '<span class="blank-field">—</span>';
+
+            const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '<span class="blank-field">—</span>';
             const combGradeDisplay = hasPaperMarks ? res.grade : '—';
-            const combGpDisplay = hasPaperMarks ? toBnDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+            const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
             tableHtml += `<tr>
-                <td class="sub-name">${sub.name}</td>
-                <td>${toBnDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
+                <td>${formatDigits(sub.fullMarks)}</td>
                 <td>${p1McqDisplay}</td>
                 <td>${p1CqDisplay}</td>
                 <td>${p1PrDisplay}</td>
@@ -2029,8 +2465,8 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combGpDisplay}</td>
             </tr>
             <tr>
-                <td class="sub-name">${sub.pairWith}</td>
-                <td>${toBnDigits(sub.pairFull || sub.fullMarks)}</td>
+                <td class="sub-name">${getDisplaySubjectName(sub.pairWith)}</td>
+                <td>${formatDigits(sub.pairFull || sub.fullMarks)}</td>
                 <td>${p2McqDisplay}</td>
                 <td>${p2CqDisplay}</td>
                 <td>${p2PrDisplay}</td>
@@ -2056,16 +2492,20 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             }
 
             const isOptional = sub.group === 'optional';
-            const mcqDisplay = sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : toBnDigits(sub.mcq)) : '<span class="blank-field">—</span>';
-            const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : toBnDigits(sub.cq)) : '<span class="blank-field">—</span>';
-            const prDisplay = sub.pr !== '' ? (sub.pr === 'A' ? 'A' : toBnDigits(sub.pr)) : '<span class="blank-field">—</span>';
-            const totDisplay = sub.hasMarks ? toBnDigits(tot) : '<span class="blank-field">—</span>';
+            const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                        (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+
+                    const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+                    const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+                    const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+                    const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+                    const totDisplay = sub.hasMarks ? formatDigits(tot) : '<span class="blank-field">—</span>';
             const gradeDisplay = sub.hasMarks ? res.grade : '—';
-            const gpDisplay = sub.hasMarks ? toBnDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+            const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
             tableHtml += `<tr style="${isOptional ? 'background:#f0fdf4;' : ''}">
-                <td class="sub-name">${sub.name}</td>
-                <td>${toBnDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
+                <td>${formatDigits(sub.fullMarks)}</td>
                 <td>${mcqDisplay}</td>
                 <td>${cqDisplay}</td>
                 <td>${prDisplay}</td>
@@ -2082,9 +2522,10 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
     const maxGP = getMaxScaleGP();
     const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
     const boundedGpa = Math.min(maxGP, rawGpa);
-    const finalGpaStr = hasAnyMarks ? (hasFailed ? '০.০০' : toBnDigits(boundedGpa.toFixed(2))) : '—';
+    const zeroGpaStr = isEn ? '0.00' : '০.০০';
+    const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
     const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
-    const rankStr = toBnDigits(rankNum);
+    const rankStr = formatDigits(rankNum);
 
     return `
     <div class="certificate-sheet" style="margin-bottom: 25px;">
@@ -2096,7 +2537,7 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
                     <div class="inst-title-bn">${schoolName}</div>
                     <div class="inst-subtitle">${fullSubtitle}</div>
                     <div>
-                        <span class="report-pill-title">${exam}</span>
+                        <span class="report-pill-title">${displayExam}</span>
                     </div>
                 </div>
             </div>
@@ -2107,34 +2548,34 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
                     <div class="profile-card">
                         <table class="profile-grid">
                             <tr>
-                                <td class="p-label" style="font-size: 15.1px; font-weight: 800;">শিক্ষার্থীর নাম</td>
+                                <td class="p-label" style="font-size: 15.1px; font-weight: 800;">${isEn ? "Student Name" : "শিক্ষার্থীর নাম"}</td>
                                 <td class="p-colon" style="font-size: 15.1px; font-weight: 800;">:</td>
                                 <td class="p-val" colspan="4" style="font-size: 15.6px; font-weight: 800;">${studentName}</td>
                             </tr>
                             <tr>
-                                <td class="p-label">শ্রেণি</td>
+                                <td class="p-label">${isEn ? "Class" : "শ্রেণি"}</td>
                                 <td class="p-colon">:</td>
-                                <td class="p-val" style="width: 25%;">${selectedClass}</td>
-                                <td class="p-label" style="padding-left: 15px;"> শাখা / গ্রুপ</td>
+                                <td class="p-val" style="width: 25%;">${displayCls}</td>
+                                <td class="p-label" style="padding-left: 15px;">${isEn ? "Section / Group" : "শাখা / গ্রুপ"}</td>
                                 <td class="p-colon">:</td>
-                                <td class="p-val">${selectedSection}</td>
+                                <td class="p-val">${displaySec}</td>
                             </tr>
                             <tr>
-                                <td class="p-label">আইডি / রেজি</td>
+                                <td class="p-label">${isEn ? "ID / Reg" : "আইডি / রেজি"}</td>
                                 <td class="p-colon">:</td>
-                                <td class="p-val">${toBnDigits(studentId)}</td>
-                                <td class="p-label" style="padding-left: 15px;">রোল নং</td>
+                                <td class="p-val">${formatDigits(studentId)}</td>
+                                <td class="p-label" style="padding-left: 15px;">${isEn ? "Roll No" : "রোল নং"}</td>
                                 <td class="p-colon">:</td>
-                                <td class="p-val">${toBnDigits(String(rollNo).padStart(2, '0'))}</td>
+                                <td class="p-val">${formatDigits(String(rollNo).padStart(2, '0'))}</td>
                             </tr>
                             <tr>
-                                <td class="p-label">ধর্ম (Religion)</td>
+                                <td class="p-label">${isEn ? "Religion" : "ধর্ম (Religion)"}</td>
                                 <td class="p-colon">:</td>
-                                <td class="p-val">${relInfo.display}</td>
+                                <td class="p-val">${displayRel}</td>
                                 ${isSecondary ? `
-                                <td class="p-label" style="padding-left: 15px;">ঐচ্ছিক বিষয়</td>
+                                <td class="p-label" style="padding-left: 15px;">${isEn ? "Optional Subject" : "ঐচ্ছিক বিষয়"}</td>
                                 <td class="p-colon">:</td>
-                                <td class="p-val">${optInfo.nameBn}</td>
+                                <td class="p-val">${displayOpt}</td>
                                 ` : `
                                 <td class="p-label" style="padding-left: 15px; visibility: hidden;">—</td>
                                 <td class="p-colon" style="visibility: hidden;">:</td>
@@ -2147,13 +2588,13 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
 
                 <div class="grading-legend-cell">
                     <div class="legend-card">
-                        <div class="legend-title">গ্রেডিং নির্দেশিকা (Grading Scale)</div>
+                        <div class="legend-title">${isEn ? "Grading Scale" : "গ্রেডিং নির্দেশিকা (Grading Scale)"}</div>
                         <table class="legend-table">
                             <thead>
                                 <tr>
-                                    <th>নম্বর সীমা</th>
-                                    <th>গ্রেড</th>
-                                    <th>পয়েন্ট</th>
+                                    <th>${isEn ? "Marks Range" : "নম্বর সীমা"}</th>
+                                    <th>${isEn ? "Grade" : "গ্রেড"}</th>
+                                    <th>${isEn ? "GPA" : "পয়েন্ট"}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2168,18 +2609,18 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             <table class="transcript-table">
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width: 27%;">পাঠ্য বিষয়সমূহ</th>
-                        <th rowspan="2" style="width: 8%;">পূর্ণমান</th>
-                        <th colspan="3" style="width: 25%;">প্রাপ্ত নম্বর</th>
-                        <th rowspan="2" style="width: 9%;">মোট নম্বর (${toBnDigits(examDist.total)})</th>
-                        <th rowspan="2" style="width: 11%;">সর্বমোট</th>
-                        <th rowspan="2" style="width: 9%;">লেটার গ্রেড</th>
-                        <th rowspan="2" style="width: 11%;">গ্রেড পয়েন্ট (GP)</th>
+                        <th rowspan="2" id="th-header-sub-1" style="width: 27%;">${isEn ? "Subjects" : "পাঠ্য বিষয়সমূহ"}</th>
+                        <th rowspan="2" id="th-header-full-1" style="width: 8%;">${isEn ? "Full Marks" : "পূর্ণমান"}</th>
+                        <th colspan="3" id="th-header-obtained-1" style="width: 25%;">${isEn ? "Marks Obtained" : "প্রাপ্ত নম্বর"}</th>
+                        <th rowspan="2" style="width: 9%;">${isEn ? "Total (" + formatDigits(examDist.total) + ")" : "মোট নম্বর (" + formatDigits(examDist.total) + ")"}</th>
+                        <th rowspan="2" id="th-header-combined-1" style="width: 11%;">${isEn ? "Grand Total" : "সর্বমোট"}</th>
+                        <th rowspan="2" id="th-header-grade-1" style="width: 9%;">${isEn ? "Letter Grade" : "লেটার গ্রেড"}</th>
+                        <th rowspan="2" id="th-header-gp-1" style="width: 11%;">${isEn ? "Grade Point (GP)" : "গ্রেড পয়েন্ট (GP)"}</th>
                     </tr>
                     <tr>
-                        <th style="width: 8%;">বহুনির্বাচনি (${toBnDigits(examDist.mcq)})</th>
-                        <th style="width: 8%;">লিখিত (${toBnDigits(examDist.cq)})</th>
-                        <th style="width: 9%;">ব্যবহারিক (${toBnDigits(examDist.prac)})</th>
+                        <th style="width: 8%;">${isEn ? "MCQ (" + formatDigits(examDist.mcq) + ")" : "বহুনির্বাচনি (" + formatDigits(examDist.mcq) + ")"}</th>
+                        <th style="width: 8%;">${isEn ? "CQ (" + formatDigits(examDist.cq) + ")" : "লিখিত (" + formatDigits(examDist.cq) + ")"}</th>
+                        <th style="width: 9%;">${isEn ? "Prac. (" + formatDigits(examDist.prac) + ")" : "ব্যবহারিক (" + formatDigits(examDist.prac) + ")"}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2190,19 +2631,19 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             <!-- Result KPI Badges -->
             <div class="kpi-row">
                 <div class="kpi-card">
-                    <div class="kpi-label">সর্বমোট প্রাপ্ত নম্বর</div>
-                    <div class="kpi-value">${hasAnyMarks ? (toBnDigits(grandTotal) + ' / ' + toBnDigits(totalFullMarks)) : '—'}</div>
+                    <div class="kpi-label">${isEn ? "Total Marks Obtained" : "সর্বমোট প্রাপ্ত নম্বর"}</div>
+                    <div class="kpi-value">${hasAnyMarks ? (formatDigits(grandTotal) + ' / ' + formatDigits(totalFullMarks)) : '—'}</div>
                 </div>
                 <div class="kpi-card" style="margin-left: 8px;">
-                    <div class="kpi-label">জিপিএ (GPA)</div>
+                    <div class="kpi-label">${isEn ? "GPA" : "জিপিএ (GPA)"}</div>
                     <div class="kpi-value" style="color: #000000; font-weight:800;">${finalGpaStr}</div>
                 </div>
                 <div class="kpi-card" style="margin-left: 8px;">
-                    <div class="kpi-label">চূড়ান্ত গ্রেড</div>
+                    <div class="kpi-label">${isEn ? "Final Grade" : "চূড়ান্ত গ্রেড"}</div>
                     <div class="kpi-value" style="color: #000000; font-weight:800;">${finalGrade}</div>
                 </div>
                 <div class="kpi-card" style="margin-left: 8px;">
-                    <div class="kpi-label">মেধাক্রম (Merit Position)</div>
+                    <div class="kpi-label">${isEn ? "Merit Position" : "মেধাক্রম (Merit Position)"}</div>
                     <div class="kpi-value">${rankStr}</div>
                 </div>
             </div>
@@ -2211,15 +2652,15 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             <div class="signature-grid">
                 <div class="sig-col">
                     <div class="sig-space"></div>
-                    <div class="sig-border">অভিভাবকের স্বাক্ষর</div>
+                    <div class="sig-border">${isEn ? "Guardian's Signature" : "অভিভাবকের স্বাক্ষর"}</div>
                 </div>
                 <div class="sig-col">
                     <div class="sig-space"></div>
-                    <div class="sig-border">শ্রেণি শিক্ষকের স্বাক্ষর</div>
+                    <div class="sig-border">${isEn ? "Class Teacher's Signature" : "শ্রেণি শিক্ষকের স্বাক্ষর"}</div>
                 </div>
                 <div class="sig-col">
                     <div class="sig-space"></div>
-                    <div class="sig-border">প্রধান শিক্ষকের স্বাক্ষর ও সিল</div>
+                    <div class="sig-border">${isEn ? "Head Teacher's Signature & Seal" : "প্রধান শিক্ষকের স্বাক্ষর ও সিল"}</div>
                 </div>
             </div>
 
@@ -2336,6 +2777,9 @@ function switchTemplate(val) {
             const roll = currentSelectedStudent ? (currentSelectedStudent.roll || currentSelectedStudent.rollNo) : '';
             if (roll) {
                 extra += '&roll=' + encodeURIComponent(toEnDigits(roll));
+            }
+            if (currentLanguage) {
+                extra += '&lang=' + encodeURIComponent(currentLanguage);
             }
             if (val === 'Temp-01') {
                 window.location.href = 'Marksheet.html' + extra;
@@ -2494,7 +2938,7 @@ window.addEventListener('DOMContentLoaded', function() {
             currentSelectedStudent = found;
             const input = document.getElementById('filter-student-search');
             const clearBtn = document.getElementById('btn-clear-search');
-            if (input) input.value = `[রোল ${toBnDigits(found.roll || '১')}] ${found.nameBn || found.name || 'শিক্ষার্থী'}`;
+            if (input) input.value = currentLanguage === 'en' ? `[Roll ${formatDigits(found.roll || '1')}] ${found.nameEn || found.nameBn || found.name || 'Student'}` : `[রোল ${toBnDigits(found.roll || '১')}] ${found.nameBn || found.name || 'শিক্ষার্থী'}`;
             if (clearBtn) clearBtn.style.display = 'inline-block';
             if (found.class) localStorage.setItem('school_marksheet_class', found.class);
             if (found.section) localStorage.setItem('school_marksheet_section', found.section);
@@ -2518,6 +2962,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     syncSchoolHeaderInfo();
+    updateLanguageUI1();
     syncCascadingFilters('all');
 });
 
