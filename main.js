@@ -447,7 +447,14 @@ function applyUserPermissionsUI() {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     if (!isLoggedIn) {
         document.querySelectorAll('.nav-item').forEach(el => el.style.display = '');
-        document.querySelectorAll('.nav-item.dropdown .dropdown-menu li').forEach(el => el.style.display = '');
+        document.querySelectorAll('.nav-item.dropdown .dropdown-menu li').forEach(el => {
+            const a = el.querySelector('a');
+            if (a && (a.textContent.trim().toLowerCase() === 'result search' || ((a.getAttribute('href') === 'result-portal' || a.getAttribute('href') === 'result-portal.html') && el.closest('[data-tab="result-portal"]')))) {
+                el.style.display = 'none';
+            } else {
+                el.style.display = '';
+            }
+        });
         document.querySelectorAll('.advance-nav-pill').forEach(el => el.style.display = '');
         return;
     }
@@ -463,7 +470,14 @@ function applyUserPermissionsUI() {
 
     if (isMasterAdmin) {
         document.querySelectorAll('.nav-item').forEach(el => el.style.display = '');
-        document.querySelectorAll('.nav-item.dropdown .dropdown-menu li').forEach(el => el.style.display = '');
+        document.querySelectorAll('.nav-item.dropdown .dropdown-menu li').forEach(el => {
+            const a = el.querySelector('a');
+            if (a && (a.textContent.trim().toLowerCase() === 'result search' || ((a.getAttribute('href') === 'result-portal' || a.getAttribute('href') === 'result-portal.html') && el.closest('[data-tab="result-portal"]')))) {
+                el.style.display = 'none';
+            } else {
+                el.style.display = '';
+            }
+        });
         document.querySelectorAll('.advance-nav-pill').forEach(el => el.style.display = '');
         document.querySelectorAll('.action-icon-btn.view-btn, .action-icon-btn.edit-btn, .action-icon-btn.delete-btn, .btn-add-staff, #btn-add-staff, .btn-staff-excel, #btn-staff-excel, .btn-delete-staff, .btn-add-student, #btn-add-student, .btn-promote-student, #btn-promote-student, .btn-student-excel, #btn-student-excel, .btn-view-card, .btn-view-profile, .btn-edit-student, .btn-delete-student, .btn-fee-collect, #btn-fee-collect, .btn-exam-marks, #btn-exam-marks, .btn-publish-notice, #btn-publish-notice').forEach(el => {
             el.style.display = '';
@@ -550,6 +564,11 @@ function applyUserPermissionsUI() {
                 const anchor = subLi.querySelector('a');
                 if (!anchor) return;
                 const href = (anchor.getAttribute('href') || '').trim();
+                const text = anchor.textContent.trim().toLowerCase();
+                if (text === 'result search' || ((href === 'result-portal' || href === 'result-portal.html') && tabKey === 'result-portal')) {
+                    subLi.style.display = 'none';
+                    return;
+                }
                 
                 let requiredPerms = null;
                 for (const [pattern, perms] of Object.entries(LINK_PERMISSIONS)) {

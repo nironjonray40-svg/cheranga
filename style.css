@@ -1930,6 +1930,14 @@ a.footer-social-twitter:hover {
     background: #e2e8f0 !important;
 }
 
+/* Hide Result Search sub-item in Result Management dropdown */
+.nav-item[data-tab="result-portal"] .dropdown-menu li a[href="result-portal"],
+.nav-item[data-tab="result-portal"] .dropdown-menu li a[href="result-portal.html"],
+.nav-item[data-tab="result-portal"] .dropdown-menu li:has(a[href="result-portal"]),
+.nav-item[data-tab="result-portal"] .dropdown-menu li:has(a[href="result-portal.html"]) {
+    display: none !important;
+}
+
 .nav-item .arrow {
     font-size: 0.7rem;
     margin-left: 5px;
