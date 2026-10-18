@@ -1,0 +1,35 @@
+Database keys matching student/exam:
+  admit_card_font_size
+  current_marksheet_data
+  school_active_exam_filter
+  school_active_omr_imported_exam
+  school_admit_instruction_header_bn
+  school_admit_instructions_html_bn
+  school_exam_marks_entry_view_type
+  school_exam_routines
+  school_exam_schedules
+  school_exam_types
+  school_marksheet_class
+  school_marksheet_exam
+  school_marksheet_section
+  school_marksheet_sort_by
+  school_omr_exams
+  school_saved_seat_allocations
+  school_seat_plans_store
+  school_student_marks
+  school_students
+  seat_token_language
+
+Classes in school_students:
+  Ten - ব্যবসায়: 3
+  Nine - ব্যবসায়: 3
+  Nine - মানবিক: 5
+  Ten - বিজ্ঞান: 1
+  Ten - মানবিক: 5
+  Six - A: 5
+  Six - B: 5
+  Seven - A: 5
+  Eight - A: 5
+  Eight - B: 5
+  Eight - C: 5
+  Eight - D: 5

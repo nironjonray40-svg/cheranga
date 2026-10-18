@@ -1,0 +1,33 @@
+Target: {
+  "photo": "",
+  "studentId": "0001",
+  "regNo": "2608001",
+  "class": "Eight",
+  "section": "A",
+  "name": "MST. SUMAIYA AKTER SRISTY",
+  "nameBn": "মোসাম্মাৎ সুমাইয়া আক্তার সৃস্টি",
+  "optionalSubject": "",
+  "session": "2026",
+  "dob": "0",
+  "gender": "Female",
+  "religion": "Islam",
+  "blood": "A+",
+  "fatherName": "মোহাম্মদ আব্দুস সালাম",
+  "fatherOccup": "",
+  "fatherPhone": "01308161693",
+  "motherName": "সালেহা পারভীন",
+  "motherOccup": "",
+  "motherPhone": "01751028996",
+  "phone": "",
+  "email": "",
+  "presentAddress": "উঃ কাজিরহাট, জলঢাকা",
+  "permanentAddress": "",
+  "roll": "1",
+  "id": "1788096574265-63478-0"
+}
+Total matching: 5
+  ID=1788096574265-63478-0 Roll=1 Name=MST. SUMAIYA AKTER SRISTY Class=Eight Sec=A
+  ID=1788096574265-75606-1 Roll=2 Name=MEFTAUL JANNAT MUNAT Class=Eight Sec=A
+  ID=1788096574265-6594-2 Roll=3 Name=MD SHAHARYAR RAGIB SHAMI Class=Eight Sec=A
+  ID=1788096574265-6233-3 Roll=4 Name=MOHAMMAD AL MUBIN Class=Eight Sec=A
+  ID=1788096574265-42052-4 Roll=5 Name=DEBOSREE RANI ROY Class=Eight Sec=A

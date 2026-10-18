@@ -1,0 +1,20 @@
+--- SCHEDULE SUBJECTS ---
+
+Exam: Elegileble test | Class: Eight
+Matched 7 schedules in Exam List:
+  ID: 1788103216016 -> Subject: 'English For Today'
+  ID: 1788103284828 -> Subject: 'English 2nd Paper'
+  ID: 1788103332827 -> Subject: 'Mathematics'
+  ID: 1788103362043 -> Subject: 'Science'
+  ID: 1788103394414 -> Subject: 'Bangladesh And Global Studies'
+  ID: 1788103481541 -> Subject: 'Bangla 1st Paper'
+  ID: 1788103506003 -> Subject: 'Bangla 2nd Paper'
+
+Exam: বার্ষিক পরীক্ষা | Class: Six
+Matched 2 schedules in Exam List:
+  ID: 1791645708587 -> Subject: 'Science'
+  ID: 1791675107779 -> Subject: 'Science'
+
+Exam: অর্ধ-বার্ষিক পরীক্ষা | Class: Eight
+Matched 1 schedules in Exam List:
+  ID: 1791678556667 -> Subject: 'Bangla 1st Paper'

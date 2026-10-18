@@ -1,0 +1,56 @@
+Total schedules: 11
+  Schedule 1788103216016: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=English For Today, hasMarks=True
+  Schedule 1788103284828: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=English 2nd Paper, hasMarks=True
+  Schedule 1788103332827: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=Mathematics, hasMarks=None
+  Schedule 1788103362043: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=Science, hasMarks=None
+  Schedule 1788103394414: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=Bangladesh And Global Studies, hasMarks=None
+  Schedule 1788103481541: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=Bangla 1st Paper, hasMarks=None
+  Schedule 1788103506003: term=Elegileble test, class=Eight, sec=A, B, C, D, sub=Bangla 2nd Paper, hasMarks=None
+  Schedule 1791645708587: term=বার্ষিক পরীক্ষা, class=Six, sec=B, C, A, D, sub=Science, hasMarks=None
+  Schedule 1791675107779: term=বার্ষিক পরীক্ষা, class=Six, sec=B, C, A, D, sub=Science, hasMarks=True
+  Schedule 1791678556667: term=অর্ধ-বার্ষিক পরীক্ষা, class=Eight, sec=A, B, C, D, sub=Bangla 1st Paper, hasMarks=True
+  Schedule 1792336196877: term=lkj huh, class=Six, sec=B, sub=Bangla 1st Paper, hasMarks=None
+
+Total marks keys: 2072
+  Mark key marks_1784079810819-66789-0_CT: {"102": {"total": 20, "isAbsent": true, "cq": 20, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-82054-1_CT: {"102": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-67053-2_CT: {"102": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-16502-3_CT: {"102": {"total": 21, "isAbsent": true, "cq": 21, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-99113-4_CT: {"102": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-74386-5_CT: {"102": {"total": 21, "isAbsent": true, "cq": 21, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-39672-6_CT: {"102": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-12126-7_CT: {"102": {"total": 26, "isAbsent": true, "cq": 26, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-6755-8_CT: {"102": {"total": 23, "isAbsent": true, "cq": 23, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-89175-9_CT: {"102": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-75302-10_CT: {"102": {"total": 0, "isAbsent": true, "cq": "A", "mcq": 0, "practical": "A", "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-26671-11_CT: {"102": {"total": 11, "isAbsent": true, "cq": 11, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-606-12_CT: {"102": {"total": 15, "isAbsent": true, "cq": 15, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-60148-13_CT: {"102": {"total": 16, "isAbsent": true, "cq": 16, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-31820-14_CT: {"102": {"total": 12, "isAbsent": true, "cq": 12, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-40927-15_CT: {"102": {"total": 17, "isAbsent": true, "cq": 17, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-63841-16_CT: {"102": {"total": 19, "isAbsent": true, "cq": 19, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-52927-17_CT: {"102": {"total": 20, "isAbsent": true, "cq": 20, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-52215-18_CT: {"102": {"total": 12, "isAbsent": true, "cq": 12, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-67116-19_CT: {"102": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-70275-20_CT: {"102": {"total": 30, "isAbsent": true, "cq": 30, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-79199-21_CT: {"102": {"total": 12, "isAbsent": true, "cq": 12, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-73573-22_CT: {"102": {"total": 12, "isAbsent": true, "cq": 12, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-99319-23_CT: {"102": {"total": 14, "isAbsent": true, "cq": 14, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-11737-24_CT: {"102": {"total": 21, "isAbsent": true, "cq": 21, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-55465-25_CT: {"102": {"total": 21, "isAbsent": true, "cq": 21, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-51841-26_CT: {"102": {"total": 20, "isAbsent": true, "cq": 20, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-7483-27_CT: {"102": {"total": 17, "isAbsent": true, "cq": 17, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-97784-28_CT: {"102": {"total": 10, "isAbsent": true, "cq": 10, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  Mark key marks_1784079810819-47839-29_CT: {"102": {"total": 19, "isAbsent": true, "cq": 19, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+
+Total students: 52
+  Student: id=1787156440065-41920-0, roll=1, name=Sarthak Sharma, class=Ten, sec=ব্যবসায়
+  Student: id=1787156474712-19879-0, roll=2, name=Sandhya Roy — S, class=Ten, sec=ব্যবসায়
+  Student: id=1787156440066-76314-1, roll=1, name=Prashanta Roy, class=Nine, sec=ব্যবসায়
+  Student: id=1787156440066-93197-2, roll=2, name=Brishti Sharma, class=Nine, sec=ব্যবসায়
+  Student: id=1787156440066-72474-3, roll=3, name=Mim Akhter, class=Nine, sec=ব্যবসায়
+  Student: id=1787156440066-47434-4, roll=1, name=Rima Akhter, class=Nine, sec=মানবিক
+  Student: id=1787156440066-89274-5, roll=2, name=Fountain Queen, class=Nine, sec=মানবিক
+  Student: id=1787156440066-9510-6, roll=3, name=Bidhan Roy, class=Nine, sec=মানবিক
+  Student: id=1787156440066-42018-7, roll=4, name=Essay Queen, class=Nine, sec=মানবিক
+  Student: id=1787156440066-13991-8, roll=5, name=Gauri Rani, class=Nine, sec=মানবিক

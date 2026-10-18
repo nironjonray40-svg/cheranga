@@ -1,0 +1,12 @@
+=== TEST 1: Elegileble test (Eight, Sec A, Roll 1: MST. SUMAIYA AKTER SRISTY) ===
+  English For Today: mcq=0, cq=40, pr=, total=40, hasMarks=True, isAbsent=False
+  English 2nd Paper: mcq=0, cq=40, pr=, total=40, hasMarks=True, isAbsent=False
+  Mathematics: mcq=0, cq=40, pr=, total=40, hasMarks=True, isAbsent=True
+  Science: mcq=0, cq=22, pr=, total=22, hasMarks=True, isAbsent=True
+  Bangladesh And Global Studies: mcq=0, cq=22, pr=, total=22, hasMarks=True, isAbsent=True
+  Bangla 1st Paper: mcq=0, cq=22, pr=, total=22, hasMarks=True, isAbsent=True
+  Bangla 2nd Paper: mcq=0, cq=22, pr=, total=22, hasMarks=True, isAbsent=True
+
+=== TEST 2: বার্ষিক পরীক্ষা (Six, Sec A, Student: Sushanto Kumar Ray) ===
+  Science (id 1791645708587): mcq=, cq=, pr=, total=None, hasMarks=False
+  Science (id 1791675107779): mcq=28, cq=, pr=, total=28, hasMarks=True

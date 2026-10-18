@@ -1,0 +1,11 @@
+Elegileble test | Eight | English For Today | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+Elegileble test | Eight | English 2nd Paper | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+Elegileble test | Eight | Mathematics | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+Elegileble test | Eight | Science | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+Elegileble test | Eight | Bangladesh And Global Studies | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+Elegileble test | Eight | Bangla 1st Paper | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+Elegileble test | Eight | Bangla 2nd Paper | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+বার্ষিক পরীক্ষা | Six | Science | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+বার্ষিক পরীক্ষা | Six | Science | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+অর্ধ-বার্ষিক পরীক্ষা | Eight | Bangla 1st Paper | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None
+lkj huh | Six | Bangla 1st Paper | totalMarks: None | fullMarks: None | mcqMarks: None | cqMarks: None | practicalMarks: None

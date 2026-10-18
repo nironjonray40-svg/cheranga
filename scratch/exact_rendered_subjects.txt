@@ -1,0 +1,12 @@
+=== Elegileble test (Class Eight, Section A) ===
+  Combined: 'English For Today' + 'English 2nd Paper'
+  Single: 'Mathematics'
+  Single: 'Science'
+  Single: 'Bangladesh And Global Studies'
+  Combined: 'Bangla 1st Paper' + 'Bangla 2nd Paper'
+
+=== বার্ষিক পরীক্ষা (Class Six, Section A) ===
+  Single: 'Science'
+
+=== অর্ধ-বার্ষিক পরীক্ষা (Class Eight, Section A) ===
+  Single: 'Bangla 1st Paper'

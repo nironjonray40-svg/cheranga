@@ -1,0 +1,82 @@
+Total mark records: 2072
+
+Marks count grouped by suffix (schedule ID or exam name):
+  Suffix 'CT': 38 marks
+  Suffix 'CT-ENG': 38 marks
+  Suffix '1784044911017': 38 marks
+  Suffix '1784044874419': 38 marks
+  Suffix '1784265582792': 1 marks
+  Suffix '1784268878415': 1 marks
+  Suffix '1784265638015': 38 marks
+  Suffix 'rt_1784796568870_5hhw6': 36 marks
+  Suffix '1784796568870_5hhw6': 1 marks
+  Suffix 'rt_1784796589231_tg7aa': 1 marks
+  Suffix '1784796589231_tg7aa': 1 marks
+  Suffix 'rt_1785630720678_bcbw1': 36 marks
+  Suffix '1785630720678_bcbw1': 1 marks
+  Suffix '1785936633532_vncme': 1 marks
+  Suffix '1786203662780': 17 marks
+  Suffix '1786547274001': 15 marks
+  Suffix 'rt_1787232622651_ut03a': 1 marks
+  Suffix '1787232622651_ut03a': 1 marks
+  Schedule 1788103506003 (Elegileble test | Eight | Bangla 2nd Paper): 192 marks
+  Schedule 1788103362043 (Elegileble test | Eight | Science): 192 marks
+  Schedule 1788103394414 (Elegileble test | Eight | Bangladesh And Global Studies): 192 marks
+  Schedule 1788103481541 (Elegileble test | Eight | Bangla 1st Paper): 192 marks
+  Schedule 1788103284828 (Elegileble test | Eight | English 2nd Paper): 192 marks
+  Schedule 1788103216016 (Elegileble test | Eight | English For Today): 192 marks
+  Schedule 1788103332827 (Elegileble test | Eight | Mathematics): 192 marks
+  Suffix '1789576252617': 20 marks
+  Suffix 'বার্ষিক পরীক্ষা': 89 marks
+  Suffix '1791596672085': 36 marks
+  Suffix '1791643125562': 18 marks
+  Schedule 1791675107779 (বার্ষিক পরীক্ষা | Six | Science): 27 marks
+  Schedule 1791678556667 (অর্ধ-বার্ষিক পরীক্ষা | Eight | Bangla 1st Paper): 111 marks
+  Suffix 'অর্ধ-বার্ষিক পরীক্ষা': 111 marks
+
+Sample records for known schedules:
+
+--- Suffix 1788103506003 (Elegileble test - Bangla 2nd Paper) ---
+  marks_1788096574265-63478-0_1788103506003 => {"102": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-75606-1_1788103506003 => {"102": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-6594-2_1788103506003 => {"102": {"total": 28, "isAbsent": true, "cq": 28, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+
+--- Suffix 1788103362043 (Elegileble test - Science) ---
+  marks_1788096574265-63478-0_1788103362043 => {"108": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-75606-1_1788103362043 => {"108": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-6594-2_1788103362043 => {"108": {"total": 28, "isAbsent": true, "cq": 28, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+
+--- Suffix 1788103394414 (Elegileble test - Bangladesh And Global Studies) ---
+  marks_1788096574265-63478-0_1788103394414 => {"107": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-75606-1_1788103394414 => {"107": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-6594-2_1788103394414 => {"107": {"total": 28, "isAbsent": true, "cq": 28, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+
+--- Suffix 1788103481541 (Elegileble test - Bangla 1st Paper) ---
+  marks_1788096574265-63478-0_1788103481541 => {"101": {"total": 22, "isAbsent": true, "cq": 22, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-75606-1_1788103481541 => {"101": {"total": 25, "isAbsent": true, "cq": 25, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-6594-2_1788103481541 => {"101": {"total": 28, "isAbsent": true, "cq": 28, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+
+--- Suffix 1788103284828 (Elegileble test - English 2nd Paper) ---
+  marks_1788096574265-63478-0_1788103284828 => {"104": {"total": 40, "isAbsent": false, "cq": 40, "mcq": 0}}
+  marks_1788096574265-75606-1_1788103284828 => {"104": {"total": 40, "isAbsent": false, "cq": 40, "mcq": 0}}
+  marks_1788096574265-6594-2_1788103284828 => {"104": {"total": 44, "isAbsent": false, "cq": 44, "mcq": 0}}
+
+--- Suffix 1788103216016 (Elegileble test - English For Today) ---
+  marks_1788096574265-63478-0_1788103216016 => {"103": {"total": 40, "isAbsent": false, "cq": 40, "mcq": 0}}
+  marks_1788096574265-75606-1_1788103216016 => {"103": {"total": 40, "isAbsent": false, "cq": 40, "mcq": 0}}
+  marks_1788096574265-6594-2_1788103216016 => {"103": {"total": 44, "isAbsent": false, "cq": 44, "mcq": 0}}
+
+--- Suffix 1788103332827 (Elegileble test - Mathematics) ---
+  marks_1788096574265-63478-0_1788103332827 => {"105": {"total": 40, "isAbsent": true, "cq": 40, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-75606-1_1788103332827 => {"105": {"total": 40, "isAbsent": true, "cq": 40, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+  marks_1788096574265-6594-2_1788103332827 => {"105": {"total": 44, "isAbsent": true, "cq": 44, "mcq": 0, "fileName": "", "omrEvaluatedAt": null, "percentage": "0.0", "answers": {}, "status": "পেন্ডিং"}}
+
+--- Suffix 1791675107779 (বার্ষিক পরীক্ষা - Science) ---
+  marks_1787794001272-84216-5_1791675107779 => {"108": {"total": 28, "isAbsent": false, "mcq": 28, "set": "ক", "answers": {"1": ["ক", "গ"], "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": ["ক", "ঘ"]}, "percentage": "93.3", "status": "উত্তীর্ণ", "fileName": "101.jpg", "omrEvaluatedAt": "2026-10-11T00:17:44.734Z"}, "Science": {"total": 28, "isAbsent": false, "mcq": 28, "set": "ক", "answers": {"1": ["ক", "গ"], "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": ["ক", "ঘ"]}, "percentage": "93.3", "status": "উত্তীর্ণ", "fileName": "101.jpg", "omrEvaluatedAt": "2026-10-11T00:17:44.734Z"}}
+  marks_0006_1791675107779 => {"108": {"total": 28, "isAbsent": false, "mcq": 28, "set": "ক", "answers": {"1": ["ক", "গ"], "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": ["ক", "ঘ"]}, "percentage": "93.3", "status": "উত্তীর্ণ", "fileName": "101.jpg", "omrEvaluatedAt": "2026-10-11T00:17:44.734Z"}, "Science": {"total": 28, "isAbsent": false, "mcq": 28, "set": "ক", "answers": {"1": ["ক", "গ"], "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": ["ক", "ঘ"]}, "percentage": "93.3", "status": "উত্তীর্ণ", "fileName": "101.jpg", "omrEvaluatedAt": "2026-10-11T00:17:44.734Z"}}
+  marks_2606006_1791675107779 => {"108": {"total": 28, "isAbsent": false, "mcq": 28, "set": "ক", "answers": {"1": ["ক", "গ"], "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": ["ক", "ঘ"]}, "percentage": "93.3", "status": "উত্তীর্ণ", "fileName": "101.jpg", "omrEvaluatedAt": "2026-10-11T00:17:44.734Z"}, "Science": {"total": 28, "isAbsent": false, "mcq": 28, "set": "ক", "answers": {"1": ["ক", "গ"], "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": ["ক", "ঘ"]}, "percentage": "93.3", "status": "উত্তীর্ণ", "fileName": "101.jpg", "omrEvaluatedAt": "2026-10-11T00:17:44.734Z"}}
+
+--- Suffix 1791678556667 (অর্ধ-বার্ষিক পরীক্ষা - Bangla 1st Paper) ---
+  marks_1788096574265-75606-1_1791678556667 => {"101": {"total": 30, "isAbsent": false, "mcq": 30, "set": "ক", "answers": {"1": "ক", "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": "ক"}, "percentage": "100.0", "status": "উত্তীর্ণ", "fileName": "Answer - Copy (2) - Copy.jpg", "omrEvaluatedAt": "2026-10-11T00:42:12.139Z"}, "Bangla Sahitya": {"total": 30, "isAbsent": false, "mcq": 30, "set": "ক", "answers": {"1": "ক", "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": "ক"}, "percentage": "100.0", "status": "উত্তীর্ণ", "fileName": "Answer - Copy (2) - Copy.jpg", "omrEvaluatedAt": "2026-10-11T00:42:12.139Z"}}
+  marks_0002_1791678556667 => {"101": {"total": 30, "isAbsent": false, "mcq": 30, "set": "ক", "answers": {"1": "ক", "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": "ক"}, "percentage": "100.0", "status": "উত্তীর্ণ", "fileName": "Answer - Copy - Copy (2).jpg", "omrEvaluatedAt": "2026-10-11T00:42:50.908Z"}, "Bangla Sahitya": {"total": 30, "isAbsent": false, "mcq": 30, "set": "ক", "answers": {"1": "ক", "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": "ক"}, "percentage": "100.0", "status": "উত্তীর্ণ", "fileName": "Answer - Copy - Copy (2).jpg", "omrEvaluatedAt": "2026-10-11T00:42:50.908Z"}}
+  marks_2608002_1791678556667 => {"101": {"total": 30, "isAbsent": false, "mcq": 30, "set": "ক", "answers": {"1": "ক", "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": "ক"}, "percentage": "100.0", "status": "উত্তীর্ণ", "fileName": "Answer - Copy (2) - Copy.jpg", "omrEvaluatedAt": "2026-10-11T00:42:12.139Z"}, "Bangla Sahitya": {"total": 30, "isAbsent": false, "mcq": 30, "set": "ক", "answers": {"1": "ক", "2": "গ", "3": "খ", "4": "খ", "5": "ঘ", "6": "গ", "7": "ক", "8": "খ", "9": "গ", "10": "খ", "11": "খ", "12": "গ", "13": "ক", "14": "ক", "15": "ঘ", "16": "খ", "17": "গ", "18": "ক", "19": "ঘ", "20": "খ", "21": "ক", "22": "খ", "23": "গ", "24": "খ", "25": "ক", "26": "খ", "27": "খ", "28": "ঘ", "29": "ক", "30": "ক"}, "percentage": "100.0", "status": "উত্তীর্ণ", "fileName": "Answer - Copy (2) - Copy.jpg", "omrEvaluatedAt": "2026-10-11T00:42:12.139Z"}}
