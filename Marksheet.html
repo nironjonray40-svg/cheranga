@@ -851,7 +851,7 @@
         <div class="mark-sheet-border">
         <!-- Header Section -->
         <div class="header-section">
-            <table class="grading-scale">
+            <table class="grading-scale" id="marksheet-grading-scale-table">
                 <tr>
                     <th>Range</th>
                     <th>Grade</th>
@@ -1055,16 +1055,91 @@
             return s;
         }
 
+        const DEFAULT_GRADE_RULES = [
+            { id: "1", name: "A+", min: 80, max: 100, gp: 5.0 },
+            { id: "2", name: "A", min: 70, max: 79, gp: 4.0 },
+            { id: "3", name: "A-", min: 60, max: 69, gp: 3.5 },
+            { id: "4", name: "B", min: 50, max: 59, gp: 3.0 },
+            { id: "5", name: "C", min: 40, max: 49, gp: 2.0 },
+            { id: "6", name: "D", min: 33, max: 39, gp: 1.0 },
+            { id: "7", name: "F", min: 0, max: 32, gp: 0.0 }
+        ];
+
+        // Dynamic Grading Scale loader from "Marking System" (school_marking_system)
+        function loadMarkingSystem() {
+            try {
+                const raw = localStorage.getItem('school_marking_system');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed;
+                    }
+                }
+            } catch(e) {}
+            return DEFAULT_GRADE_RULES;
+        }
+
+        // Calculate Grade & GP dynamically based on Grading Scale (% Percentage Scale) & full marks
         function calculateGradeAndGP(marks, fullMarks = 100) {
-            if (marks === null || marks === undefined || isNaN(marks)) return { grade: 'F', gp: 0.00 };
-            const pct = (marks / fullMarks) * 100;
-            if (pct >= 80) return { grade: 'A+', gp: 5.00 };
-            if (pct >= 70) return { grade: 'A', gp: 4.00 };
-            if (pct >= 60) return { grade: 'A-', gp: 3.50 };
-            if (pct >= 50) return { grade: 'B', gp: 3.00 };
-            if (pct >= 40) return { grade: 'C', gp: 2.00 };
-            if (pct >= 33) return { grade: 'D', gp: 1.00 };
-            return { grade: 'F', gp: 0.00 };
+            if (marks === null || marks === undefined || isNaN(marks)) {
+                return { grade: 'F', gp: 0.00 };
+            }
+            const fMarks = Number(fullMarks) > 0 ? Number(fullMarks) : 100;
+            const pct = (Number(marks) / fMarks) * 100;
+
+            const rules = loadMarkingSystem();
+            const sortedRules = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || sortedRules[sortedRules.length - 1] || { name: 'F', gp: 0.00 };
+
+            // Find matching rule based on customized percentage threshold
+            let match = sortedRules.find(r => pct >= parseFloat(r.min) && pct <= parseFloat(r.max));
+            if (!match) {
+                match = sortedRules.find(r => (pct + 0.001) >= parseFloat(r.min));
+            }
+            if (match) {
+                return { grade: match.name, gp: parseFloat(match.gp) || 0.00 };
+            }
+            return { grade: failRule.name, gp: parseFloat(failRule.gp) || 0.00 };
+        }
+
+        function getMaxScaleGP() {
+            const rules = loadMarkingSystem();
+            const gps = rules.map(r => parseFloat(r.gp) || 0);
+            return gps.length > 0 ? Math.max(...gps, 1.0) : 5.00;
+        }
+
+        function getFinalGradeFromGPA(gpa, isFailed) {
+            const rules = loadMarkingSystem();
+            const sortedRules = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0.0 };
+            if (isFailed || gpa <= 0) return failRule.name;
+
+            const sortedByGP = [...sortedRules].sort((a, b) => (parseFloat(b.gp) || 0) - (parseFloat(a.gp) || 0));
+            const matched = sortedByGP.find(r => (gpa + 0.001) >= parseFloat(r.gp));
+            return matched ? matched.name : failRule.name;
+        }
+
+        function renderGradingScaleLegend() {
+            const rules = loadMarkingSystem();
+            const sorted = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const table = document.getElementById('marksheet-grading-scale-table');
+            if (table) {
+                let rowsHtml = '<tr><th>Range</th><th>Grade</th><th>GPA</th></tr>';
+                sorted.filter(r => r.name !== 'F' && parseFloat(r.gp) > 0).forEach(r => {
+                    const minStr = String(r.min);
+                    const maxStr = String(r.max);
+                    const gpStr = parseFloat(r.gp || 0).toFixed(2);
+                    rowsHtml += `<tr><td>${minStr}-${maxStr}</td><td>${r.name}</td><td>${gpStr}</td></tr>`;
+                });
+                table.innerHTML = rowsHtml;
+            }
+        }
+
+        function getGradingScaleTableHTML() {
+            const rules = loadMarkingSystem();
+            const sorted = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const innerRows = sorted.filter(r => r.name !== 'F' && parseFloat(r.gp) > 0).map(r => `<tr><td>${r.min}-${r.max}</td><td>${r.name}</td><td>${parseFloat(r.gp || 0).toFixed(2)}</td></tr>`).join('');
+            return `<table class="grading-scale"><tr><th>Range</th><th>Grade</th><th>GPA</th></tr>${innerRows}</table>`;
         }
 
         function getSubjectNameBangla(sub) {
@@ -1470,6 +1545,29 @@
                                 const groupKey = exactSubName.toLowerCase();
 
                                 if (!subjectGroups.has(groupKey)) {
+                                    let subFull = parseInt(sc.totalMarks || sc.fullMarks) || 0;
+                        if (!subFull && sc.examType) {
+                            try {
+                                const rawTypes = localStorage.getItem('school_exam_types');
+                                if (rawTypes) {
+                                    const exTypes = JSON.parse(rawTypes);
+                                    const exMatch = exTypes.find(t => isExamMatch(t.name, selectedExam));
+                                    if (exMatch && Array.isArray(exMatch.examTypes)) {
+                                        const stMatch = exMatch.examTypes.find(t => (t.typeName || '').trim().toLowerCase() === (sc.examType || '').trim().toLowerCase());
+                                        if (stMatch) {
+                                            subFull = (Number(stMatch.defaultCQ) || 0) + (Number(stMatch.defaultMCQ) || 0) + (Number(stMatch.defaultPractical) || 0);
+                                        }
+                                    }
+                                }
+                            } catch(e) {}
+                        }
+                        if (!subFull) {
+                            const curDist = getExamDistribution(selectedExam, selectedClass);
+                            if (curDist && curDist.total) subFull = curDist.total;
+                        }
+                        if (!subFull) {
+                            subFull = (normSub.includes('ict') || normSub.includes('আইসিটি')) ? 50 : 100;
+                        }
                                     subjectGroups.set(groupKey, {
                                         schedule: sc,
                                         scheduleIds: [sc.id],
@@ -1477,7 +1575,7 @@
                                         rawName: exactSubName,
                                         nameBn: exactSubName,
                                         code: sc.code || '',
-                                        fullMarks: parseInt(sc.totalMarks || sc.fullMarks) || (normSub.includes('ict') || normSub.includes('আইসিটি') ? 50 : 100),
+                                        fullMarks: subFull,
                                         isOptional: !!sc.isOptional
                                     });
                                 } else {
@@ -1814,7 +1912,12 @@
             let hasFailed = false;
             let hasAnyMarks = false;
 
+            let mainSubjectsGP = 0;
+            let mainSubjectCount = 0;
+            let optionalBonusGP = 0;
+
             subjects.forEach(sub => {
+                const isOpt = !!(sub.isOptional || sub.group === 'optional');
                 if (sub.isCombined) {
                     const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
                     const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
@@ -1829,7 +1932,13 @@
                         totalFullMarks += fullTotal;
                         totalGP += res.gp;
                         subjectCount++;
-                        if (res.gp === 0) hasFailed = true;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
                     }
 
                     const p1McqDisplay = sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : toBnDigits(sub.mcq)) : '—';
@@ -1873,7 +1982,13 @@
                         totalFullMarks += sub.fullMarks;
                         totalGP += res.gp;
                         subjectCount++;
-                        if (res.gp === 0) hasFailed = true;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
                     }
 
                     const isPracCol = sub.pr !== '';
@@ -1899,9 +2014,13 @@
 
             tbody.innerHTML = html;
 
-            const gpa = (subjectCount > 0 && !hasFailed) ? (totalGP / subjectCount) : 0;
-            const finalGpaStr = hasAnyMarks ? (hasFailed ? '০.০০' : toBnDigits(Math.min(5.00, gpa).toFixed(2))) : '—';
-            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : (gpa >= 5 ? 'A+' : (gpa >= 4 ? 'A' : (gpa >= 3.5 ? 'A-' : (gpa >= 3 ? 'B' : (gpa >= 2 ? 'C' : 'D')))))) : '—';
+            renderGradingScaleLegend();
+            if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
+            const maxGP = getMaxScaleGP();
+            const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+            const boundedGpa = Math.min(maxGP, rawGpa);
+            const finalGpaStr = hasAnyMarks ? (hasFailed ? '০.০০' : toBnDigits(boundedGpa.toFixed(2))) : '—';
+            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
 
             const gtEl = document.getElementById('display-grand-total');
             if (gtEl) gtEl.innerText = hasAnyMarks ? toBnDigits(grandTotal) : '—';
@@ -2645,7 +2764,12 @@
             let hasFailed = false;
             let hasAnyMarks = false;
 
+            let mainSubjectsGP = 0;
+            let mainSubjectCount = 0;
+            let optionalBonusGP = 0;
+
             subjects.forEach(sub => {
+                const isOpt = !!(sub.isOptional || sub.group === 'optional');
                 if (sub.isCombined) {
                     const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
                     const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
@@ -2660,7 +2784,13 @@
                         totalFullMarks += fullTotal;
                         totalGP += res.gp;
                         subjectCount++;
-                        if (res.gp === 0) hasFailed = true;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
                     }
 
                     const p1McqDisplay = sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : toBnDigits(sub.mcq)) : '—';
@@ -2704,7 +2834,13 @@
                         totalFullMarks += sub.fullMarks;
                         totalGP += res.gp;
                         subjectCount++;
-                        if (res.gp === 0) hasFailed = true;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
                     }
 
                     const isPracCol = sub.pr !== '';
@@ -2728,9 +2864,12 @@
                 }
             });
 
-            const gpa = (subjectCount > 0 && !hasFailed) ? (totalGP / subjectCount) : 0;
-            const finalGpaStr = hasAnyMarks ? (hasFailed ? '০.০০' : toBnDigits(Math.min(5.00, gpa).toFixed(2))) : '—';
-            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : (gpa >= 5 ? 'A+' : (gpa >= 4 ? 'A' : (gpa >= 3.5 ? 'A-' : (gpa >= 3 ? 'B' : (gpa >= 2 ? 'C' : 'D')))))) : '—';
+            if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
+            const maxGP = getMaxScaleGP();
+            const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+            const boundedGpa = Math.min(maxGP, rawGpa);
+            const finalGpaStr = hasAnyMarks ? (hasFailed ? '০.০০' : toBnDigits(boundedGpa.toFixed(2))) : '—';
+            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
             const rankStr = toBnDigits(rankNum);
 
             return `
@@ -2738,15 +2877,7 @@
                 <div class="mark-sheet-border">
                     <!-- Header Section -->
                     <div class="header-section">
-                        <table class="grading-scale">
-                            <tr><th>Range</th><th>Grade</th><th>GPA</th></tr>
-                            <tr><td>80-100</td><td>A+</td><td>5.00</td></tr>
-                            <tr><td>70-79</td><td>A</td><td>4.00</td></tr>
-                            <tr><td>60-69</td><td>A-</td><td>3.50</td></tr>
-                            <tr><td>50-59</td><td>B</td><td>3.00</td></tr>
-                            <tr><td>40-49</td><td>C</td><td>2.00</td></tr>
-                            <tr><td>33-39</td><td>D</td><td>1.00</td></tr>
-                        </table>
+                        ${getGradingScaleTableHTML()}
 
                         <div class="header-center">
                             <h1 class="school-name">${schoolName}</h1>
@@ -3007,12 +3138,12 @@
         function syncLiveExamData() {
             if (window._lastExamApiFetch && (Date.now() - window._lastExamApiFetch < 3000)) return;
             window._lastExamApiFetch = Date.now();
-            fetch('/api/db?keys=school_exam_schedules,school_student_marks,school_students,school_subjects,school_classes,school_exam_types,school_exam_routines,school_omr_exams,school_settings,school_logo')
+            fetch('/api/db?keys=school_exam_schedules,school_student_marks,school_students,school_subjects,school_classes,school_exam_types,school_exam_routines,school_omr_exams,school_marking_system,school_settings,school_logo')
                 .then(r => r.json())
                 .then(data => {
                     if (data && typeof data === 'object') {
                         let hasChanged = false;
-                        ['school_exam_schedules', 'school_student_marks', 'school_students', 'school_subjects', 'school_classes', 'school_exam_types', 'school_exam_routines', 'school_omr_exams'].forEach(k => {
+                        ['school_exam_schedules', 'school_student_marks', 'school_students', 'school_subjects', 'school_classes', 'school_exam_types', 'school_exam_routines', 'school_omr_exams', 'school_marking_system'].forEach(k => {
                             if (data[k]) {
                                 const strVal = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
                                 if (localStorage.getItem(k) !== strVal) {
@@ -3102,7 +3233,7 @@
             if (!e.key || e.key === 'school_settings' || e.key === 'school_logo') {
                 syncSchoolHeaderInfo();
             }
-            if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sections' || e.key === 'school_groups' || e.key === 'school_students' || e.key === 'school_subjects') {
+            if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sections' || e.key === 'school_groups' || e.key === 'school_students' || e.key === 'school_subjects' || e.key === 'school_marking_system') {
                 syncCascadingFilters('all');
             }
         });
