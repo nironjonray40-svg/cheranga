@@ -4929,9 +4929,6 @@
                                 onchange="renderSubjectList()">
                                 <option value="All">All Classes</option>
                             </select>
-                            <button class="action-btn-sm btn-delete-student"
-                                style="display:none; background:var(--warning-grad); box-shadow:none; margin:0; white-space:nowrap;"
-                                onclick="resetSubjectsToDefault()">Reset to Default</button>
                         </div>
                     </div>
                     <div id="subject-tables-container"
@@ -6233,6 +6230,7 @@
             <form id="subject-form" onsubmit="saveSubject(event)">
                 <input type="hidden" id="subject-edit-class">
                 <input type="hidden" id="subject-edit-code">
+                <input type="hidden" id="subject-edit-name">
                 <div class="form-group">
                     <label
                         style="font-weight: 700; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
@@ -6314,6 +6312,7 @@
             <form id="modal-subject-form" onsubmit="saveModalSubject(event)">
                 <input type="hidden" id="modal-edit-class">
                 <input type="hidden" id="modal-edit-code">
+                <input type="hidden" id="modal-edit-name">
 
                 <div class="form-group">
                     <label for="modal-subject-class">Class:</label>
@@ -7737,9 +7736,8 @@
                     parsed = JSON.parse(subjects);
 
                     const hasOldClass6 = parsed["Class 6"] !== undefined;
-                    const hasSixSahitya = parsed["Six"] && parsed["Six"].some(s => s.name === "Bangla Sahitya");
 
-                    if (hasOldClass6 || !hasSixSahitya) {
+                    if (hasOldClass6) {
                         parsed = defaultSubjects;
                         needToSave = true;
                     } else {
@@ -12822,24 +12820,33 @@ function openExamMarksEntryModal(scheduleId) {
 
             const editClass = document.getElementById('subject-edit-class').value;
             const editCode = document.getElementById('subject-edit-code').value;
+            const editOriginalName = (document.getElementById('subject-edit-name')?.value || '').trim();
 
             const subjectsMap = loadSubjects();
 
             if (editClass && editCode) {
                 // Edit Mode
+                const editCodeClean = (editCode || '').trim().toLowerCase();
+                const editOrigNameClean = editOriginalName.toLowerCase();
+                const newNameClean = name.toLowerCase();
+
                 if (syncAll) {
                     let updatedCount = 0;
-                    const targetNameClean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const editCodeClean = (editCode || '').trim().toLowerCase();
 
                     Object.keys(subjectsMap).forEach(cls => {
                         const list = subjectsMap[cls] || [];
                         list.forEach(s => {
                             if (!s) return;
-                            const sNameClean = (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                             const sCodeClean = (s.code || '').trim().toLowerCase();
+                            const sNameClean = (s.name || '').trim().toLowerCase();
+                            const sShortClean = (s.shortName || '').trim().toLowerCase();
 
-                            if (sCodeClean === editCodeClean || (sNameClean && sNameClean === targetNameClean) || s.shortName === editCode) {
+                            const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+                                (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                                (editOrigNameClean && sShortClean === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+
+                            if (isMatch) {
                                 s.name = name;
                                 s.nameBn = nameBn;
                                 s.shortName = shortName;
@@ -12857,6 +12864,43 @@ function openExamMarksEntryModal(scheduleId) {
                         });
                     });
 
+                    // Propagate subject rename to schedules and routines if name was changed
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                            let schedUpdated = false;
+                            schedules.forEach(sch => {
+                                if (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode)) {
+                                    sch.subject = name;
+                                    schedUpdated = true;
+                                }
+                            });
+                            if (schedUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                                fetch('/api/db/set', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+
+                        try {
+                            const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                            let routUpdated = false;
+                            routines.forEach(r => {
+                                if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+                                    r.subject = name;
+                                    r.subjectName = name;
+                                    routUpdated = true;
+                                }
+                            });
+                            if (routUpdated) {
+                                localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                            }
+                        } catch (e) { }
+                    }
+
                     persistAcademicSubjectsSync(subjectsMap);
                     resetSubjectForm();
                     renderSubjectList();
@@ -12866,7 +12910,14 @@ function openExamMarksEntryModal(scheduleId) {
                 } else {
                     targetClasses.forEach(classVal => {
                         const classSubs = subjectsMap[classVal] || [];
-                        const idx = classSubs.findIndex(s => s.code === editCode || (s.name || '').toLowerCase() === name.toLowerCase());
+                        const idx = classSubs.findIndex(s => {
+                            if (!s) return false;
+                            const sCodeClean = (s.code || '').trim().toLowerCase();
+                            const sNameClean = (s.name || '').trim().toLowerCase();
+                            return (editCodeClean && sCodeClean === editCodeClean) ||
+                                (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+                        });
                         const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
                         if (idx !== -1) {
                             classSubs[idx] = { code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec };
@@ -12875,6 +12926,29 @@ function openExamMarksEntryModal(scheduleId) {
                         }
                         subjectsMap[classVal] = classSubs;
                     });
+
+                    // Propagate subject rename to schedules and routines
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                            let schedUpdated = false;
+                            schedules.forEach(sch => {
+                                if (targetClasses.includes(sch.class) && (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode))) {
+                                    sch.subject = name;
+                                    schedUpdated = true;
+                                }
+                            });
+                            if (schedUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                                fetch('/api/db/set', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+                    }
+
                     persistAcademicSubjectsSync(subjectsMap);
                     resetSubjectForm();
                     renderSubjectList();
@@ -12967,12 +13041,26 @@ function openExamMarksEntryModal(scheduleId) {
 
             document.getElementById('subject-edit-class').value = classVal;
             document.getElementById('subject-edit-code').value = code;
+            if (document.getElementById('subject-edit-name')) {
+                document.getElementById('subject-edit-name').value = sub.name || '';
+            }
 
             const classesContainingSub = [];
-            const subNameClean = (sub.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const subNameClean = (sub.name || '').trim().toLowerCase();
+            const subShortClean = (sub.shortName || '').trim().toLowerCase();
+            const subCodeClean = (code || '').trim().toLowerCase();
+
             Object.keys(subjectsMap).forEach(cls => {
                 const list = subjectsMap[cls] || [];
-                if (list.some(s => s.code === code || (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') === subNameClean)) {
+                if (list.some(s => {
+                    if (!s) return false;
+                    const sCode = (s.code || '').trim().toLowerCase();
+                    const sName = (s.name || '').trim().toLowerCase();
+                    const sShort = (s.shortName || '').trim().toLowerCase();
+                    return (sCode && sCode === subCodeClean) ||
+                        (subNameClean && sName === subNameClean) ||
+                        (subShortClean && sShort === subShortClean);
+                })) {
                     classesContainingSub.push(cls);
                 }
             });
@@ -13016,6 +13104,7 @@ function openExamMarksEntryModal(scheduleId) {
             document.getElementById('subject-form').reset();
             document.getElementById('subject-edit-class').value = "";
             document.getElementById('subject-edit-code').value = "";
+            if (document.getElementById('subject-edit-name')) document.getElementById('subject-edit-name').value = "";
             if (document.getElementById('subject-name-bn')) document.getElementById('subject-name-bn').value = "";
             document.getElementById('subject-is-optional').checked = false;
             const containerSec = document.getElementById('subject-section-checkboxes');
@@ -13150,6 +13239,9 @@ function openExamMarksEntryModal(scheduleId) {
 
             document.getElementById('modal-edit-class').value = classVal;
             document.getElementById('modal-edit-code').value = code;
+            if (document.getElementById('modal-edit-name')) {
+                document.getElementById('modal-edit-name').value = sub.name || '';
+            }
 
             document.getElementById('modal-subject-class').value = classVal;
             document.getElementById('modal-subject-name').value = sub.name;
@@ -13166,6 +13258,9 @@ function openExamMarksEntryModal(scheduleId) {
         function closeSubjectModal() {
             document.getElementById('subject-modal').classList.remove('active');
             document.getElementById('modal-subject-form').reset();
+            if (document.getElementById('modal-edit-name')) {
+                document.getElementById('modal-edit-name').value = '';
+            }
         }
 
         function saveModalSubject(event) {
@@ -13181,22 +13276,31 @@ function openExamMarksEntryModal(scheduleId) {
 
             const editClass = document.getElementById('modal-edit-class').value;
             const editCode = document.getElementById('modal-edit-code').value;
+            const editOriginalName = (document.getElementById('modal-edit-name')?.value || '').trim();
 
             const subjectsMap = loadSubjects();
 
+            const editCodeClean = (editCode || '').trim().toLowerCase();
+            const editOrigNameClean = editOriginalName.toLowerCase();
+            const newNameClean = name.toLowerCase();
+
             if (syncAll) {
                 let updatedCount = 0;
-                const targetNameClean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const editCodeClean = (editCode || '').trim().toLowerCase();
 
                 Object.keys(subjectsMap).forEach(cls => {
                     const list = subjectsMap[cls] || [];
                     list.forEach(s => {
                         if (!s) return;
-                        const sNameClean = (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                         const sCodeClean = (s.code || '').trim().toLowerCase();
+                        const sNameClean = (s.name || '').trim().toLowerCase();
+                        const sShortClean = (s.shortName || '').trim().toLowerCase();
 
-                        if (sCodeClean === editCodeClean || (sNameClean && sNameClean === targetNameClean) || s.shortName === editCode) {
+                        const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+                            (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                            (editOrigNameClean && sShortClean === editOrigNameClean) ||
+                            (newNameClean && sNameClean === newNameClean);
+
+                        if (isMatch) {
                             s.name = name;
                             s.nameBn = nameBn;
                             s.shortName = shortName;
@@ -13208,6 +13312,43 @@ function openExamMarksEntryModal(scheduleId) {
                         }
                     });
                 });
+
+                // Propagate subject rename to schedules and routines
+                if (editOriginalName && editOriginalName !== name) {
+                    try {
+                        const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                        let schedUpdated = false;
+                        schedules.forEach(sch => {
+                            if (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode)) {
+                                sch.subject = name;
+                                schedUpdated = true;
+                            }
+                        });
+                        if (schedUpdated) {
+                            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                            fetch('/api/db/set', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                            }).catch(() => { });
+                        }
+                    } catch (e) { }
+
+                    try {
+                        const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                        let routUpdated = false;
+                        routines.forEach(r => {
+                            if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+                                r.subject = name;
+                                r.subjectName = name;
+                                routUpdated = true;
+                            }
+                        });
+                        if (routUpdated) {
+                            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                        }
+                    } catch (e) { }
+                }
 
                 persistAcademicSubjectsSync(subjectsMap);
                 closeSubjectModal();
@@ -13228,16 +13369,44 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             // Remove old entry
-            const idx = oldClassSubjects.findIndex(s => s.code === editCode);
+            const idx = oldClassSubjects.findIndex(s => {
+                if (!s) return false;
+                const sCodeClean = (s.code || '').trim().toLowerCase();
+                const sNameClean = (s.name || '').trim().toLowerCase();
+                return (editCodeClean && sCodeClean === editCodeClean) ||
+                    (editOrigNameClean && sNameClean === editOrigNameClean);
+            });
             if (idx !== -1) {
                 oldClassSubjects.splice(idx, 1);
             }
             subjectsMap[editClass] = oldClassSubjects;
 
             // Add updated entry
-            const targetClassSubjects = subjectsMap[classVal] || [];
+            const targetClassSubjects = (classVal === editClass) ? oldClassSubjects : (subjectsMap[classVal] || []);
             targetClassSubjects.push({ code, name, nameBn, shortName, isOptional });
             subjectsMap[classVal] = targetClassSubjects;
+
+            // Propagate subject rename to schedules and routines
+            if (editOriginalName && editOriginalName !== name) {
+                try {
+                    const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                    let schedUpdated = false;
+                    schedules.forEach(sch => {
+                        if (sch.class === editClass && (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode))) {
+                            sch.subject = name;
+                            schedUpdated = true;
+                        }
+                    });
+                    if (schedUpdated) {
+                        localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                        fetch('/api/db/set', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                        }).catch(() => { });
+                    }
+                } catch (e) { }
+            }
 
             persistAcademicSubjectsSync(subjectsMap);
 
