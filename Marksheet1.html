@@ -58,66 +58,55 @@
         
         /* Top Header */
         .institution-header {
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             width: 100%;
             border-bottom: 2px solid #000000;
             padding-bottom: 8px;
             margin-bottom: 10px;
-            min-height: 72px;
+            min-height: 80px;
+            box-sizing: border-box;
+            position: relative;
         }
         .header-logo-box {
+            flex: 0 0 70px;
             width: 70px;
             height: 70px;
-            position: absolute;
-            left: 17mm;
-            top: 16mm;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
-            z-index: 1000;
             border-radius: 50%;
-            transition: outline 0.15s, box-shadow 0.15s;
-        }
-        .header-logo-box:hover {
-            outline: 2px dashed #0284c7;
-            outline-offset: 3px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .header-logo-box.is-dragging {
-            cursor: grabbing !important;
-            opacity: 0.92;
-            z-index: 99999 !important;
-            outline: 2px solid #0284c7 !important;
-            outline-offset: 3px;
-            box-shadow: 0 10px 28px rgba(0,0,0,0.35) !important;
+            overflow: hidden;
         }
         .header-logo-box img {
             width: 100%;
             height: 100%;
             object-fit: contain;
             border-radius: 50%;
-            pointer-events: none;
             display: block;
         }
         .header-logo-box svg {
             width: 100%;
             height: 100%;
-            pointer-events: none;
+        }
+        .header-right-spacer {
+            flex: 0 0 70px;
+            width: 70px;
         }
         .header-text-box {
-            width: 100%;
+            flex: 1;
+            min-width: 0;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 0;
+            padding: 0 8px;
+            box-sizing: border-box;
         }
         .inst-title-bn {
-            font-size: 24px;
+            font-size: 20.5px;
             font-weight: 800;
             color: #000000;
             line-height: 1.2;
@@ -303,6 +292,16 @@
             padding-left: 8px;
             font-weight: 800;
             color: #000000;
+        }
+        .subject-marks-text {
+            font-size: 11px;
+            font-weight: 500;
+            color: #111;
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+        body.hide-subject-marks .subject-marks-text {
+            display: none !important;
         }
         .transcript-table tr:nth-child(even) {
             background-color: #f8fafc;
@@ -952,6 +951,21 @@
         </select>
     </div>
 
+    <!-- Subject CQ/MCQ Marks Breakdown Visibility Filter -->
+    <div class="filter-group" title="বিষয়ের সাথে নির্ধারিত CQ, MCQ ও মোট মার্ক প্রদর্শন বা হাইড করুন">
+        <label for="filter-marks-breakdown" class="filter-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span id="label-marks-breakdown">মার্কস:</span>
+        </label>
+        <select id="filter-marks-breakdown" class="filter-select" onchange="toggleSubjectMarksBreakdown(this.value)">
+            <option value="show" selected>প্রদর্শন (Show)</option>
+            <option value="hide">লুকান (Hide)</option>
+        </select>
+    </div>
+
     <!-- Create All Option Button -->
     <button type="button" class="btn-create-all active" id="btn-create-all" onclick="toggleCreateAll()" title="উক্ত ক্লাস ও শাখার সকল শিক্ষার্থীর মার্কশীট তৈরি করুন">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -988,6 +1002,9 @@
         
         <!-- Header Section -->
         <div class="institution-header">
+            <div class="header-logo-box" id="draggableLogo">
+                <img id="school-logo-img-1" src="school_logo.svg" alt="School Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='school_logo.svg'">
+            </div>
             <div class="header-text-box">
                 <div class="inst-title-bn" id="display-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাপীঠ উচ্চ বিদ্যালয়</div>
                 <div class="inst-subtitle" id="display-school-subtitle">মাথাভাঙ্গা, জলঢাকা, নীলফামারী। | ইআইআইএন: ১২৭৫৪৩ | কোড: ৫৬১২</div>
@@ -995,6 +1012,7 @@
                     <span class="report-pill-title" id="display-exam-name-pill">বার্ষিক পরীক্ষা</span>
                 </div>
             </div>
+            <div class="header-right-spacer" aria-hidden="true"></div>
         </div>
 
         <!-- Student Meta & Grading Scale -->
@@ -1064,8 +1082,7 @@
         <table class="transcript-table">
             <thead>
                 <tr>
-                    <th rowspan="2" id="th-header-sub-1" style="width: 27%;">পাঠ্য বিষয়সমূহ</th>
-                    <th rowspan="2" id="th-header-full-1" style="width: 8%;">পূর্ণমান</th>
+                    <th rowspan="2" id="th-header-sub-1" style="width: 35%;">পাঠ্য বিষয়সমূহ</th>
                     <th colspan="3" id="th-header-obtained-1" style="width: 25%;">প্রাপ্ত নম্বর</th>
                     <th rowspan="2" style="width: 9%;" id="th-header-total-1">মোট নম্বর</th>
                     <th rowspan="2" id="th-header-combined-1" style="width: 11%;">সর্বমোট</th>
@@ -1131,10 +1148,7 @@
 
     </div>
 
-    <div class="header-logo-box" id="draggableLogo" title="লোগোটি মাউস দিয়ে টেনে যেকোনো স্থানে বসাতে পারেন">
-        <img id="school-logo-img-1" src="school_logo.svg" alt="School Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; pointer-events: none; display: block;" onerror="this.src='school_logo.svg'">
-        <span class="logo-drag-hint">Move / ড্র্যাগ করুন</span>
-    </div>
+
 </div>
 
 <!-- Batch Marksheets Container for "Creat All" (All Students) -->
@@ -1142,118 +1156,8 @@
 
 
 <script>
-// Draggable Logo Functionality across entire sheet
-(function() {
-    const logo = document.getElementById('draggableLogo');
-    const container = document.querySelector('.certificate-sheet');
-    if (!logo || !container) return;
-
-    let isDragging = false;
-    let startX = 0, startY = 0;
-    let initialLeft = 0, initialTop = 0;
-
-    // Default position
-    const DEFAULT_LEFT = 64; // ~17mm
-    const DEFAULT_TOP = 60;  // ~16mm
-
-    // Load saved position from localStorage
-    const savedPos = localStorage.getItem('marksheet_logo_pos_v2');
-    if (savedPos) {
-        try {
-            const { left, top } = JSON.parse(savedPos);
-            logo.style.left = left + 'px';
-            logo.style.top = top + 'px';
-        } catch(e) {}
-    }
-
-    function onPointerDown(e) {
-        if (e.button && e.button !== 0) return; // Only left click
-        isDragging = true;
-        logo.classList.add('is-dragging');
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const containerRect = container.getBoundingClientRect();
-        const logoRect = logo.getBoundingClientRect();
-
-        startX = clientX;
-        startY = clientY;
-        
-        // Accurate position relative to container
-        initialLeft = logoRect.left - containerRect.left;
-        initialTop = logoRect.top - containerRect.top;
-
-        document.addEventListener('mousemove', onPointerMove, { passive: false });
-        document.addEventListener('mouseup', onPointerUp);
-        document.addEventListener('touchmove', onPointerMove, { passive: false });
-        document.addEventListener('touchend', onPointerUp);
-
-        e.preventDefault();
-    }
-
-    function onPointerMove(e) {
-        if (!isDragging) return;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const deltaX = clientX - startX;
-        const deltaY = clientY - startY;
-
-        let newLeft = initialLeft + deltaX;
-        let newTop = initialTop + deltaY;
-
-        // Allow moving anywhere inside the full A4 sheet
-        const containerRect = container.getBoundingClientRect();
-        const logoWidth = logo.offsetWidth || 70;
-        const logoHeight = logo.offsetHeight || 70;
-
-        newLeft = Math.max(5, Math.min(newLeft, containerRect.width - logoWidth - 5));
-        newTop = Math.max(5, Math.min(newTop, containerRect.height - logoHeight - 5));
-
-        logo.style.left = newLeft + 'px';
-        logo.style.top = newTop + 'px';
-
-        if (e.cancelable) e.preventDefault();
-    }
-
-    function onPointerUp() {
-        if (!isDragging) return;
-        isDragging = false;
-        logo.classList.remove('is-dragging');
-
-        // Save position to localStorage
-        const containerRect = container.getBoundingClientRect();
-        const logoRect = logo.getBoundingClientRect();
-        const left = logoRect.left - containerRect.left;
-        const top = logoRect.top - containerRect.top;
-
-        localStorage.setItem('marksheet_logo_pos_v2', JSON.stringify({ left, top }));
-        document.querySelectorAll('#batch-marksheets-container .header-logo-box').forEach(bLogo => {
-            bLogo.style.left = left + 'px';
-            bLogo.style.top = top + 'px';
-        });
-
-        document.removeEventListener('mousemove', onPointerMove);
-        document.removeEventListener('mouseup', onPointerUp);
-        document.removeEventListener('touchmove', onPointerMove);
-        document.removeEventListener('touchend', onPointerUp);
-    }
-
-    // Double click on logo to reset to original top-left position
-    logo.addEventListener('dblclick', function() {
-        logo.style.left = DEFAULT_LEFT + 'px';
-        logo.style.top = DEFAULT_TOP + 'px';
-        localStorage.removeItem('marksheet_logo_pos_v2');
-        document.querySelectorAll('#batch-marksheets-container .header-logo-box').forEach(bLogo => {
-            bLogo.style.left = DEFAULT_LEFT + 'px';
-            bLogo.style.top = DEFAULT_TOP + 'px';
-        });
-    });
-
-    logo.addEventListener('mousedown', onPointerDown);
-    logo.addEventListener('touchstart', onPointerDown, { passive: false });
-})();
+// Reset any old stored logo offset to maintain perfect header alignment
+try { localStorage.removeItem('marksheet_logo_pos_v2'); } catch(e) {}
 
 function normalizeClassString(str) {
     if (!str) return '10';
@@ -1602,6 +1506,13 @@ function updateLanguageUI1() {
     if (sLang && sLang.value !== currentLanguage) sLang.value = currentLanguage;
     const lTemp = document.getElementById('label-template');
     if (lTemp) lTemp.innerText = isEn ? 'Filter:' : 'Filter:';
+    const lMarks = document.getElementById('label-marks-breakdown');
+    if (lMarks) lMarks.innerText = isEn ? 'Marks:' : 'মার্কস:';
+    const selMarks = document.getElementById('filter-marks-breakdown');
+    if (selMarks && selMarks.options.length >= 2) {
+        selMarks.options[0].text = isEn ? 'Show' : 'প্রদর্শন (Show)';
+        selMarks.options[1].text = isEn ? 'Hide' : 'লুকান (Hide)';
+    }
     const btnAllText = document.getElementById('create-all-btn-text');
     if (btnAllText) {
         if (isCreateAllMode) {
@@ -2572,19 +2483,100 @@ function getExamDistribution(selectedExam, selectedClass) {
     return { cq, mcq, prac, total };
 }
 
-// Dynamically update the table header column titles with exam full marks
+// Helper: Get subject-specific full marks distribution (CQ, MCQ, Prac, Total)
+function getSubjectFullMarksDistribution(subItem, selectedExam, selectedClass, isPaper2 = false) {
+    let cq = isPaper2 ? subItem.pairCqFull : subItem.cqFull;
+    let mcq = isPaper2 ? subItem.pairMcqFull : subItem.mcqFull;
+    let prac = isPaper2 ? (subItem.pairPracFull || 0) : (subItem.pracFull || 0);
+    let tot = isPaper2 ? subItem.pairFull : subItem.fullMarks;
+
+    const sName = (isPaper2 ? subItem.pairWith : subItem.name) || '';
+    const norm = sName.toLowerCase();
+    const isEng = norm.includes('english') || norm.includes('ইংরেজি');
+
+    if (cq === null || cq === undefined || mcq === null || mcq === undefined) {
+        const curDist = getExamDistribution(selectedExam, selectedClass);
+        if (isEng) {
+            if (cq === null || cq === undefined) cq = tot || 50;
+            if (mcq === null || mcq === undefined) mcq = 0;
+            if (prac === null || prac === undefined) prac = 0;
+        } else {
+            if (cq === null || cq === undefined) cq = curDist.cq;
+            if (mcq === null || mcq === undefined) mcq = curDist.mcq;
+            if (prac === null || prac === undefined) prac = curDist.prac;
+        }
+    }
+    if (!tot) {
+        tot = (Number(cq) || 0) + (Number(mcq) || 0) + (Number(prac) || 0);
+    }
+    return {
+        cq: Number(cq) || 0,
+        mcq: Number(mcq) || 0,
+        prac: Number(prac) || 0,
+        total: Number(tot) || 0,
+        isEng
+    };
+}
+
+// Helper: Format subject name with CQ, MCQ, and Total marks at the end
+function formatSubjectWithMarks(displayName, dist, isEn) {
+    if (!dist) return displayName;
+
+    const parts = [];
+    parts.push(`CQ: ${formatDigits(dist.cq)}`);
+    parts.push(`MCQ: ${formatDigits(dist.mcq)}`);
+    if (dist.prac > 0) {
+        parts.push(isEn ? `Prac: ${formatDigits(dist.prac)}` : `ব্যবহারিক: ${formatDigits(dist.prac)}`);
+    }
+    parts.push(isEn ? `Total: ${formatDigits(dist.total)}` : `মোট: ${formatDigits(dist.total)}`);
+
+    const marksBadge = `<span class="subject-marks-text">(${parts.join(', ')})</span>`;
+    return `${displayName} ${marksBadge}`;
+}
+
+// Toggle visibility of subject marks breakdown (CQ, MCQ, Total)
+function toggleSubjectMarksBreakdown(val) {
+    const isHide = (val === 'hide');
+    try {
+        localStorage.setItem('marksheet_show_marks_breakdown', isHide ? 'hide' : 'show');
+    } catch(e) {}
+
+    const sel = document.getElementById('filter-marks-breakdown');
+    if (sel && sel.value !== val) sel.value = val;
+
+    if (isHide) {
+        document.body.classList.add('hide-subject-marks');
+    } else {
+        document.body.classList.remove('hide-subject-marks');
+    }
+}
+
+function initSubjectMarksBreakdownPreference() {
+    try {
+        const pref = localStorage.getItem('marksheet_show_marks_breakdown');
+        const sel = document.getElementById('filter-marks-breakdown');
+        if (pref === 'hide') {
+            document.body.classList.add('hide-subject-marks');
+            if (sel) sel.value = 'hide';
+        } else {
+            document.body.classList.remove('hide-subject-marks');
+            if (sel) sel.value = 'show';
+        }
+    } catch(e) {}
+}
+
+// Dynamically update the table header column titles with clean labels
 function updateTableHeaderMarks(exam, selectedClass) {
-    const dist = getExamDistribution(exam, selectedClass);
     const thMcq = document.getElementById('th-header-mcq-1');
     const thCq = document.getElementById('th-header-cq-1');
     const thPrac = document.getElementById('th-header-prac-1');
     const thTotal = document.getElementById('th-header-total-1');
     const isEn = (currentLanguage === 'en');
 
-    if (thMcq) thMcq.innerText = isEn ? `MCQ (${formatDigits(dist.mcq)})` : `বহুনির্বাচনি (${formatDigits(dist.mcq)})`;
-    if (thCq) thCq.innerText = isEn ? `CQ (${formatDigits(dist.cq)})` : `লিখিত (${formatDigits(dist.cq)})`;
-    if (thPrac) thPrac.innerText = isEn ? `Prac. (${formatDigits(dist.prac)})` : `ব্যবহারিক (${formatDigits(dist.prac)})`;
-    if (thTotal) thTotal.innerText = isEn ? `Total (${formatDigits(dist.total)})` : `মোট নম্বর (${formatDigits(dist.total)})`;
+    if (thMcq) thMcq.innerText = isEn ? 'MCQ' : 'বহুনির্বাচনি';
+    if (thCq) thCq.innerText = isEn ? 'CQ' : 'লিখিত';
+    if (thPrac) thPrac.innerText = isEn ? 'Prac.' : 'ব্যবহারিক';
+    if (thTotal) thTotal.innerText = isEn ? 'Total' : 'মোট নম্বর';
 }
 
 function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
@@ -2615,13 +2607,13 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
     subjects.forEach((sub, idx) => {
         const isOpt = !!(sub.isOptional || sub.group === 'optional');
         if (!hasCompulsoryHeader && (!sub.group || sub.group === 'compulsory')) {
-            html += `<tr class="group-header-row"><td colspan="9">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
+            html += `<tr class="group-header-row"><td colspan="8">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
             hasCompulsoryHeader = true;
         } else if (!hasElectiveHeader && sub.group === 'elective') {
-            html += `<tr class="group-header-row"><td colspan="9">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
+            html += `<tr class="group-header-row"><td colspan="8">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
             hasElectiveHeader = true;
         } else if (!hasOptionalHeader && sub.group === 'optional') {
-            html += `<tr class="group-header-row"><td colspan="9">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
+            html += `<tr class="group-header-row"><td colspan="8">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
             hasOptionalHeader = true;
         }
 
@@ -2667,9 +2659,13 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
             const combGradeDisplay = hasPaperMarks ? res.grade : '—';
             const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
+            const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+            const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+            const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+            const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+
             html += `<tr>
-                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
-                <td>${formatDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${p1NameHtml}</td>
                 <td>${p1McqDisplay}</td>
                 <td>${p1CqDisplay}</td>
                 <td>${p1PrDisplay}</td>
@@ -2679,8 +2675,7 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combGpDisplay}</td>
             </tr>
             <tr>
-                <td class="sub-name">${getDisplaySubjectName(sub.pairWith)}</td>
-                <td>${formatDigits(sub.pairFull || sub.fullMarks)}</td>
+                <td class="sub-name">${p2NameHtml}</td>
                 <td>${p2McqDisplay}</td>
                 <td>${p2CqDisplay}</td>
                 <td>${p2PrDisplay}</td>
@@ -2717,9 +2712,11 @@ function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
             const gradeDisplay = sub.hasMarks ? res.grade : '—';
             const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
+            const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+            const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+
             html += `<tr style="${isOptional ? 'background:#f0fdf4;' : ''}">
-                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
-                <td>${formatDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${subNameHtml}</td>
                 <td>${mcqDisplay}</td>
                 <td>${cqDisplay}</td>
                 <td>${prDisplay}</td>
@@ -3538,13 +3535,13 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
     subjects.forEach(sub => {
         const isOpt = !!(sub.isOptional || sub.group === 'optional');
         if (!hasCompulsoryHeader && (!sub.group || sub.group === 'compulsory')) {
-            tableHtml += `<tr class="group-header-row"><td colspan="9">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
+            tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
             hasCompulsoryHeader = true;
         } else if (!hasElectiveHeader && sub.group === 'elective') {
-            tableHtml += `<tr class="group-header-row"><td colspan="9">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
+            tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
             hasElectiveHeader = true;
         } else if (!hasOptionalHeader && sub.group === 'optional') {
-            tableHtml += `<tr class="group-header-row"><td colspan="9">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
+            tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
             hasOptionalHeader = true;
         }
 
@@ -3590,9 +3587,13 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             const combGradeDisplay = hasPaperMarks ? res.grade : '—';
             const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
+            const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+            const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+            const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+            const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+
             tableHtml += `<tr>
-                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
-                <td>${formatDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${p1NameHtml}</td>
                 <td>${p1McqDisplay}</td>
                 <td>${p1CqDisplay}</td>
                 <td>${p1PrDisplay}</td>
@@ -3602,8 +3603,7 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combGpDisplay}</td>
             </tr>
             <tr>
-                <td class="sub-name">${getDisplaySubjectName(sub.pairWith)}</td>
-                <td>${formatDigits(sub.pairFull || sub.fullMarks)}</td>
+                <td class="sub-name">${p2NameHtml}</td>
                 <td>${p2McqDisplay}</td>
                 <td>${p2CqDisplay}</td>
                 <td>${p2PrDisplay}</td>
@@ -3640,9 +3640,11 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             const gradeDisplay = sub.hasMarks ? res.grade : '—';
             const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
 
+            const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+            const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+
             tableHtml += `<tr style="${isOptional ? 'background:#f0fdf4;' : ''}">
-                <td class="sub-name">${getDisplaySubjectName(sub.name)}</td>
-                <td>${formatDigits(sub.fullMarks)}</td>
+                <td class="sub-name">${subNameHtml}</td>
                 <td>${mcqDisplay}</td>
                 <td>${cqDisplay}</td>
                 <td>${prDisplay}</td>
@@ -3670,13 +3672,17 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             
             <!-- Header Section -->
             <div class="institution-header">
+                <div class="header-logo-box">
+                    <img src="${customLogo}" alt="School Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='school_logo.svg'">
+                </div>
                 <div class="header-text-box">
-                    <div class="inst-title-bn">${schoolName}</div>
+                    <div class="inst-title-bn"${schoolName.length > 40 ? ' style="font-size: 19.5px;"' : ''}>${schoolName}</div>
                     <div class="inst-subtitle">${fullSubtitle}</div>
                     <div>
                         <span class="report-pill-title">${displayExam}</span>
                     </div>
                 </div>
+                <div class="header-right-spacer" aria-hidden="true"></div>
             </div>
 
             <!-- Student Meta & Grading Scale -->
@@ -3746,18 +3752,17 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
             <table class="transcript-table">
                 <thead>
                     <tr>
-                        <th rowspan="2" id="th-header-sub-1" style="width: 27%;">${isEn ? "Subjects" : "পাঠ্য বিষয়সমূহ"}</th>
-                        <th rowspan="2" id="th-header-full-1" style="width: 8%;">${isEn ? "Full Marks" : "পূর্ণমান"}</th>
+                        <th rowspan="2" id="th-header-sub-1" style="width: 35%;">${isEn ? "Subjects" : "পাঠ্য বিষয়সমূহ"}</th>
                         <th colspan="3" id="th-header-obtained-1" style="width: 25%;">${isEn ? "Marks Obtained" : "প্রাপ্ত নম্বর"}</th>
-                        <th rowspan="2" style="width: 9%;">${isEn ? "Total (" + formatDigits(examDist.total) + ")" : "মোট নম্বর (" + formatDigits(examDist.total) + ")"}</th>
+                        <th rowspan="2" style="width: 9%;">${isEn ? "Total" : "মোট নম্বর"}</th>
                         <th rowspan="2" id="th-header-combined-1" style="width: 11%;">${isEn ? "Grand Total" : "সর্বমোট"}</th>
                         <th rowspan="2" id="th-header-grade-1" style="width: 9%;">${isEn ? "Letter Grade" : "লেটার গ্রেড"}</th>
                         <th rowspan="2" id="th-header-gp-1" style="width: 11%;">${isEn ? "Grade Point (GP)" : "গ্রেড পয়েন্ট (GP)"}</th>
                     </tr>
                     <tr>
-                        <th style="width: 8%;">${isEn ? "MCQ (" + formatDigits(examDist.mcq) + ")" : "বহুনির্বাচনি (" + formatDigits(examDist.mcq) + ")"}</th>
-                        <th style="width: 8%;">${isEn ? "CQ (" + formatDigits(examDist.cq) + ")" : "লিখিত (" + formatDigits(examDist.cq) + ")"}</th>
-                        <th style="width: 9%;">${isEn ? "Prac. (" + formatDigits(examDist.prac) + ")" : "ব্যবহারিক (" + formatDigits(examDist.prac) + ")"}</th>
+                        <th style="width: 8%;">${isEn ? "MCQ" : "বহুনির্বাচনি"}</th>
+                        <th style="width: 8.5%;">${isEn ? "CQ" : "লিখিত"}</th>
+                        <th style="width: 8.5%;">${isEn ? "Prac." : "ব্যবহারিক"}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3803,9 +3808,7 @@ function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exa
 
         </div>
 
-        <div class="header-logo-box"${logoPosStyle}>
-            <img src="${customLogo}" alt="School Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; pointer-events: none; display: block;" onerror="this.src='school_logo.svg'">
-        </div>
+
     </div>`;
 }
 
@@ -3938,8 +3941,15 @@ function syncSchoolHeaderInfo() {
         // Update School Name
         const schoolName = settings.schoolSubtitle || settings.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাপীঠ উচ্চ বিদ্যালয়";
         const nameEl = document.getElementById('display-school-name');
-        if (nameEl && nameEl.innerText !== schoolName) {
-            nameEl.innerText = schoolName;
+        if (nameEl) {
+            if (nameEl.innerText !== schoolName) {
+                nameEl.innerText = schoolName;
+            }
+            if (schoolName.length > 40) {
+                nameEl.style.fontSize = '19.5px';
+            } else {
+                nameEl.style.fontSize = '21px';
+            }
         }
 
         // Update Subtitle / Address line
@@ -4099,6 +4109,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     syncSchoolHeaderInfo();
+    initSubjectMarksBreakdownPreference();
     updateLanguageUI1();
     syncCascadingFilters('all');
 });

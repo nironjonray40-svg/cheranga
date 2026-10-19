@@ -199,8 +199,24 @@
         .subject-col {
             text-align: left;
             padding-left: 8px !important;
-            width: 25%;
-            line-height: 1.0;
+            width: 32%;
+            line-height: 1.15;
+        }
+
+        .subject-marks-text {
+            font-size: 11px;
+            font-weight: 500;
+            color: #111;
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+
+        body.hide-subject-marks .subject-marks-text {
+            display: none !important;
+        }
+
+        body.hide-subject-marks .subject-col {
+            width: 25% !important;
         }
 
         .bg-gray {
@@ -840,6 +856,21 @@
             </select>
         </div>
 
+        <!-- Subject CQ/MCQ Marks Breakdown Visibility Filter -->
+        <div class="filter-group" title="বিষয়ের সাথে নির্ধারিত CQ, MCQ ও মোট মার্ক প্রদর্শন বা হাইড করুন">
+            <label for="filter-marks-breakdown" class="filter-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span id="label-marks-breakdown">মার্কস:</span>
+            </label>
+            <select id="filter-marks-breakdown" class="filter-select" onchange="toggleSubjectMarksBreakdown(this.value)">
+                <option value="show" selected>প্রদর্শন (Show)</option>
+                <option value="hide">লুকান (Hide)</option>
+            </select>
+        </div>
+
         <!-- Create All Option Button -->
         <button type="button" class="btn-create-all active" id="btn-create-all" onclick="toggleCreateAll()" title="উক্ত ক্লাস ও শাখার সকল শিক্ষার্থীর মার্কশীট তৈরি করুন">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1332,6 +1363,15 @@ function getDisplaySectionName(sec) {
             if (sLang) sLang.value = currentLanguage;
             const lTemp = document.getElementById('label-template');
             if (lTemp) lTemp.innerText = isEn ? 'Filter:' : 'Filter:';
+            const lBreakdown = document.getElementById('label-marks-breakdown');
+            if (lBreakdown) lBreakdown.innerText = isEn ? 'Marks:' : 'মার্কস:';
+            const sBreakdown = document.getElementById('filter-marks-breakdown');
+            if (sBreakdown) {
+                const optShow = sBreakdown.querySelector('option[value="show"]');
+                const optHide = sBreakdown.querySelector('option[value="hide"]');
+                if (optShow) optShow.innerText = isEn ? 'Show' : 'প্রদর্শন (Show)';
+                if (optHide) optHide.innerText = isEn ? 'Hide' : 'লুকান (Hide)';
+            }
             const btnAllText = document.getElementById('create-all-btn-text');
             if (btnAllText) {
                 if (isCreateAllMode) {
@@ -2276,20 +2316,102 @@ function getDisplaySectionName(sec) {
             return { cq, mcq, prac, total };
         }
 
-        // Dynamically update the table header column titles with exam full marks
+        // Helper: Get subject-specific full marks distribution (CQ, MCQ, Prac, Total)
+        function getSubjectFullMarksDistribution(subItem, selectedExam, selectedClass, isPaper2 = false) {
+            let cq = isPaper2 ? subItem.pairCqFull : subItem.cqFull;
+            let mcq = isPaper2 ? subItem.pairMcqFull : subItem.mcqFull;
+            let prac = isPaper2 ? (subItem.pairPracFull || 0) : (subItem.pracFull || 0);
+            let tot = isPaper2 ? subItem.pairFull : subItem.fullMarks;
+
+            const sName = (isPaper2 ? subItem.pairWith : subItem.name) || '';
+            const norm = sName.toLowerCase();
+            const isEng = norm.includes('english') || norm.includes('ইংরেজি');
+
+            if (cq === null || cq === undefined || mcq === null || mcq === undefined) {
+                const curDist = getExamDistribution(selectedExam, selectedClass);
+                if (isEng) {
+                    if (cq === null || cq === undefined) cq = tot || 50;
+                    if (mcq === null || mcq === undefined) mcq = 0;
+                    if (prac === null || prac === undefined) prac = 0;
+                } else {
+                    if (cq === null || cq === undefined) cq = curDist.cq;
+                    if (mcq === null || mcq === undefined) mcq = curDist.mcq;
+                    if (prac === null || prac === undefined) prac = curDist.prac;
+                }
+            }
+            if (!tot) {
+                tot = (Number(cq) || 0) + (Number(mcq) || 0) + (Number(prac) || 0);
+            }
+            return {
+                cq: Number(cq) || 0,
+                mcq: Number(mcq) || 0,
+                prac: Number(prac) || 0,
+                total: Number(tot) || 0,
+                isEng
+            };
+        }
+
+        // Helper: Format subject name with CQ, MCQ, and Total marks at the end
+        function formatSubjectWithMarks(displayName, dist, isEn) {
+            if (!dist) return displayName;
+
+            const parts = [];
+            parts.push(`CQ: ${formatDigits(dist.cq)}`);
+            parts.push(`MCQ: ${formatDigits(dist.mcq)}`);
+            if (dist.prac > 0) {
+                parts.push(isEn ? `Prac: ${formatDigits(dist.prac)}` : `ব্যবহারিক: ${formatDigits(dist.prac)}`);
+            }
+            parts.push(isEn ? `Total: ${formatDigits(dist.total)}` : `মোট: ${formatDigits(dist.total)}`);
+
+            const marksBadge = `<span class="subject-marks-text">(${parts.join(', ')})</span>`;
+            return `${displayName} ${marksBadge}`;
+        }
+
+        // Dynamically update the table header column titles with exam column labels
         function updateTableHeaderMarks(exam, selectedClass) {
-            const dist = getExamDistribution(exam, selectedClass);
             const thMcq = document.getElementById('th-header-mcq');
             const thCq = document.getElementById('th-header-cq');
             const thPrac = document.getElementById('th-header-prac');
             const thTotal = document.getElementById('th-header-total');
             const isEn = (currentLanguage === 'en');
 
-            if (thMcq) thMcq.innerText = isEn ? `MCQ (${formatDigits(dist.mcq)})` : `বহুনির্বাচনি (${formatDigits(dist.mcq)})`;
-            if (thCq) thCq.innerText = isEn ? `CQ (${formatDigits(dist.cq)})` : `লিখিত (${formatDigits(dist.cq)})`;
-            if (thPrac) thPrac.innerText = isEn ? `Practical (${formatDigits(dist.prac)})` : `ব্যবহারিক (${formatDigits(dist.prac)})`;
-            if (thTotal) thTotal.innerText = isEn ? `Total (${formatDigits(dist.total)})` : `মোট (${formatDigits(dist.total)})`;
+            if (thMcq) thMcq.innerText = isEn ? 'MCQ' : 'বহুনির্বাচনি';
+            if (thCq) thCq.innerText = isEn ? 'CQ' : 'লিখিত';
+            if (thPrac) thPrac.innerText = isEn ? 'Practical' : 'ব্যবহারিক';
+            if (thTotal) thTotal.innerText = isEn ? 'Total' : 'মোট';
         }
+
+        // Toggle visibility of subject marks breakdown (CQ, MCQ, Total)
+        function toggleSubjectMarksBreakdown(val) {
+            const isHide = (val === 'hide');
+            try {
+                localStorage.setItem('marksheet_show_marks_breakdown', isHide ? 'hide' : 'show');
+            } catch(e) {}
+
+            const sel = document.getElementById('filter-marks-breakdown');
+            if (sel && sel.value !== val) sel.value = val;
+
+            if (isHide) {
+                document.body.classList.add('hide-subject-marks');
+            } else {
+                document.body.classList.remove('hide-subject-marks');
+            }
+        }
+
+        function initSubjectMarksBreakdownPreference() {
+            try {
+                const pref = localStorage.getItem('marksheet_show_marks_breakdown');
+                const sel = document.getElementById('filter-marks-breakdown');
+                if (pref === 'hide') {
+                    document.body.classList.add('hide-subject-marks');
+                    if (sel) sel.value = 'hide';
+                } else {
+                    document.body.classList.remove('hide-subject-marks');
+                    if (sel) sel.value = 'show';
+                }
+            } catch(e) {}
+        }
+        initSubjectMarksBreakdownPreference();
 
         function renderMarksheetTable(selectedClass, selectedSection, student, exam) {
             const tbody = document.getElementById('marksheet-tbody');
@@ -2355,8 +2477,14 @@ function getDisplaySectionName(sec) {
                     const combGradeDisplay = hasPaperMarks ? res.grade : '—';
                     const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
 
+                    const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+
+                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, currentLanguage === 'en');
+                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, currentLanguage === 'en');
+
                     html += `<tr>
-                        <td class="subject-col">${getDisplaySubjectName(sub.name)}</td>
+                        <td class="subject-col">${p1NameHtml}</td>
                         <td>${p1McqDisplay}</td>
                         <td>${p1CqDisplay}</td>
                         <td>${p1PrDisplay}</td>
@@ -2366,7 +2494,7 @@ function getDisplaySectionName(sec) {
                         <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
                     </tr>
                     <tr>
-                        <td class="subject-col">${getDisplaySubjectName(sub.pairWith)}</td>
+                        <td class="subject-col">${p2NameHtml}</td>
                         <td>${p2McqDisplay}</td>
                         <td>${p2CqDisplay}</td>
                         <td>${p2PrDisplay}</td>
@@ -2402,8 +2530,11 @@ function getDisplaySectionName(sec) {
                     const gradeDisplay = sub.hasMarks ? res.grade : '—';
                     const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
 
+                    const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, currentLanguage === 'en');
+
                     html += `<tr>
-                        <td class="subject-col">${getDisplaySubjectName(sub.name)}</td>
+                        <td class="subject-col">${subNameHtml}</td>
                         <td>${mcqDisplay}</td>
                         <td>${cqDisplay}</td>
                         <td class="${isPracCol ? 'bg-gray' : ''}">${prDisplay}</td>
@@ -3237,8 +3368,14 @@ function getDisplaySectionName(sec) {
                     const combGradeDisplay = hasPaperMarks ? res.grade : '—';
                     const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
 
+                    const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+
+                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+
                     tableHtml += `<tr>
-                        <td class="subject-col">${getDisplaySubjectName(sub.name)}</td>
+                        <td class="subject-col">${p1NameHtml}</td>
                         <td>${p1McqDisplay}</td>
                         <td>${p1CqDisplay}</td>
                         <td>${p1PrDisplay}</td>
@@ -3248,7 +3385,7 @@ function getDisplaySectionName(sec) {
                         <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
                     </tr>
                     <tr>
-                        <td class="subject-col">${getDisplaySubjectName(sub.pairWith)}</td>
+                        <td class="subject-col">${p2NameHtml}</td>
                         <td>${p2McqDisplay}</td>
                         <td>${p2CqDisplay}</td>
                         <td>${p2PrDisplay}</td>
@@ -3284,8 +3421,11 @@ function getDisplaySectionName(sec) {
                     const gradeDisplay = sub.hasMarks ? res.grade : '—';
                     const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
 
+                    const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+
                     tableHtml += `<tr>
-                        <td class="subject-col">${getDisplaySubjectName(sub.name)}</td>
+                        <td class="subject-col">${subNameHtml}</td>
                         <td>${mcqDisplay}</td>
                         <td>${cqDisplay}</td>
                         <td>${prDisplay}</td>
@@ -3361,10 +3501,10 @@ function getDisplaySectionName(sec) {
                         <thead>
                             <tr>
                                 <th class="subject-col">${isEn ? "Subject" : "বিষয়"}</th>
-                                <th>${isEn ? "MCQ (" + formatDigits(examDist.mcq) + ")" : "বহুনির্বাচনি (" + formatDigits(examDist.mcq) + ")"}</th>
-                                <th>${isEn ? "CQ (" + formatDigits(examDist.cq) + ")" : "লিখিত (" + formatDigits(examDist.cq) + ")"}</th>
-                                <th>${isEn ? "Practical (" + formatDigits(examDist.prac) + ")" : "ব্যবহারিক (" + formatDigits(examDist.prac) + ")"}</th>
-                                <th>${isEn ? "Total (" + formatDigits(examDist.total) + ")" : "মোট (" + formatDigits(examDist.total) + ")"}</th>
+                                <th>${isEn ? "MCQ" : "বহুনির্বাচনি"}</th>
+                                <th>${isEn ? "CQ" : "লিখিত"}</th>
+                                <th>${isEn ? "Practical" : "ব্যবহারিক"}</th>
+                                <th>${isEn ? "Total" : "মোট"}</th>
                                 <th>${isEn ? "Total" : "সর্বমোট"}</th>
                                 <th>${isEn ? "Grade" : "গ্রেড"}</th>
                                 <th>${isEn ? "GPA" : "পয়েন্ট"}</th>
@@ -3618,6 +3758,7 @@ function getDisplaySectionName(sec) {
 
         // Initialize saved filters & header on load
         window.addEventListener('DOMContentLoaded', function() {
+            initSubjectMarksBreakdownPreference();
             const urlParams = new URLSearchParams(window.location.search);
             const paramRoll = urlParams.get('roll') || urlParams.get('search') || urlParams.get('id');
 
