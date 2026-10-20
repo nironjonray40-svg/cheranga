@@ -1,6 +1,7 @@
-import re, subprocess, json
+import re, subprocess, json, sys
 
-with open('exam-portal.html', 'r', encoding='utf-8') as f:
+filename = sys.argv[1] if len(sys.argv) > 1 else 'Tabulation Sheet.html'
+with open(filename, 'r', encoding='utf-8') as f:
     text = f.read()
 
 script_pattern = re.compile(r'<script\b([^>]*)>([\s\S]*?)<\/script>', re.IGNORECASE)

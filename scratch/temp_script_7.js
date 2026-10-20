@@ -108,7 +108,7 @@
             }
             window.getStudentEnglishNameById = getStudentEnglishNameById;
 
-            // Default pattern for Sets ক, খ, গ, ঘ (30 questions each) so visual review & matching work immediately
+            // Pattern for Sets ক, খ, গ, ঘ (available on demand for demo generation)
             const sampleKeysPattern = {
                 'ক': ['ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ'],
                 'খ': ['খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক'],
@@ -116,8 +116,13 @@
                 'ঘ': ['ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ']
             };
 
-            // Default Answer Keys initialized with full 30 keys per set
-            const defaultAnswerKeys = JSON.parse(JSON.stringify(sampleKeysPattern));
+            // Default Answer Keys initialized empty (no attached keys by default)
+            const defaultAnswerKeys = {
+                'ক': Array(30).fill(null),
+                'খ': Array(30).fill(null),
+                'গ': Array(30).fill(null),
+                'ঘ': Array(30).fill(null)
+            };
 
             // Helper: Normalize set representation ('ক', 'খ', 'গ', 'ঘ')
             function normalizeSet(val) {
@@ -183,24 +188,77 @@
             // Helper: Retrieve active answer key for a set with intelligent fallback
             function getActiveAnswerKey(setCode) {
                 const normSet = normalizeSet(setCode);
+                function hasValidAnswers(keyObj) {
+                    if (!keyObj) return false;
+                    if (Array.isArray(keyObj)) {
+                        return keyObj.some(ans => ans !== null && ans !== undefined && ans !== '');
+                    }
+                    if (typeof keyObj === 'object') {
+                        return Object.values(keyObj).some(ans => ans !== null && ans !== undefined && ans !== '');
+                    }
+                    return false;
+                }
+
                 // 1. Specified set has valid filled answers
-                if (state.answerKeys && state.answerKeys[normSet] && state.answerKeys[normSet].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+                if (state.answerKeys && hasValidAnswers(state.answerKeys[normSet])) {
                     return state.answerKeys[normSet];
                 }
                 // 2. Set 'ক' if it has answers
-                if (state.answerKeys && state.answerKeys['ক'] && state.answerKeys['ক'].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+                if (state.answerKeys && hasValidAnswers(state.answerKeys['ক'])) {
                     return state.answerKeys['ক'];
                 }
                 // 3. Any active set that has answers
                 if (state.answerKeys) {
                     for (const s of ['খ', 'গ', 'ঘ']) {
-                        if (state.answerKeys[s] && state.answerKeys[s].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+                        if (hasValidAnswers(state.answerKeys[s])) {
                             return state.answerKeys[s];
                         }
                     }
                 }
                 // 4. Default fallback key
                 return defaultAnswerKeys[normSet] || defaultAnswerKeys['ক'];
+            }
+
+            // Helper: Safely get array of correct answers for question q (1-indexed) from answer key
+            function getQuestionCorrectAnswersList(targetKey, q) {
+                if (!targetKey) return [];
+                let val = null;
+                if (Array.isArray(targetKey)) {
+                    if (targetKey.length === 31 && (targetKey[0] === null || targetKey[0] === undefined)) {
+                        val = targetKey[q];
+                    } else {
+                        val = targetKey[q - 1];
+                    }
+                } else if (typeof targetKey === 'object') {
+                    val = targetKey[q] !== undefined ? targetKey[q] : (targetKey[String(q)] !== undefined ? targetKey[String(q)] : (targetKey[q - 1] !== undefined ? targetKey[q - 1] : targetKey[String(q - 1)]));
+                }
+                if (val === null || val === undefined) return [];
+                if (Array.isArray(val)) {
+                    const res = [];
+                    val.forEach(v => {
+                        const n = normalizeSingleOption(v);
+                        if (n && !res.includes(n)) res.push(n);
+                    });
+                    return res;
+                }
+                const str = String(val).trim();
+                if (str.includes(',') || str.includes('/') || str.includes('+') || str.includes(';')) {
+                    const parts = str.split(/[,/+;\s]+/);
+                    const res = [];
+                    parts.forEach(p => {
+                        const n = normalizeSingleOption(p);
+                        if (n && !res.includes(n)) res.push(n);
+                    });
+                    return res;
+                }
+                const single = normalizeSingleOption(str);
+                return single ? [single] : [];
+            }
+
+            // Helper: Safely get primary correct answer for question q (1-indexed) from answer key
+            function getQuestionCorrectAnswer(targetKey, q) {
+                const list = getQuestionCorrectAnswersList(targetKey, q);
+                return list.length > 0 ? list[0] : null;
             }
 
             // Helper: Safely get student answer for question q (1-indexed)
@@ -701,8 +759,8 @@
                 sets.forEach(s => {
                     const chip = document.getElementById(`chipUploadSet_${s}`);
                     const statusSpan = document.getElementById(`chipStatus_${s}`);
-                    const answers = state.answerKeys[s] || [];
-                    const filled = answers.filter(Boolean).length;
+                    const answers = (state.answerKeys && state.answerKeys[s]) ? state.answerKeys[s] : [];
+                    const filled = answers.filter(ans => ans !== null && ans !== undefined && ans !== '').length;
 
                     if (statusSpan) {
                         if (filled > 0) {
@@ -721,21 +779,35 @@
                 const badgesBar = document.getElementById('multiSetBadgesBar');
                 if (badgesBar) {
                     badgesBar.innerHTML = sets.map(s => {
-                        const filled = (state.answerKeys[s] || []).filter(Boolean).length;
+                        const answers = (state.answerKeys && state.answerKeys[s]) ? state.answerKeys[s] : [];
+                        const filled = answers.filter(ans => ans !== null && ans !== undefined && ans !== '').length;
                         const bg = filled === 30 ? '#ecfdf5' : (filled > 0 ? '#fffbeb' : '#f8fafc');
                         const border = filled === 30 ? '#a7f3d0' : (filled > 0 ? '#fde68a' : '#e2e8f0');
                         const color = filled === 30 ? '#059669' : (filled > 0 ? '#b45309' : '#94a3b8');
                         const icon = filled === 30 ? 'fa-circle-check' : (filled > 0 ? 'fa-clock' : 'fa-circle-notch');
 
                         return `
-            <span style="font-size: 0.73rem; background: ${bg}; border: 1px solid ${border}; color: ${color}; padding: 2px 7px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="সেট ${s}: ${toBengaliNumber(filled)} টি সঠিক উত্তর সেট করা">
+            <span style="font-size: 0.73rem; background: ${bg}; border: 1px solid ${border}; color: ${color}; padding: 2px 7px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="সেট ${s}: ${filled > 0 ? `${toBengaliNumber(filled)} টি সঠিক উত্তর সেট করা` : 'কোনো উত্তর সেট করা নেই'}">
               <i class="fa-solid ${icon}"></i> সেট ${s}: ${toBengaliNumber(filled)}/৩০
             </span>
           `;
                     }).join('');
                 }
 
-                // 3. Update Modal Multi-Set Tab cards if visible
+                // 3. Update main textAnswerKeyStatus if no keys and no files are uploaded
+                const hasAnyAnswers = sets.some(s => {
+                    const answers = (state.answerKeys && state.answerKeys[s]) ? state.answerKeys[s] : [];
+                    return answers.some(ans => ans !== null && ans !== undefined && ans !== '');
+                });
+                const hasAnyFiles = Object.values(state.setSourceFiles || {}).some(Boolean) || (state.answerKeyFiles && state.answerKeyFiles.length > 0);
+                if (textAnswerKeyStatus) {
+                    if (!hasAnyAnswers && !hasAnyFiles) {
+                        textAnswerKeyStatus.innerHTML = '<span style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</span>';
+                        if (dropzoneAnswerKey) dropzoneAnswerKey.classList.remove('filled');
+                    }
+                }
+
+                // 4. Update Modal Multi-Set Tab cards if visible
                 renderMultiSetUploadUI();
             };
 
@@ -907,7 +979,7 @@
                             }
                         }
                     }
-                    const correctAns = normalizeSingleOption(targetKey ? targetKey[q - 1] : null);
+                    const correctList = getQuestionCorrectAnswersList(targetKey, q);
 
                     if (!studentAns || (Array.isArray(studentAns) && studentAns.length === 0)) {
                         blank++;
@@ -915,7 +987,7 @@
                         // একাধিক বাবল ভরাট -> ডুপ্লিকেট হিসেবে চিহ্নিত হবে এবং উক্ত প্রশ্নে কোনো মার্ক যুক্ত হবে না (০ নম্বর)
                         duplicate++;
                         wrong++;
-                    } else if (correctAns && studentAns === correctAns) {
+                    } else if (correctList.length > 0 && typeof studentAns === 'string' && correctList.includes(studentAns)) {
                         correct++;
                     } else {
                         wrong++;
@@ -1679,6 +1751,19 @@
 
             // Load Sample Students Demo Generator
             btnLoadSampleData.addEventListener('click', () => {
+                const hasAnyKey = Object.values(state.answerKeys || {}).some(k => Array.isArray(k) && k.some(Boolean));
+                if (!hasAnyKey) {
+                    ['ক', 'খ', 'গ', 'ঘ'].forEach(s => {
+                        state.answerKeys[s] = JSON.parse(JSON.stringify(sampleKeysPattern[s]));
+                        state.setSourceFiles[s] = {
+                            fileName: `ডেমো উত্তরমালা (সেট ${s})`,
+                            type: 'demo',
+                            count: 30,
+                            timestamp: new Date().toLocaleTimeString()
+                        };
+                    });
+                    updateMultiSetStatusUI();
+                }
                 generateSampleStudents(25);
                 renderResultsTable();
                 updateStatistics();
@@ -2183,30 +2268,31 @@
                     const studentAns = getStudentAnswer(state.tempEditStudent, q);
                     const selectedOpts = getStudentAnswerOptions(state.tempEditStudent, q);
                     const isDup = isDuplicateOption(studentAns);
-                    const correctAns = normalizeSingleOption(targetKey ? targetKey[q - 1] : null);
+                    const correctList = getQuestionCorrectAnswersList(targetKey, q);
 
                     let bubblesHtml = optionsBengali.map(opt => {
                         let extraClass = '';
                         let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
 
                         const isSelectedByStudent = selectedOpts.includes(opt);
+                        const isCorrectKeyOpt = correctList.includes(opt);
 
                         if (isSelectedByStudent) {
                             if (isDup) {
                                 // একাধিক বাবল ভরাট (ডুপ্লিকেট) -> লাল রঙে চিহ্নিত এবং কোনো মার্ক পাবে না
                                 extraClass = 'filled-wrong filled-duplicate';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ডুপ্লিকেট বাবল ✗, কোনো মার্ক যুক্ত হবে না)';
-                            } else if (correctAns && opt === correctAns) {
+                            } else if (isCorrectKeyOpt) {
                                 extraClass = 'filled-correct';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
                             } else {
                                 extraClass = 'filled-wrong';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
                             }
-                        } else if (correctAns && opt === correctAns) {
+                        } else if (isCorrectKeyOpt) {
                             // আসল উত্তর নির্দেশক
                             extraClass = 'filled-key-answer';
-                            titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
+                            titleText += ' (উত্তরপত্রের আসল সঠিক উত্তর ✓)';
                         }
 
                         return `
@@ -2255,28 +2341,29 @@
                     const studentAns = getStudentAnswer(state.tempEditStudent, q);
                     const selectedOpts = getStudentAnswerOptions(state.tempEditStudent, q);
                     const isDup = isDuplicateOption(studentAns);
-                    const correctAns = normalizeSingleOption(targetKey ? targetKey[q - 1] : null);
+                    const correctList = getQuestionCorrectAnswersList(targetKey, q);
 
                     let bubblesHtml = optionsBengali.map(opt => {
                         let extraClass = '';
                         let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
 
                         const isSelectedByStudent = selectedOpts.includes(opt);
+                        const isCorrectKeyOpt = correctList.includes(opt);
 
                         if (isSelectedByStudent) {
                             if (isDup) {
                                 extraClass = 'filled-wrong filled-duplicate';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ডুপ্লিকেট বাবল ✗, কোনো মার্ক যুক্ত হবে না)';
-                            } else if (correctAns && opt === correctAns) {
+                            } else if (isCorrectKeyOpt) {
                                 extraClass = 'filled-correct';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
                             } else {
                                 extraClass = 'filled-wrong';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
                             }
-                        } else if (correctAns && opt === correctAns) {
+                        } else if (isCorrectKeyOpt) {
                             extraClass = 'filled-key-answer';
-                            titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
+                            titleText += ' (উত্তরপত্রের আসল সঠিক উত্তর ✓)';
                         }
 
                         return `
@@ -2688,10 +2775,10 @@
 
                 for (let q = 1; q <= 30; q++) {
                     const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
-                    const correctAns = keys[q - 1];
+                    const correctList = getQuestionCorrectAnswersList(keys, q);
 
                     let bubblesHtml = optionsBengali.map(opt => {
-                        const isSelected = opt === correctAns;
+                        const isSelected = correctList.includes(opt);
                         return `
             <span class="interactive-bubble ${isSelected ? 'selected-user' : ''}" 
                   onclick="setAnswerKeyOption(${q}, '${opt}')" 
@@ -3059,16 +3146,25 @@
                     state.studentFiles = [];
                     state.answerKeyFiles = [];
                     state.pendingUnmatchedList = [];
+                    state.answerKeys = {
+                        'ক': Array(30).fill(null),
+                        'খ': Array(30).fill(null),
+                        'গ': Array(30).fill(null),
+                        'ঘ': Array(30).fill(null)
+                    };
+                    state.setSourceFiles = { 'ক': null, 'খ': null, 'গ': null, 'ঘ': null };
+                    state.uploadedKeyPreview = null;
                     if (typeof renderPendingList === 'function') renderPendingList();
                     if (typeof updateTabCounts === 'function') updateTabCounts();
 
-                    dropzoneAnswerKey.classList.remove('filled');
-                    dropzoneStudentOMR.classList.remove('filled');
-                    textAnswerKeyStatus.innerHTML = 'কোনো ফাইল যুক্ত হয়নি';
-                    textStudentOMRStatus.innerHTML = '০ টি ফাইল';
+                    if (dropzoneAnswerKey) dropzoneAnswerKey.classList.remove('filled');
+                    if (dropzoneStudentOMR) dropzoneStudentOMR.classList.remove('filled');
+                    if (textAnswerKeyStatus) textAnswerKeyStatus.innerHTML = '<span style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</span>';
+                    if (textStudentOMRStatus) textStudentOMRStatus.innerHTML = '০ টি ফাইল';
 
                     renderResultsTable();
                     updateStatistics();
+                    updateMultiSetStatusUI();
                     btnExportExcel.disabled = true;
                     btnPrintTable.disabled = true;
                     showToast('ডেটা সফলভাবে রিসেট করা হয়েছে', 'info');
@@ -3620,7 +3716,9 @@
                         showToast(`সংরক্ষিত পরীক্ষা "${selected.examName}" (${toBengaliNumber(oe.students.length)} জন) এর ফলাফলসহ লোড হয়েছে!`, 'success', 'fa-check');
 
                         const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
-                        if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        if (targetSection && typeof targetSection.scrollIntoView === 'function') {
+                            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
                         return;
                     }
                 }
@@ -3658,6 +3756,18 @@
                     }
                 } catch (e) { }
 
+                let omrExams = [];
+                try {
+                    omrExams = safeJsonParse('school_omr_exams', []);
+                } catch (e) { }
+
+                // Check if this specific schedule ID has a saved OMR record
+                const matchingOmrExam = omrExams.find(oe => String(oe.id) === String(sch.id) || String(oe.scheduleId) === String(sch.id));
+                if (matchingOmrExam && matchingOmrExam.answerKeys) {
+                    state.answerKeys = JSON.parse(JSON.stringify(matchingOmrExam.answerKeys));
+                    renderAnswerKeyBubbles();
+                }
+
                 const targetClassNum = mapClassToNumber(sch.class);
                 const targetSections = sch.section && sch.section !== 'All'
                     ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
@@ -3689,23 +3799,27 @@
                 // Sort students sequentially by Registration Number in ascending serial order
                 sortStudentsByRegNo(classStudents);
 
-                const activeKey = (state.answerKeys && (state.answerKeys['ক'] || state.answerKeys['A'])) || {};
-                const options = ['ক', 'খ', 'গ', 'ঘ'];
+                const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+                const schClass = sch.class || '';
+                const classSubjects = subMap[schClass] || [];
+                const subObj = classSubjects.find(s => s && s.name && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+                const activeExamSubjectCode = subObj ? subObj.code : (sch.subjectCode || sch.subject || '');
                 const targetSubjectCode = sch.subjectCode || sch.subject;
+
+                const allowedSubjectKeys = [
+                    targetSubjectCode,
+                    sch.subject,
+                    sch.subjectCode,
+                    activeExamSubjectCode
+                ].filter(Boolean).map(s => String(s).trim().toLowerCase());
 
                 let totalLoadedWithMarks = 0;
 
                 const importedStudents = classStudents.map((student, idx) => {
-                    // Look up student mark across various standard keys
                     const rawReg = toEnglishDigits(student.regNo || student.id || student.studentId || '').trim();
                     const rawId = toEnglishDigits(student.id || '').trim();
-
-                    let studentMarkObj = savedMarks['marks_' + rawReg + '_' + sch.id] ||
-                        savedMarks['marks_' + rawId + '_' + sch.id] ||
-                        savedMarks['marks_' + student.id + '_' + sch.id] ||
-                        savedMarks['marks_' + student.studentId + '_' + sch.id] ||
-                        savedMarks['marks_' + rawReg + '_' + (sch.term || sch.examType || '')] ||
-                        savedMarks['marks_' + student.id + '_' + (sch.term || sch.examType || '')];
+                    const fallbackReg = '2211' + String(student.roll || idx + 1).padStart(3, '0');
+                    const studentRegId = toEnglishDigits(student.regNo || student.studentId || student.id || fallbackReg).trim();
 
                     let hasRealMark = false;
                     let correctScore = 0;
@@ -3715,21 +3829,62 @@
                     let savedPct = null;
                     let savedFileName = '';
 
-                    if (studentMarkObj && typeof studentMarkObj === 'object') {
-                        const subVal = (targetSubjectCode && studentMarkObj[targetSubjectCode]) ? studentMarkObj[targetSubjectCode] : (studentMarkObj[sch.subject] || Object.values(studentMarkObj)[0]);
-                        if (subVal && typeof subVal === 'object') {
-                            // Strictly check for verified OMR evaluation data
-                            const hasRealAnswers = subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0;
-                            const isVerifiedOmr = !subVal.isAbsent && hasRealAnswers && !!subVal.omrEvaluatedAt;
+                    // 1. Check if matching saved student exists in matchingOmrExam for this EXACT schedule ID
+                    if (matchingOmrExam && Array.isArray(matchingOmrExam.students)) {
+                        const stMatch = matchingOmrExam.students.find(st => {
+                            const stId = toEnglishDigits(st.id || st.regNo || st.studentId || '').trim();
+                            return stId && (stId === studentRegId || stId === rawReg || stId === rawId);
+                        });
+                        if (stMatch && (stMatch.isRealScanned || (stMatch.correct > 0 && stMatch.status !== 'পেন্ডিং') || (stMatch.answers && Object.keys(stMatch.answers).length > 0))) {
+                            correctScore = typeof stMatch.correct === 'number' ? stMatch.correct : (parseInt(stMatch.correct, 10) || 0);
+                            hasRealMark = true;
+                            savedAnswers = stMatch.answers || {};
+                            if (stMatch.set) savedSet = normalizeSet(stMatch.set);
+                            if (stMatch.percentage) savedPct = stMatch.percentage;
+                            if (stMatch.status) savedStatus = stMatch.status;
+                            if (stMatch.fileName) savedFileName = stMatch.fileName;
+                        }
+                    }
 
-                            if (isVerifiedOmr && subVal.mcq !== undefined && subVal.mcq !== null && !isNaN(parseInt(subVal.mcq))) {
-                                correctScore = parseInt(subVal.mcq);
-                                hasRealMark = true;
-                                savedAnswers = subVal.answers;
-                                if (subVal.set) savedSet = normalizeSet(subVal.set);
-                                if (subVal.percentage) savedPct = subVal.percentage;
-                                if (subVal.status) savedStatus = subVal.status;
-                                if (subVal.fileName) savedFileName = subVal.fileName;
+                    // 2. If not found in matchingOmrExam, check savedMarks strictly for THIS SCHEDULE ID (sch.id)
+                    if (!hasRealMark) {
+                        const candidateKeys = [
+                            `marks_${rawReg}_${sch.id}`,
+                            `marks_${rawId}_${sch.id}`,
+                            `marks_${student.id}_${sch.id}`,
+                            `marks_${student.studentId}_${sch.id}`
+                        ];
+
+                        let studentMarkObj = null;
+                        for (const k of candidateKeys) {
+                            if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                                studentMarkObj = savedMarks[k];
+                                break;
+                            }
+                        }
+
+                        if (studentMarkObj && typeof studentMarkObj === 'object') {
+                            let subVal = null;
+                            for (const [subK, val] of Object.entries(studentMarkObj)) {
+                                if (val && typeof val === 'object' && allowedSubjectKeys.includes(String(subK).trim().toLowerCase())) {
+                                    subVal = val;
+                                    break;
+                                }
+                            }
+
+                            if (subVal && typeof subVal === 'object') {
+                                const hasRealAnswers = subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0;
+                                const isVerifiedOmr = !subVal.isAbsent && (hasRealAnswers || !!subVal.omrEvaluatedAt) && subVal.mcq !== undefined && subVal.mcq !== null && !isNaN(parseInt(subVal.mcq));
+
+                                if (isVerifiedOmr) {
+                                    correctScore = parseInt(subVal.mcq);
+                                    hasRealMark = true;
+                                    savedAnswers = subVal.answers;
+                                    if (subVal.set) savedSet = normalizeSet(subVal.set);
+                                    if (subVal.percentage) savedPct = subVal.percentage;
+                                    if (subVal.status) savedStatus = subVal.status;
+                                    if (subVal.fileName) savedFileName = subVal.fileName;
+                                }
                             }
                         }
                     }
@@ -3741,20 +3896,25 @@
                     let blankCount = totalQ;
                     const studentAnswers = {};
 
-                    if (hasRealMark && savedAnswers && Object.keys(savedAnswers).length > 0) {
+                    if (hasRealMark) {
                         correctScore = Math.max(0, Math.min(30, correctScore));
-                        for (let q = 1; q <= 30; q++) {
-                            studentAnswers[q] = savedAnswers[q] || savedAnswers[String(q)] || null;
+                        if (savedAnswers && Object.keys(savedAnswers).length > 0) {
+                            for (let q = 1; q <= 30; q++) {
+                                studentAnswers[q] = savedAnswers[q] || savedAnswers[String(q)] || null;
+                            }
+                            const calcScore = calculateStudentScore(studentAnswers, savedSet || 'ক');
+                            correctScore = calcScore.correct;
+                            wrongCount = calcScore.wrong;
+                            blankCount = calcScore.blank;
+                        } else {
+                            wrongCount = 0;
+                            blankCount = totalQ - correctScore;
                         }
-                        const calcScore = calculateStudentScore(studentAnswers, savedSet || 'ক');
-                        correctScore = calcScore.correct;
-                        wrongCount = calcScore.wrong;
-                        blankCount = calcScore.blank;
                         pct = savedPct || ((correctScore / totalQ) * 100).toFixed(1);
                         status = savedStatus || (correctScore >= 10 ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ');
                         totalLoadedWithMarks++;
                     } else {
-                        // No OMR evaluated yet - strictly 0 marks, 0 wrong, 30 blank, status Pending
+                        // Strictly 0 marks, 0 wrong, 30 blank, status Pending for this exam
                         correctScore = 0;
                         wrongCount = 0;
                         blankCount = totalQ;
@@ -3765,8 +3925,6 @@
                     const setChoice = (hasRealMark && savedSet) ? savedSet : '';
                     const enName = (student.name || student.nameEn || '').trim();
 
-                    const fallbackReg = '2211' + String(student.roll || idx + 1).padStart(3, '0');
-                    const studentRegId = toEnglishDigits(student.regNo || student.studentId || student.id || fallbackReg).trim();
                     return {
                         id: studentRegId,
                         regNo: studentRegId,
@@ -3774,7 +3932,7 @@
                         name: enName,
                         nameEn: enName,
                         roll: String(student.roll || idx + 1),
-                        class: targetClassNum || '8',
+                        class: targetClassNum || sch.class || '8',
                         section: (student.section && student.section !== 'All') ? student.section : (sch.section && sch.section !== 'All' ? sch.section.split(',')[0].trim() : 'A'),
                         set: setChoice,
                         correct: correctScore,
@@ -3807,7 +3965,9 @@
                 showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন শিক্ষার্থী)${markInfoText} সফলভাবে OMR এ ইমপোর্ট করা হয়েছে!`, 'success', 'fa-check');
 
                 const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
-                if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (targetSection && typeof targetSection.scrollIntoView === 'function') {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             };
 
             // --- Save & Entry: Permanently save evaluated OMR marks to Exam List & Database ---
