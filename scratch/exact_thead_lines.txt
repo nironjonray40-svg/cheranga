@@ -1,0 +1,153 @@
+2091: 
+2092:             <tr>
+2093: 
+2094:                 <th colspan="3" class="bg-peach" data-subj="bangla1">বাংলা ১ম</th>
+2095: 
+2096:                 <th colspan="3" class="bg-peach" data-subj="bangla2">বাংলা ২য়</th>
+2097: 
+2098:                 <th rowspan="2" class="v-text bg-peach">সর্বমোট</th>
+2099: 
+2100:                 <th rowspan="3" class="v-text bg-peach">গড় প্রাপ্ত</th>
+2101: 
+2102:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2103: 
+2104:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2105: 
+2106: 
+2107: 
+2108:                 <th class="bg-peach" data-subj="english1">English 1st</th>
+2109: 
+2110:                 <th class="bg-peach" data-subj="english2">English 2nd</th>
+2111: 
+2112:                 <th rowspan="2" class="v-text bg-peach">সর্বমোট</th>
+2113: 
+2114:                 <th rowspan="3" class="v-text bg-peach">গড় প্রাপ্ত</th>
+2115: 
+2116:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2117: 
+2118:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2119: 
+2120: 
+2121: 
+2122:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2123: 
+2124:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2125: 
+2126:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2127: 
+2128:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2129: 
+2130:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2131: 
+2132: 
+2133: 
+2134:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2135: 
+2136:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2137: 
+2138:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2139: 
+2140:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2141: 
+2142:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2143: 
+2144: 
+2145: 
+2146:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2147: 
+2148:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2149: 
+2150:                 <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="chem">ব্যবহারিক</th>
+2151: 
+2152:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2153: 
+2154:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2155: 
+2156:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2157: 
+2158: 
+2159: 
+2160:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2161: 
+2162:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2163: 
+2164:                 <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="phys">ব্যবহারিক</th>
+2165: 
+2166:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2167: 
+2168:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2169: 
+2170:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2171: 
+2172: 
+2173: 
+2174:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2175: 
+2176:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2177: 
+2178:                 <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="bio">ব্যবহারিক</th>
+2179: 
+2180:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2181: 
+2182:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2183: 
+2184:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2185: 
+2186: 
+2187: 
+2188:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2189: 
+2190:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2191: 
+2192:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2193: 
+2194:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2195: 
+2196:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2197: 
+2198: 
+2199: 
+2200:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2201: 
+2202:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2203: 
+2204:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2205: 
+2206:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2207: 
+2208:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2209: 
+2210: 
+2211: 
+2212:                 <th rowspan="2" class="v-text bg-peach">বহুনির্বাচনি</th>
+2213: 
+2214:                 <th rowspan="2" class="v-text bg-peach">লিখিত</th>
+2215: 
+2216:                 <th rowspan="2" class="v-text bg-peach" data-col-type="practical" data-subj="agri">ব্যবহারিক</th>
+2217: 
+2218:                 <th rowspan="2" class="v-text bg-peach">মোট</th>
+2219: 
+2220:                 <th rowspan="3" class="v-text bg-blue">গ্রেড</th>
+2221: 
+2222:                 <th rowspan="3" class="v-text bg-peach">পয়েন্ট</th>
+2223: 
+2224:             </tr>
+2225: 
+2226: 
+2227: 
+2228:             <!-- Row 3: Detail Exam Type -->
+2229: 
+2230:             <tr>
+2231: 
+2232:                 <th class="v-text bg-peach">বহুনির্বাচনি</th>
+2233: 
+2234:                 <th class="v-text bg-peach">লিখিত</th>
+2235: 
+2236:                 <th class="v-text bg-peach">মোট</th>
+2237: 
+2238:                 <th class="v-text bg-peach">বহুনির্বাচনি</th>
+2239: 
+2240:                 <th class="v-text bg-peach">লিখিত</th>
+2241: 
+2242:                 <th class="v-text bg-peach">মোট</th>
+2243: 

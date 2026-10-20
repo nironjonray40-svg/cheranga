@@ -1,0 +1,6 @@
+setInterval(() => {
+            try {
+                const currentStudentsJson = localStorage.getItem('school_students') || '';
+                const currentSubjectsJson = localStorage.getItem('school_subjects') || '';
+                const currentMarkingSystemJson = localStorage.getItem('school_ma
+---

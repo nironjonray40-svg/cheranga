@@ -1,0 +1,184 @@
+=== recalculateTableGradesAndRanks ===
+function recalculateTableGradesAndRanks() {
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+            const rows = Array.from(tbody.querySelectorAll('tr[data-section]'));
+            if (rows.length === 0) return;
+
+            const rules = loadMarkingSystem();
+            const maxScaleGP = Math.max(...rules.map(r => parseFloat(r.gp) || 0), 1.0);
+            const failRule = rules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0.0 };
+
+            const allStudentList = [];
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 68) return;
+
+                const getCellFloat = (idx) => {
+                    const txt = banglaToEnglishDigits(cells[idx].textContent.trim());
+                    if (txt === '-' || txt === '') return NaN;
+                    return parseFloat(txt);
+                };
+
+                const setCellVal = (idx, num, isFloat = false) => {
+                    if (isNaN(num)) {
+                        cells[idx].textContent = '-';
+                    } else {
+                        const str = isFloat ? num.toFixed(2) : (num % 1 === 0 ? num.toString() : num.toFixed(1));
+                        const translated = translateDigits(str, currentLang);
+                        cells[idx].textContent = translated;
+                        if (cells[idx].hasAttribute('data-orig-val')) {
+                            cells[idx].setAttribute('data-orig-val', translated);
+                        }
+                    }
+                };
+
+                // 1. Bangla
+                // Sub-paper 1: MCQ (cell 2), Written (cell 3), Total (cell 4)
+                const b1MCQ = getCellFloat(2);
+                const b1Wri = getCellFloat(3);
+                let b1Total = getCellFloat(4);
+                if (isNaN(b1Total) && (!isNaN(b1MCQ) || !isNaN(b1Wri))) {
+                    b1Total = (isNaN(b1MCQ) ? 0 : b1MCQ) + (isNaN(b1Wri) ? 0 : b1Wri);
+                    setCellVal(4, b1Total);
+                }
+
+                // Sub-paper 2: MCQ (cell 5), Written (cell 6), Total (cell 7)
+                const b2MCQ = getCellFloat(5);
+                const b2Wri = getCellFloat(6);
+                let b2Total = getCellFloat(7);
+                if (isNaN(b2Total) && (!isNaN(b2MCQ) || !isNaN(b2Wri))) {
+                    b2Total = (isNaN(b2MCQ) ? 0 : b2MCQ) + (isNaN(b2Wri) ? 0 : b2Wri);
+                    setCellVal(7, b2Total);
+                }
+
+                // Bangla Grand Total (cell 8) & Avg (cell 9)
+                let bGrandTotal = getCellFloat(8);
+                if (isNaN(bGrandTotal) && (!isNaN(b1Total) || !isNaN(b2Total))) {
+                    bGrandTotal = (isNaN(b1Total) ? 0 : b1Total) + (isNaN(b2Total) ? 0 : b2Total);
+                    setCellVal(8, bGrandTotal);
+                }
+                let banglaAvg = getCellFloat(9);
+                if (!isNaN(bGrandTotal)) {
+                    banglaAvg = (!isNaN(b1Total) && !isNaN(b2Total)) ? (bGrandTotal / 2) : bGrandTotal;
+                    setCellVal(9, banglaAvg);
+                }
+
+                const bAbsent = (cells[2]?.textContent.trim().toUpperCase() === 'A' || cells[3]?.textContent.trim().toUpperCase() === 'A' || cells[5]?.textContent.trim().toUpperCase() === 'A' || cells[6]?.textContent.trim().toUpperCase() === 'A');
+                const banglaInfo = bAbsent ? { name: 'F', gp: 0 } : (!isNaN(banglaAvg) ? getGradeForPercentage(banglaAvg) : { name: '-', gp: 0 });
+                if (!isNaN(banglaAvg) || bAbsent) {
+                    cells[10].textContent = banglaInfo.name;
+                    cells[11].textContent = translateDigits(banglaInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 2. English
+                // 1st Paper (cell 12), 2nd Paper (cell 13), Grand Total (cell 14), Avg (cell 15)
+                const eng1 = getCellFloat(12);
+                const eng2 = getCellFlo
+
+=== populateStudentMarksFromDatabase ===
+function populateStudentMarksFromDatabase() {
+            const pracStatus = getSubjectPracticalStatus();
+            let savedMarks = {};
+            let schedules = [];
+            let subjectsMap = {};
+            try {
+                savedMarks = JSON.parse(localStorage.getItem('school_student_marks') || '{}');
+            } catch (e) {}
+            try {
+                schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+            } catch (e) {}
+            try {
+                subjectsMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+            } catch (e) {}
+
+            
+
+=== applyTableSettings ===
+function applyTableSettings() {
+            // Sync dropdowns
+            document.getElementById('table-layout').value = currentLayout;
+            document.getElementById('mcq-written').value = currentMCQWritten;
+
+            const isCompact = (currentLayout === 'compact');
+            const isHideMCQW = (currentMCQWritten === 'hide');
+
+            const pracStatus = getSubjectPracticalStatus();
+
+            // 1. Calculate and set colspans for main subjects in Row 1
+            const subjectBaseColspans = {
+                "bangla": 10,
+                "english": 6,
+                "math": 5,
+                "bgs": 5,
+                "chem": pracStatus.chem ? 6 : 5,
+                "phys": pracStatus.phys ? 6 : 5,
+                "bio": pracStatus.bio ? 6 : 5,
+                "rel": 5,
+                "ict": 5,
+                "agri": pracStatus.agri ? 6 : 5
+            };
+
+            for (let key in subjectBaseColspans) {
+                let colspan = subjectBaseColspans[key];
+                if (isCompact) colspan -= 2; // Hide Grade & Point
+                if (isHideMCQW && key !== 'english') {
+                    if (key === 'bangla') {
+                        colspan -= 4; // Hide MCQ1, Wri1, MCQ2, Wri2
+                    } else {
+                        colspan -= 2; // Hide MCQ, Written
+                    }
+                }
+                const th = document.querySelector(`thead th[data-subj="${key}"]`);
+                if (th) {
+                    th.setAttribute('colspan', colspan);
+                }
+            }
+
+            // 2. Set colspan for inside-header-row & tfoot
+            let totalColspan = 68;
+            if (isCompact) totalColspan -= 20; // 10 subjects * 2
+            if (isHideMCQW) totalColspan -= 20; // 9 subjects * 2 + bangla * 2 = 20
+            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                if (!pracStatus[k]) totalColspan -= 1;
+            });
+
+            const insideHeaderTh = document.querySelector('#inside-header-row th');
+            if (insideHeaderTh) {
+                insideHeaderTh.setAttribute('colspan', totalColspan);
+            }
+            const tfootTd = document.querySelector('#print-tfoot-signatures td');
+            if (tfootTd) {
+                tfootTd.setAttribute('colspan', totalColspan);
+            }
+
+            // Toggle Practical headers in thead (Row 2 & Row 4)
+            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                const showPrac = pracStatus[k];
+                document.querySelectorAll(`thead th[data-col-type="practical"][data-subj="${k}"]`).forEach(th => {
+                    th.style.display = showPrac ? '' : 'none';
+                });
+            });
+
+            // Adjust Row 4 full marks for subjects without practical
+            try {
+                const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+                const activeExam = (currentFilterExam || 'all').trim().toLowerCase();
+                
+                ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                    if (!pracStatus[k]) {
+                        let cqMark = 70;
+                        let mcqMark = 30;
+                        const sch = schedules.find(s => {
+                            if (!s) return false;
+                            if (activeExam !== 'all' && (s.term || '').trim().toLowerCase() !== activeExam) return false;
+                            return getSubjectSlot(s.subject, '') === k;
+                        });
+                        if (sch && sch.term) {
+                            const examDef = examTypes.find(et => (et.name || '').trim().toLowerCase() === (sch.term || '').trim().toLowerCase());
+                            if (examDef) {
+                                const subTypes = examDef.examTypes || [];
+                                const st = subTypes.find(t => (t.typeNam
+

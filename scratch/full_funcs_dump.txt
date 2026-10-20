@@ -1,0 +1,834 @@
+=== getSubjectPracticalStatus ===
+function getSubjectPracticalStatus() {
+            const status = {
+                chem: false,
+                phys: false,
+                bio: false,
+                agri: false
+            };
+
+            let schedules = [];
+            let examTypes = [];
+            let savedMarks = {};
+            try {
+                schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+            } catch (e) {}
+            try {
+                examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+            } catch (e) {}
+            try {
+                savedMarks = JSON.parse(localStorage.getItem('school_student_marks') || '{}');
+            } catch (e) {}
+
+            const activeExam = (currentFilterExam || 'all').trim().toLowerCase();
+            const activeClass = (currentFilterClass || 'all').trim().toLowerCase();
+
+            
+
+=== applyTableSettings ===
+function applyTableSettings() {
+            // Sync dropdowns
+            document.getElementById('table-layout').value = currentLayout;
+            document.getElementById('mcq-written').value = currentMCQWritten;
+
+            const isCompact = (currentLayout === 'compact');
+            const isHideMCQW = (currentMCQWritten === 'hide');
+
+            const pracStatus = getSubjectPracticalStatus();
+
+            // 1. Calculate and set colspans for main subjects in Row 1
+            const subjectBaseColspans = {
+                "bangla": 10,
+                "english": 6,
+                "math": 5,
+                "bgs": 5,
+                "chem": pracStatus.chem ? 6 : 5,
+                "phys": pracStatus.phys ? 6 : 5,
+                "bio": pracStatus.bio ? 6 : 5,
+                "rel": 5,
+                "ict": 5,
+                "agri": pracStatus.agri ? 6 : 5
+            };
+
+            for (let key in subjectBaseColspans) {
+                let colspan = subjectBaseColspans[key];
+                if (isCompact) colspan -= 2; // Hide Grade & Point
+                if (isHideMCQW && key !== 'english') {
+                    if (key === 'bangla') {
+                        colspan -= 4; // Hide MCQ1, Wri1, MCQ2, Wri2
+                    } else {
+                        colspan -= 2; // Hide MCQ, Written
+                    }
+                }
+                const th = document.querySelector(`thead th[data-subj="${key}"]`);
+                if (th) {
+                    th.setAttribute('colspan', colspan);
+                }
+            }
+
+            // 2. Set colspan for inside-header-row & tfoot
+            let totalColspan = 68;
+            if (isCompact) totalColspan -= 20; // 10 subjects * 2
+            if (isHideMCQW) totalColspan -= 20; // 9 subjects * 2 + bangla * 2 = 20
+            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                if (!pracStatus[k]) totalColspan -= 1;
+            });
+
+            const insideHeaderTh = document.querySelector('#inside-header-row th');
+            if (insideHeaderTh) {
+                insideHeaderTh.setAttribute('colspan', totalColspan);
+            }
+            const tfootTd = document.querySelector('#print-tfoot-signatures td');
+            if (tfootTd) {
+                tfootTd.setAttribute('colspan', totalColspan);
+            }
+
+            // Toggle Practical headers in thead (Row 2 & Row 4)
+            ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                const showPrac = pracStatus[k];
+                document.querySelectorAll(`thead th[data-col-type="practical"][data-subj="${k}"]`).forEach(th => {
+                    th.style.display = showPrac ? '' : 'none';
+                });
+            });
+
+            // Adjust Row 4 full marks for subjects without practical
+            try {
+                const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+                const activeExam = (currentFilterExam || 'all').trim().toLowerCase();
+                
+                ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                    if (!pracStatus[k]) {
+                        let cqMark = 70;
+                        let mcqMark = 30;
+                        const sch = schedules.find(s => {
+                            if (!s) return false;
+                            if (activeExam !== 'all' && (s.term || '').trim().toLowerCase() !== activeExam) return false;
+                            return getSubjectSlot(s.subject, '') === k;
+                        });
+                        if (sch && sch.term) {
+                            const examDef = examTypes.find(et => (et.name || '').trim().toLowerCase() === (sch.term || '').trim().toLowerCase());
+                            if (examDef) {
+                                const subTypes = examDef.examTypes || [];
+                                const st = subTypes.find(t => (t.typeName || '').trim().toLowerCase() === (sch.examType || '').trim().toLowerCase()) || subTypes[0];
+                                if (st) {
+                                    if (st.defaultCQ !== undefined) cqMark = st.defaultCQ;
+                                    if (st.defaultMCQ !== undefined) mcqMark = st.defaultMCQ;
+                                }
+                            }
+                        }
+                        const mcqTh = document.querySelector(`thead th[data-fullmark="mcq"][data-subj="${k}"]`);
+                        if (mcqTh) mcqTh.textContent = translateDigits(mcqMark.toString(), currentLang);
+                        const wriTh = document.querySelector(`thead th[data-fullmark="written"][data-subj="${k}"]`);
+                        if (wriTh) wriTh.textContent = translateDigits(cqMark.toString(), currentLang);
+                    } else {
+                        const mcqTh = document.querySelector(`thead th[data-fullmark="mcq"][data-subj="${k}"]`);
+                        if (mcqTh) mcqTh.textContent = translateDigits('25', currentLang);
+                        const wriTh = document.querySelector(`thead th[data-fullmark="written"][data-subj="${k}"]`);
+                        if (wriTh) wriTh.textContent = translateDigits('50', currentLang);
+                    }
+                });
+            } catch (e) {}
+
+            
+
+            // 3. Row 2: bangla1 and bangla2 colspans (index 2 of thead)
+
+            const row2Ths = document.querySelectorAll('thead tr:nth-child(3) th');
+
+            if (row2Ths.length > 1) {
+
+                row2Ths[0].setAttribute('colspan', isHideMCQW ? 1 : 3);
+
+                row2Ths[1].setAttribute('colspan', isHideMCQW ? 1 : 3);
+
+            }
+
+            
+
+            // 4. Hide/Show subject headers in Row 2 (MCQ, Written, Grade, Point)
+
+            row2Ths.forEach(th => {
+
+                let text = th.textContent.trim().toLowerCase();
+
+                // Check for Grade/Point
+
+                if (text === 'গ্রেড' || text === 'grade' || text === 'পয়েন্ট' || text === 'পয়েন্ট' || text === 'point') {
+
+                    th.style.display = isCompact ? 'none' : '';
+
+                }
+
+                // Check for MCQ/Written
+
+                if (text === 'বহুনির্বাচনি' || text === 'mcq' || text === 'লিখিত' || text === 'written') {
+
+                    th.style.display = isHideMCQW ? 'none' : '';
+
+                }
+
+            });
+
+            
+
+            // 5. Row 3: Hide/Show B1 MCQ, B1 Written, B2 MCQ, B2 Written (indices 0, 1, 3, 4)
+
+            const row3Ths = document.querySelectorAll('thead tr:nth-child(4) th');
+
+            const row3HideIdxs = [0, 1, 3, 4];
+
+            row3Ths.forEach((th, idx) => {
+
+                if (row3HideIdxs.includes(idx)) {
+
+                    th.style.display = isHideMCQW ? 'none' : '';
+
+                }
+
+            });
+
+            
+
+            // 6. Row 4: Full Marks (indices to hide)
+
+            const row4Ths = document.querySelectorAll('thead tr:nth-child(5) th');
+
+            const row4HideIdxs = [0, 1, 3, 4, 10, 11, 13, 14, 16, 17, 20, 21, 24, 25, 28, 29, 31, 32, 34, 35];
+
+            row4Ths.forEach((th, idx) => {
+
+                if (row4HideIdxs.includes(idx)) {
+
+                    th.style.display = isHideMCQW ? 'none' : '';
+
+                }
+
+            });
+
+            
+
+            // 7. Update and toggle cells in tbody
+
+            // 7. Update and toggle cells in tbody
+
+            const allTotalCells = [
+
+                { idxs: [4, 7, 8, 9], gradeIdx: 10, pointIdx: 11 },   // Bangla
+
+                { idxs: [12, 13, 14, 15], gradeIdx: 16, pointIdx: 17 }, // English
+
+                { idxs: [20], gradeIdx: 21, pointIdx: 22 },     // Math
+
+                { idxs: [25], gradeIdx: 26, pointIdx: 27 },     // BGS
+
+                { idxs: [31], gradeIdx: 32, pointIdx: 33 },     // Chem
+
+                { idxs: [37], gradeIdx: 38, pointIdx: 39 },     // Phys
+
+                { idxs: [43], gradeIdx: 44, pointIdx: 45 },     // Bio
+
+                { idxs: [48], gradeIdx: 49, pointIdx: 50 },     // Rel
+
+                { idxs: [53], gradeIdx: 54, pointIdx: 55 },     // ICT
+
+                { idxs: [59], gradeIdx: 60, pointIdx: 61 }      // Agri
+
+            ];
+
+            
+
+            const gradePointColIdxs = [
+
+                10, 11, // Bangla
+
+                16, 17, // English
+
+                21, 22, // Math
+
+                26, 27, // BGS
+
+                32, 33, // Chem
+
+                38, 39, // Phys
+
+                44, 45, // Bio
+
+                49, 50, // Rel
+
+                54, 55, // ICT
+
+                60, 61  // Agri
+
+            ];
+
+            
+
+            const mcqWrittenColIdxs = [
+
+                2, 3, 5, 6, // Bangla
+
+                18, 19,     // Math
+
+                23, 24,     // BGS
+
+                28, 29,     // Chem
+
+                34, 35,     // Phys
+
+                40, 41,     // Bio
+
+                46, 47,     // Rel
+
+                51, 52,     // ICT
+
+                56, 57      // Agri
+
+            ];
+
+            
+
+            document.querySelectorAll('tbody tr').forEach(row => {
+
+                const cells = row.querySelectorAll('td');
+
+                if (cells.length < 68) return; // Not a data row
+
+                
+
+                // Toggle Grade/Point cells
+
+                gradePointColIdxs.forEach(idx => {
+
+                    cells[idx].style.display = isCompact ? 'none' : '';
+
+                });
+
+                
+
+                // Toggle MCQ/Written cells
+                mcqWrittenColIdxs.forEach(idx => {
+                    cells[idx].style.display = isHideMCQW ? 'none' : '';
+                });
+
+                // Toggle Practical cells
+                const practicalColMap = { chem: 30, phys: 36, bio: 42, agri: 58 };
+                ['chem', 'phys', 'bio', 'agri'].forEach(k => {
+                    cells[practicalColMap[k]].style.display = pracStatus[k] ? '' : 'none';
+                });
+
+                
+
+                // Update Total/Avg cells dynamically
+
+                allTotalCells.forEach(item => {
+
+                    const gradeVal = cells[item.gradeIdx].textContent.trim();
+
+                    const pointVal = cells[item.pointIdx].textContent.trim();
+
+                    
+
+                    item.idxs.forEach(idx => {
+
+                        const cell = cells[idx];
+
+                        if (!cell.hasAttribute('data-orig-val')) {
+
+                            cell.setAttribute('data-orig-val', cell.innerHTML);
+
+                        }
+
+                        
+
+                        // Determine if this cell should display grade/point
+
+                        let showGradePoint = false;
+
+                        if (isCompact) {
+
+                            if (idx === 8 || idx === 14) {
+
+                                // Cell 8 and 14 are "সর্বমোট" for Bangla/English, never show Grade/Point
+
+                                showGradePoint = false;
+
+                            } else {
+
+                                // All other total/average and sub-paper total/written columns show Grade/Point when compact
+
+                                showGradePoint = true;
+
+                            }
+
+                        }
+
+                        
+
+                        if (showGradePoint) {
+
+                            const origVal = cell.getAttribute('data-orig-val');
+
+                            cell.innerHTML = origVal + "<br><span style='font-size: 8.5px; font-weight: normal; display: block; margin-top: 1px; line-height: 1.1;'>" + gradeVal + " &nbsp;" + pointVal + "</span>";
+
+                        } else {
+
+                            cell.innerHTML = cell.getAttribute('data-orig-val');
+
+                        }
+
+                    });
+
+                });
+
+            });
+
+
+
+            // Update colspans for section dividers
+
+            const activeColspan = getActiveColspan();
+
+            document.querySelectorAll('.section-divider-cell').forEach(td => {
+
+                td.setAttribute('colspan', activeColspan);
+
+            });
+
+        }
+
+
+
+        
+
+=== recalculateTableGradesAndRanks ===
+function recalculateTableGradesAndRanks() {
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+            const rows = Array.from(tbody.querySelectorAll('tr[data-section]'));
+            if (rows.length === 0) return;
+
+            const rules = loadMarkingSystem();
+            const maxScaleGP = Math.max(...rules.map(r => parseFloat(r.gp) || 0), 1.0);
+            const failRule = rules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0.0 };
+
+            const allStudentList = [];
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 68) return;
+
+                const getCellFloat = (idx) => {
+                    const txt = banglaToEnglishDigits(cells[idx].textContent.trim());
+                    if (txt === '-' || txt === '') return NaN;
+                    return parseFloat(txt);
+                };
+
+                const setCellVal = (idx, num, isFloat = false) => {
+                    if (isNaN(num)) {
+                        cells[idx].textContent = '-';
+                    } else {
+                        const str = isFloat ? num.toFixed(2) : (num % 1 === 0 ? num.toString() : num.toFixed(1));
+                        const translated = translateDigits(str, currentLang);
+                        cells[idx].textContent = translated;
+                        if (cells[idx].hasAttribute('data-orig-val')) {
+                            cells[idx].setAttribute('data-orig-val', translated);
+                        }
+                    }
+                };
+
+                // 1. Bangla
+                // Sub-paper 1: MCQ (cell 2), Written (cell 3), Total (cell 4)
+                const b1MCQ = getCellFloat(2);
+                const b1Wri = getCellFloat(3);
+                let b1Total = getCellFloat(4);
+                if (isNaN(b1Total) && (!isNaN(b1MCQ) || !isNaN(b1Wri))) {
+                    b1Total = (isNaN(b1MCQ) ? 0 : b1MCQ) + (isNaN(b1Wri) ? 0 : b1Wri);
+                    setCellVal(4, b1Total);
+                }
+
+                // Sub-paper 2: MCQ (cell 5), Written (cell 6), Total (cell 7)
+                const b2MCQ = getCellFloat(5);
+                const b2Wri = getCellFloat(6);
+                let b2Total = getCellFloat(7);
+                if (isNaN(b2Total) && (!isNaN(b2MCQ) || !isNaN(b2Wri))) {
+                    b2Total = (isNaN(b2MCQ) ? 0 : b2MCQ) + (isNaN(b2Wri) ? 0 : b2Wri);
+                    setCellVal(7, b2Total);
+                }
+
+                // Bangla Grand Total (cell 8) & Avg (cell 9)
+                let bGrandTotal = getCellFloat(8);
+                if (isNaN(bGrandTotal) && (!isNaN(b1Total) || !isNaN(b2Total))) {
+                    bGrandTotal = (isNaN(b1Total) ? 0 : b1Total) + (isNaN(b2Total) ? 0 : b2Total);
+                    setCellVal(8, bGrandTotal);
+                }
+                let banglaAvg = getCellFloat(9);
+                if (!isNaN(bGrandTotal)) {
+                    banglaAvg = (!isNaN(b1Total) && !isNaN(b2Total)) ? (bGrandTotal / 2) : bGrandTotal;
+                    setCellVal(9, banglaAvg);
+                }
+
+                const bAbsent = (cells[2]?.textContent.trim().toUpperCase() === 'A' || cells[3]?.textContent.trim().toUpperCase() === 'A' || cells[5]?.textContent.trim().toUpperCase() === 'A' || cells[6]?.textContent.trim().toUpperCase() === 'A');
+                const banglaInfo = bAbsent ? { name: 'F', gp: 0 } : (!isNaN(banglaAvg) ? getGradeForPercentage(banglaAvg) : { name: '-', gp: 0 });
+                if (!isNaN(banglaAvg) || bAbsent) {
+                    cells[10].textContent = banglaInfo.name;
+                    cells[11].textContent = translateDigits(banglaInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 2. English
+                // 1st Paper (cell 12), 2nd Paper (cell 13), Grand Total (cell 14), Avg (cell 15)
+                const eng1 = getCellFloat(12);
+                const eng2 = getCellFloat(13);
+                let engGrandTotal = getCellFloat(14);
+                if (isNaN(engGrandTotal) && (!isNaN(eng1) || !isNaN(eng2))) {
+                    engGrandTotal = (isNaN(eng1) ? 0 : eng1) + (isNaN(eng2) ? 0 : eng2);
+                    setCellVal(14, engGrandTotal);
+                }
+                let engAvg = getCellFloat(15);
+                if (!isNaN(engGrandTotal)) {
+                    engAvg = (!isNaN(eng1) && !isNaN(eng2)) ? (engGrandTotal / 2) : engGrandTotal;
+                    setCellVal(15, engAvg);
+                }
+
+                const engAbsent = (cells[12]?.textContent.trim().toUpperCase() === 'A' || cells[13]?.textContent.trim().toUpperCase() === 'A');
+                const engInfo = engAbsent ? { name: 'F', gp: 0 } : (!isNaN(engAvg) ? getGradeForPercentage(engAvg) : { name: '-', gp: 0 });
+                if (!isNaN(engAvg) || engAbsent) {
+                    cells[16].textContent = engInfo.name;
+                    cells[17].textContent = translateDigits(engInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 3. Math (MCQ cell 18, Written cell 19, Total cell 20)
+                const mathMCQ = getCellFloat(18);
+                const mathWri = getCellFloat(19);
+                let mathTotal = getCellFloat(20);
+                if (isNaN(mathTotal) && (!isNaN(mathMCQ) || !isNaN(mathWri))) {
+                    mathTotal = (isNaN(mathMCQ) ? 0 : mathMCQ) + (isNaN(mathWri) ? 0 : mathWri);
+                    setCellVal(20, mathTotal);
+                }
+                const mathAbsent = (cells[18]?.textContent.trim().toUpperCase() === 'A' || cells[19]?.textContent.trim().toUpperCase() === 'A');
+                const mathInfo = mathAbsent ? { name: 'F', gp: 0 } : (!isNaN(mathTotal) ? getGradeForPercentage(mathTotal) : { name: '-', gp: 0 });
+                if (!isNaN(mathTotal) || mathAbsent) {
+                    cells[21].textContent = mathInfo.name;
+                    cells[22].textContent = translateDigits(mathInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 4. BGS (MCQ cell 23, Written cell 24, Total cell 25)
+                const bgsMCQ = getCellFloat(23);
+                const bgsWri = getCellFloat(24);
+                let bgsTotal = getCellFloat(25);
+                if (isNaN(bgsTotal) && (!isNaN(bgsMCQ) || !isNaN(bgsWri))) {
+                    bgsTotal = (isNaN(bgsMCQ) ? 0 : bgsMCQ) + (isNaN(bgsWri) ? 0 : bgsWri);
+                    setCellVal(25, bgsTotal);
+                }
+                const bgsAbsent = (cells[23]?.textContent.trim().toUpperCase() === 'A' || cells[24]?.textContent.trim().toUpperCase() === 'A');
+                const bgsInfo = bgsAbsent ? { name: 'F', gp: 0 } : (!isNaN(bgsTotal) ? getGradeForPercentage(bgsTotal) : { name: '-', gp: 0 });
+                if (!isNaN(bgsTotal) || bgsAbsent) {
+                    cells[26].textContent = bgsInfo.name;
+                    cells[27].textContent = translateDigits(bgsInfo.gp.toFixed(2), currentLang);
+                }
+
+                const pracStatus = (typeof getSubjectPracticalStatus === 'function') 
+                    ? getSubjectPracticalStatus() 
+                    : { chem: false, phys: false, bio: false, agri: false };
+
+                // 5. Chemistry / Science (MCQ cell 28, Written cell 29, Practical cell 30, Total cell 31)
+                const chemMCQ = getCellFloat(28);
+                const chemWri = getCellFloat(29);
+                const chemPrac = pracStatus.chem ? getCellFloat(30) : 0;
+                let chemTotal = getCellFloat(31);
+                if (isNaN(chemTotal) && (!isNaN(chemMCQ) || !isNaN(chemWri) || (pracStatus.chem && !isNaN(chemPrac)))) {
+                    chemTotal = (isNaN(chemMCQ) ? 0 : chemMCQ) + (isNaN(chemWri) ? 0 : chemWri) + (pracStatus.chem && !isNaN(chemPrac) ? chemPrac : 0);
+                    setCellVal(31, chemTotal);
+                }
+                const chemAbsent = (cells[28]?.textContent.trim().toUpperCase() === 'A' || cells[29]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.chem && cells[30]?.textContent.trim().toUpperCase() === 'A'));
+                const chemInfo = chemAbsent ? { name: 'F', gp: 0 } : (!isNaN(chemTotal) ? getGradeForPercentage(chemTotal) : { name: '-', gp: 0 });
+                if (!isNaN(chemTotal) || chemAbsent) {
+                    cells[32].textContent = chemInfo.name;
+                    cells[33].textContent = translateDigits(chemInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 6. Physics (MCQ cell 34, Written cell 35, Practical cell 36, Total cell 37)
+                const physMCQ = getCellFloat(34);
+                const physWri = getCellFloat(35);
+                const physPrac = pracStatus.phys ? getCellFloat(36) : 0;
+                let physTotal = getCellFloat(37);
+                if (isNaN(physTotal) && (!isNaN(physMCQ) || !isNaN(physWri) || (pracStatus.phys && !isNaN(physPrac)))) {
+                    physTotal = (isNaN(physMCQ) ? 0 : physMCQ) + (isNaN(physWri) ? 0 : physWri) + (pracStatus.phys && !isNaN(physPrac) ? physPrac : 0);
+                    setCellVal(37, physTotal);
+                }
+                const physAbsent = (cells[34]?.textContent.trim().toUpperCase() === 'A' || cells[35]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.phys && cells[36]?.textContent.trim().toUpperCase() === 'A'));
+                const physInfo = physAbsent ? { name: 'F', gp: 0 } : (!isNaN(physTotal) ? getGradeForPercentage(physTotal) : { name: '-', gp: 0 });
+                if (!isNaN(physTotal) || physAbsent) {
+                    cells[38].textContent = physInfo.name;
+                    cells[39].textContent = translateDigits(physInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 7. Biology (MCQ cell 40, Written cell 41, Practical cell 42, Total cell 43)
+                const bioMCQ = getCellFloat(40);
+                const bioWri = getCellFloat(41);
+                const bioPrac = pracStatus.bio ? getCellFloat(42) : 0;
+                let bioTotal = getCellFloat(43);
+                if (isNaN(bioTotal) && (!isNaN(bioMCQ) || !isNaN(bioWri) || (pracStatus.bio && !isNaN(bioPrac)))) {
+                    bioTotal = (isNaN(bioMCQ) ? 0 : bioMCQ) + (isNaN(bioWri) ? 0 : bioWri) + (pracStatus.bio && !isNaN(bioPrac) ? bioPrac : 0);
+                    setCellVal(43, bioTotal);
+                }
+                const bioAbsent = (cells[40]?.textContent.trim().toUpperCase() === 'A' || cells[41]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.bio && cells[42]?.textContent.trim().toUpperCase() === 'A'));
+                const bioInfo = bioAbsent ? { name: 'F', gp: 0 } : (!isNaN(bioTotal) ? getGradeForPercentage(bioTotal) : { name: '-', gp: 0 });
+                if (!isNaN(bioTotal) || bioAbsent) {
+                    cells[44].textContent = bioInfo.name;
+                    cells[45].textContent = translateDigits(bioInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 8. Religion (MCQ cell 46, Written cell 47, Total cell 48)
+                const relMCQ = getCellFloat(46);
+                const relWri = getCellFloat(47);
+                let relTotal = getCellFloat(48);
+                if (isNaN(relTotal) && (!isNaN(relMCQ) || !isNaN(relWri))) {
+                    relTotal = (isNaN(relMCQ) ? 0 : relMCQ) + (isNaN(relWri) ? 0 : relWri);
+                    setCellVal(48, relTotal);
+                }
+                const relAbsent = (cells[46]?.textContent.trim().toUpperCase() === 'A' || cells[47]?.textContent.trim().toUpperCase() === 'A');
+                const relInfo = relAbsent ? { name: 'F', gp: 0 } : (!isNaN(relTotal) ? getGradeForPercentage(relTotal) : { name: '-', gp: 0 });
+                if (!isNaN(relTotal) || relAbsent) {
+                    cells[49].textContent = relInfo.name;
+                    cells[50].textContent = translateDigits(relInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 9. ICT (MCQ cell 51, Written cell 52, Total cell 53, out of 50 -> % = (total/50)*100)
+                const ictMCQ = getCellFloat(51);
+                const ictWri = getCellFloat(52);
+                let ictTotal = getCellFloat(53);
+                if (isNaN(ictTotal) && (!isNaN(ictMCQ) || !isNaN(ictWri))) {
+                    ictTotal = (isNaN(ictMCQ) ? 0 : ictMCQ) + (isNaN(ictWri) ? 0 : ictWri);
+                    setCellVal(53, ictTotal);
+                }
+                const ictAbsent = (cells[51]?.textContent.trim().toUpperCase() === 'A' || cells[52]?.textContent.trim().toUpperCase() === 'A');
+                const ictPct = !isNaN(ictTotal) ? (ictTotal / 50) * 100 : NaN;
+                const ictInfo = ictAbsent ? { name: 'F', gp: 0 } : (!isNaN(ictPct) ? getGradeForPercentage(ictPct) : { name: '-', gp: 0 });
+                if (!isNaN(ictPct) || ictAbsent) {
+                    cells[54].textContent = ictInfo.name;
+                    cells[55].textContent = translateDigits(ictInfo.gp.toFixed(2), currentLang);
+                }
+
+                // 10. Agriculture / Higher Math (Optional Subject, Cell 59 = Total 100)
+                const optMCQ = getCellFloat(56);
+                const optWri = getCellFloat(57);
+                const optPrac = pracStatus.agri ? getCellFloat(58) : 0;
+                let optTotal = getCellFloat(59);
+                if (isNaN(optTotal) && (!isNaN(optMCQ) || !isNaN(optWri) || (pracStatus.agri && !isNaN(optPrac)))) {
+                    optTotal = (isNaN(optMCQ) ? 0 : optMCQ) + (isNaN(optWri) ? 0 : optWri) + (pracStatus.agri && !isNaN(optPrac) ? optPrac : 0);
+                    setCellVal(59, optTotal);
+                }
+                const optAbsent = (cells[56]?.textContent.trim().toUpperCase() === 'A' || cells[57]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.agri && cells[58]?.textContent.trim().toUpperCase() === 'A'));
+                const optInfo = optAbsent ? { name: 'F', gp: 0 } : (!isNaN(optTotal) ? getGradeForPercentage(optTotal) : { name: '-', gp: 0 });
+                if (!isNaN(optTotal) || optAbsent) {
+                    cells[60].textContent = optInfo.name;
+                    cells[61].textContent = translateDigits(optInfo.gp.toFixed(2), currentLang);
+                }
+
+                // Main Subjects List (9 subjects)
+                const mainSubjects = [banglaInfo, engInfo, mathInfo, bgsInfo, chemInfo, physInfo, bioInfo, relInfo, ictInfo];
+                const hasValidMainSubjects = mainSubjects.some(s => s.name !== '-');
+
+                let failsCount = 0;
+                let mainGPSum = 0;
+                let mainSubCount = 0;
+
+                if (hasValidMainSubjects) {
+                    mainSubjects.forEach(sub => {
+                        if (sub.name !== '-') {
+                            mainSubCount++;
+                            mainGPSum += sub.gp;
+                            if (sub.gp === 0 || sub.name === failRule.name || sub.name === 'F') {
+                                failsCount++;
+                            }
+                        }
+                    });
+                }
+
+                // Find minimum percentage for GP 2.00 (defaults to 40) from active scale
+                const ruleFor2GP = rules.find(r => parseFloat(r.gp) === 2.00) || { min: 40 };
+                const optBaseDeductMarks = parseFloat(ruleFor2GP.min) || 40;
+
+                // Optional bonus: extra GP above 2.00 and extra marks above 2.00 threshold (40 marks)
+                const optionalBonusGP = (!isNaN(optTotal) && optInfo.name !== '-' && optInfo.gp > 2.00) ? (optInfo.gp - 2.00) : 0;
+                const optionalBonusMarks = (!isNaN(optTotal) && optTotal > optBaseDeductMarks) ? (optTotal - optBaseDeductMarks) : 0;
+
+                // Grand Total (Cell 62): Sum of main subjects + Optional extra marks above 2.00 (above 40 marks)
+                let computedGrandTotal = 0;
+                let hasAnySubject = false;
+                const mainSubTotals = [bGrandTotal, engGrandTotal, mathTotal, bgsTotal, chemTotal, physTotal, bioTotal, relTotal, ictTotal];
+                mainSubTotals.forEach(st => {
+                    if (!isNaN(st)) {
+                        computedGrandTotal += st;
+                        hasAnySubject = true;
+                    }
+                });
+                if (!isNaN(optTotal)) {
+                    hasAnySubject = true;
+                    computedGrandTotal += optionalBonusMarks;
+                }
+                const grandTotalRaw = hasAnySubject ? computedGrandTotal : 0;
+
+                let displayGpaNoOpt = 0.00;
+                let displayFinalGpa = 0.00;
+                let displayFinalGrade = failRule.name || 'F';
+
+                if (hasValidMainSubjects) {
+                    if (currentGPACalcMethod === 'total') {
+                        // Total Mark Based Method (Main base = 1050)
+                        const totalMax = 1050;
+                        const pct = (grandTotalRaw / totalMax) * 100;
+                        if (failsCount > 0) {
+                            displayFinalGpa = 0.00;
+                            displayFinalGrade = failRule.name || 'F';
+                            displayGpaNoOpt = 0.00;
+                        } else {
+                            const totalGradeInfo = getGradeForPercentage(pct);
+                            displayFinalGpa = totalGradeInfo.gp;
+                            displayFinalGrade = totalGradeInfo.name;
+                            displayGpaNoOpt = totalGradeInfo.gp;
+                        }
+                    } else {
+                        // Standard Board GPA Method
+                        if (failsCount > 0) {
+                            displayFinalGpa = 0.00;
+                            displayFinalGrade = failRule.name || 'F';
+                            displayGpaNoOpt = 0.00;
+                        } else {
+                            displayGpaNoOpt = mainGPSum / mainSubCount;
+                            const rawFinalGPA = (mainGPSum + optionalBonusGP) / mainSubCount;
+                            displayFinalGpa = Math.min(maxScaleGP, rawFinalGPA);
+                            displayFinalGrade = getGradeForGPA(displayFinalGpa);
+                        }
+                    }
+                }
+
+                // If student has no entered marks, display '-' for all summary cells
+                if (!hasAnySubject) {
+                    cells[62].textContent = '-';
+                    cells[63].textContent = '-';
+                    cells[64].textContent = '-';
+                    cells[65].textContent = '-';
+                    cells[66].textContent = '-';
+                    cells[67].textContent = '-';
+                } else {
+                    setCellVal(62, grandTotalRaw);
+                    cells[63].textContent = translateDigits(failsCount.toString(), currentLang);
+                    cells[64].textContent = translateDigits(displayGpaNoOpt.toFixed(2), currentLang);
+                    cells[65].textContent = translateDigits(displayFinalGpa.toFixed(2), currentLang);
+                    cells[66].textContent = displayFinalGrade;
+                }
+
+                const rollRaw = banglaToEnglishDigits(cells[0].textContent.trim());
+                const digitsOnly = rollRaw.replace(/\D/g, '');
+                const sec = row.getAttribute('data-section') || 'Unassigned';
+
+                allStudentList.push({
+                    row: row,
+                    sec: sec,
+                    hasAnySubject: hasAnySubject,
+                    computedGpa: displayFinalGpa,
+                    computedGrade: displayFinalGrade,
+                    fails: failsCount,
+                    grandTotal: grandTotalRaw,
+                    rollInt: parseInt(digitsOnly, 10) || 0
+                });
+            });
+
+            // Calculate strictly UNIQUE sequential Merit Ranks across all students (No duplicate ranks!)
+            const rankedStudents = allStudentList.filter(s => s.hasAnySubject);
+            if (currentGPACalcMethod === 'total') {
+                rankedStudents.sort((a, b) => {
+                    const aFailed = a.fails > 0;
+                    const bFailed = b.fails > 0;
+                    if (aFailed !== bFailed) return aFailed ? 1 : -1;
+                    if (aFailed && bFailed) {
+                        // Failed students are ranked strictly based on "সর্বমোট" (Grand Total) marks
+                        if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
+                        if (a.rollInt !== b.rollInt) return a.rollInt - b.rollInt;
+                        return a.sec.localeCompare(b.sec);
+                    }
+                    if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
+                    if (b.computedGpa !== a.computedGpa) return b.computedGpa - a.computedGpa;
+                    if (a.rollInt !== b.rollInt) return a.rollInt - b.rollInt;
+                    return a.sec.localeCompare(b.sec);
+                });
+            } else {
+                rankedStudents.sort((a, b) => {
+                    const aFailed = a.fails > 0;
+                    const bFailed = b.fails > 0;
+                    if (aFailed !== bFailed) return aFailed ? 1 : -1;
+                    if (aFailed && bFailed) {
+                        // Failed students are ranked strictly based on "সর্বমোট" (Grand Total) marks
+                        if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
+                        if (a.rollInt !== b.rollInt) return a.rollInt - b.rollInt;
+                        return a.sec.localeCompare(b.sec);
+                    }
+                    if (b.computedGpa !== a.computedGpa) return b.computedGpa - a.computedGpa;
+                    if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
+                    if (a.rollInt !== b.rollInt) return a.rollInt - b.rollInt;
+                    return a.sec.localeCompare(b.sec);
+                });
+            }
+
+            // Assign unique 1..N rank with ZERO duplicate ranks for students with marks
+            allStudentList.forEach(st => {
+                const rankCell = st.row.querySelectorAll('td')[67];
+                if (rankCell) rankCell.textContent = '-';
+            });
+            rankedStudents.forEach((st, idx) => {
+                const rankNum = idx + 1;
+                const rankCell = st.row.querySelectorAll('td')[67];
+                if (rankCell) {
+                    rankCell.textContent = translateDigits(rankNum.toString(), currentLang);
+                }
+            });
+
+            if (currentLayout === 'compact') {
+                applyTableSettings();
+            }
+
+            highlightFailures();
+        }
+
+        // --- Attach table live editing listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.querySelector('table tbody');
+            if (tableBody) {
+                tableBody.addEventListener('input', () => recalculateTableGradesAndRanks());
+                tableBody.addEventListener('blur', () => recalculateTableGradesAndRanks(), true);
+            }
+        });
+
+
+        // --- Grading System Preview Modal Helpers ---
+        
+
+=== getSubjectSlot ===
+function getSubjectSlot(subName, subCode) {
+            const sName = (subName || '').trim().toLowerCase();
+            const code = (subCode || '').toString().trim();
+
+            if (code && activeClassSlotMap[code]) return activeClassSlotMap[code];
+            if (sName && activeClassSlotMap[sName]) return activeClassSlotMap[sName];
+
+            if (code === '101' || /bangla.*1|বাং.*১|বাংলা সাহিত্য/i.test(sName)) return 'bangla1';
+            if (code === '102' || /bangla.*2|বাং.*২|ব্যাকরণ/i.test(sName)) return 'bangla2';
+            if (code === '103' || /english.*1|eng.*1|ইংরেজি ১ম|for today/i.test(sName)) return 'english1';
+            if (code === '104' || /english.*2|eng.*2|ইংরেজি ২য়|grammar/i.test(sName)) return 'english2';
+            if (code === '105' || /math|গণিত/i.test(sName)) return 'math';
+            if (code === '107' || /bgs|global studies|বিশ্বপরিচয়/i.test(sName)) return 'bgs';
+            if (code === '1111' || /physics|পদার্থ/i.test(sName)) return 'phys';
+            if (code === '135' || /chemistry|রসায়ন/i.test(sName)) return 'chem';
+            if (code === '108' || /science|বিজ্ঞান/i.test(sName)) return 'chem'; // General Science maps to slot 5 (chem)
+            if (code === '180' || /biology|জীববিজ্ঞান/i.test(sName)) return 'bio';
+            if (['110', '111', '112', '113'].includes(code) || /religion|islam|hindu|ধর্ম/i.test(sName)) return 'rel';
+            if (code === '106' || /ict|information.*tech|যোগাযোগ/i.test(sName)) return 'ict';
+            if (['109', '126', '505'].includes(code) || /agri|কৃষি|higher.*math|উচ্চতর/i.test(sName)) return 'agri';
+
+            return null;
+        }
+
+        
+
