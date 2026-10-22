@@ -5539,7 +5539,7 @@
                         if (sub.name !== '-') {
                             mainSubCount++;
                             mainGPSum += sub.gp;
-                            if (sub.gp === 0 || sub.name === failRule.name || sub.name === 'F' || sub.name === 'A' || sub.isAbsent) {
+                            if (sub.gp === 0 || sub.name === failRule.name || sub.name === 'F' || sub.name === 'ABS' || sub.isAbsent || (sub.name === 'A' && sub.gp === 0)) {
                                 failsCount++;
                             }
                         }
