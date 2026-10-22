@@ -1,8 +1,123 @@
 
-        // --- PAGINATION FOR EXAM LIST ---
+        // --- GLOBAL BENGALI & ENGLISH DIGIT UTILITIES ---
+        window.toBengaliNumber = window.toBengaliNumber || (num => String(num ?? '').replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]));
+        window.toEnglishDigits = window.toEnglishDigits || (str => String(str ?? '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)));
+        var toBengaliNumber = window.toBengaliNumber;
+        var toEnglishDigits = window.toEnglishDigits;
+
+        // --- PAGINATION & FILTERS FOR EXAM LIST ---
         let currentSchedulePage = 1;
         let scheduleRowsPerPage = 20;
         let currentStatusFilter = 'All';
+
+        // --- EXAM LIST FILTER TOGGLE & ACTIONS ---
+        function toggleExamFilterSection(forceState) {
+            const filterSection = document.getElementById('exam-schedules-filter-section');
+            const btn = document.getElementById('toggle-exam-filter-btn');
+            const chevron = document.getElementById('exam-filter-chevron');
+            if (!filterSection) return;
+
+            let willShow;
+            if (typeof forceState === 'boolean') {
+                willShow = forceState;
+            } else {
+                willShow = (filterSection.style.display === 'none' || filterSection.style.display === '');
+            }
+
+            if (willShow) {
+                filterSection.style.display = 'block';
+                if (btn) {
+                    btn.style.background = '#2563eb';
+                    btn.style.color = '#ffffff';
+                    btn.style.borderColor = '#2563eb';
+                    btn.style.boxShadow = '0 4px 14px rgba(37,99,235,0.3)';
+                    const svg = btn.querySelector('svg');
+                    if (svg) svg.style.stroke = '#ffffff';
+                }
+                if (chevron) {
+                    chevron.style.transform = 'rotate(180deg)';
+                    chevron.style.stroke = '#ffffff';
+                }
+            } else {
+                filterSection.style.display = 'none';
+                if (btn) {
+                    btn.style.background = '#ffffff';
+                    btn.style.color = '#2563eb';
+                    btn.style.borderColor = '#2563eb';
+                    btn.style.boxShadow = '0 2px 8px rgba(37,99,235,0.12)';
+                    const svg = btn.querySelector('svg');
+                    if (svg) svg.style.stroke = 'currentColor';
+                }
+                if (chevron) {
+                    chevron.style.transform = 'rotate(0deg)';
+                    chevron.style.stroke = 'currentColor';
+                }
+            }
+        }
+
+        function resetAllScheduleFilters() {
+            const classEl = document.getElementById('filter-schedule-class');
+            const examEl = document.getElementById('filter-schedule-exam');
+            const dateEl = document.getElementById('filter-schedule-date');
+            const subEl = document.getElementById('filter-schedule-subject');
+            const teachEl = document.getElementById('filter-schedule-teacher');
+
+            if (classEl) classEl.value = 'All';
+            if (examEl) examEl.value = 'All';
+            if (dateEl) dateEl.value = '';
+            if (subEl) subEl.value = 'All';
+            if (teachEl) teachEl.value = 'All';
+
+            setStatusFilter('All');
+            onScheduleFilterChange();
+            updateFilterActiveIndicator();
+        }
+
+        function filterByClassFromCard(cls) {
+            const classSelect = document.getElementById('filter-schedule-class');
+            if (!classSelect) return;
+            if (classSelect.value === cls) {
+                classSelect.value = 'All';
+            } else {
+                classSelect.value = cls;
+            }
+            onScheduleFilterChange();
+        }
+
+        function updateFilterActiveIndicator() {
+            const classEl = document.getElementById('filter-schedule-class');
+            const examEl = document.getElementById('filter-schedule-exam');
+            const dateEl = document.getElementById('filter-schedule-date');
+            const subEl = document.getElementById('filter-schedule-subject');
+            const teachEl = document.getElementById('filter-schedule-teacher');
+
+            let activeCount = 0;
+            if (classEl && classEl.value !== 'All') activeCount++;
+            if (examEl && examEl.value !== 'All') activeCount++;
+            if (dateEl && dateEl.value && dateEl.value.trim() !== '') activeCount++;
+            if (subEl && subEl.value !== 'All') activeCount++;
+            if (teachEl && teachEl.value !== 'All') activeCount++;
+            if (currentStatusFilter && currentStatusFilter !== 'All') activeCount++;
+
+            const badge = document.getElementById('exam-filter-active-count-badge');
+            const panelBadge = document.getElementById('active-filter-indicator-text');
+            if (badge) {
+                if (activeCount > 0) {
+                    badge.textContent = activeCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+            if (panelBadge) {
+                if (activeCount > 0) {
+                    panelBadge.textContent = `${activeCount}টি ফিল্টার সক্রিয়`;
+                    panelBadge.style.display = 'inline-block';
+                } else {
+                    panelBadge.style.display = 'none';
+                }
+            }
+        }
 
         function onScheduleFilterChange() {
             currentSchedulePage = 1;
@@ -14,6 +129,7 @@
                 } catch (e) { }
             }
             renderScheduleList();
+            updateFilterActiveIndicator();
         }
 
         function navigateToTabulationSheet() {
@@ -69,6 +185,7 @@
             });
 
             renderScheduleList();
+            updateFilterActiveIndicator();
         }
 
         // Returns 'all' | 'partial' | 'none' based on how many students have marks entered for a given exam schedule
@@ -468,9 +585,8 @@
                     parsed = JSON.parse(subjects);
 
                     const hasOldClass6 = parsed["Class 6"] !== undefined;
-                    const hasSixSahitya = parsed["Six"] && parsed["Six"].some(s => s.name === "Bangla Sahitya");
 
-                    if (hasOldClass6 || !hasSixSahitya) {
+                    if (hasOldClass6) {
                         parsed = defaultSubjects;
                         needToSave = true;
                     } else {
@@ -572,108 +688,155 @@
 
         function loadExamTypes() {
             let stored = localStorage.getItem('school_exam_types');
+            let types = [];
             if (stored) {
                 try {
                     const parsed = JSON.parse(stored);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                        return parsed.map(normalizeExamTypeObject);
+                        types = parsed.map(normalizeExamTypeObject);
                     }
                 } catch (e) {
                     // Fallback
                 }
             }
-            const defaults = [
-                {
-                    id: "1",
-                    name: "Half-Yearly Examination 2026",
-                    type: "Half-Yearly Exam",
-                    defaultCQ: 70,
-                    defaultMCQ: 30,
-                    defaultPractical: 0,
-                    passMarkPercent: 33,
-                    overrides: [
-                        { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
-                        { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
-                        { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
-                    ],
-                    examTypes: [
-                        {
-                            id: "1_t1",
-                            typeName: "Half-Yearly Main Exam",
-                            defaultCQ: 70,
-                            defaultMCQ: 30,
-                            defaultPractical: 0,
-                            passMarkPercent: 33,
-                            overrides: [
-                                { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
-                                { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
-                                { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
-                            ]
-                        },
-                        {
-                            id: "1_t2",
-                            typeName: "Continuous Assessment (CA)",
-                            defaultCQ: 20,
-                            defaultMCQ: 0,
-                            defaultPractical: 0,
-                            passMarkPercent: 33,
-                            overrides: []
-                        }
-                    ]
-                },
-                {
-                    id: "2",
-                    name: "Annual Examination 2026",
-                    type: "Annual Exam",
-                    defaultCQ: 70,
-                    defaultMCQ: 30,
-                    defaultPractical: 0,
-                    passMarkPercent: 33,
-                    overrides: [
-                        { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
-                        { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
-                        { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
-                    ],
-                    examTypes: [
-                        {
-                            id: "2_t1",
-                            typeName: "Annual Main Exam",
-                            defaultCQ: 70,
-                            defaultMCQ: 30,
-                            defaultPractical: 0,
-                            passMarkPercent: 33,
-                            overrides: [
-                                { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
-                                { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
-                                { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    id: "3",
-                    name: "First Term Exam 2026",
-                    type: "Term Exam",
-                    defaultCQ: 40,
-                    defaultMCQ: 10,
-                    defaultPractical: 0,
-                    passMarkPercent: 33,
-                    overrides: [],
-                    examTypes: [
-                        {
-                            id: "3_t1",
-                            typeName: "Term Exam",
-                            defaultCQ: 40,
-                            defaultMCQ: 10,
-                            defaultPractical: 0,
-                            passMarkPercent: 33,
-                            overrides: []
-                        }
-                    ]
+            if (!types || types.length === 0) {
+                const defaults = [
+                    {
+                        id: "1",
+                        name: "Half-Yearly Examination 2026",
+                        type: "Half-Yearly Exam",
+                        defaultCQ: 70,
+                        defaultMCQ: 30,
+                        defaultPractical: 0,
+                        passMarkPercent: 33,
+                        overrides: [
+                            { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
+                            { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
+                            { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
+                        ],
+                        examTypes: [
+                            {
+                                id: "1_t1",
+                                typeName: "Half-Yearly Main Exam",
+                                defaultCQ: 70,
+                                defaultMCQ: 30,
+                                defaultPractical: 0,
+                                passMarkPercent: 33,
+                                overrides: [
+                                    { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
+                                    { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
+                                    { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
+                                ]
+                            },
+                            {
+                                id: "1_t2",
+                                typeName: "Half-Yearly Class Test",
+                                defaultCQ: 20,
+                                defaultMCQ: 0,
+                                defaultPractical: 0,
+                                passMarkPercent: 33,
+                                overrides: []
+                            }
+                        ]
+                    },
+                    {
+                        id: "2",
+                        name: "Annual Examination 2026",
+                        type: "Annual Exam",
+                        defaultCQ: 70,
+                        defaultMCQ: 30,
+                        defaultPractical: 0,
+                        passMarkPercent: 33,
+                        overrides: [
+                            { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
+                            { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
+                            { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
+                        ],
+                        examTypes: [
+                            {
+                                id: "2_t1",
+                                typeName: "Annual Main Exam",
+                                defaultCQ: 70,
+                                defaultMCQ: 30,
+                                defaultPractical: 0,
+                                passMarkPercent: 33,
+                                overrides: [
+                                    { subjectCode: "106", subjectName: "Information And Communication Technology", cq: 25, mcq: 25, practical: 25 },
+                                    { subjectCode: "103", subjectName: "English For Today", cq: 100, mcq: 0, practical: 0 },
+                                    { subjectCode: "104", subjectName: "English Grammar and Composition", cq: 100, mcq: 0, practical: 0 }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: "3",
+                        name: "First Term Exam 2026",
+                        type: "Term Exam",
+                        defaultCQ: 40,
+                        defaultMCQ: 10,
+                        defaultPractical: 0,
+                        passMarkPercent: 33,
+                        overrides: [],
+                        examTypes: [
+                            {
+                                id: "3_t1",
+                                typeName: "Term Exam",
+                                defaultCQ: 40,
+                                defaultMCQ: 10,
+                                defaultPractical: 0,
+                                passMarkPercent: 33,
+                                overrides: []
+                            }
+                        ]
+                    }
+                ];
+                types = defaults.map(normalizeExamTypeObject);
+                localStorage.setItem('school_exam_types', JSON.stringify(types));
+            }
+
+            // Auto-merge any custom exam names from existing schedules if missing from types
+            try {
+                const schedRaw = localStorage.getItem('school_exam_schedules');
+                if (schedRaw) {
+                    const schedList = JSON.parse(schedRaw);
+                    let changed = false;
+                    if (Array.isArray(schedList)) {
+                        schedList.forEach(s => {
+                            const termName = (s.term || s.examName || '').trim();
+                            if (termName && !termName.startsWith('__ACTION_') && !types.some(t => t.name.toLowerCase() === termName.toLowerCase())) {
+                                const newId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 4);
+                                types.push(normalizeExamTypeObject({
+                                    id: newId,
+                                    name: termName,
+                                    type: s.examType || "Main Exam",
+                                    defaultCQ: s.cq !== undefined ? s.cq : 70,
+                                    defaultMCQ: s.mcq !== undefined ? s.mcq : 30,
+                                    defaultPractical: s.practical !== undefined ? s.practical : 0,
+                                    passMarkPercent: 33,
+                                    overrides: [],
+                                    examTypes: [
+                                        {
+                                            id: `${newId}_t1`,
+                                            typeName: s.examType || "Main Exam",
+                                            defaultCQ: s.cq !== undefined ? s.cq : 70,
+                                            defaultMCQ: s.mcq !== undefined ? s.mcq : 30,
+                                            defaultPractical: s.practical !== undefined ? s.practical : 0,
+                                            passMarkPercent: 33,
+                                            overrides: []
+                                        }
+                                    ]
+                                }));
+                                changed = true;
+                            }
+                        });
+                    }
+                    if (changed) {
+                        localStorage.setItem('school_exam_types', JSON.stringify(types));
+                    }
                 }
-            ];
-            localStorage.setItem('school_exam_types', JSON.stringify(defaults));
-            return defaults;
+            } catch (err) {}
+
+            return types;
         }
 
         function loadStudents() {
@@ -837,6 +1000,9 @@
                 populateClassDropdown('sms-target-class');
                 updateSmsTargetStudentsDropdown();
                 updateSmsLivePreview();
+            } else if (viewName === 'exam-names') {
+                if (titleWrapper) titleWrapper.style.display = 'none';
+                renderExamNamesSubView();
             } else if (viewName === 'exam-types') {
                 if (titleWrapper) titleWrapper.style.display = 'none';
                 populateOverrideSubjectsDropdown();
@@ -901,10 +1067,12 @@
             const listCard = document.getElementById('exam-schedules-list-card');
             const btn = document.getElementById('toggle-schedule-form-btn');
             const icon = btn.querySelector('svg');
+            const filterBtn = document.getElementById('toggle-exam-filter-btn');
 
             if (formCard.style.display === 'none') {
                 formCard.style.display = 'block';
                 if (listCard) listCard.style.display = 'none';
+                if (filterBtn) filterBtn.style.display = 'none';
                 btn.querySelector('span').textContent = 'View Exam List';
                 icon.style.transform = 'rotate(45deg)';
 
@@ -926,6 +1094,7 @@
             } else {
                 formCard.style.display = 'none';
                 if (listCard) listCard.style.display = 'block';
+                if (filterBtn) filterBtn.style.display = 'inline-flex';
                 btn.querySelector('span').textContent = 'Create Exam Schedule';
                 icon.style.transform = 'rotate(0deg)';
             }
@@ -1565,7 +1734,7 @@
 
         function editExamSchedule(id) {
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === id);
+            const sch = schedules.find(s => String(s.id) === String(id));
             if (!sch) return;
 
             // Open the form
@@ -1576,6 +1745,8 @@
 
             formCard.style.display = 'block';
             if (listCard) listCard.style.display = 'none';
+            const filterBtn = document.getElementById('toggle-exam-filter-btn');
+            if (filterBtn) filterBtn.style.display = 'none';
             btn.querySelector('span').textContent = 'View Exam List';
             icon.style.transform = 'rotate(45deg)';
 
@@ -1621,7 +1792,7 @@
 
         function viewExamSchedule(id) {
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === id);
+            const sch = schedules.find(s => String(s.id) === String(id));
             if (!sch) return;
 
             const distText = getScheduleMarksText(sch.class, sch.term, sch.subject, sch.examType);
@@ -1734,24 +1905,28 @@
                     }
                 });
 
+                const currentSelectedClass = document.getElementById('filter-schedule-class')?.value;
                 activeClasses.forEach(cls => {
                     const stats = classSummaryMap[cls];
                     const classColor = getClassColor(cls);
+                    const isClassSelected = (currentSelectedClass === cls);
                     cardsHtml += `
                         <div style="
-                            background: #ffffff;
-                            border: 1.5px solid #e2e8f0;
+                            background: ${isClassSelected ? '#eff6ff' : '#ffffff'};
+                            border: ${isClassSelected ? '2px solid #2563eb' : '1.5px solid #e2e8f0'};
                             border-radius: 12px;
                             padding: 10px 18px;
                             display: flex;
                             flex-direction: column;
                             min-width: 160px;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+                            box-shadow: ${isClassSelected ? '0 4px 14px rgba(37,99,235,0.18)' : '0 2px 8px rgba(0,0,0,0.03)'};
                             transition: all 0.2s ease;
                             cursor: pointer;
                         "
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.07)'; this.style.borderColor='#cbd5e1';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.03)'; this.style.borderColor='#e2e8f0';"
+                        onclick="filterByClassFromCard('${cls}')"
+                        title="${cls} শ্রেণির পরীক্ষার তালিকা ফিল্টার করতে ক্লিক করুন"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.07)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='${isClassSelected ? '0 4px 14px rgba(37,99,235,0.18)' : '0 2px 8px rgba(0,0,0,0.03)'}';"
                         >
                             <!-- Header -->
                             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 8px;">
@@ -1931,6 +2106,11 @@
             if (typeof renderDashboardRoutineSummary === 'function') {
                 renderDashboardRoutineSummary();
             }
+
+            // Keep Filter indicator badge and active state in sync
+            if (typeof updateFilterActiveIndicator === 'function') {
+                updateFilterActiveIndicator();
+            }
         }
 
         function renderSchedulePagination(totalPages) {
@@ -2000,9 +2180,12 @@
             }, 3000);
         }
 
-        function openExamMarksEntryModal(scheduleId) {
+        
+
+
+function openExamMarksEntryModal(scheduleId) {
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === scheduleId);
+            const sch = schedules.find(s => String(s.id) === String(scheduleId));
             if (!sch) {
                 alert("Exam Schedule not found!");
                 return;
@@ -2013,8 +2196,8 @@
             // Find matching subject code
             const subMap = loadSubjects();
             const classSubjects = subMap[sch.class] || [];
-            const subObj = classSubjects.find(s => s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
-            const subCode = subObj ? subObj.code : sch.subject;
+            const subObj = classSubjects.find(s => s && s.name && sch && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+            const subCode = subObj ? subObj.code : (sch.subjectCode || sch.subject || '101');
             activeExamSubjectCode = subCode;
 
             // Get Exam Type distribution dynamically according to sch.term and sch.examType
@@ -2067,7 +2250,14 @@
             renderExamMarksModalRows();
 
             // Open modal
-            document.getElementById('exam-marks-entry-modal').classList.add('active');
+            const modal = document.getElementById('exam-marks-entry-modal');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.visibility = 'visible';
+                modal.style.pointerEvents = 'auto';
+            }
         }
 
         let currentMarksEntryViewType = localStorage.getItem('school_exam_marks_entry_view_type') || 'roll';
@@ -2075,7 +2265,7 @@
         function populateActiveExamStudents(viewType = 'roll') {
             if (!activeExamScheduleId) return;
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const allStudents = loadStudents();
@@ -2156,37 +2346,54 @@
                 const pracIn = row.querySelector('.modal-mark-prac');
                 const absIn = row.querySelector('.modal-mark-absent');
 
-                const rawCq = cqIn ? cqIn.value.trim() : "";
-                const rawMcq = mcqIn ? mcqIn.value.trim() : "";
-                const rawPrac = pracIn ? pracIn.value.trim() : "";
+                const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
+                const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
+                const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
 
-                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" ||
-                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" ||
-                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS";
+                const rawCq = (hasActiveCq && cqIn) ? cqIn.value.trim() : "";
+                const rawMcq = (hasActiveMcq && mcqIn) ? mcqIn.value.trim() : "";
+                const rawPrac = (hasActivePrac && pracIn) ? pracIn.value.trim() : "";
+
+                const hasAType = (hasActiveCq && (rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT")) ||
+                    (hasActiveMcq && (rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT")) ||
+                    (hasActivePrac && (rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT"));
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") return;
-
                 const key = `marks_${student.id}_${activeExamScheduleId}`;
+
+                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
+                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
+                        delete savedMarks[key][activeExamSubjectCode];
+                        if (Object.keys(savedMarks[key]).length === 0) {
+                            delete savedMarks[key];
+                        }
+                    }
+                    return;
+                }
+
                 savedMarks[key] = savedMarks[key] || {};
                 if (isAbsent) {
                     savedMarks[key][activeExamSubjectCode] = {
                         total: 0,
                         isAbsent: true,
-                        cq: rawCq ? rawCq.toUpperCase() : "A",
-                        mcq: rawMcq ? rawMcq.toUpperCase() : "A",
-                        practical: rawPrac ? rawPrac.toUpperCase() : "A"
+                        cq: hasActiveCq ? (rawCq ? rawCq.toUpperCase() : "A") : undefined,
+                        mcq: hasActiveMcq ? (rawMcq ? rawMcq.toUpperCase() : "A") : undefined,
+                        practical: hasActivePrac ? (rawPrac ? rawPrac.toUpperCase() : "A") : undefined
                     };
                 } else {
-                    const nCq = parseInt(rawCq, 10) || 0;
-                    const nMcq = parseInt(rawMcq, 10) || 0;
-                    const nPrac = parseInt(rawPrac, 10) || 0;
+                    const nCq = parseInt(rawCq, 10);
+                    const nMcq = parseInt(rawMcq, 10);
+                    const nPrac = parseInt(rawPrac, 10);
+                    const hasCq = hasActiveCq && rawCq !== "" && !isNaN(nCq);
+                    const hasMcq = hasActiveMcq && rawMcq !== "" && !isNaN(nMcq);
+                    const hasPrac = hasActivePrac && rawPrac !== "" && !isNaN(nPrac);
+
                     savedMarks[key][activeExamSubjectCode] = {
-                        total: nCq + nMcq + nPrac,
+                        total: (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0),
                         isAbsent: false,
-                        cq: cqIn && rawCq !== "" ? nCq : undefined,
-                        mcq: mcqIn && rawMcq !== "" ? nMcq : undefined,
-                        practical: pracIn && rawPrac !== "" ? nPrac : undefined
+                        cq: hasCq ? nCq : undefined,
+                        mcq: hasMcq ? nMcq : undefined,
+                        practical: hasPrac ? nPrac : undefined
                     };
                 }
             });
@@ -2202,7 +2409,14 @@
         }
 
         function closeExamMarksEntryModal() {
-            document.getElementById('exam-marks-entry-modal').classList.remove('active');
+            const modal = document.getElementById('exam-marks-entry-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.style.opacity = '0';
+                modal.style.visibility = 'hidden';
+                modal.style.pointerEvents = 'none';
+            }
             activeExamScheduleId = null;
         }
 
@@ -2218,10 +2432,11 @@
 
             const savedMarks = loadStudentMarks();
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             const examVal = sch ? sch.term : '';
 
-            const searchKey = document.getElementById('modal-student-search-input').value.trim().toLowerCase();
+            const searchInput = document.getElementById('modal-student-search-input');
+            const searchKey = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
             let html = "";
             let lastRenderedSection = null;
@@ -2264,8 +2479,32 @@
                     `;
                 }
 
-                const key = `marks_${student.id}_${activeExamScheduleId}`;
-                const studentExamMarks = savedMarks[key] ? savedMarks[key][activeExamSubjectCode] : null;
+                let studentExamMarks = null;
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawId = toEnglishDigits(student.id || '').trim();
+                const possibleKeys = [
+                    `marks_${student.id}_${activeExamScheduleId}`,
+                    `marks_${rawReg}_${activeExamScheduleId}`,
+                    `marks_${rawId}_${activeExamScheduleId}`,
+                    `marks_${student.regNo}_${activeExamScheduleId}`,
+                    `marks_${student.studentId}_${activeExamScheduleId}`,
+                    `marks_${student.id}_${examVal}`,
+                    `marks_${rawReg}_${examVal}`
+                ];
+                for (const k of possibleKeys) {
+                    if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                        if (savedMarks[k][activeExamSubjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][activeExamSubjectCode];
+                            break;
+                        } else if (sch && sch.subject && savedMarks[k][sch.subject] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subject];
+                            break;
+                        } else if (sch && sch.subjectCode && savedMarks[k][sch.subjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subjectCode];
+                            break;
+                        }
+                    }
+                }
 
                 let isAbsent = false;
                 let cqVal = "";
@@ -2274,27 +2513,66 @@
 
                 if (studentExamMarks !== null && studentExamMarks !== undefined) {
                     if (typeof studentExamMarks === 'object') {
-                        isAbsent = studentExamMarks.isAbsent === true ||
-                            String(studentExamMarks.cq).toUpperCase() === "A" || String(studentExamMarks.cq).toUpperCase() === "ABS" ||
-                            String(studentExamMarks.mcq).toUpperCase() === "A" || String(studentExamMarks.mcq).toUpperCase() === "ABS";
-                        cqVal = studentExamMarks.cq !== undefined ? studentExamMarks.cq : "";
-                        mcqVal = studentExamMarks.mcq !== undefined ? studentExamMarks.mcq : "";
-                        pracVal = studentExamMarks.practical !== undefined ? studentExamMarks.practical : "";
+                        const rawCq = studentExamMarks.cq;
+                        const rawMcq = studentExamMarks.mcq;
+                        const rawPrac = studentExamMarks.practical;
+
+                        // Check if this is an unentered/pending placeholder stub
+                        const isPendingStub = (studentExamMarks.status === 'পেন্ডিং' && !studentExamMarks.fileName && !studentExamMarks.omrEvaluatedAt && (rawMcq === 0 || rawMcq === undefined || rawMcq === "") && (rawCq === 0 || rawCq === undefined || rawCq === ""));
+
+                        if (!isPendingStub) {
+                            const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
+                            const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
+                            const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
+
+                            const hasACq = hasActiveCq && (String(rawCq).toUpperCase() === "A" || String(rawCq).toUpperCase() === "ABS");
+                            const hasAMcq = hasActiveMcq && (String(rawMcq).toUpperCase() === "A" || String(rawMcq).toUpperCase() === "ABS");
+                            const hasAPrac = hasActivePrac && (String(rawPrac).toUpperCase() === "A" || String(rawPrac).toUpperCase() === "ABS");
+
+                            isAbsent = (studentExamMarks.isAbsent === true && (hasACq || hasAMcq || hasAPrac || (rawCq === undefined && rawMcq === undefined && rawPrac === undefined))) ||
+                                hasACq || hasAMcq || hasAPrac;
+
+                            if (hasActiveCq && rawCq !== undefined && rawCq !== null && rawCq !== "") {
+                                // If from OMR evaluation where CQ was defaulted to 0 without manual entry, leave CQ blank
+                                if (rawCq === 0 && studentExamMarks.omrEvaluatedAt && studentExamMarks.fileName && (studentExamMarks.mcq !== undefined && studentExamMarks.mcq !== null)) {
+                                    cqVal = "";
+                                } else {
+                                    cqVal = String(rawCq);
+                                }
+                            }
+                            if (hasActiveMcq && rawMcq !== undefined && rawMcq !== null && rawMcq !== "") {
+                                mcqVal = String(rawMcq);
+                            }
+                            if (hasActivePrac && rawPrac !== undefined && rawPrac !== null && rawPrac !== "") {
+                                pracVal = String(rawPrac);
+                            }
+                        }
                     } else {
-                        cqVal = studentExamMarks;
+                        cqVal = studentExamMarks !== "" ? String(studentExamMarks) : "";
                         isAbsent = String(cqVal).toUpperCase() === "A" || String(cqVal).toUpperCase() === "ABS";
                     }
                 }
 
                 // Calculate initial total, grade, status
-                const numCq = parseInt(cqVal, 10) || 0;
-                const numMcq = parseInt(mcqVal, 10) || 0;
-                const numPrac = parseInt(pracVal, 10) || 0;
-                const hasEnteredAny = isAbsent || cqVal !== "" || mcqVal !== "" || pracVal !== "";
-                const totalMark = isAbsent ? "A" : (hasEnteredAny ? (numCq + numMcq + numPrac) : "");
+                const numCq = parseInt(cqVal, 10);
+                const numMcq = parseInt(mcqVal, 10);
+                const numPrac = parseInt(pracVal, 10);
+
+                const hasCq = cqVal !== "" && !isNaN(numCq);
+                const hasMcq = mcqVal !== "" && !isNaN(numMcq);
+                const hasPrac = pracVal !== "" && !isNaN(numPrac);
+
+                const hasEnteredAny = isAbsent || hasCq || hasMcq || hasPrac;
+
+                let totalMark = "";
+                if (isAbsent) {
+                    totalMark = "A";
+                } else if (hasEnteredAny) {
+                    totalMark = (hasCq ? numCq : 0) + (hasMcq ? numMcq : 0) + (hasPrac ? numPrac : 0);
+                }
 
                 const gradeInfo = hasEnteredAny ? (isAbsent ? { name: "F", gp: 0 } : getGradeDetails(totalMark, activeExamDist.total, activeExamDist.passPercent, { cq: cqVal, mcq: mcqVal, practical: pracVal }, activeExamDist)) : { name: "-", gp: 0 };
-                const isPassed = !isAbsent && gradeInfo.gp > 0;
+                const isPassed = !isAbsent && hasEnteredAny && gradeInfo.gp > 0;
 
                 // ID / Reg display text depending on current view type
                 let idDisplay = "";
@@ -2369,20 +2647,30 @@
             const mcqIn = row.querySelector('.modal-mark-mcq');
             const pracIn = row.querySelector('.modal-mark-prac');
 
-            const rawCq = cqIn ? cqIn.value.trim() : "";
-            const rawMcq = mcqIn ? mcqIn.value.trim() : "";
-            const rawPrac = pracIn ? pracIn.value.trim() : "";
+            const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
+            const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
+            const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
 
-            const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT" ||
-                rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT" ||
-                rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
+            const rawCq = (hasActiveCq && cqIn) ? cqIn.value.trim() : "";
+            const rawMcq = (hasActiveMcq && mcqIn) ? mcqIn.value.trim() : "";
+            const rawPrac = (hasActivePrac && pracIn) ? pracIn.value.trim() : "";
+
+            const hasAType = (hasActiveCq && (rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT")) ||
+                (hasActiveMcq && (rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT")) ||
+                (hasActivePrac && (rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT"));
 
             if (inputEl && inputEl.type === 'checkbox') {
                 if (absIn.checked) {
-                    if (cqIn && (!rawCq || rawCq === "")) cqIn.value = "A";
+                    if (hasActiveCq && cqIn && (!rawCq || rawCq === "")) cqIn.value = "A";
                 }
             } else if (hasAType) {
                 if (absIn) absIn.checked = true;
+            } else {
+                if (absIn) absIn.checked = false;
+                // If inactive inputs had previous stale 'A' values, clean them up
+                if (!hasActiveCq && cqIn && (cqIn.value === "A" || cqIn.value === "ABS")) cqIn.value = "";
+                if (!hasActiveMcq && mcqIn && (mcqIn.value === "A" || mcqIn.value === "ABS")) mcqIn.value = "";
+                if (!hasActivePrac && pracIn && (pracIn.value === "A" || pracIn.value === "ABS")) pracIn.value = "";
             }
 
             const isAbsent = (absIn && absIn.checked) || hasAType;
@@ -2392,7 +2680,7 @@
             const nPrac = parseInt(rawPrac, 10);
 
             // Validation styling
-            if (cqIn) {
+            if (cqIn && hasActiveCq) {
                 if (rawCq !== "" && rawCq.toUpperCase() !== "A" && rawCq.toUpperCase() !== "ABS" && (isNaN(nCq) || nCq < 0 || nCq > activeExamDist.cq)) {
                     cqIn.style.borderColor = "#dc2626";
                 } else {
@@ -2400,7 +2688,7 @@
                 }
             }
 
-            if (mcqIn) {
+            if (mcqIn && hasActiveMcq) {
                 if (rawMcq !== "" && rawMcq.toUpperCase() !== "A" && rawMcq.toUpperCase() !== "ABS" && (isNaN(nMcq) || nMcq < 0 || nMcq > activeExamDist.mcq)) {
                     mcqIn.style.borderColor = "#dc2626";
                 } else {
@@ -2408,7 +2696,7 @@
                 }
             }
 
-            if (pracIn) {
+            if (pracIn && hasActivePrac) {
                 if (rawPrac !== "" && rawPrac.toUpperCase() !== "A" && rawPrac.toUpperCase() !== "ABS" && (isNaN(nPrac) || nPrac < 0 || nPrac > activeExamDist.practical)) {
                     pracIn.style.borderColor = "#dc2626";
                 } else {
@@ -2417,7 +2705,7 @@
             }
 
             const hasEnteredAny = isAbsent || rawCq !== "" || rawMcq !== "" || rawPrac !== "";
-            const totalMark = isAbsent ? "A" : (hasEnteredAny ? ((isNaN(nCq) ? 0 : nCq) + (isNaN(nMcq) ? 0 : nMcq) + (isNaN(nPrac) ? 0 : nPrac)) : "");
+            const totalMark = isAbsent ? "A" : (hasEnteredAny ? (((hasActiveCq && !isNaN(nCq)) ? nCq : 0) + ((hasActiveMcq && !isNaN(nMcq)) ? nMcq : 0) + ((hasActivePrac && !isNaN(nPrac)) ? nPrac : 0)) : "");
 
             const totalGradeCell = document.getElementById(`modal-cell-totalgrade-${studentId}`);
 
@@ -2447,6 +2735,10 @@
             let absentCount = 0;
             let totalSum = 0;
 
+            const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
+            const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
+            const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
+
             const studentMarksList = [];
 
             activeExamStudents.forEach(student => {
@@ -2457,14 +2749,14 @@
                     const cqIn = row.querySelector('.modal-mark-cq');
                     const mcqIn = row.querySelector('.modal-mark-mcq');
                     const pracIn = row.querySelector('.modal-mark-prac');
-                    rawCq = cqIn ? cqIn.value.trim() : "";
-                    rawMcq = mcqIn ? mcqIn.value.trim() : "";
-                    rawPrac = pracIn ? pracIn.value.trim() : "";
+                    rawCq = (hasActiveCq && cqIn) ? cqIn.value.trim() : "";
+                    rawMcq = (hasActiveMcq && mcqIn) ? mcqIn.value.trim() : "";
+                    rawPrac = (hasActivePrac && pracIn) ? pracIn.value.trim() : "";
                 }
 
-                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT" ||
-                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT" ||
-                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
+                const hasAType = (hasActiveCq && (rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT")) ||
+                    (hasActiveMcq && (rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT")) ||
+                    (hasActivePrac && (rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT"));
                 const isAbsent = (absIn && absIn.checked) || hasAType;
                 const hasEntered = isAbsent || rawCq !== "" || rawMcq !== "" || rawPrac !== "";
                 let sum = 0;
@@ -2528,11 +2820,15 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const examVal = sch.term;
             const savedMarks = loadStudentMarks();
+
+            const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
+            const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
+            const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
 
             let isValid = true;
             let countSaved = 0;
@@ -2546,44 +2842,59 @@
                 const mcqIn = row.querySelector('.modal-mark-mcq');
                 const pracIn = row.querySelector('.modal-mark-prac');
 
-                const rawCq = cqIn ? cqIn.value.trim() : "";
-                const rawMcq = mcqIn ? mcqIn.value.trim() : "";
-                const rawPrac = pracIn ? pracIn.value.trim() : "";
+                const rawCq = (hasActiveCq && cqIn) ? cqIn.value.trim() : "";
+                const rawMcq = (hasActiveMcq && mcqIn) ? mcqIn.value.trim() : "";
+                const rawPrac = (hasActivePrac && pracIn) ? pracIn.value.trim() : "";
 
-                const hasAType = rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT" ||
-                    rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT" ||
-                    rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT";
+                const hasAType = (hasActiveCq && (rawCq.toUpperCase() === "A" || rawCq.toUpperCase() === "ABS" || rawCq.toUpperCase() === "ABSENT")) ||
+                    (hasActiveMcq && (rawMcq.toUpperCase() === "A" || rawMcq.toUpperCase() === "ABS" || rawMcq.toUpperCase() === "ABSENT")) ||
+                    (hasActivePrac && (rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT"));
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") return;
-
                 const key = `marks_${student.id}_${activeExamScheduleId}`;
+
+                if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
+                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
+                        delete savedMarks[key][activeExamSubjectCode];
+                        if (Object.keys(savedMarks[key]).length === 0) {
+                            delete savedMarks[key];
+                        }
+                    }
+                    return;
+                }
+
                 savedMarks[key] = savedMarks[key] || {};
 
                 if (isAbsent) {
                     savedMarks[key][activeExamSubjectCode] = {
                         total: 0,
                         isAbsent: true,
-                        cq: rawCq ? rawCq.toUpperCase() : "A",
-                        mcq: rawMcq ? rawMcq.toUpperCase() : "A",
-                        practical: rawPrac ? rawPrac.toUpperCase() : "A"
+                        cq: hasActiveCq ? (rawCq ? rawCq.toUpperCase() : "A") : undefined,
+                        mcq: hasActiveMcq ? (rawMcq ? rawMcq.toUpperCase() : "A") : undefined,
+                        practical: hasActivePrac ? (rawPrac ? rawPrac.toUpperCase() : "A") : undefined
                     };
                     countSaved++;
                 } else {
-                    const nCq = parseInt(rawCq, 10) || 0;
-                    const nMcq = parseInt(rawMcq, 10) || 0;
-                    const nPrac = parseInt(rawPrac, 10) || 0;
+                    const nCq = parseInt(rawCq, 10);
+                    const nMcq = parseInt(rawMcq, 10);
+                    const nPrac = parseInt(rawPrac, 10);
 
-                    if (rawCq !== "" && (isNaN(nCq) || nCq < 0 || nCq > activeExamDist.cq)) isValid = false;
-                    if (rawMcq !== "" && (isNaN(nMcq) || nMcq < 0 || nMcq > activeExamDist.mcq)) isValid = false;
-                    if (rawPrac !== "" && (isNaN(nPrac) || nPrac < 0 || nPrac > activeExamDist.practical)) isValid = false;
+                    const hasCq = hasActiveCq && rawCq !== "" && !isNaN(nCq);
+                    const hasMcq = hasActiveMcq && rawMcq !== "" && !isNaN(nMcq);
+                    const hasPrac = hasActivePrac && rawPrac !== "" && !isNaN(nPrac);
+
+                    if (hasActiveCq && rawCq !== "" && (!hasCq || nCq < 0 || nCq > activeExamDist.cq)) isValid = false;
+                    if (hasActiveMcq && rawMcq !== "" && (!hasMcq || nMcq < 0 || nMcq > activeExamDist.mcq)) isValid = false;
+                    if (hasActivePrac && rawPrac !== "" && (!hasPrac || nPrac < 0 || nPrac > activeExamDist.practical)) isValid = false;
+
+                    const totalVal = (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0);
 
                     savedMarks[key][activeExamSubjectCode] = {
-                        total: nCq + nMcq + nPrac,
+                        total: totalVal,
                         isAbsent: false,
-                        cq: cqIn && rawCq !== "" ? nCq : undefined,
-                        mcq: mcqIn && rawMcq !== "" ? nMcq : undefined,
-                        practical: pracIn && rawPrac !== "" ? nPrac : undefined
+                        cq: hasCq ? nCq : undefined,
+                        mcq: hasMcq ? nMcq : undefined,
+                        practical: hasPrac ? nPrac : undefined
                     };
                     countSaved++;
                 }
@@ -2610,9 +2921,11 @@
 
             if (sch) {
                 sch.marksEntryTime = formattedTimestamp;
-                const scheduleIdx = schedules.findIndex(s => s.id === activeExamScheduleId);
+                sch.hasMarks = true;
+                const scheduleIdx = schedules.findIndex(s => String(s.id) === String(activeExamScheduleId));
                 if (scheduleIdx !== -1) {
                     schedules[scheduleIdx].marksEntryTime = formattedTimestamp;
+                    schedules[scheduleIdx].hasMarks = true;
                 }
                 localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
                 if (sch.term) {
@@ -2633,7 +2946,7 @@
         function downloadExamMarksTemplate() {
             if (!activeExamScheduleId) return;
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const savedMarks = loadStudentMarks();
@@ -2656,8 +2969,32 @@
             const rowsAoa = [line1, line2, line3, line4, line5, headers];
 
             activeExamStudents.forEach((student, idx) => {
-                const key = `marks_${student.id}_${activeExamScheduleId}`;
-                const studentExamMarks = savedMarks[key] ? savedMarks[key][activeExamSubjectCode] : null;
+                let studentExamMarks = null;
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawId = toEnglishDigits(student.id || '').trim();
+                const possibleKeys = [
+                    `marks_${student.id}_${activeExamScheduleId}`,
+                    `marks_${rawReg}_${activeExamScheduleId}`,
+                    `marks_${rawId}_${activeExamScheduleId}`,
+                    `marks_${student.regNo}_${activeExamScheduleId}`,
+                    `marks_${student.studentId}_${activeExamScheduleId}`,
+                    `marks_${student.id}_${examVal}`,
+                    `marks_${rawReg}_${examVal}`
+                ];
+                for (const k of possibleKeys) {
+                    if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                        if (savedMarks[k][activeExamSubjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][activeExamSubjectCode];
+                            break;
+                        } else if (sch && sch.subject && savedMarks[k][sch.subject] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subject];
+                            break;
+                        } else if (sch && sch.subjectCode && savedMarks[k][sch.subjectCode] !== undefined) {
+                            studentExamMarks = savedMarks[k][sch.subjectCode];
+                            break;
+                        }
+                    }
+                }
 
                 let isAbsent = false;
                 let cqVal = "";
@@ -2768,6 +3105,18 @@
             XLSX.writeFile(workbook, fileName);
             showExamToast("Exam Marks Excel (.xlsx) Template downloaded successfully!", true);
         }
+
+                window.openExamMarksEntryModal = openExamMarksEntryModal;
+        window.closeExamMarksEntryModal = closeExamMarksEntryModal;
+        window.saveExamMarksModal = saveExamMarksModal;
+        window.downloadExamMarksTemplate = downloadExamMarksTemplate;
+        window.filterExamMarksModalStudents = filterExamMarksModalStudents;
+        window.changeMarksEntryViewType = changeMarksEntryViewType;
+        window.onExamMarkInputChange = onExamMarkInputChange;
+        window.handleInputKeyNavigation = handleInputKeyNavigation;
+        window.editExamSchedule = editExamSchedule;
+        window.viewExamSchedule = viewExamSchedule;
+        window.deleteExamSchedule = deleteExamSchedule;
 
         function triggerImportExamMarks() {
             const fileIn = document.getElementById('exam-marks-import-file');
@@ -2918,7 +3267,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             // Populate Section Filter Dropdown
@@ -2959,7 +3308,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const sectionFilter = document.getElementById('marksheet-filter-section') ? document.getElementById('marksheet-filter-section').value : 'All';
@@ -3373,7 +3722,7 @@
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
-            const sch = schedules.find(s => s.id === activeExamScheduleId);
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
             if (!sch) return;
 
             const sectionFilter = document.getElementById('marksheet-filter-section') ? document.getElementById('marksheet-filter-section').value : 'All';
@@ -5340,24 +5689,33 @@
 
             const editClass = document.getElementById('subject-edit-class').value;
             const editCode = document.getElementById('subject-edit-code').value;
+            const editOriginalName = (document.getElementById('subject-edit-name')?.value || '').trim();
 
             const subjectsMap = loadSubjects();
 
             if (editClass && editCode) {
                 // Edit Mode
+                const editCodeClean = (editCode || '').trim().toLowerCase();
+                const editOrigNameClean = editOriginalName.toLowerCase();
+                const newNameClean = name.toLowerCase();
+
                 if (syncAll) {
                     let updatedCount = 0;
-                    const targetNameClean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const editCodeClean = (editCode || '').trim().toLowerCase();
 
                     Object.keys(subjectsMap).forEach(cls => {
                         const list = subjectsMap[cls] || [];
                         list.forEach(s => {
                             if (!s) return;
-                            const sNameClean = (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                             const sCodeClean = (s.code || '').trim().toLowerCase();
+                            const sNameClean = (s.name || '').trim().toLowerCase();
+                            const sShortClean = (s.shortName || '').trim().toLowerCase();
 
-                            if (sCodeClean === editCodeClean || (sNameClean && sNameClean === targetNameClean) || s.shortName === editCode) {
+                            const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+                                (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                                (editOrigNameClean && sShortClean === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+
+                            if (isMatch) {
                                 s.name = name;
                                 s.nameBn = nameBn;
                                 s.shortName = shortName;
@@ -5375,6 +5733,43 @@
                         });
                     });
 
+                    // Propagate subject rename to schedules and routines if name was changed
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                            let schedUpdated = false;
+                            schedules.forEach(sch => {
+                                if (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode)) {
+                                    sch.subject = name;
+                                    schedUpdated = true;
+                                }
+                            });
+                            if (schedUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                                fetch('/api/db/set', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+
+                        try {
+                            const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                            let routUpdated = false;
+                            routines.forEach(r => {
+                                if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+                                    r.subject = name;
+                                    r.subjectName = name;
+                                    routUpdated = true;
+                                }
+                            });
+                            if (routUpdated) {
+                                localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                            }
+                        } catch (e) { }
+                    }
+
                     persistAcademicSubjectsSync(subjectsMap);
                     resetSubjectForm();
                     renderSubjectList();
@@ -5384,7 +5779,14 @@
                 } else {
                     targetClasses.forEach(classVal => {
                         const classSubs = subjectsMap[classVal] || [];
-                        const idx = classSubs.findIndex(s => s.code === editCode || (s.name || '').toLowerCase() === name.toLowerCase());
+                        const idx = classSubs.findIndex(s => {
+                            if (!s) return false;
+                            const sCodeClean = (s.code || '').trim().toLowerCase();
+                            const sNameClean = (s.name || '').trim().toLowerCase();
+                            return (editCodeClean && sCodeClean === editCodeClean) ||
+                                (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+                        });
                         const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
                         if (idx !== -1) {
                             classSubs[idx] = { code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec };
@@ -5393,6 +5795,29 @@
                         }
                         subjectsMap[classVal] = classSubs;
                     });
+
+                    // Propagate subject rename to schedules and routines
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                            let schedUpdated = false;
+                            schedules.forEach(sch => {
+                                if (targetClasses.includes(sch.class) && (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode))) {
+                                    sch.subject = name;
+                                    schedUpdated = true;
+                                }
+                            });
+                            if (schedUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                                fetch('/api/db/set', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+                    }
+
                     persistAcademicSubjectsSync(subjectsMap);
                     resetSubjectForm();
                     renderSubjectList();
@@ -5485,12 +5910,26 @@
 
             document.getElementById('subject-edit-class').value = classVal;
             document.getElementById('subject-edit-code').value = code;
+            if (document.getElementById('subject-edit-name')) {
+                document.getElementById('subject-edit-name').value = sub.name || '';
+            }
 
             const classesContainingSub = [];
-            const subNameClean = (sub.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const subNameClean = (sub.name || '').trim().toLowerCase();
+            const subShortClean = (sub.shortName || '').trim().toLowerCase();
+            const subCodeClean = (code || '').trim().toLowerCase();
+
             Object.keys(subjectsMap).forEach(cls => {
                 const list = subjectsMap[cls] || [];
-                if (list.some(s => s.code === code || (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') === subNameClean)) {
+                if (list.some(s => {
+                    if (!s) return false;
+                    const sCode = (s.code || '').trim().toLowerCase();
+                    const sName = (s.name || '').trim().toLowerCase();
+                    const sShort = (s.shortName || '').trim().toLowerCase();
+                    return (sCode && sCode === subCodeClean) ||
+                        (subNameClean && sName === subNameClean) ||
+                        (subShortClean && sShort === subShortClean);
+                })) {
                     classesContainingSub.push(cls);
                 }
             });
@@ -5534,6 +5973,7 @@
             document.getElementById('subject-form').reset();
             document.getElementById('subject-edit-class').value = "";
             document.getElementById('subject-edit-code').value = "";
+            if (document.getElementById('subject-edit-name')) document.getElementById('subject-edit-name').value = "";
             if (document.getElementById('subject-name-bn')) document.getElementById('subject-name-bn').value = "";
             document.getElementById('subject-is-optional').checked = false;
             const containerSec = document.getElementById('subject-section-checkboxes');
@@ -5668,6 +6108,9 @@
 
             document.getElementById('modal-edit-class').value = classVal;
             document.getElementById('modal-edit-code').value = code;
+            if (document.getElementById('modal-edit-name')) {
+                document.getElementById('modal-edit-name').value = sub.name || '';
+            }
 
             document.getElementById('modal-subject-class').value = classVal;
             document.getElementById('modal-subject-name').value = sub.name;
@@ -5684,6 +6127,9 @@
         function closeSubjectModal() {
             document.getElementById('subject-modal').classList.remove('active');
             document.getElementById('modal-subject-form').reset();
+            if (document.getElementById('modal-edit-name')) {
+                document.getElementById('modal-edit-name').value = '';
+            }
         }
 
         function saveModalSubject(event) {
@@ -5699,22 +6145,31 @@
 
             const editClass = document.getElementById('modal-edit-class').value;
             const editCode = document.getElementById('modal-edit-code').value;
+            const editOriginalName = (document.getElementById('modal-edit-name')?.value || '').trim();
 
             const subjectsMap = loadSubjects();
 
+            const editCodeClean = (editCode || '').trim().toLowerCase();
+            const editOrigNameClean = editOriginalName.toLowerCase();
+            const newNameClean = name.toLowerCase();
+
             if (syncAll) {
                 let updatedCount = 0;
-                const targetNameClean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const editCodeClean = (editCode || '').trim().toLowerCase();
 
                 Object.keys(subjectsMap).forEach(cls => {
                     const list = subjectsMap[cls] || [];
                     list.forEach(s => {
                         if (!s) return;
-                        const sNameClean = (s.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                         const sCodeClean = (s.code || '').trim().toLowerCase();
+                        const sNameClean = (s.name || '').trim().toLowerCase();
+                        const sShortClean = (s.shortName || '').trim().toLowerCase();
 
-                        if (sCodeClean === editCodeClean || (sNameClean && sNameClean === targetNameClean) || s.shortName === editCode) {
+                        const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+                            (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                            (editOrigNameClean && sShortClean === editOrigNameClean) ||
+                            (newNameClean && sNameClean === newNameClean);
+
+                        if (isMatch) {
                             s.name = name;
                             s.nameBn = nameBn;
                             s.shortName = shortName;
@@ -5726,6 +6181,43 @@
                         }
                     });
                 });
+
+                // Propagate subject rename to schedules and routines
+                if (editOriginalName && editOriginalName !== name) {
+                    try {
+                        const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                        let schedUpdated = false;
+                        schedules.forEach(sch => {
+                            if (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode)) {
+                                sch.subject = name;
+                                schedUpdated = true;
+                            }
+                        });
+                        if (schedUpdated) {
+                            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                            fetch('/api/db/set', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                            }).catch(() => { });
+                        }
+                    } catch (e) { }
+
+                    try {
+                        const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                        let routUpdated = false;
+                        routines.forEach(r => {
+                            if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+                                r.subject = name;
+                                r.subjectName = name;
+                                routUpdated = true;
+                            }
+                        });
+                        if (routUpdated) {
+                            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                        }
+                    } catch (e) { }
+                }
 
                 persistAcademicSubjectsSync(subjectsMap);
                 closeSubjectModal();
@@ -5746,16 +6238,44 @@
             }
 
             // Remove old entry
-            const idx = oldClassSubjects.findIndex(s => s.code === editCode);
+            const idx = oldClassSubjects.findIndex(s => {
+                if (!s) return false;
+                const sCodeClean = (s.code || '').trim().toLowerCase();
+                const sNameClean = (s.name || '').trim().toLowerCase();
+                return (editCodeClean && sCodeClean === editCodeClean) ||
+                    (editOrigNameClean && sNameClean === editOrigNameClean);
+            });
             if (idx !== -1) {
                 oldClassSubjects.splice(idx, 1);
             }
             subjectsMap[editClass] = oldClassSubjects;
 
             // Add updated entry
-            const targetClassSubjects = subjectsMap[classVal] || [];
+            const targetClassSubjects = (classVal === editClass) ? oldClassSubjects : (subjectsMap[classVal] || []);
             targetClassSubjects.push({ code, name, nameBn, shortName, isOptional });
             subjectsMap[classVal] = targetClassSubjects;
+
+            // Propagate subject rename to schedules and routines
+            if (editOriginalName && editOriginalName !== name) {
+                try {
+                    const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                    let schedUpdated = false;
+                    schedules.forEach(sch => {
+                        if (sch.class === editClass && (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode))) {
+                            sch.subject = name;
+                            schedUpdated = true;
+                        }
+                    });
+                    if (schedUpdated) {
+                        localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                        fetch('/api/db/set', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                        }).catch(() => { });
+                    }
+                } catch (e) { }
+            }
 
             persistAcademicSubjectsSync(subjectsMap);
 
@@ -5840,6 +6360,8 @@
             }
         }
 
+        let previousValidScheduleExamName = '';
+
         function populateExamDropdowns() {
             const types = loadExamTypes();
             const selects = ['schedule-exam-name', 'search-result-exam', 'input-mark-exam'];
@@ -5848,12 +6370,51 @@
                 if (el) {
                     const currentVal = el.value;
                     let html = types.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+                    if (id === 'schedule-exam-name') {
+                        html += `
+                            <option value="__ACTION_UPDATE__" style="color: #2563eb; font-weight: 700; background: #eff6ff;">✏️ পরীক্ষার নাম পরিবর্তন / আপডেট করুন...</option>
+                            <option value="__ACTION_CREATE__" style="color: #16a34a; font-weight: 700; background: #f0fdf4;">➕ নতুন পরীক্ষার নাম তৈরি করুন...</option>
+                        `;
+                    }
                     el.innerHTML = html;
                     if (currentVal && types.some(t => t.name === currentVal)) {
                         el.value = currentVal;
+                    } else if (types.length > 0 && id === 'schedule-exam-name') {
+                        el.value = types[0].name;
+                    }
+                    if (id === 'schedule-exam-name' && el.value && !el.value.startsWith('__ACTION_')) {
+                        previousValidScheduleExamName = el.value;
                     }
                 }
             });
+            populateScheduleExamTypesDropdown();
+        }
+
+        function onScheduleExamNameSelectChange() {
+            const el = document.getElementById('schedule-exam-name');
+            if (!el) return;
+            const val = el.value;
+            if (val === '__ACTION_UPDATE__') {
+                if (previousValidScheduleExamName) {
+                    el.value = previousValidScheduleExamName;
+                } else {
+                    const types = loadExamTypes();
+                    if (types.length > 0) el.value = types[0].name;
+                }
+                openExamNameUpdateModal();
+                return;
+            }
+            if (val === '__ACTION_CREATE__') {
+                if (previousValidScheduleExamName) {
+                    el.value = previousValidScheduleExamName;
+                } else {
+                    const types = loadExamTypes();
+                    if (types.length > 0) el.value = types[0].name;
+                }
+                openExamNameCreateModal();
+                return;
+            }
+            previousValidScheduleExamName = val;
             populateScheduleExamTypesDropdown();
         }
 
@@ -6111,6 +6672,11 @@
             if (typeof renderScheduleList === 'function') renderScheduleList();
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
             if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+            if (typeof renderExamNamesSubView === 'function') renderExamNamesSubView();
+            const curSubExam = document.getElementById('subview-exam-name-select-target')?.value;
+            if (curSubExam && typeof renderExamSubTypesInSubview === 'function') renderExamSubTypesInSubview(curSubExam);
+            const curModalExam = document.getElementById('modal-update-exam-name-old')?.value;
+            if (curModalExam && typeof renderExamSubTypesInModal === 'function') renderExamSubTypesInModal(curModalExam);
         }
 
         function deleteExamSubType(examId, subTypeId, event) {
@@ -6144,6 +6710,11 @@
             if (typeof renderScheduleList === 'function') renderScheduleList();
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
             if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+            if (typeof renderExamNamesSubView === 'function') renderExamNamesSubView();
+            const curSubExamD = document.getElementById('subview-exam-name-select-target')?.value;
+            if (curSubExamD && typeof renderExamSubTypesInSubview === 'function') renderExamSubTypesInSubview(curSubExamD);
+            const curModalExamD = document.getElementById('modal-update-exam-name-old')?.value;
+            if (curModalExamD && typeof renderExamSubTypesInModal === 'function') renderExamSubTypesInModal(curModalExamD);
         }
 
         function deleteExamNameFull(examId, event) {
@@ -6872,7 +7443,7 @@
             const types = loadExamTypes();
             const duplicate = types.find(t => t.name.toLowerCase() === name.toLowerCase());
             if (duplicate) {
-                alert(`"${name}" নামের একটি পরীক্ষা ইতিমধ্যে তালিকায় বিদ্যমান আছে!`);
+                alert(`"${name}" নামের একটি পরীক্ষা ইতিমধ্যে তালিকায় বিদ্যমান আছে!`);
                 return;
             }
 
@@ -6903,11 +7474,18 @@
             localStorage.setItem('school_exam_types', JSON.stringify(types));
 
             // Expand the newly created exam in master-detail table
-            expandedExamTypeIds.add(newId);
+            if (typeof expandedExamTypeIds !== 'undefined') {
+                expandedExamTypeIds.add(newId);
+            }
 
             closeExamNameCreateModal();
             renderExamTypes();
             populateExamDropdowns();
+            const schedSelect = document.getElementById('schedule-exam-name');
+            if (schedSelect) {
+                schedSelect.value = name;
+                previousValidScheduleExamName = name;
+            }
             populateExamTypeNamesDropdown(name);
             populateScheduleExamTypesDropdown();
             if (typeof renderScheduleList === 'function') renderScheduleList();
@@ -6917,6 +7495,862 @@
             alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে তৈরি হয়েছে! এখন প্রয়োজন অনুসারে এর অধীনে আরও Exam Type যুক্ত করতে পারেন।`);
         }
 
+        // --- EXAM NAME UPDATE & MANAGEMENT CONTROLLERS ---
+        function openExamNameUpdateModal(targetName = '') {
+            const scheduleSelect = document.getElementById('schedule-exam-name');
+            let currentName = targetName;
+            if (!currentName && scheduleSelect) {
+                const selVal = scheduleSelect.value;
+                if (selVal && !selVal.startsWith('__ACTION_')) {
+                    currentName = selVal;
+                }
+            }
+            if (!currentName) {
+                const types = loadExamTypes();
+                if (types.length > 0) currentName = types[0].name;
+            }
+
+            const oldInput = document.getElementById('modal-update-exam-name-old');
+            const nameInput = document.getElementById('modal-update-exam-name-input');
+            if (oldInput) oldInput.value = currentName || '';
+            if (nameInput) nameInput.value = currentName || '';
+
+            renderExamNamesListInUpdateModal();
+            if (typeof renderExamSubTypesInModal === 'function') renderExamSubTypesInModal(currentName);
+
+            const modal = document.getElementById('exam-name-update-modal');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    if (nameInput) {
+                        nameInput.focus();
+                        nameInput.select();
+                    }
+                }, 100);
+            }
+        }
+
+        function closeExamNameUpdateModal() {
+            const modal = document.getElementById('exam-name-update-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        }
+
+        function setUpdateExamNamePreset(namePrefix) {
+            const input = document.getElementById('modal-update-exam-name-input');
+            if (input) {
+                const currentVal = input.value.trim();
+                const yearMatch = currentVal.match(/\b(20\d\d)\b/);
+                const yearStr = yearMatch ? ` ${yearMatch[1]}` : ` ${new Date().getFullYear()}`;
+                input.value = `${namePrefix}${yearStr}`;
+                input.focus();
+                input.select();
+            }
+        }
+
+        function selectExamNameToEdit(examName) {
+            if (typeof renderExamSubTypesInModal === 'function') renderExamSubTypesInModal(examName);
+            const oldInput = document.getElementById('modal-update-exam-name-old');
+            const nameInput = document.getElementById('modal-update-exam-name-input');
+            if (oldInput) oldInput.value = examName;
+            if (nameInput) {
+                nameInput.value = examName;
+                nameInput.focus();
+                nameInput.select();
+            }
+        }
+
+        function deleteExamNameFromList(examName) {
+            if (!examName) return;
+            if (!confirm(`আপনি কি নিশ্চিত যে "${examName}" পরীক্ষার নামটি মুছে ফেলতে চান?`)) {
+                return;
+            }
+            let types = loadExamTypes();
+            const filtered = types.filter(t => t.name.toLowerCase() !== examName.toLowerCase());
+            if (filtered.length === 0) {
+                alert("তালিকায় অন্তত একটি পরীক্ষার নাম থাকতে হবে, সব মুছে ফেলা যাবে না!");
+                return;
+            }
+            localStorage.setItem('school_exam_types', JSON.stringify(filtered));
+            renderExamNamesListInUpdateModal();
+            populateExamDropdowns();
+            renderExamTypes();
+            if (typeof renderScheduleList === 'function') renderScheduleList();
+            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+        }
+
+        function renderExamNamesListInUpdateModal() {
+            const tbody = document.getElementById('modal-exam-names-list-tbody');
+            if (!tbody) return;
+            const types = loadExamTypes();
+            const currentOld = document.getElementById('modal-update-exam-name-old')?.value || '';
+
+            if (types.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:14px; color:#64748b;">কোনো সংরক্ষিত পরীক্ষার নাম পাওয়া যায়নি</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            types.forEach((t, idx) => {
+                const isSelected = t.name.toLowerCase() === currentOld.toLowerCase();
+                const safeName = typeof escapeHtmlExam === 'function' ? escapeHtmlExam(t.name) : t.name;
+                const encodedName = encodeURIComponent(t.name);
+                const subCount = (t.examTypes && t.examTypes.length) || 1;
+                html += `
+                    <tr style="border-bottom: 1px solid #f1f5f9; ${isSelected ? 'background: #eff6ff;' : ''}">
+                        <td style="padding: 8px 10px; text-align: center; font-weight: 700; color: #64748b;">${idx + 1}</td>
+                        <td style="padding: 8px 10px; font-weight: 700; color: #1e293b;">
+                            <span style="font-size: 0.95rem;">${safeName}</span>
+                            ${isSelected ? '<span style="margin-left: 6px; font-size: 0.72rem; background: #2563eb; color: #ffffff; padding: 2px 6px; border-radius: 4px;">বর্তমান নির্বাচন</span>' : ''}
+                            <span style="margin-left: 6px; font-size: 0.75rem; color: #0284c7; background: #e0f2fe; padding: 2px 7px; border-radius: 12px; font-weight: 600;">${subCount} Exam Type(s)</span>
+                        </td>
+                        <td style="padding: 8px 10px; text-align: right; white-space: nowrap;">
+                            <button type="button" onclick="selectExamNameToEdit(decodeURIComponent('${encodedName}'))"
+                                style="background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; padding: 3px 9px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-right: 4px;">
+                                ✏️ এডিট
+                            </button>
+                            <button type="button" onclick="deleteExamNameFromList(decodeURIComponent('${encodedName}'))"
+                                style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function saveUpdatedExamName(event) {
+            if (event) event.preventDefault();
+            const oldInput = document.getElementById('modal-update-exam-name-old');
+            const nameInput = document.getElementById('modal-update-exam-name-input');
+            const syncCheckbox = document.getElementById('modal-sync-schedules-checkbox');
+
+            const oldName = oldInput ? oldInput.value.trim() : '';
+            const newName = nameInput ? nameInput.value.trim() : '';
+
+            if (!newName) {
+                alert("অনুগ্রহ করে পরীক্ষার নাম লিখুন (Please enter an Exam Name)!");
+                if (nameInput) nameInput.focus();
+                return;
+            }
+
+            let types = loadExamTypes();
+
+            // Check if user changed the name or if it already exists under another item
+            const duplicate = types.find(t => t.name.toLowerCase() === newName.toLowerCase() && t.name.toLowerCase() !== oldName.toLowerCase());
+            if (duplicate) {
+                alert(`"${newName}" নামের একটি পরীক্ষা ইতিমধ্যে তালিকায় বিদ্যমান আছে!`);
+                return;
+            }
+
+            let updated = false;
+            if (oldName) {
+                const targetExam = types.find(t => t.name.toLowerCase() === oldName.toLowerCase());
+                if (targetExam) {
+                    targetExam.name = newName;
+                    updated = true;
+                }
+            }
+
+            if (!updated) {
+                // If old item not found, create new exam type entry
+                const newId = Date.now().toString();
+                types.push(normalizeExamTypeObject({
+                    id: newId,
+                    name: newName,
+                    type: "Main Exam",
+                    defaultCQ: 70,
+                    defaultMCQ: 30,
+                    defaultPractical: 0,
+                    passMarkPercent: 33,
+                    overrides: [],
+                    examTypes: [
+                        {
+                            id: `${newId}_t1`,
+                            typeName: "Main Exam",
+                            defaultCQ: 70,
+                            defaultMCQ: 30,
+                            defaultPractical: 0,
+                            passMarkPercent: 33,
+                            overrides: []
+                        }
+                    ]
+                }));
+            }
+
+            localStorage.setItem('school_exam_types', JSON.stringify(types));
+
+            // Sync with existing schedules if requested
+            if (syncCheckbox && syncCheckbox.checked && oldName && oldName.toLowerCase() !== newName.toLowerCase()) {
+                try {
+                    const schedRaw = localStorage.getItem('school_exam_schedules');
+                    if (schedRaw) {
+                        const schedules = JSON.parse(schedRaw);
+                        let schedUpdated = false;
+                        if (Array.isArray(schedules)) {
+                            schedules.forEach(s => {
+                                if (s.term && s.term.toLowerCase() === oldName.toLowerCase()) {
+                                    s.term = newName;
+                                    schedUpdated = true;
+                                }
+                                if (s.examName && s.examName.toLowerCase() === oldName.toLowerCase()) {
+                                    s.examName = newName;
+                                    schedUpdated = true;
+                                }
+                            });
+                        }
+                        if (schedUpdated) {
+                            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error syncing schedules with updated exam name:", e);
+                }
+            }
+
+            // Refresh UI
+            populateExamDropdowns();
+            const scheduleSelect = document.getElementById('schedule-exam-name');
+            if (scheduleSelect) {
+                scheduleSelect.value = newName;
+                previousValidScheduleExamName = newName;
+            }
+            populateScheduleExamTypesDropdown();
+            renderExamTypes();
+            if (typeof renderScheduleList === 'function') renderScheduleList();
+            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+            if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+
+            closeExamNameUpdateModal();
+
+            if (oldName && oldName !== newName) {
+                alert(`✅ পরীক্ষার নাম সফলভাবে আপডেট করা হয়েছে!\n"${oldName}" ➔ "${newName}"`);
+            } else {
+                alert(`✅ পরীক্ষার নাম সফলভাবে সংরক্ষিত হয়েছে: "${newName}"`);
+            }
+        }
+
+        // --- EXAM TYPE CRUD CONTROLLERS (INSIDE EXAM NAME) ---
+        function renderExamSubTypesInSubview(examName) {
+            const container = document.getElementById('subview-exam-types-list-container');
+            if (!container) return;
+            if (!examName) {
+                const selectTarget = document.getElementById('subview-exam-name-select-target');
+                examName = selectTarget ? selectTarget.value : '';
+            }
+            const types = loadExamTypes();
+            const exam = types.find(t => t.name.toLowerCase() === (examName || '').trim().toLowerCase());
+
+            if (!exam) {
+                container.innerHTML = `<div style="text-align:center; padding:10px; color:#64748b; font-size:0.86rem;">কোনো পরীক্ষা নির্বাচিত নেই</div>`;
+                return;
+            }
+
+            normalizeExamTypeObject(exam);
+            const subTypes = exam.examTypes || [];
+
+            if (subTypes.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:12px; color:#64748b; font-size:0.86rem; background:#ffffff; border-radius:8px; border:1px dashed #cbd5e1;">
+                        কোনো Exam Type যুক্ত নেই। 
+                        <button type="button" onclick="openAddExamTypeForExam('${escapeHtmlExam(exam.name)}')"
+                            style="color:#2563eb; font-weight:700; background:none; border:none; cursor:pointer; text-decoration:underline; margin-left:4px;">
+                            + নতুন ধরন যোগ করুন
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            subTypes.forEach(st => {
+                const safeTypeName = escapeHtmlExam(st.typeName || 'Main Exam');
+                const encodedExamId = encodeURIComponent(exam.id);
+                const encodedSubId = encodeURIComponent(st.id);
+                const isOnlyOne = subTypes.length <= 1;
+
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:10px; padding:9px 12px; gap:8px; transition:all 0.2s ease;">
+                        <div>
+                            <div style="font-weight:800; font-size:0.94rem; color:#0f172a; display:flex; align-items:center; gap:6px;">
+                                <span>${safeTypeName}</span>
+                                <span style="font-size:0.75rem; color:#059669; background:#dcfce7; padding:1px 7px; border-radius:10px; font-weight:700;">
+                                    মোট: ${(st.defaultCQ || 0) + (st.defaultMCQ || 0) + (st.defaultPractical || 0)}
+                                </span>
+                            </div>
+                            <div style="font-size:0.78rem; color:#64748b; font-weight:600; margin-top:2px;">
+                                CQ: <strong style="color:#2563eb;">${st.defaultCQ || 0}</strong> | 
+                                MCQ: <strong style="color:#d97706;">${st.defaultMCQ || 0}</strong> | 
+                                ব্যবহারিক: <strong style="color:#7c3aed;">${st.defaultPractical || 0}</strong> | 
+                                পাস: <strong>${st.passMarkPercent || 33}%</strong>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:5px; white-space:nowrap;">
+                            <button type="button" onclick="editExamSubType(decodeURIComponent('${encodedExamId}'), decodeURIComponent('${encodedSubId}'))"
+                                style="background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; padding:4px 9px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"
+                                title="এই Exam Type-এর নাম ও নম্বর বণ্টন পরিবর্তন করুন">
+                                ✏️ আপডেট
+                            </button>
+                            <button type="button" onclick="deleteExamSubType(decodeURIComponent('${encodedExamId}'), decodeURIComponent('${encodedSubId}'), event)"
+                                style="background:#fef2f2; border:1px solid #fecaca; color:#dc2626; padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;"
+                                title="${isOnlyOne ? 'একটিমাত্র ধরন রয়েছে, মুছলে পরীক্ষাটি মুছে যাবে' : 'এই Exam Type মুছে ফেলুন'}">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderExamSubTypesInModal(examName) {
+            const container = document.getElementById('modal-exam-types-list-container');
+            if (!container) return;
+            if (!examName) {
+                const oldInput = document.getElementById('modal-update-exam-name-old');
+                examName = oldInput ? oldInput.value : '';
+            }
+            const types = loadExamTypes();
+            const exam = types.find(t => t.name.toLowerCase() === (examName || '').trim().toLowerCase());
+
+            if (!exam) {
+                container.innerHTML = `<div style="text-align:center; padding:6px; color:#64748b; font-size:0.84rem;">কোনো Exam Type পাওয়া যায়নি</div>`;
+                return;
+            }
+
+            normalizeExamTypeObject(exam);
+            const subTypes = exam.examTypes || [];
+
+            if (subTypes.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:8px; color:#64748b; font-size:0.84rem;">কোনো Exam Type যুক্ত নেই</div>`;
+                return;
+            }
+
+            let html = '';
+            subTypes.forEach(st => {
+                const safeTypeName = escapeHtmlExam(st.typeName || 'Main Exam');
+                const encodedExamId = encodeURIComponent(exam.id);
+                const encodedSubId = encodeURIComponent(st.id);
+
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; gap:6px;">
+                        <div style="font-size:0.88rem; font-weight:700; color:#1e293b;">
+                            <span>${safeTypeName}</span>
+                            <span style="font-size:0.75rem; color:#64748b; margin-left:6px; font-weight:500;">
+                                (CQ: ${st.defaultCQ || 0}, MCQ: ${st.defaultMCQ || 0}, Prac: ${st.defaultPractical || 0})
+                            </span>
+                        </div>
+                        <div style="display:flex; gap:4px;">
+                            <button type="button" onclick="editExamSubType(decodeURIComponent('${encodedExamId}'), decodeURIComponent('${encodedSubId}'))"
+                                style="background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; padding:2px 7px; border-radius:5px; font-size:0.76rem; font-weight:700; cursor:pointer;">
+                                ✏️ এডিট
+                            </button>
+                            <button type="button" onclick="deleteExamSubType(decodeURIComponent('${encodedExamId}'), decodeURIComponent('${encodedSubId}'), event)"
+                                style="background:#fef2f2; border:1px solid #fecaca; color:#dc2626; padding:2px 6px; border-radius:5px; font-size:0.76rem; font-weight:700; cursor:pointer;">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function openAddExamTypeForExam(examName) {
+            if (!examName) {
+                const select = document.getElementById('subview-exam-name-select-target') || document.getElementById('schedule-exam-name');
+                examName = select ? select.value : '';
+            }
+            const types = loadExamTypes();
+            const exam = types.find(t => t.name.toLowerCase() === (examName || '').trim().toLowerCase());
+            resetExamTypeForm();
+            populateOverrideSubjectsDropdown();
+            populateExamTypeNamesDropdown(examName);
+            if (exam) {
+                document.getElementById('exam-type-id').value = exam.id;
+                document.getElementById('exam-type-name').value = exam.name;
+            }
+            document.getElementById('exam-type-sub-id').value = "";
+            document.getElementById('exam-type-form-title').innerText = `➕ Add New Exam Type under "${examName || 'Examination'}"`;
+            document.getElementById('exam-type-modal').classList.add('active');
+            setTimeout(() => {
+                const catInput = document.getElementById('exam-type-category');
+                if (catInput) {
+                    catInput.focus();
+                }
+            }, 100);
+        }
+
+        function openAddExamTypeForCurrentSelectedExam() {
+            const selectTarget = document.getElementById('subview-exam-name-select-target');
+            const examName = selectTarget ? selectTarget.value : '';
+            openAddExamTypeForExam(examName);
+        }
+
+        function openAddExamTypeForModalExam() {
+            const oldInput = document.getElementById('modal-update-exam-name-old');
+            const examName = oldInput ? oldInput.value : '';
+            openAddExamTypeForExam(examName);
+        }
+
+        function openAddExamTypeForCurrentScheduleExam() {
+            const scheduleSelect = document.getElementById('schedule-exam-name');
+            const examName = scheduleSelect ? scheduleSelect.value : '';
+            if (!examName) {
+                alert("অনুগ্রহ করে প্রথমে Exam Name নির্বাচন করুন!");
+                return;
+            }
+            openAddExamTypeForExam(examName);
+        }
+
+        function openEditExamTypeForCurrentScheduleExam() {
+            const examName = document.getElementById('schedule-exam-name')?.value;
+            const examTypeName = document.getElementById('schedule-exam-type')?.value;
+            if (!examName || !examTypeName) {
+                alert("অনুগ্রহ করে প্রথমে Exam Name এবং Exam Type নির্বাচন করুন!");
+                return;
+            }
+            const types = loadExamTypes();
+            const exam = types.find(t => t.name.toLowerCase() === examName.trim().toLowerCase());
+            if (!exam) return;
+            const st = (exam.examTypes || []).find(s => s.typeName.toLowerCase() === examTypeName.trim().toLowerCase()) || exam.examTypes?.[0];
+            if (st) {
+                editExamSubType(exam.id, st.id);
+            } else {
+                openAddExamTypeForExam(examName);
+            }
+        }
+
+        function deleteCurrentScheduleExamType() {
+            const examName = document.getElementById('schedule-exam-name')?.value;
+            const examTypeName = document.getElementById('schedule-exam-type')?.value;
+            if (!examName || !examTypeName) {
+                alert("অনুগ্রহ করে প্রথমে Exam Name এবং Exam Type নির্বাচন করুন!");
+                return;
+            }
+            const types = loadExamTypes();
+            const exam = types.find(t => t.name.toLowerCase() === examName.trim().toLowerCase());
+            if (!exam) return;
+            const st = (exam.examTypes || []).find(s => s.typeName.toLowerCase() === examTypeName.trim().toLowerCase());
+            if (st) {
+                deleteExamSubType(exam.id, st.id);
+            }
+        }
+
+        // --- SUBVIEW: EXAM NAMES CONTROLLERS ---
+        function renderExamNamesSubView() {
+            const types = loadExamTypes();
+            const schedules = (typeof loadSchedules === 'function') ? loadSchedules() : safeJsonParse('school_exam_schedules', []);
+
+            // 1. Update KPI Counters
+            const kpiTotal = document.getElementById('kpi-exam-names-total');
+            const kpiActive = document.getElementById('kpi-exam-names-active-schedules');
+            const kpiSubtypes = document.getElementById('kpi-exam-names-total-subtypes');
+
+            if (kpiTotal) kpiTotal.textContent = types.length;
+
+            const activeExamNames = new Set();
+            schedules.forEach(s => {
+                const name = (s.term || s.examName || '').trim();
+                if (name) activeExamNames.add(name.toLowerCase());
+            });
+            if (kpiActive) kpiActive.textContent = activeExamNames.size;
+
+            let totalSubtypes = 0;
+            types.forEach(t => {
+                totalSubtypes += (t.examTypes && t.examTypes.length) ? t.examTypes.length : 1;
+            });
+            if (kpiSubtypes) kpiSubtypes.textContent = totalSubtypes;
+
+            // 2. Populate Target Select in Form
+            const selectTarget = document.getElementById('subview-exam-name-select-target');
+            const currentSelected = selectTarget ? selectTarget.value : '';
+            if (selectTarget) {
+                let html = '<option value="" disabled>-- পরীক্ষার নাম নির্বাচন করুন --</option>';
+                types.forEach(t => {
+                    html += `<option value="${escapeHtmlExam(t.name)}">${escapeHtmlExam(t.name)}</option>`;
+                });
+                selectTarget.innerHTML = html;
+                if (currentSelected && types.some(t => t.name.toLowerCase() === currentSelected.toLowerCase())) {
+                    selectTarget.value = currentSelected;
+                } else if (types.length > 0) {
+                    selectTarget.selectedIndex = 1;
+                }
+            }
+
+            // Sync input with selected target
+            if (selectTarget && selectTarget.value) {
+                onSubviewTargetExamSelect(selectTarget.value);
+            }
+
+            // 3. Render Table
+            renderExamNamesSubViewTable(types, schedules);
+        }
+
+        function renderExamNamesSubViewTable(types, schedules) {
+            const tbody = document.getElementById('subview-exam-names-tbody');
+            if (!tbody) return;
+            if (!types) types = loadExamTypes();
+            if (!schedules) schedules = (typeof loadSchedules === 'function') ? loadSchedules() : safeJsonParse('school_exam_schedules', []);
+
+            if (types.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:#64748b;">কোনো সংরক্ষিত পরীক্ষার নাম পাওয়া যায়নি</td></tr>`;
+                return;
+            }
+
+            const currentEditing = document.getElementById('subview-exam-name-select-target')?.value || '';
+
+            let html = '';
+            types.forEach((t, idx) => {
+                const isSelected = t.name.toLowerCase() === currentEditing.toLowerCase();
+                const safeName = escapeHtmlExam(t.name);
+                const encodedName = encodeURIComponent(t.name);
+                const subCount = (t.examTypes && t.examTypes.length) || 1;
+                const scheduleCount = schedules.filter(s => (s.term || s.examName || '').trim().toLowerCase() === t.name.toLowerCase()).length;
+
+                html += `
+                    <tr class="exam-name-row" style="border-bottom: 1px solid #f1f5f9; ${isSelected ? 'background: #eff6ff;' : ''}">
+                        <td style="padding: 10px 12px; text-align: center; font-weight: 700; color: #64748b;">${idx + 1}</td>
+                        <td style="padding: 10px 12px; font-weight: 700; color: #1e293b;">
+                            <div style="font-size: 0.96rem; display: flex; align-items: center; gap: 6px;">
+                                <span class="exam-name-text">${safeName}</span>
+                                ${isSelected ? '<span style="font-size: 0.72rem; background: #2563eb; color: #ffffff; padding: 2px 7px; border-radius: 4px;">বর্তমান নির্বাচন</span>' : ''}
+                            </div>
+                            <div style="font-size: 0.78rem; color: #64748b; font-weight: 500; margin-top: 2px;">
+                                Primary Type: <span style="color: #0f766e; font-weight: 700;">${escapeHtmlExam(t.type || 'Main Exam')}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 10px 12px; text-align: center;">
+                            <span style="font-size: 0.8rem; color: #0284c7; background: #e0f2fe; padding: 3px 9px; border-radius: 12px; font-weight: 700;">
+                                ${subCount} Type(s)
+                            </span>
+                        </td>
+                        <td style="padding: 10px 12px; text-align: center;">
+                            <span style="font-size: 0.8rem; ${scheduleCount > 0 ? 'color: #16a34a; background: #dcfce7;' : 'color: #64748b; background: #f1f5f9;'} padding: 3px 9px; border-radius: 12px; font-weight: 700;">
+                                ${scheduleCount} Schedule(s)
+                            </span>
+                        </td>
+                        <td style="padding: 10px 12px; text-align: right; white-space: nowrap;">
+                            <button type="button" onclick="editExamNameInSubview(decodeURIComponent('${encodedName}'))"
+                                style="background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; padding: 4px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; margin-right: 4px;"
+                                title="এই পরীক্ষার নাম এডিট বা আপডেট করুন">
+                                ✏️ এডিট
+                            </button>
+                            <button type="button" onclick="useExamNameInSchedule(decodeURIComponent('${encodedName}'))"
+                                style="background: #f0fdf4; border: 1px solid #86efac; color: #15803d; padding: 4px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; margin-right: 4px;"
+                                title="এই পরীক্ষার নাম দিয়ে শিডিউল তৈরি করুন">
+                                📅 শিডিউল
+                            </button>
+                            <button type="button" onclick="deleteExamNameInSubview(decodeURIComponent('${encodedName}'))"
+                                style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 4px 9px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer;"
+                                title="পরীক্ষার নামটি মুছে ফেলুন">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function onSubviewTargetExamSelect(examName) {
+            const input = document.getElementById('subview-exam-name-input');
+            if (input && examName) {
+                input.value = examName;
+            }
+            renderExamNamesSubViewTable();
+            if (typeof renderExamSubTypesInSubview === 'function') {
+                renderExamSubTypesInSubview(examName);
+            }
+        }
+
+        function setSubviewExamNamePreset(namePrefix) {
+            const input = document.getElementById('subview-exam-name-input');
+            if (input) {
+                const currentVal = input.value.trim();
+                const yearMatch = currentVal.match(/\b(20\d\d)\b/);
+                const yearStr = yearMatch ? ` ${yearMatch[1]}` : ` ${new Date().getFullYear()}`;
+                input.value = `${namePrefix}${yearStr}`;
+                input.focus();
+                input.select();
+            }
+        }
+
+        function editExamNameInSubview(examName) {
+            const selectTarget = document.getElementById('subview-exam-name-select-target');
+            if (selectTarget) {
+                selectTarget.value = examName;
+                onSubviewTargetExamSelect(examName);
+            }
+            const input = document.getElementById('subview-exam-name-input');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+            const formCard = document.getElementById('subview-update-exam-form');
+            if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetExamNamesSubviewForm() {
+            const form = document.getElementById('subview-update-exam-form');
+            if (form) form.reset();
+            const selectTarget = document.getElementById('subview-exam-name-select-target');
+            if (selectTarget && selectTarget.options.length > 1) {
+                selectTarget.selectedIndex = 1;
+                onSubviewTargetExamSelect(selectTarget.value);
+            }
+        }
+
+        function saveUpdatedExamNameFromSubview(event) {
+            if (event) event.preventDefault();
+            const selectTarget = document.getElementById('subview-exam-name-select-target');
+            const input = document.getElementById('subview-exam-name-input');
+            const syncCheckbox = document.getElementById('subview-sync-schedules-checkbox');
+
+            const oldName = selectTarget ? selectTarget.value.trim() : '';
+            const newName = input ? input.value.trim() : '';
+
+            if (!newName) {
+                alert("অনুগ্রহ করে পরীক্ষার নাম লিখুন (Please enter an Exam Name)!");
+                if (input) input.focus();
+                return;
+            }
+
+            let types = loadExamTypes();
+            const duplicate = types.find(t => t.name.toLowerCase() === newName.toLowerCase() && t.name.toLowerCase() !== oldName.toLowerCase());
+            if (duplicate) {
+                alert(`"${newName}" নামের একটি পরীক্ষা ইতিমধ্যে তালিকায় বিদ্যমান আছে!`);
+                return;
+            }
+
+            let updated = false;
+            if (oldName) {
+                const targetExam = types.find(t => t.name.toLowerCase() === oldName.toLowerCase());
+                if (targetExam) {
+                    targetExam.name = newName;
+                    updated = true;
+                }
+            }
+
+            if (!updated) {
+                const newId = Date.now().toString();
+                types.push(normalizeExamTypeObject({
+                    id: newId,
+                    name: newName,
+                    type: "Main Exam",
+                    defaultCQ: 70,
+                    defaultMCQ: 30,
+                    defaultPractical: 0,
+                    passMarkPercent: 33,
+                    overrides: [],
+                    examTypes: [
+                        {
+                            id: `${newId}_t1`,
+                            typeName: "Main Exam",
+                            defaultCQ: 70,
+                            defaultMCQ: 30,
+                            defaultPractical: 0,
+                            passMarkPercent: 33,
+                            overrides: []
+                        }
+                    ]
+                }));
+            }
+
+            localStorage.setItem('school_exam_types', JSON.stringify(types));
+
+            // Sync with existing schedules if requested
+            if (syncCheckbox && syncCheckbox.checked && oldName && oldName.toLowerCase() !== newName.toLowerCase()) {
+                try {
+                    const schedRaw = localStorage.getItem('school_exam_schedules');
+                    if (schedRaw) {
+                        const schedules = JSON.parse(schedRaw);
+                        let schedUpdated = false;
+                        if (Array.isArray(schedules)) {
+                            schedules.forEach(s => {
+                                if (s.term && s.term.toLowerCase() === oldName.toLowerCase()) {
+                                    s.term = newName;
+                                    schedUpdated = true;
+                                }
+                                if (s.examName && s.examName.toLowerCase() === oldName.toLowerCase()) {
+                                    s.examName = newName;
+                                    schedUpdated = true;
+                                }
+                            });
+                        }
+                        if (schedUpdated) {
+                            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error syncing schedules with updated exam name:", e);
+                }
+            }
+
+            // Refresh UI across all components
+            populateExamDropdowns();
+            const scheduleSelect = document.getElementById('schedule-exam-name');
+            if (scheduleSelect) {
+                scheduleSelect.value = newName;
+                if (typeof previousValidScheduleExamName !== 'undefined') {
+                    previousValidScheduleExamName = newName;
+                }
+            }
+            populateScheduleExamTypesDropdown();
+            renderExamTypes();
+            if (typeof renderScheduleList === 'function') renderScheduleList();
+            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+            if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+
+            renderExamNamesSubView();
+
+            if (oldName && oldName !== newName) {
+                alert(`✅ পরীক্ষার নাম সফলভাবে আপডেট করা হয়েছে!\n"${oldName}" ➔ "${newName}"`);
+            } else {
+                alert(`✅ পরীক্ষার নাম সফলভাবে সংরক্ষিত হয়েছে: "${newName}"`);
+            }
+        }
+
+        function saveNewExamNameFromSubview() {
+            const input = document.getElementById('subview-exam-name-input');
+            const name = input ? input.value.trim() : '';
+
+            if (!name) {
+                alert("অনুগ্রহ করে পরীক্ষার নাম লিখুন (Please enter an Examination Name)!");
+                if (input) input.focus();
+                return;
+            }
+
+            const types = loadExamTypes();
+            const duplicate = types.find(t => t.name.toLowerCase() === name.toLowerCase());
+            if (duplicate) {
+                alert(`"${name}" নামের একটি পরীক্ষা ইতিমধ্যে তালিকায় বিদ্যমান আছে!`);
+                return;
+            }
+
+            // Determine category from name
+            let detectedType = "Main Exam";
+            const lowerName = name.toLowerCase();
+            if (lowerName.includes("half-yearly") || lowerName.includes("half yearly") || lowerName.includes("অর্ধ-বার্ষিক") || lowerName.includes("অর্ধবার্ষিক")) {
+                detectedType = "Half-Yearly Main Exam";
+            } else if (lowerName.includes("annual") || lowerName.includes("বার্ষিক")) {
+                detectedType = "Annual Main Exam";
+            } else if (lowerName.includes("pre-test") || lowerName.includes("pre test") || lowerName.includes("প্রাক-নির্বাচনী")) {
+                detectedType = "Pre-Test Main Exam";
+            } else if (lowerName.includes("test") || lowerName.includes("নির্বাচনী")) {
+                detectedType = "Test Main Exam";
+            } else if (lowerName.includes("term") || lowerName.includes("সাময়িক") || lowerName.includes("সাময়িক")) {
+                detectedType = "Term Exam";
+            } else if (lowerName.includes("model") || lowerName.includes("মডেল")) {
+                detectedType = "Model Test";
+            } else if (lowerName.includes("monthly") || lowerName.includes("মাসিক")) {
+                detectedType = "Monthly Test";
+            }
+
+            const newId = Date.now().toString();
+            const newExam = {
+                id: newId,
+                name: name,
+                type: detectedType,
+                defaultCQ: 70,
+                defaultMCQ: 30,
+                defaultPractical: 0,
+                passMarkPercent: 33,
+                overrides: [],
+                examTypes: [
+                    {
+                        id: `${newId}_t1`,
+                        typeName: detectedType,
+                        defaultCQ: 70,
+                        defaultMCQ: 30,
+                        defaultPractical: 0,
+                        passMarkPercent: 33,
+                        overrides: []
+                    }
+                ]
+            };
+
+            types.push(newExam);
+            localStorage.setItem('school_exam_types', JSON.stringify(types));
+
+            populateExamDropdowns();
+            const schedSelect = document.getElementById('schedule-exam-name');
+            if (schedSelect) {
+                schedSelect.value = name;
+                if (typeof previousValidScheduleExamName !== 'undefined') {
+                    previousValidScheduleExamName = name;
+                }
+            }
+            populateScheduleExamTypesDropdown();
+            renderExamTypes();
+            if (typeof renderScheduleList === 'function') renderScheduleList();
+            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+            if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+
+            renderExamNamesSubView();
+            alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে যুক্ত হয়েছে!`);
+        }
+
+        function deleteExamNameInSubview(examName) {
+            if (!examName) return;
+            if (!confirm(`আপনি কি নিশ্চিত যে "${examName}" পরীক্ষার নামটি মুছে ফেলতে চান?`)) {
+                return;
+            }
+            let types = loadExamTypes();
+            const filtered = types.filter(t => t.name.toLowerCase() !== examName.toLowerCase());
+            if (filtered.length === 0) {
+                alert("তালিকায় অন্তত একটি পরীক্ষার নাম থাকতে হবে, সব মুছে ফেলা যাবে না!");
+                return;
+            }
+            localStorage.setItem('school_exam_types', JSON.stringify(filtered));
+            renderExamNamesSubView();
+            populateExamDropdowns();
+            renderExamTypes();
+            if (typeof renderScheduleList === 'function') renderScheduleList();
+            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+        }
+
+        function filterExamNamesInSubview() {
+            const query = (document.getElementById('subview-exam-names-search-input')?.value || '').toLowerCase().trim();
+            const rows = document.querySelectorAll('#subview-exam-names-tbody tr.exam-name-row');
+            rows.forEach(row => {
+                const text = (row.querySelector('.exam-name-text')?.textContent || '').toLowerCase();
+                if (!query || text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function useExamNameInSchedule(examName) {
+            navigateExamView('exam-entry');
+            const formCard = document.getElementById('create-schedule-card');
+            if (formCard && formCard.style.display === 'none') {
+                if (typeof toggleCreateScheduleForm === 'function') {
+                    toggleCreateScheduleForm();
+                }
+            }
+            const scheduleSelect = document.getElementById('schedule-exam-name');
+            if (scheduleSelect) {
+                scheduleSelect.value = examName;
+                if (typeof populateScheduleExamTypesDropdown === 'function') {
+                    populateScheduleExamTypesDropdown();
+                }
+            }
+            setTimeout(() => {
+                const targetEl = document.getElementById('create-schedule-card');
+                if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+
+        
         // --- SUBVIEW 5: SMS CONTROLLERS ---
         function populateDropdownsForSms() {
             populateClassDropdown('sms-target-class');

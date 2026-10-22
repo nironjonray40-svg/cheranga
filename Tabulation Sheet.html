@@ -7360,11 +7360,7 @@
                     const gradeVal = cells[group.gradeIdx].textContent.trim();
                     const gpTxt = banglaToEnglishDigits(cells[group.gpIdx]?.textContent.trim() || '');
                     const isZeroGP = gpTxt === '0.00' || gpTxt === '0' || gpTxt === '0.0' || gpTxt === '০.০০';
-                    const hasAbsentInGroup = group.indices.some(i => {
-                        const t = cells[i]?.textContent.trim().toUpperCase();
-                        return t === 'A' || t === 'ABS';
-                    });
-                    const isSubjectFail = (gradeVal === failGradeName || gradeVal === 'F' || (gradeVal === 'A' && (isZeroGP || hasAbsentInGroup)));
+                    const isSubjectFail = (gradeVal === failGradeName || gradeVal === 'F' || gradeVal === 'ABS' || (gradeVal === 'A' && isZeroGP));
                     if (isSubjectFail) {
                         group.indices.forEach(idx => {
                             cells[idx].style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
@@ -7381,7 +7377,7 @@
                 // 2. Highlight final GPA and Grade columns if overall grade is F / fail or Absent (A with 0 GPA)
                 const finalGradeVal = cells[66].textContent.trim();
                 const finalGpaTxt = banglaToEnglishDigits(cells[65].textContent.trim() || '');
-                const isFinalFail = (finalGradeVal === failGradeName || finalGradeVal === 'F' || (finalGradeVal === 'A' && (finalGpaTxt === '0.00' || finalGpaTxt === '0' || finalGpaTxt === '০.০০')));
+                const isFinalFail = (finalGradeVal === failGradeName || finalGradeVal === 'F' || finalGradeVal === 'ABS' || (finalGradeVal === 'A' && (finalGpaTxt === '0.00' || finalGpaTxt === '0' || finalGpaTxt === '০.০০')));
                 if (isFinalFail) {
                     cells[65].style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
                     cells[66].style.backgroundColor = 'rgba(255, 0, 0, 0.2)';

@@ -108,7 +108,7 @@
             }
             window.getStudentEnglishNameById = getStudentEnglishNameById;
 
-            // Default pattern for Sets ক, খ, গ, ঘ (30 questions each) so visual review & matching work immediately
+            // Pattern for Sets ক, খ, গ, ঘ (available on demand for demo generation)
             const sampleKeysPattern = {
                 'ক': ['ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ'],
                 'খ': ['খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক'],
@@ -116,8 +116,13 @@
                 'ঘ': ['ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ', 'ঘ', 'ক', 'খ', 'গ']
             };
 
-            // Default Answer Keys initialized with full 30 keys per set
-            const defaultAnswerKeys = JSON.parse(JSON.stringify(sampleKeysPattern));
+            // Default Answer Keys initialized empty (no attached keys by default)
+            const defaultAnswerKeys = {
+                'ক': Array(30).fill(null),
+                'খ': Array(30).fill(null),
+                'গ': Array(30).fill(null),
+                'ঘ': Array(30).fill(null)
+            };
 
             // Helper: Normalize set representation ('ক', 'খ', 'গ', 'ঘ')
             function normalizeSet(val) {
@@ -130,38 +135,130 @@
                 return 'ক';
             }
 
-            // Helper: Normalize any option representation to Bengali 'ক', 'খ', 'গ', 'ঘ'
-            function normalizeOption(val) {
+            // Helper: Normalize single option to Bengali 'ক', 'খ', 'গ', 'ঘ'
+            function normalizeSingleOption(val) {
                 if (val === null || val === undefined) return null;
                 const str = String(val).trim().toUpperCase();
-                if (str === 'ক' || str === 'A' || str === '1' || str === '১' || str.startsWith('ক') || str.startsWith('A')) return 'ক';
-                if (str === 'খ' || str === 'B' || str === '2' || str === '২' || str.startsWith('খ') || str.startsWith('B')) return 'খ';
-                if (str === 'গ' || str === 'C' || str === '3' || str === '৩' || str.startsWith('গ') || str.startsWith('C')) return 'গ';
-                if (str === 'ঘ' || str === 'D' || str === '4' || str === '৪' || str.startsWith('ঘ') || str.startsWith('D')) return 'ঘ';
+                if (str === 'ক' || str === 'A' || str === '1' || str === '১') return 'ক';
+                if (str === 'খ' || str === 'B' || str === '2' || str === '২') return 'খ';
+                if (str === 'গ' || str === 'C' || str === '3' || str === '৩') return 'গ';
+                if (str === 'ঘ' || str === 'D' || str === '4' || str === '৪') return 'ঘ';
                 return null;
+            }
+
+            // Helper: Normalize option representation (supports single option or multiple/duplicate options array)
+            function normalizeOption(val) {
+                if (val === null || val === undefined) return null;
+                if (Array.isArray(val)) {
+                    const normList = [];
+                    val.forEach(v => {
+                        const n = normalizeSingleOption(v);
+                        if (n && !normList.includes(n)) normList.push(n);
+                    });
+                    normList.sort((a, b) => optionsBengali.indexOf(a) - optionsBengali.indexOf(b));
+                    if (normList.length === 0) return null;
+                    if (normList.length === 1) return normList[0];
+                    return normList; // Multiple bubbles filled (Duplicate)
+                }
+                const str = String(val).trim();
+                // Check for comma, slash, space separated multiple options
+                if (str.includes(',') || str.includes('/') || str.includes('+') || str.includes(';') || (str.length > 1 && !['ক', 'খ', 'গ', 'ঘ', 'A', 'B', 'C', 'D'].includes(str.toUpperCase()))) {
+                    const parts = str.split(/[,/+;\s]+/);
+                    const normList = [];
+                    parts.forEach(p => {
+                        const n = normalizeSingleOption(p);
+                        if (n && !normList.includes(n)) normList.push(n);
+                    });
+                    normList.sort((a, b) => optionsBengali.indexOf(a) - optionsBengali.indexOf(b));
+                    if (normList.length === 0) return null;
+                    if (normList.length === 1) return normList[0];
+                    return normList;
+                }
+                return normalizeSingleOption(str);
+            }
+
+            // Helper: Check if an answer has multiple filled bubbles (Duplicate)
+            function isDuplicateOption(ans) {
+                if (!ans) return false;
+                if (Array.isArray(ans) && ans.length > 1) return true;
+                if (typeof ans === 'string' && ans.includes(',')) return true;
+                return false;
             }
 
             // Helper: Retrieve active answer key for a set with intelligent fallback
             function getActiveAnswerKey(setCode) {
                 const normSet = normalizeSet(setCode);
+                function hasValidAnswers(keyObj) {
+                    if (!keyObj) return false;
+                    if (Array.isArray(keyObj)) {
+                        return keyObj.some(ans => ans !== null && ans !== undefined && ans !== '');
+                    }
+                    if (typeof keyObj === 'object') {
+                        return Object.values(keyObj).some(ans => ans !== null && ans !== undefined && ans !== '');
+                    }
+                    return false;
+                }
+
                 // 1. Specified set has valid filled answers
-                if (state.answerKeys && state.answerKeys[normSet] && state.answerKeys[normSet].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+                if (state.answerKeys && hasValidAnswers(state.answerKeys[normSet])) {
                     return state.answerKeys[normSet];
                 }
                 // 2. Set 'ক' if it has answers
-                if (state.answerKeys && state.answerKeys['ক'] && state.answerKeys['ক'].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+                if (state.answerKeys && hasValidAnswers(state.answerKeys['ক'])) {
                     return state.answerKeys['ক'];
                 }
                 // 3. Any active set that has answers
                 if (state.answerKeys) {
                     for (const s of ['খ', 'গ', 'ঘ']) {
-                        if (state.answerKeys[s] && state.answerKeys[s].some(ans => ans !== null && ans !== undefined && ans !== '')) {
+                        if (hasValidAnswers(state.answerKeys[s])) {
                             return state.answerKeys[s];
                         }
                     }
                 }
                 // 4. Default fallback key
                 return defaultAnswerKeys[normSet] || defaultAnswerKeys['ক'];
+            }
+
+            // Helper: Safely get array of correct answers for question q (1-indexed) from answer key
+            function getQuestionCorrectAnswersList(targetKey, q) {
+                if (!targetKey) return [];
+                let val = null;
+                if (Array.isArray(targetKey)) {
+                    if (targetKey.length === 31 && (targetKey[0] === null || targetKey[0] === undefined)) {
+                        val = targetKey[q];
+                    } else {
+                        val = targetKey[q - 1];
+                    }
+                } else if (typeof targetKey === 'object') {
+                    val = targetKey[q] !== undefined ? targetKey[q] : (targetKey[String(q)] !== undefined ? targetKey[String(q)] : (targetKey[q - 1] !== undefined ? targetKey[q - 1] : targetKey[String(q - 1)]));
+                }
+                if (val === null || val === undefined) return [];
+                if (Array.isArray(val)) {
+                    const res = [];
+                    val.forEach(v => {
+                        const n = normalizeSingleOption(v);
+                        if (n && !res.includes(n)) res.push(n);
+                    });
+                    return res;
+                }
+                const str = String(val).trim();
+                if (str.includes(',') || str.includes('/') || str.includes('+') || str.includes(';')) {
+                    const parts = str.split(/[,/+;\s]+/);
+                    const res = [];
+                    parts.forEach(p => {
+                        const n = normalizeSingleOption(p);
+                        if (n && !res.includes(n)) res.push(n);
+                    });
+                    return res;
+                }
+                const single = normalizeSingleOption(str);
+                return single ? [single] : [];
+            }
+
+            // Helper: Safely get primary correct answer for question q (1-indexed) from answer key
+            function getQuestionCorrectAnswer(targetKey, q) {
+                const list = getQuestionCorrectAnswersList(targetKey, q);
+                return list.length > 0 ? list[0] : null;
             }
 
             // Helper: Safely get student answer for question q (1-indexed)
@@ -182,6 +279,18 @@
                     }
                 }
                 return normalizeOption(val);
+            }
+
+            // Helper: Get student answer as an array of selected options
+            function getStudentAnswerOptions(student, q) {
+                const ans = getStudentAnswer(student, q);
+                if (!ans) return [];
+                if (Array.isArray(ans)) return ans;
+                if (typeof ans === 'string') {
+                    if (ans.includes(',')) return ans.split(',').map(s => s.trim()).filter(Boolean);
+                    return [ans];
+                }
+                return [];
             }
 
             // Application Global State
@@ -650,8 +759,8 @@
                 sets.forEach(s => {
                     const chip = document.getElementById(`chipUploadSet_${s}`);
                     const statusSpan = document.getElementById(`chipStatus_${s}`);
-                    const answers = state.answerKeys[s] || [];
-                    const filled = answers.filter(Boolean).length;
+                    const answers = (state.answerKeys && state.answerKeys[s]) ? state.answerKeys[s] : [];
+                    const filled = answers.filter(ans => ans !== null && ans !== undefined && ans !== '').length;
 
                     if (statusSpan) {
                         if (filled > 0) {
@@ -670,21 +779,35 @@
                 const badgesBar = document.getElementById('multiSetBadgesBar');
                 if (badgesBar) {
                     badgesBar.innerHTML = sets.map(s => {
-                        const filled = (state.answerKeys[s] || []).filter(Boolean).length;
+                        const answers = (state.answerKeys && state.answerKeys[s]) ? state.answerKeys[s] : [];
+                        const filled = answers.filter(ans => ans !== null && ans !== undefined && ans !== '').length;
                         const bg = filled === 30 ? '#ecfdf5' : (filled > 0 ? '#fffbeb' : '#f8fafc');
                         const border = filled === 30 ? '#a7f3d0' : (filled > 0 ? '#fde68a' : '#e2e8f0');
                         const color = filled === 30 ? '#059669' : (filled > 0 ? '#b45309' : '#94a3b8');
                         const icon = filled === 30 ? 'fa-circle-check' : (filled > 0 ? 'fa-clock' : 'fa-circle-notch');
 
                         return `
-            <span style="font-size: 0.73rem; background: ${bg}; border: 1px solid ${border}; color: ${color}; padding: 2px 7px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="সেট ${s}: ${toBengaliNumber(filled)} টি সঠিক উত্তর সেট করা">
+            <span style="font-size: 0.73rem; background: ${bg}; border: 1px solid ${border}; color: ${color}; padding: 2px 7px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" title="সেট ${s}: ${filled > 0 ? `${toBengaliNumber(filled)} টি সঠিক উত্তর সেট করা` : 'কোনো উত্তর সেট করা নেই'}">
               <i class="fa-solid ${icon}"></i> সেট ${s}: ${toBengaliNumber(filled)}/৩০
             </span>
           `;
                     }).join('');
                 }
 
-                // 3. Update Modal Multi-Set Tab cards if visible
+                // 3. Update main textAnswerKeyStatus if no keys and no files are uploaded
+                const hasAnyAnswers = sets.some(s => {
+                    const answers = (state.answerKeys && state.answerKeys[s]) ? state.answerKeys[s] : [];
+                    return answers.some(ans => ans !== null && ans !== undefined && ans !== '');
+                });
+                const hasAnyFiles = Object.values(state.setSourceFiles || {}).some(Boolean) || (state.answerKeyFiles && state.answerKeyFiles.length > 0);
+                if (textAnswerKeyStatus) {
+                    if (!hasAnyAnswers && !hasAnyFiles) {
+                        textAnswerKeyStatus.innerHTML = '<span style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</span>';
+                        if (dropzoneAnswerKey) dropzoneAnswerKey.classList.remove('filled');
+                    }
+                }
+
+                // 4. Update Modal Multi-Set Tab cards if visible
                 renderMultiSetUploadUI();
             };
 
@@ -842,6 +965,7 @@
                 let correct = 0;
                 let wrong = 0;
                 let blank = 0;
+                let duplicate = 0;
 
                 for (let q = 1; q <= 30; q++) {
                     let studentAns = null;
@@ -855,17 +979,21 @@
                             }
                         }
                     }
-                    const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+                    const correctList = getQuestionCorrectAnswersList(targetKey, q);
 
-                    if (!studentAns) {
+                    if (!studentAns || (Array.isArray(studentAns) && studentAns.length === 0)) {
                         blank++;
-                    } else if (correctAns && studentAns === correctAns) {
+                    } else if (isDuplicateOption(studentAns)) {
+                        // একাধিক বাবল ভরাট -> ডুপ্লিকেট হিসেবে চিহ্নিত হবে এবং উক্ত প্রশ্নে কোনো মার্ক যুক্ত হবে না (০ নম্বর)
+                        duplicate++;
+                        wrong++;
+                    } else if (correctList.length > 0 && typeof studentAns === 'string' && correctList.includes(studentAns)) {
                         correct++;
                     } else {
                         wrong++;
                     }
                 }
-                return { correct, wrong, blank, total: 30 };
+                return { correct, wrong, blank, duplicate, total: 30 };
             }
 
             // Registration Number Matching Utility
@@ -930,10 +1058,12 @@
                 }
 
                 if (pendingCount > 0) {
+                    const dupCount = (state.pendingUnmatchedList || []).filter(p => p.isDuplicateReg).length;
+                    const dupNote = dupCount > 0 ? ` (যার মধ্যে ${toBengaliNumber(dupCount)} টিতে ডুপ্লিকেট রেজিঃ রয়েছে)` : '';
                     if (alertBanner && state.activeResultsTab === 'main') alertBanner.style.display = 'flex';
                     if (alertHint) alertHint.style.display = 'inline-flex';
-                    if (alertCountText) alertCountText.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিট অমিল / পেন্ডিং তালিকায় রয়েছে`;
-                    if (alertBannerDesc) alertBannerDesc.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিটের রেজিঃ নং মেলেনি বা অপাঠ্য। "Pending List" ট্যাবে গিয়ে শিক্ষার্থীর সঠিক রেজিঃ নং নির্বাচন করে সংশোধন করুন।`;
+                    if (alertCountText) alertCountText.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিট অমিল / পেন্ডিং তালিকায় রয়েছে${dupNote}`;
+                    if (alertBannerDesc) alertBannerDesc.textContent = `${toBengaliNumber(pendingCount)} টি ওএমআর শিটের রেজিঃ নং মেলেনি বা একাধিক ওএমআরে একই রেজিঃ (ডুপ্লিকেট) ব্যবহার করা হয়েছে। "Pending List" ট্যাবে গিয়ে শিক্ষার্থীর সঠিক রেজিঃ নং নির্বাচন করে সংশোধন করুন।`;
                 } else {
                     if (alertBanner) alertBanner.style.display = 'none';
                     if (alertHint) alertHint.style.display = 'none';
@@ -1010,7 +1140,7 @@
                     const defaultRegValue = suggestedStudent ? suggestedStudent.id : '';
 
                     return `
-          <div class="pending-card" id="pending_card_${item.uid}">
+          <div class="pending-card ${item.isDuplicateReg ? 'duplicate-reg-card' : ''}" id="pending_card_${item.uid}">
             <!-- LEFT SIDE: Student Detected Info & Correction Controls -->
             <div class="pending-card-left">
               <!-- Header: File Name, Set, Score Badge -->
@@ -1019,6 +1149,11 @@
                   <span class="pending-file-title" title="${item.fileName}">
                     <i class="fa-regular fa-image" style="color: var(--primary);"></i> ${item.fileName}
                   </span>
+                  ${item.isDuplicateReg ? `
+                    <span class="badge-duplicate-reg" title="ডুপ্লিকেট রেজিঃ - একাধিক ওএমআরে একই রেজিঃ ব্যবহার করা হয়েছে">
+                      <i class="fa-solid fa-triangle-exclamation"></i> ডুপ্লিকেট রেজিঃ (${toEnglishDigits(item.detectedId || item.duplicateRegId)})
+                    </span>
+                  ` : ''}
                   <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; background: var(--omr-pink-light); color: var(--omr-pink); font-weight: 700; font-size: 0.84rem; border: 1.5px solid var(--omr-pink); white-space: nowrap; box-shadow: 0 1px 3px rgba(217, 28, 132, 0.12);" title="সনাক্তকৃত সেট: ${item.detectedSet}">
                     <i class="fa-solid fa-layer-group" style="font-size: 0.75rem;"></i> সেট: <strong style="font-size: 0.95rem; margin-left: 2px;">${item.detectedSet}</strong>
                   </span>
@@ -1029,16 +1164,19 @@
               </div>
 
               <!-- Reason / Warning Box -->
-              <div class="pending-reason-box">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+              <div class="pending-reason-box" style="${item.isDuplicateReg ? 'background: #fef2f2; border: 1.5px solid #f87171; color: #991b1b;' : ''}">
+                <i class="fa-solid fa-triangle-exclamation" style="${item.isDuplicateReg ? 'color: #dc2626; font-size: 1.15rem; flex-shrink: 0;' : ''}"></i>
                 <span>${item.reason}</span>
               </div>
 
               <!-- Detected Stats Grid -->
               <div class="pending-stats-grid">
-                <div class="pending-stat-item">
-                  <span class="stat-lbl">পঠিত রেজিঃ</span>
-                  <strong class="stat-val ${item.detectedId ? 'val-reg' : 'val-unclear'}">${item.detectedId ? toEnglishDigits(item.detectedId) : 'সনাক্ত হয়নি'}</strong>
+                <div class="pending-stat-item" style="${item.isDuplicateReg ? 'background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 2px 6px;' : ''}">
+                  <span class="stat-lbl" style="${item.isDuplicateReg ? 'color: #9f1239; font-weight: 700;' : ''}">পঠিত রেজিঃ</span>
+                  <strong class="stat-val ${item.detectedId ? (item.isDuplicateReg ? 'val-duplicate' : 'val-reg') : 'val-unclear'}" style="${item.isDuplicateReg ? 'color: #be123c; font-weight: 800;' : ''}">
+                    ${item.detectedId ? toEnglishDigits(item.detectedId) : 'সনাক্ত হয়নি'}
+                    ${item.isDuplicateReg ? '<span style="font-size: 0.7rem; background: #e11d48; color: #fff; padding: 1px 6px; border-radius: 4px; vertical-align: middle; margin-left: 3px; font-weight: 700;">ডুপ্লিকেট</span>' : ''}
+                  </strong>
                 </div>
                 <div class="pending-stat-item">
                   <span class="stat-lbl">পঠিত রোল</span>
@@ -1116,8 +1254,8 @@
                   <i class="fa-solid fa-magnifying-glass-plus"></i>
                   <span>বড় করে দেখুন</span>
                 </div>
-                <div class="pending-omr-badge">
-                  <i class="fa-regular fa-file-lines"></i> ওএমআর শিট কপি
+                <div class="pending-omr-badge" style="${item.isDuplicateReg ? 'background: #b91c1c; color: #fff;' : ''}">
+                  <i class="fa-regular ${item.isDuplicateReg ? 'fa-triangle-exclamation' : 'fa-file-lines'}"></i> ${item.isDuplicateReg ? 'ডুপ্লিকেট রেজিঃ ওএমআর কপি' : 'ওএমআর শিট কপি'}
                 </div>
               </div>
             </div>
@@ -1336,6 +1474,8 @@
                 let newlyMatchedCount = 0;
                 let newlyPendingCount = 0;
 
+                const scannedBatch = [];
+
                 for (let i = 0; i < total; i++) {
                     const file = files[i];
                     const percent = Math.min(100, Math.round(((i + 1) / total) * 100));
@@ -1388,10 +1528,7 @@
                     }
 
                     const set = normalizeSet(detectedSet);
-
-                    // Answers detected from actual OMR scanning
                     let answers = detectedAnswers || {};
-
                     const scoreInfo = calculateStudentScore(answers, set);
                     const percentage = ((scoreInfo.correct / 30) * 100).toFixed(1);
                     const isPassed = scoreInfo.correct >= 10;
@@ -1406,66 +1543,159 @@
                     const fnMatchRoll = file.name.match(/\b(\d{1,3})\b/);
                     const fnCandidateRoll = fnMatchRoll ? fnMatchRoll[1] : null;
 
-                    if (hasImportedStudents) {
+                    const candidateReg = isValidDetectedId ? rawDetectedId : (fnCandidateReg || '');
+                    const candidateRoll = detectedRoll || fnCandidateRoll || '';
+
+                    scannedBatch.push({
+                        file: file,
+                        fileName: file.name,
+                        fileUrl: fileUrl,
+                        detectedAnswers: detectedAnswers,
+                        answers: answers,
+                        detectedSet: detectedSet,
+                        set: set,
+                        detectedRoll: detectedRoll,
+                        detectedId: detectedId,
+                        detectedClass: detectedClass,
+                        detectedSection: detectedSection,
+                        scoreInfo: scoreInfo,
+                        percentage: percentage,
+                        isPassed: isPassed,
+                        rawDetectedId: rawDetectedId,
+                        isValidDetectedId: isValidDetectedId,
+                        fnCandidateReg: fnCandidateReg,
+                        candidateReg: candidateReg,
+                        candidateRoll: candidateRoll
+                    });
+                }
+
+                // 2. Frequency Analysis for Duplicate Registration Number Detection
+                const regFrequency = {};
+                scannedBatch.forEach(item => {
+                    const r = toEnglishDigits(item.candidateReg || '').trim();
+                    if (r && !/^0+$/.test(r)) {
+                        regFrequency[r] = (regFrequency[r] || 0) + 1;
+                    }
+                });
+
+                // Also check if existing evaluated students already possess this registration
+                if (hasImportedStudents) {
+                    state.students.forEach(st => {
+                        if (st.status !== 'পেন্ডিং' && st.isRealScanned) {
+                            const r = toEnglishDigits(st.id || st.regNo || '').trim();
+                            if (r && !/^0+$/.test(r)) {
+                                const inBatch = scannedBatch.some(it => it.fileName === st.fileName);
+                                if (!inBatch && regFrequency[r]) {
+                                    regFrequency[r] = (regFrequency[r] || 0) + 1;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 3. Routing & Evaluation Phase
+                for (let i = 0; i < scannedBatch.length; i++) {
+                    const item = scannedBatch[i];
+                    const rawReg = toEnglishDigits(item.candidateReg || '').trim();
+                    const isDupReg = (rawReg && !/^0+$/.test(rawReg) && regFrequency[rawReg] > 1);
+
+                    if (isDupReg) {
+                        // একাধিক শিক্ষার্থী একই রেজিঃ নং ভুলবশত ব্যবহার করেছে -> ফলাফল Pending List এ যুক্ত হবে এবং "ডুপ্লিকেট রেজিঃ" দেখাবে
+                        state.pendingUnmatchedList.push({
+                            uid: 'pending_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
+                            file: item.file,
+                            fileName: item.fileName,
+                            imagePreviewUrl: item.fileUrl,
+                            detectedId: rawReg,
+                            duplicateRegId: rawReg,
+                            isDuplicateReg: true,
+                            detectedRoll: item.detectedRoll || item.candidateRoll || '',
+                            detectedClass: item.detectedClass || '',
+                            detectedSection: item.detectedSection || '',
+                            detectedSet: item.set,
+                            answers: item.answers,
+                            scoreInfo: item.scoreInfo,
+                            percentage: item.percentage,
+                            status: item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+                            reason: `⚠️ ডুপ্লিকেট রেজিঃ নং (${toBengaliNumber(rawReg)}) — একাধিক ওএমআর শিটে একই রেজিঃ বাবল পূরণ করা হয়েছে!`
+                        });
+                        newlyPendingCount++;
+
+                        // Reset any imported student who has this duplicate registration number back to pending
+                        if (hasImportedStudents) {
+                            const dupStudent = state.students.find(s => isRegNoMatch(s.id, rawReg) || isRegNoMatch(s.regNo, rawReg));
+                            if (dupStudent) {
+                                dupStudent.correct = 0;
+                                dupStudent.wrong = 0;
+                                dupStudent.blank = 30;
+                                dupStudent.percentage = '0.0';
+                                dupStudent.status = 'পেন্ডিং';
+                                dupStudent.answers = {};
+                                dupStudent.fileName = '';
+                                dupStudent.file = null;
+                                dupStudent.imagePreviewUrl = '';
+                                dupStudent.isRealScanned = false;
+                            }
+                        }
+                    } else if (hasImportedStudents) {
                         let matchedStudent = null;
 
                         // 1. Primary: Match strictly by detected Registration Number
-                        if (isValidDetectedId) {
-                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, rawDetectedId) || isRegNoMatch(s.regNo, rawDetectedId));
+                        if (item.isValidDetectedId) {
+                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, item.rawDetectedId) || isRegNoMatch(s.regNo, item.rawDetectedId));
                         }
 
                         // 2. Secondary: If detectedId was missing, check filename registration number (strictly 4-8 digits)
-                        if (!matchedStudent && fnCandidateReg) {
-                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, fnCandidateReg) || isRegNoMatch(s.regNo, fnCandidateReg));
+                        if (!matchedStudent && item.fnCandidateReg) {
+                            matchedStudent = state.students.find(s => isRegNoMatch(s.id, item.fnCandidateReg) || isRegNoMatch(s.regNo, item.fnCandidateReg));
                         }
 
-                        // Strict Registration matching: Do NOT fall back to roll number.
-                        // If registration number does not match, the sheet MUST go to Pending List!
-
                         if (matchedStudent) {
-                            matchedStudent.correct = scoreInfo.correct;
-                            matchedStudent.wrong = scoreInfo.wrong;
-                            matchedStudent.blank = scoreInfo.blank;
-                            matchedStudent.percentage = percentage;
-                            matchedStudent.status = isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
-                            matchedStudent.set = set;
-                            matchedStudent.answers = answers;
-                            matchedStudent.fileName = file.name;
-                            matchedStudent.file = file;
-                            matchedStudent.imagePreviewUrl = fileUrl;
-                            matchedStudent.isRealScanned = !!detectedAnswers && Object.keys(detectedAnswers).length > 0;
+                            matchedStudent.correct = item.scoreInfo.correct;
+                            matchedStudent.wrong = item.scoreInfo.wrong;
+                            matchedStudent.blank = item.scoreInfo.blank;
+                            matchedStudent.percentage = item.percentage;
+                            matchedStudent.status = item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ';
+                            matchedStudent.set = item.set;
+                            matchedStudent.answers = item.answers;
+                            matchedStudent.fileName = item.fileName;
+                            matchedStudent.file = item.file;
+                            matchedStudent.imagePreviewUrl = item.fileUrl;
+                            matchedStudent.isRealScanned = !!item.detectedAnswers && Object.keys(item.detectedAnswers).length > 0;
                             matchedStudent.evaluatedAt = new Date().toISOString();
                             newlyMatchedCount++;
                         } else {
                             // Push to Pending List
-                            const reason = !isValidDetectedId
+                            const reason = !item.isValidDetectedId
                                 ? 'ওএমআর শিটে রেজিঃ নং বাবল সনাক্ত হয়নি / অস্পষ্ট'
-                                : `সনাক্তকৃত রেজিঃ (${toBengaliNumber(rawDetectedId)}) পরীক্ষার শিক্ষার্থী তালিকায় নেই`;
+                                : `সনাক্তকৃত রেজিঃ (${toBengaliNumber(item.rawDetectedId)}) পরীক্ষার শিক্ষার্থী তালিকায় নেই`;
 
                             state.pendingUnmatchedList.push({
                                 uid: 'pending_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
-                                file: file,
-                                fileName: file.name,
-                                imagePreviewUrl: fileUrl,
-                                detectedId: isValidDetectedId ? rawDetectedId : (fnCandidateReg || ''),
-                                detectedRoll: detectedRoll || fnCandidateRoll || '',
-                                detectedClass: detectedClass || '',
-                                detectedSection: detectedSection || '',
-                                detectedSet: set,
-                                answers: answers,
-                                scoreInfo: scoreInfo,
-                                percentage: percentage,
-                                status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+                                file: item.file,
+                                fileName: item.fileName,
+                                imagePreviewUrl: item.fileUrl,
+                                detectedId: item.isValidDetectedId ? item.rawDetectedId : (item.fnCandidateReg || ''),
+                                duplicateRegId: '',
+                                isDuplicateReg: false,
+                                detectedRoll: item.detectedRoll || item.candidateRoll || '',
+                                detectedClass: item.detectedClass || '',
+                                detectedSection: item.detectedSection || '',
+                                detectedSet: item.set,
+                                answers: item.answers,
+                                scoreInfo: item.scoreInfo,
+                                percentage: item.percentage,
+                                status: item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
                                 reason: reason
                             });
                             newlyPendingCount++;
                         }
                     } else {
                         // Fallback if no imported exam was loaded
-                        const roll = (detectedRoll || fnCandidateRoll || String(i + 1)).padStart(3, '0');
-                        const studentId = isValidDetectedId ? rawDetectedId : (fnCandidateReg || ('1024' + roll));
-                        const studentClass = detectedClass ? String(parseInt(detectedClass, 10)) : "10";
-                        const section = detectedSection || sections[i % sections.length];
+                        const roll = (item.detectedRoll || item.candidateRoll || String(i + 1)).padStart(3, '0');
+                        const studentId = item.isValidDetectedId ? item.rawDetectedId : (item.fnCandidateReg || ('1024' + roll));
+                        const studentClass = item.detectedClass ? String(parseInt(item.detectedClass, 10)) : "10";
+                        const section = item.detectedSection || sections[i % sections.length];
 
                         const lookupMaps = getStudentsLookupMaps();
                         const sNameEn = lookupMaps.byReg.get(studentId) || lookupMaps.byRollClass.get(`${mapClassToNumber(studentClass)}_${toEnglishDigits(roll)}`) || '';
@@ -1477,18 +1707,18 @@
                             roll: roll,
                             class: studentClass,
                             section: section,
-                            set: set,
-                            answers: answers,
-                            correct: scoreInfo.correct,
-                            wrong: scoreInfo.wrong,
-                            blank: scoreInfo.blank,
+                            set: item.set,
+                            answers: item.answers,
+                            correct: item.scoreInfo.correct,
+                            wrong: item.scoreInfo.wrong,
+                            blank: item.scoreInfo.blank,
                             total: 30,
-                            percentage: percentage,
-                            status: isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
-                            fileName: file.name,
-                            file: file,
-                            imagePreviewUrl: fileUrl,
-                            isRealScanned: !!detectedAnswers
+                            percentage: item.percentage,
+                            status: item.isPassed ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ',
+                            fileName: item.fileName,
+                            file: item.file,
+                            imagePreviewUrl: item.fileUrl,
+                            isRealScanned: !!item.detectedAnswers
                         });
                         newlyMatchedCount++;
                     }
@@ -1521,6 +1751,19 @@
 
             // Load Sample Students Demo Generator
             btnLoadSampleData.addEventListener('click', () => {
+                const hasAnyKey = Object.values(state.answerKeys || {}).some(k => Array.isArray(k) && k.some(Boolean));
+                if (!hasAnyKey) {
+                    ['ক', 'খ', 'গ', 'ঘ'].forEach(s => {
+                        state.answerKeys[s] = JSON.parse(JSON.stringify(sampleKeysPattern[s]));
+                        state.setSourceFiles[s] = {
+                            fileName: `ডেমো উত্তরমালা (সেট ${s})`,
+                            type: 'demo',
+                            count: 30,
+                            timestamp: new Date().toLocaleTimeString()
+                        };
+                    });
+                    updateMultiSetStatusUI();
+                }
                 generateSampleStudents(25);
                 renderResultsTable();
                 updateStatistics();
@@ -1984,15 +2227,21 @@
 
                 // Update Standard view score
                 if (editCurrentScoreDisplay) {
+                    const dupText = score.duplicate > 0 ? `, ডুপ্লিকেট: ${toBengaliNumber(score.duplicate)}` : '';
                     editCurrentScoreDisplay.innerHTML = `
           <span style="color: #16a34a;">${toBengaliNumber(score.correct)}</span> 
-          <span style="color: var(--text-muted); font-size: 0.95rem;">/ ৩০ (ভুল: ${toBengaliNumber(score.wrong)}, ফাঁকা: ${toBengaliNumber(score.blank)})</span>
+          <span style="color: var(--text-muted); font-size: 0.95rem;">/ ৩০ (ভুল: ${toBengaliNumber(score.wrong)}${dupText}, ফাঁকা: ${toBengaliNumber(score.blank)})</span>
         `;
                 }
 
                 // Update Split view score badge
                 const splitBadge = document.getElementById('splitScoreBadgeDisplay');
                 if (splitBadge) {
+                    const dupBadgeHtml = score.duplicate > 0 ? `
+          <span style="background: #fef2f2; color: #b91c1c; padding: 2px 7px; border-radius: 6px; border: 1.5px solid #f87171; margin-right: 4px;" title="একাধিক বাবল ভরাটকৃত প্রশ্ন (কোনো মার্ক যুক্ত হবে না)">
+            <i class="fa-solid fa-clone"></i> ডুপ্লিকেট: <strong>${toBengaliNumber(score.duplicate)}</strong>
+          </span>` : '';
+
                     splitBadge.innerHTML = `
           <span style="background: #ecfdf5; color: #15803d; padding: 2px 7px; border-radius: 6px; border: 1px solid #a7f3d0; margin-right: 4px;" title="সঠিক উত্তর (সবুজ)">
             <i class="fa-solid fa-check"></i> <strong>${toBengaliNumber(score.correct)}</strong>
@@ -2000,6 +2249,7 @@
           <span style="background: #fef2f2; color: #b91c1c; padding: 2px 7px; border-radius: 6px; border: 1px solid #fecaca; margin-right: 4px;" title="ভুল উত্তর (লাল)">
             <i class="fa-solid fa-xmark"></i> <strong>${toBengaliNumber(score.wrong)}</strong>
           </span>
+          ${dupBadgeHtml}
           <span style="background: #f8fafc; color: #64748b; padding: 2px 7px; border-radius: 6px; border: 1px solid #e2e8f0;" title="অনুত্তরিত">
             <i class="fa-solid fa-circle-dot"></i> ফাঁকা: <strong>${toBengaliNumber(score.blank)}</strong>
           </span>
@@ -2016,25 +2266,33 @@
                 for (let q = 1; q <= 30; q++) {
                     const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
                     const studentAns = getStudentAnswer(state.tempEditStudent, q);
-                    const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+                    const selectedOpts = getStudentAnswerOptions(state.tempEditStudent, q);
+                    const isDup = isDuplicateOption(studentAns);
+                    const correctList = getQuestionCorrectAnswersList(targetKey, q);
 
                     let bubblesHtml = optionsBengali.map(opt => {
                         let extraClass = '';
                         let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
 
-                        if (studentAns === opt) {
-                            // শিক্ষার্থীর ভরাট করা OMR বাবল উত্তর পত্রের বাবলের সাথে মিললে সবুজ, মিল না থাকলে লাল
-                            if (correctAns && opt === correctAns) {
+                        const isSelectedByStudent = selectedOpts.includes(opt);
+                        const isCorrectKeyOpt = correctList.includes(opt);
+
+                        if (isSelectedByStudent) {
+                            if (isDup) {
+                                // একাধিক বাবল ভরাট (ডুপ্লিকেট) -> লাল রঙে চিহ্নিত এবং কোনো মার্ক পাবে না
+                                extraClass = 'filled-wrong filled-duplicate';
+                                titleText += ' (শিক্ষার্থীর ভরাটকৃত - ডুপ্লিকেট বাবল ✗, কোনো মার্ক যুক্ত হবে না)';
+                            } else if (isCorrectKeyOpt) {
                                 extraClass = 'filled-correct';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
                             } else {
                                 extraClass = 'filled-wrong';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
                             }
-                        } else if (correctAns && opt === correctAns) {
+                        } else if (isCorrectKeyOpt) {
                             // আসল উত্তর নির্দেশক
                             extraClass = 'filled-key-answer';
-                            titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
+                            titleText += ' (উত্তরপত্রের আসল সঠিক উত্তর ✓)';
                         }
 
                         return `
@@ -2046,9 +2304,11 @@
           `;
                     }).join('');
 
+                    const dupTagHtml = isDup ? `<span style="font-size: 0.65rem; color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; padding: 0 4px; border-radius: 4px; font-weight: 700; margin-left: 2px;" title="একাধিক বাবল ভরাট (ডুপ্লিকেট - ০ মার্ক)">ডুপ্লিকেট</span>` : '';
+
                     colsHtml[colIdx] += `
           <div class="omr-q-row">
-            <span class="q-number-label">${toBengaliNumber(q)}.</span>
+            <span class="q-number-label">${toBengaliNumber(q)}.${dupTagHtml}</span>
             <div class="bubbles-interactive-group">
               ${bubblesHtml}
             </div>
@@ -2079,25 +2339,31 @@
                 for (let q = 1; q <= 30; q++) {
                     const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
                     const studentAns = getStudentAnswer(state.tempEditStudent, q);
-                    const correctAns = normalizeOption(targetKey ? targetKey[q - 1] : null);
+                    const selectedOpts = getStudentAnswerOptions(state.tempEditStudent, q);
+                    const isDup = isDuplicateOption(studentAns);
+                    const correctList = getQuestionCorrectAnswersList(targetKey, q);
 
                     let bubblesHtml = optionsBengali.map(opt => {
                         let extraClass = '';
                         let titleText = `প্রশ্ন ${toBengaliNumber(q)}: অপশন ${opt}`;
 
-                        if (studentAns === opt) {
-                            // শিক্ষার্থীর ভরাট করা OMR বাবল উত্তর পত্রের বাবলের সাথে মিললে সবুজ, মিল না থাকলে লাল
-                            if (correctAns && opt === correctAns) {
+                        const isSelectedByStudent = selectedOpts.includes(opt);
+                        const isCorrectKeyOpt = correctList.includes(opt);
+
+                        if (isSelectedByStudent) {
+                            if (isDup) {
+                                extraClass = 'filled-wrong filled-duplicate';
+                                titleText += ' (শিক্ষার্থীর ভরাটকৃত - ডুপ্লিকেট বাবল ✗, কোনো মার্ক যুক্ত হবে না)';
+                            } else if (isCorrectKeyOpt) {
                                 extraClass = 'filled-correct';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - সঠিক উত্তর ✓)';
                             } else {
                                 extraClass = 'filled-wrong';
                                 titleText += ' (শিক্ষার্থীর ভরাটকৃত - ভুল উত্তর ✗)';
                             }
-                        } else if (correctAns && opt === correctAns) {
-                            // আসল উত্তর নির্দেশক
+                        } else if (isCorrectKeyOpt) {
                             extraClass = 'filled-key-answer';
-                            titleText += ' (উত্তরপত্রের সঠিক উত্তর)';
+                            titleText += ' (উত্তরপত্রের আসল সঠিক উত্তর ✓)';
                         }
 
                         return `
@@ -2109,9 +2375,11 @@
           `;
                     }).join('');
 
+                    const dupTagHtml = isDup ? `<span style="font-size: 0.62rem; color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; padding: 0 3px; border-radius: 3px; font-weight: 700; margin-left: 2px;" title="একাধিক বাবল ভরাট (ডুপ্লিকেট - ০ মার্ক)">ডুপ্লিকেট</span>` : '';
+
                     colsHtml[colIdx] += `
           <div class="omr-q-row" style="padding: 2px 0;">
-            <span class="q-number-label" style="min-width: 22px; font-size: 0.8rem;">${toBengaliNumber(q)}.</span>
+            <span class="q-number-label" style="min-width: 22px; font-size: 0.8rem;">${toBengaliNumber(q)}.${dupTagHtml}</span>
             <div class="bubbles-interactive-group">
               ${bubblesHtml}
             </div>
@@ -2133,13 +2401,29 @@
                 if (!state.tempEditStudent) return;
                 if (!state.tempEditStudent.answers) state.tempEditStudent.answers = {};
 
-                const normOpt = normalizeOption(selectedOption);
-                const current = getStudentAnswer(state.tempEditStudent, questionNumber);
+                const normOpt = normalizeSingleOption(selectedOption);
+                if (!normOpt) return;
 
-                if (current === normOpt) {
-                    state.tempEditStudent.answers[questionNumber] = null;
+                const currentOpts = getStudentAnswerOptions(state.tempEditStudent, questionNumber);
+
+                if (currentOpts.includes(normOpt)) {
+                    // Option was already selected -> remove it
+                    const updated = currentOpts.filter(o => o !== normOpt);
+                    if (updated.length === 0) {
+                        state.tempEditStudent.answers[questionNumber] = null;
+                    } else if (updated.length === 1) {
+                        state.tempEditStudent.answers[questionNumber] = updated[0];
+                    } else {
+                        state.tempEditStudent.answers[questionNumber] = updated;
+                    }
                 } else {
-                    state.tempEditStudent.answers[questionNumber] = normOpt;
+                    // Option was not selected -> add it
+                    const updated = [...currentOpts, normOpt].sort((a, b) => optionsBengali.indexOf(a) - optionsBengali.indexOf(b));
+                    if (updated.length === 1) {
+                        state.tempEditStudent.answers[questionNumber] = updated[0];
+                    } else {
+                        state.tempEditStudent.answers[questionNumber] = updated;
+                    }
                 }
 
                 updateModalScorePreview();
@@ -2491,10 +2775,10 @@
 
                 for (let q = 1; q <= 30; q++) {
                     const colIdx = q <= 10 ? 0 : (q <= 20 ? 1 : 2);
-                    const correctAns = keys[q - 1];
+                    const correctList = getQuestionCorrectAnswersList(keys, q);
 
                     let bubblesHtml = optionsBengali.map(opt => {
-                        const isSelected = opt === correctAns;
+                        const isSelected = correctList.includes(opt);
                         return `
             <span class="interactive-bubble ${isSelected ? 'selected-user' : ''}" 
                   onclick="setAnswerKeyOption(${q}, '${opt}')" 
@@ -2862,16 +3146,25 @@
                     state.studentFiles = [];
                     state.answerKeyFiles = [];
                     state.pendingUnmatchedList = [];
+                    state.answerKeys = {
+                        'ক': Array(30).fill(null),
+                        'খ': Array(30).fill(null),
+                        'গ': Array(30).fill(null),
+                        'ঘ': Array(30).fill(null)
+                    };
+                    state.setSourceFiles = { 'ক': null, 'খ': null, 'গ': null, 'ঘ': null };
+                    state.uploadedKeyPreview = null;
                     if (typeof renderPendingList === 'function') renderPendingList();
                     if (typeof updateTabCounts === 'function') updateTabCounts();
 
-                    dropzoneAnswerKey.classList.remove('filled');
-                    dropzoneStudentOMR.classList.remove('filled');
-                    textAnswerKeyStatus.innerHTML = 'কোনো ফাইল যুক্ত হয়নি';
-                    textStudentOMRStatus.innerHTML = '০ টি ফাইল';
+                    if (dropzoneAnswerKey) dropzoneAnswerKey.classList.remove('filled');
+                    if (dropzoneStudentOMR) dropzoneStudentOMR.classList.remove('filled');
+                    if (textAnswerKeyStatus) textAnswerKeyStatus.innerHTML = '<span style="color: var(--text-muted);">কোনো ফাইল যুক্ত হয়নি</span>';
+                    if (textStudentOMRStatus) textStudentOMRStatus.innerHTML = '০ টি ফাইল';
 
                     renderResultsTable();
                     updateStatistics();
+                    updateMultiSetStatusUI();
                     btnExportExcel.disabled = true;
                     btnPrintTable.disabled = true;
                     showToast('ডেটা সফলভাবে রিসেট করা হয়েছে', 'info');
@@ -3003,12 +3296,92 @@
             // --- IMPORT EXAM MODAL LOGIC (Exam List Selection) ---
             let cachedAvailableExams = [];
 
+            // Helper: Check if an exam schedule from Exam List already has MCQ marks entered
+            window.checkIfScheduleHasMcqMarks = function (sch, savedMarks = {}, omrExams = []) {
+                if (!sch || !sch.id) return false;
+                const schId = String(sch.id).trim();
+
+                // 1. Explicit flags on schedule
+                if (sch.hasMcqMarks === true || sch.omrEvaluatedAt) {
+                    return true;
+                }
+
+                // 2. Check if schedule is already in saved OMR exams list
+                if (Array.isArray(omrExams) && omrExams.length > 0) {
+                    const inOmr = omrExams.some(oe => String(oe.id) === schId || String(oe.scheduleId) === schId);
+                    if (inOmr) return true;
+                }
+
+                // 3. Inspect saved student marks in school_student_marks
+                if (savedMarks && typeof savedMarks === 'object') {
+                    const targetSubCode = (sch.subjectCode || sch.subject || '').trim().toLowerCase();
+                    const targetSubName = (sch.subject || '').trim().toLowerCase();
+
+                    for (const [key, studentData] of Object.entries(savedMarks)) {
+                        if (key.startsWith('timestamp_')) continue;
+                        if (key.endsWith('_' + schId) || key.includes('_' + schId)) {
+                            if (studentData && typeof studentData === 'object') {
+                                for (const [subKey, subVal] of Object.entries(studentData)) {
+                                    if (!subVal || typeof subVal !== 'object') continue;
+                                    
+                                    const subKeyClean = subKey.trim().toLowerCase();
+                                    const isMatch = !targetSubCode || 
+                                        subKeyClean === targetSubCode || 
+                                        subKeyClean === targetSubName || 
+                                        Object.keys(studentData).length === 1;
+
+                                    if (isMatch) {
+                                        if (subVal.omrEvaluatedAt) return true;
+                                        if (subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0) {
+                                            return true;
+                                        }
+                                        if (subVal.mcq !== undefined && subVal.mcq !== null && subVal.mcq !== '') {
+                                            const mcqStr = String(subVal.mcq).trim().toUpperCase();
+                                            if (!isNaN(Number(mcqStr)) || mcqStr === 'A' || mcqStr === 'ABS') {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (sch.marksEntryTime) {
+                        const hasMarksKeys = Object.keys(savedMarks).some(k => !k.startsWith('timestamp_') && (k.endsWith('_' + schId) || k.includes('_' + schId)));
+                        if (hasMarksKeys) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            };
+
             window.openImportExamModal = async function () {
                 const modal = document.getElementById('modalImportExam');
                 if (!modal) return;
 
                 modal.style.display = 'flex';
                 modal.classList.add('active');
+
+                // Populate Class filter dropdown dynamically
+                const classSelect = document.getElementById('selectImportExamClass');
+                if (classSelect) {
+                    let classes = [];
+                    try {
+                        classes = (typeof loadClasses === 'function') ? loadClasses() : safeJsonParse('school_classes', []);
+                    } catch (e) { }
+                    if (!classes || classes.length === 0) {
+                        classes = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+                    }
+                    let classOptions = '<option value="ALL">সকল শ্রেণি (All Classes)</option>';
+                    classes.forEach(cls => {
+                        const bnCls = (typeof formatClassBangla === 'function') ? formatClassBangla(cls) : cls;
+                        classOptions += `<option value="${cls}">${bnCls} (${cls})</option>`;
+                    });
+                    classSelect.innerHTML = classOptions;
+                }
 
                 const searchInput = document.getElementById('inputImportExamSearch');
                 if (searchInput) {
@@ -3019,79 +3392,17 @@
                 const listContainer = document.getElementById('importExamListContainer');
                 if (listContainer) {
                     listContainer.innerHTML = `
-          <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #4f46e5; margin-bottom: 10px;"></i>
-            <p style="margin: 0; font-size: 0.95rem;">Exam List এবং সংরক্ষিত পরীক্ষার তালিকা লোড হচ্ছে...</p>
-          </div>
-        `;
+                      <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #4f46e5; margin-bottom: 10px;"></i>
+                        <p style="margin: 0; font-size: 0.95rem; font-weight: 600;">Exam List এবং পরীক্ষার তালিকা লোড হচ্ছে...</p>
+                      </div>
+                    `;
                 }
 
                 try {
                     const exams = [];
 
-                    // 1. Fetch schedules from Exam List (school_exam_schedules)
-                    let schedules = [];
-                    try {
-                        if (typeof loadSchedules === 'function') {
-                            schedules = loadSchedules() || [];
-                        } else {
-                            schedules = safeJsonParse('school_exam_schedules', []);
-                        }
-                    } catch (e) {
-                        console.warn('Error reading schedules:', e);
-                    }
-
-                    // Fetch students to count students per class
-                    let allStudents = [];
-                    try {
-                        if (typeof loadStudents === 'function') {
-                            allStudents = loadStudents() || [];
-                        } else {
-                            allStudents = safeJsonParse('school_students', []);
-                        }
-                    } catch (e) { }
-
-                    // Fetch saved student marks to check mark status
-                    let savedMarks = {};
-                    try {
-                        if (typeof loadStudentMarks === 'function') {
-                            savedMarks = loadStudentMarks() || {};
-                        } else {
-                            savedMarks = safeJsonParse('school_student_marks', {});
-                        }
-                    } catch (e) { }
-
-                    schedules.forEach(sch => {
-                        const targetClassNum = mapClassToNumber(sch.class);
-                        const studentCount = allStudents.filter(s => {
-                            return mapClassToNumber(s.class) === targetClassNum ||
-                                (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
-                        }).length;
-
-                        // Check if marks are already entered
-                        let hasMarks = false;
-                        if (sch.marksEntryTime) {
-                            hasMarks = true;
-                        } else {
-                            hasMarks = Object.keys(savedMarks).some(k => k.includes('_' + sch.id));
-                        }
-
-                        exams.push({
-                            id: sch.id,
-                            source: 'schedule',
-                            sourceLabel: 'Exam List শিডিউল',
-                            examName: sch.term || 'পরীক্ষা',
-                            subject: sch.subject || '',
-                            class: sch.class || '',
-                            section: sch.section || 'All',
-                            date: sch.date || '',
-                            totalStudents: studentCount > 0 ? studentCount : (sch.totalStudents || 0),
-                            hasMarks: hasMarks,
-                            scheduleData: sch
-                        });
-                    });
-
-                    // 2. Fetch saved OMR evaluations from /api/exams and localStorage
+                    // 1. Fetch saved OMR evaluations
                     let omrExams = [];
                     try {
                         const res = await fetch('/api/exams');
@@ -3107,23 +3418,108 @@
                         } catch (e) { }
                     }
 
+                    // 2. Fetch all schedules from Exam List (school_exam_schedules)
+                    let schedules = [];
+                    try {
+                        if (typeof loadSchedules === 'function') {
+                            schedules = loadSchedules() || [];
+                        } else {
+                            schedules = safeJsonParse('school_exam_schedules', []);
+                        }
+                    } catch (e) {
+                        console.warn('Error reading schedules:', e);
+                    }
+
+                    // Fetch students to accurately count students per class & section
+                    let allStudents = [];
+                    try {
+                        if (typeof loadStudents === 'function') {
+                            allStudents = loadStudents() || [];
+                        } else {
+                            allStudents = safeJsonParse('school_students', []);
+                        }
+                    } catch (e) { }
+
+                    // Fetch saved student marks to determine mark status
+                    let savedMarks = {};
+                    try {
+                        if (typeof loadStudentMarks === 'function') {
+                            savedMarks = loadStudentMarks() || {};
+                        } else {
+                            savedMarks = safeJsonParse('school_student_marks', {});
+                        }
+                    } catch (e) { }
+
+                    // Process all schedules from Exam List - Include EVERY schedule from Exam Portal!
+                    schedules.forEach(sch => {
+                        const hasMcqMarks = checkIfScheduleHasMcqMarks(sch, savedMarks, omrExams);
+
+                        const targetClassNum = mapClassToNumber(sch.class);
+                        const targetSections = sch.section && sch.section !== 'All'
+                            ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
+
+                        const classStudents = allStudents.filter(s => {
+                            const sClassNum = mapClassToNumber(s.class);
+                            const isClassMatch = (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
+                                (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
+                            if (!isClassMatch) return false;
+
+                            if (targetSections.length > 0 && s.section) {
+                                return targetSections.includes(s.section.trim().toUpperCase());
+                            }
+                            return true;
+                        });
+
+                        const studentCount = classStudents.length > 0 ? classStudents.length : (sch.totalStudents || 0);
+
+                        exams.push({
+                            id: sch.id,
+                            source: 'schedule',
+                            sourceLabel: 'Exam List শিডিউল',
+                            examName: sch.term || 'পরীক্ষা',
+                            examType: sch.examType || '',
+                            subject: sch.subject || '',
+                            class: sch.class || '',
+                            section: sch.section || 'All',
+                            date: sch.date || '',
+                            teacher: sch.teacher || '',
+                            slNo: sch.slNo || '',
+                            totalStudents: studentCount,
+                            hasMarks: hasMcqMarks,
+                            createdAt: sch.createdAt || sch.id,
+                            scheduleData: sch
+                        });
+                    });
+
+                    // 3. Include historical OMR evaluations (if any not linked to a schedule)
                     omrExams.forEach(oe => {
-                        if (exams.some(x => x.id === oe.id)) return;
+                        if (exams.some(x => String(x.id) === String(oe.id) || String(x.id) === String(oe.scheduleId))) return;
                         const firstStudent = (oe.students && oe.students[0]) ? oe.students[0] : null;
-                        const classLabel = firstStudent ? formatClassBangla(firstStudent.class) : 'সকল শ্রেণি';
+                        const classLabel = firstStudent ? formatClassBangla(firstStudent.class) : (oe.class || 'সকল শ্রেণি');
                         exams.push({
                             id: oe.id,
                             source: 'omr',
                             sourceLabel: 'OMR সংরক্ষিত',
                             examName: oe.examName || ('OMR পরীক্ষা ' + (oe.id || '')),
+                            examType: '',
                             subject: oe.subject || 'MCQ ওএমআর',
                             class: classLabel,
-                            section: 'সকল শাখা',
+                            section: oe.section || 'সকল শাখা',
                             date: oe.date || '',
+                            teacher: oe.teacher || '',
+                            slNo: '',
                             totalStudents: oe.totalStudents || (oe.students ? oe.students.length : 0),
                             hasMarks: true,
+                            createdAt: oe.date || oe.id,
                             omrData: oe
                         });
+                    });
+
+                    // Sort: newest first
+                    exams.sort((a, b) => {
+                        const numA = parseFloat(a.createdAt) || 0;
+                        const numB = parseFloat(b.createdAt) || 0;
+                        return numB - numA;
                     });
 
                     cachedAvailableExams = exams;
@@ -3133,11 +3529,11 @@
                     console.error('Error loading available exams:', err);
                     if (listContainer) {
                         listContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--danger);">
-              <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 8px;"></i>
-              <p>পরীক্ষার তালিকা লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।</p>
-            </div>
-          `;
+                            <div style="text-align: center; padding: 2rem; color: var(--danger);">
+                              <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                              <p>পরীক্ষার তালিকা লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।</p>
+                            </div>
+                        `;
                     }
                 }
             };
@@ -3153,23 +3549,36 @@
             window.renderImportExamList = function () {
                 const listContainer = document.getElementById('importExamListContainer');
                 const searchInput = document.getElementById('inputImportExamSearch');
+                const classSelect = document.getElementById('selectImportExamClass');
                 const sourceSelect = document.getElementById('selectImportExamSource');
                 const countEl = document.getElementById('totalAvailableExamsCount');
                 if (!listContainer) return;
 
                 const query = (searchInput ? searchInput.value.trim().toLowerCase() : '');
+                const filterClass = (classSelect ? classSelect.value : 'ALL');
                 const filterSource = (sourceSelect ? sourceSelect.value : 'ALL');
 
                 const filtered = cachedAvailableExams.filter(exam => {
                     if (filterSource === 'SCHEDULE' && exam.source !== 'schedule') return false;
                     if (filterSource === 'OMR' && exam.source !== 'omr') return false;
 
+                    if (filterClass !== 'ALL') {
+                        const targetClsNum = mapClassToNumber(filterClass);
+                        const examClsNum = mapClassToNumber(exam.class);
+                        const isClassMatch = (targetClsNum && examClsNum && targetClsNum === examClsNum) ||
+                            (exam.class && String(exam.class).toLowerCase() === String(filterClass).toLowerCase());
+                        if (!isClassMatch) return false;
+                    }
+
                     if (!query) return true;
                     const examName = (exam.examName || '').toLowerCase();
+                    const examType = (exam.examType || '').toLowerCase();
                     const subject = (exam.subject || '').toLowerCase();
                     const cls = (exam.class || '').toLowerCase();
                     const date = (exam.date || '').toLowerCase();
-                    return examName.includes(query) || subject.includes(query) || cls.includes(query) || date.includes(query);
+                    const teacher = (exam.teacher || '').toLowerCase();
+                    const section = (exam.section || '').toLowerCase();
+                    return examName.includes(query) || examType.includes(query) || subject.includes(query) || cls.includes(query) || date.includes(query) || teacher.includes(query) || section.includes(query);
                 });
 
                 if (countEl) {
@@ -3178,14 +3587,14 @@
 
                 if (filtered.length === 0) {
                     listContainer.innerHTML = `
-          <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 1.5rem; color: #94a3b8;">
-              <i class="fa-solid fa-folder-open"></i>
-            </div>
-            <h4 style="margin: 0 0 6px 0; color: var(--text-main); font-size: 1.05rem;">কোনো পরীক্ষা পাওয়া যায়নি</h4>
-            <p style="margin: 0; font-size: 0.85rem;">অন্য কোনো নাম দিয়ে অনুসন্ধান করুন অথবা Exam List এ নতুন পরীক্ষার শিডিউল যুক্ত করুন।</p>
-          </div>
-        `;
+                      <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 1.5rem; color: #94a3b8;">
+                          <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h4 style="margin: 0 0 6px 0; color: var(--text-main); font-size: 1.05rem; font-weight: 700;">কোনো পরীক্ষার শিডিউল পাওয়া যায়নি</h4>
+                        <p style="margin: 0; font-size: 0.85rem;">অন্য কোনো নাম দিয়ে অনুসন্ধান করুন অথবা Exam List এ নতুন পরীক্ষার শিডিউল যুক্ত করুন।</p>
+                      </div>
+                    `;
                     return;
                 }
 
@@ -3198,54 +3607,62 @@
                     const badgeColor = isSchedule ? '#3730a3' : '#065f46';
 
                     const marksStatusHtml = exam.hasMarks
-                        ? `<span style="font-size: 0.73rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-check"></i> নম্বর সম্পন্ন</span>`
-                        : `<span style="font-size: 0.73rem; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-clock"></i> পেন্ডিং</span>`;
+                        ? `<span style="font-size: 0.75rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 3px 9px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-check"></i> নম্বর এন্ট্রি সম্পন্ন</span>`
+                        : `<span style="font-size: 0.75rem; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 3px 9px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-clock"></i> মূল্যায়ন পেন্ডিং</span>`;
 
-                    const displayClass = exam.class ? (exam.class.includes('শ্রেণি') ? exam.class : (formatClassBangla(exam.class))) : 'শ্রেণি: -';
+                    const displayClass = exam.class ? (exam.class.includes('শ্রেণি') ? exam.class : (formatClassBangla(exam.class) + ` (${exam.class})`)) : 'শ্রেণি: -';
+                    const classColor = typeof getClassColor === 'function' ? getClassColor(exam.class) : '#4f46e5';
+
+                    const examTypeBadge = exam.examType ? `<span style="font-size: 0.74rem; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px; font-weight: 600;">${exam.examType}</span>` : '';
+                    const sectionBadge = exam.section ? `<span style="font-size: 0.74rem; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 2px 7px; border-radius: 6px; font-weight: 600;">শাখা: ${exam.section}</span>` : '';
+                    const teacherHtml = exam.teacher ? `<span><i class="fa-solid fa-chalkboard-user" style="color: #8b5cf6;"></i> ${exam.teacher}</span>` : '';
 
                     return `
-          <div class="import-exam-item-card" 
-               style="display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-radius: 12px; background: #ffffff; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03); cursor: pointer; gap: 14px;"
-               onmouseover="this.style.borderColor='#4f46e5'; this.style.transform='translateY(-2px)';"
-               onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)';"
-               onclick="selectAndImportExam('${exam.id}', '${exam.source}')">
-            
-            <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
-              <div style="width: 44px; height: 44px; border-radius: 10px; background: ${sourceBg}; color: ${sourceColor}; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
-                <i class="fa-solid ${sourceIcon}"></i>
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
-                  <strong style="font-size: 1.05rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    ${exam.examName} ${exam.subject ? `— ${exam.subject}` : ''}
-                  </strong>
-                  <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor};">
-                    ${exam.sourceLabel}
-                  </span>
-                  ${marksStatusHtml}
-                </div>
-                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 0.83rem; color: #64748b;">
-                  <span><i class="fa-solid fa-graduation-cap" style="color: #6366f1;"></i> ${displayClass}</span>
-                  ${exam.subject ? `<span><i class="fa-solid fa-book" style="color: #0ea5e9;"></i> ${exam.subject}</span>` : ''}
-                  <span><i class="fa-regular fa-calendar" style="color: #f59e0b;"></i> ${exam.date || 'তারিখ নেই'}</span>
-                  <span><i class="fa-solid fa-users" style="color: #10b981;"></i> ${toBengaliNumber(exam.totalStudents)} জন পরীক্ষার্থী</span>
-                </div>
-              </div>
-            </div>
+                      <div class="import-exam-item-card" 
+                           style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-radius: 12px; background: #ffffff; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.03); cursor: pointer; gap: 14px; transition: all 0.2s ease;"
+                           onmouseover="this.style.borderColor='#4f46e5'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(79, 70, 229, 0.12)';"
+                           onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.03)';"
+                           onclick="selectAndImportExam('${exam.id}', '${exam.source}')">
+                        
+                        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;">
+                          <div style="width: 46px; height: 46px; border-radius: 12px; background: ${sourceBg}; color: ${sourceColor}; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                            <i class="fa-solid ${sourceIcon}"></i>
+                          </div>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                              <strong style="font-size: 1.08rem; color: #0f172a; font-family: 'Outfit', 'Hind Siliguri', sans-serif;">
+                                ${exam.examName} ${exam.subject ? `— <span style="color: #4f46e5;">${exam.subject}</span>` : ''}
+                              </strong>
+                              <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor};">
+                                ${exam.sourceLabel}
+                              </span>
+                              ${examTypeBadge}
+                              ${marksStatusHtml}
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 0.84rem; color: #64748b;">
+                              <span style="font-weight: 700; color: ${classColor};"><i class="fa-solid fa-graduation-cap"></i> ${displayClass}</span>
+                              ${sectionBadge}
+                              <span><i class="fa-regular fa-calendar" style="color: #f59e0b;"></i> ${exam.date || 'তারিখ নির্ধারিত নেই'}</span>
+                              ${teacherHtml}
+                              <span style="font-weight: 600; color: #059669;"><i class="fa-solid fa-users"></i> ${toBengaliNumber(exam.totalStudents)} জন পরীক্ষার্থী</span>
+                            </div>
+                          </div>
+                        </div>
 
-            <div style="flex-shrink: 0;">
-              <button type="button" class="btn btn-sm" 
-                      style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff; font-weight: 700; border-radius: 8px; padding: 7px 16px; border: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3); font-size: 0.88rem; cursor: pointer;">
-                <i class="fa-solid fa-arrow-down-to-bracket"></i> নির্বাচন করুন
-              </button>
-            </div>
-          </div>
-        `;
+                        <div style="flex-shrink: 0;">
+                          <button type="button" class="btn btn-sm" 
+                                  style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff; font-weight: 700; border-radius: 8px; padding: 8px 18px; border: none; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3); font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;"
+                                  onclick="event.stopPropagation(); selectAndImportExam('${exam.id}', '${exam.source}')">
+                            <i class="fa-solid fa-file-import"></i> Import Exam
+                          </button>
+                        </div>
+                      </div>
+                    `;
                 }).join('');
             };
 
             window.selectAndImportExam = function (examId, source) {
-                const selected = cachedAvailableExams.find(x => x.id === examId && x.source === source);
+                const selected = cachedAvailableExams.find(x => String(x.id) === String(examId) && x.source === source);
                 if (!selected) return;
 
                 if (source === 'omr') {
@@ -3299,7 +3716,9 @@
                         showToast(`সংরক্ষিত পরীক্ষা "${selected.examName}" (${toBengaliNumber(oe.students.length)} জন) এর ফলাফলসহ লোড হয়েছে!`, 'success', 'fa-check');
 
                         const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
-                        if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        if (targetSection && typeof targetSection.scrollIntoView === 'function') {
+                            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
                         return;
                     }
                 }
@@ -3337,11 +3756,41 @@
                     }
                 } catch (e) { }
 
+                let omrExams = [];
+                try {
+                    omrExams = safeJsonParse('school_omr_exams', []);
+                } catch (e) { }
+
+                // Check if this specific schedule ID has a saved OMR record
+                const matchingOmrExam = omrExams.find(oe => String(oe.id) === String(sch.id) || String(oe.scheduleId) === String(sch.id));
+                if (matchingOmrExam && matchingOmrExam.answerKeys) {
+                    state.answerKeys = JSON.parse(JSON.stringify(matchingOmrExam.answerKeys));
+                    renderAnswerKeyBubbles();
+                }
+
                 const targetClassNum = mapClassToNumber(sch.class);
+                const targetSections = sch.section && sch.section !== 'All'
+                    ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
+
                 let classStudents = allStudents.filter(s => {
-                    return mapClassToNumber(s.class) === targetClassNum ||
+                    const sClassNum = mapClassToNumber(s.class);
+                    const isClassMatch = (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
                         (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
+                    if (!isClassMatch) return false;
+
+                    if (targetSections.length > 0 && s.section) {
+                        return targetSections.includes(s.section.trim().toUpperCase());
+                    }
+                    return true;
                 });
+
+                if (classStudents.length === 0) {
+                    classStudents = allStudents.filter(s => {
+                        const sClassNum = mapClassToNumber(s.class);
+                        return (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
+                            (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
+                    });
+                }
 
                 if (classStudents.length === 0) {
                     classStudents = allStudents.slice(0, 30);
@@ -3350,23 +3799,27 @@
                 // Sort students sequentially by Registration Number in ascending serial order
                 sortStudentsByRegNo(classStudents);
 
-                const activeKey = (state.answerKeys && (state.answerKeys['ক'] || state.answerKeys['A'])) || {};
-                const options = ['ক', 'খ', 'গ', 'ঘ'];
+                const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+                const schClass = sch.class || '';
+                const classSubjects = subMap[schClass] || [];
+                const subObj = classSubjects.find(s => s && s.name && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+                const activeExamSubjectCode = subObj ? subObj.code : (sch.subjectCode || sch.subject || '');
                 const targetSubjectCode = sch.subjectCode || sch.subject;
+
+                const allowedSubjectKeys = [
+                    targetSubjectCode,
+                    sch.subject,
+                    sch.subjectCode,
+                    activeExamSubjectCode
+                ].filter(Boolean).map(s => String(s).trim().toLowerCase());
 
                 let totalLoadedWithMarks = 0;
 
                 const importedStudents = classStudents.map((student, idx) => {
-                    // Look up student mark across various standard keys
                     const rawReg = toEnglishDigits(student.regNo || student.id || student.studentId || '').trim();
                     const rawId = toEnglishDigits(student.id || '').trim();
-
-                    let studentMarkObj = savedMarks['marks_' + rawReg + '_' + sch.id] ||
-                        savedMarks['marks_' + rawId + '_' + sch.id] ||
-                        savedMarks['marks_' + student.id + '_' + sch.id] ||
-                        savedMarks['marks_' + student.studentId + '_' + sch.id] ||
-                        savedMarks['marks_' + rawReg + '_' + (sch.term || sch.examType || '')] ||
-                        savedMarks['marks_' + student.id + '_' + (sch.term || sch.examType || '')];
+                    const fallbackReg = '2211' + String(student.roll || idx + 1).padStart(3, '0');
+                    const studentRegId = toEnglishDigits(student.regNo || student.studentId || student.id || fallbackReg).trim();
 
                     let hasRealMark = false;
                     let correctScore = 0;
@@ -3376,21 +3829,62 @@
                     let savedPct = null;
                     let savedFileName = '';
 
-                    if (studentMarkObj && typeof studentMarkObj === 'object') {
-                        const subVal = (targetSubjectCode && studentMarkObj[targetSubjectCode]) ? studentMarkObj[targetSubjectCode] : (studentMarkObj[sch.subject] || Object.values(studentMarkObj)[0]);
-                        if (subVal && typeof subVal === 'object') {
-                            // Strictly check for verified OMR evaluation data
-                            const hasRealAnswers = subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0;
-                            const isVerifiedOmr = !subVal.isAbsent && hasRealAnswers && !!subVal.omrEvaluatedAt;
+                    // 1. Check if matching saved student exists in matchingOmrExam for this EXACT schedule ID
+                    if (matchingOmrExam && Array.isArray(matchingOmrExam.students)) {
+                        const stMatch = matchingOmrExam.students.find(st => {
+                            const stId = toEnglishDigits(st.id || st.regNo || st.studentId || '').trim();
+                            return stId && (stId === studentRegId || stId === rawReg || stId === rawId);
+                        });
+                        if (stMatch && (stMatch.isRealScanned || (stMatch.correct > 0 && stMatch.status !== 'পেন্ডিং') || (stMatch.answers && Object.keys(stMatch.answers).length > 0))) {
+                            correctScore = typeof stMatch.correct === 'number' ? stMatch.correct : (parseInt(stMatch.correct, 10) || 0);
+                            hasRealMark = true;
+                            savedAnswers = stMatch.answers || {};
+                            if (stMatch.set) savedSet = normalizeSet(stMatch.set);
+                            if (stMatch.percentage) savedPct = stMatch.percentage;
+                            if (stMatch.status) savedStatus = stMatch.status;
+                            if (stMatch.fileName) savedFileName = stMatch.fileName;
+                        }
+                    }
 
-                            if (isVerifiedOmr && subVal.mcq !== undefined && subVal.mcq !== null && !isNaN(parseInt(subVal.mcq))) {
-                                correctScore = parseInt(subVal.mcq);
-                                hasRealMark = true;
-                                savedAnswers = subVal.answers;
-                                if (subVal.set) savedSet = normalizeSet(subVal.set);
-                                if (subVal.percentage) savedPct = subVal.percentage;
-                                if (subVal.status) savedStatus = subVal.status;
-                                if (subVal.fileName) savedFileName = subVal.fileName;
+                    // 2. If not found in matchingOmrExam, check savedMarks strictly for THIS SCHEDULE ID (sch.id)
+                    if (!hasRealMark) {
+                        const candidateKeys = [
+                            `marks_${rawReg}_${sch.id}`,
+                            `marks_${rawId}_${sch.id}`,
+                            `marks_${student.id}_${sch.id}`,
+                            `marks_${student.studentId}_${sch.id}`
+                        ];
+
+                        let studentMarkObj = null;
+                        for (const k of candidateKeys) {
+                            if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                                studentMarkObj = savedMarks[k];
+                                break;
+                            }
+                        }
+
+                        if (studentMarkObj && typeof studentMarkObj === 'object') {
+                            let subVal = null;
+                            for (const [subK, val] of Object.entries(studentMarkObj)) {
+                                if (val && typeof val === 'object' && allowedSubjectKeys.includes(String(subK).trim().toLowerCase())) {
+                                    subVal = val;
+                                    break;
+                                }
+                            }
+
+                            if (subVal && typeof subVal === 'object') {
+                                const hasRealAnswers = subVal.answers && typeof subVal.answers === 'object' && Object.keys(subVal.answers).length > 0;
+                                const isVerifiedOmr = !subVal.isAbsent && (hasRealAnswers || !!subVal.omrEvaluatedAt) && subVal.mcq !== undefined && subVal.mcq !== null && !isNaN(parseInt(subVal.mcq));
+
+                                if (isVerifiedOmr) {
+                                    correctScore = parseInt(subVal.mcq);
+                                    hasRealMark = true;
+                                    savedAnswers = subVal.answers;
+                                    if (subVal.set) savedSet = normalizeSet(subVal.set);
+                                    if (subVal.percentage) savedPct = subVal.percentage;
+                                    if (subVal.status) savedStatus = subVal.status;
+                                    if (subVal.fileName) savedFileName = subVal.fileName;
+                                }
                             }
                         }
                     }
@@ -3402,20 +3896,25 @@
                     let blankCount = totalQ;
                     const studentAnswers = {};
 
-                    if (hasRealMark && savedAnswers && Object.keys(savedAnswers).length > 0) {
+                    if (hasRealMark) {
                         correctScore = Math.max(0, Math.min(30, correctScore));
-                        for (let q = 1; q <= 30; q++) {
-                            studentAnswers[q] = savedAnswers[q] || savedAnswers[String(q)] || null;
+                        if (savedAnswers && Object.keys(savedAnswers).length > 0) {
+                            for (let q = 1; q <= 30; q++) {
+                                studentAnswers[q] = savedAnswers[q] || savedAnswers[String(q)] || null;
+                            }
+                            const calcScore = calculateStudentScore(studentAnswers, savedSet || 'ক');
+                            correctScore = calcScore.correct;
+                            wrongCount = calcScore.wrong;
+                            blankCount = calcScore.blank;
+                        } else {
+                            wrongCount = 0;
+                            blankCount = totalQ - correctScore;
                         }
-                        const calcScore = calculateStudentScore(studentAnswers, savedSet || 'ক');
-                        correctScore = calcScore.correct;
-                        wrongCount = calcScore.wrong;
-                        blankCount = calcScore.blank;
                         pct = savedPct || ((correctScore / totalQ) * 100).toFixed(1);
                         status = savedStatus || (correctScore >= 10 ? 'উত্তীর্ণ' : 'অনুত্তীর্ণ');
                         totalLoadedWithMarks++;
                     } else {
-                        // No OMR evaluated yet - strictly 0 marks, 0 wrong, 30 blank, status Pending
+                        // Strictly 0 marks, 0 wrong, 30 blank, status Pending for this exam
                         correctScore = 0;
                         wrongCount = 0;
                         blankCount = totalQ;
@@ -3426,8 +3925,6 @@
                     const setChoice = (hasRealMark && savedSet) ? savedSet : '';
                     const enName = (student.name || student.nameEn || '').trim();
 
-                    const fallbackReg = '2211' + String(student.roll || idx + 1).padStart(3, '0');
-                    const studentRegId = toEnglishDigits(student.regNo || student.studentId || student.id || fallbackReg).trim();
                     return {
                         id: studentRegId,
                         regNo: studentRegId,
@@ -3435,8 +3932,8 @@
                         name: enName,
                         nameEn: enName,
                         roll: String(student.roll || idx + 1),
-                        class: targetClassNum || '8',
-                        section: (student.section && student.section !== 'All') ? student.section : 'গ',
+                        class: targetClassNum || sch.class || '8',
+                        section: (student.section && student.section !== 'All') ? student.section : (sch.section && sch.section !== 'All' ? sch.section.split(',')[0].trim() : 'A'),
                         set: setChoice,
                         correct: correctScore,
                         wrong: wrongCount,
@@ -3465,10 +3962,12 @@
                 const markInfoText = totalLoadedWithMarks > 0
                     ? ` (${toBengaliNumber(totalLoadedWithMarks)} জনের সংরক্ষিত ফলাফল সহ)`
                     : '';
-                showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন)${markInfoText} সফলভাবে লোড হয়েছে!`, 'success', 'fa-check');
+                showToast(`Exam List থেকে "${selected.examName} (${sch.subject || ''})" (${toBengaliNumber(importedStudents.length)} জন শিক্ষার্থী)${markInfoText} সফলভাবে OMR এ ইমপোর্ট করা হয়েছে!`, 'success', 'fa-check');
 
                 const targetSection = document.getElementById('tableResults') || document.getElementById('statsGrid');
-                if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (targetSection && typeof targetSection.scrollIntoView === 'function') {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             };
 
             // --- Save & Entry: Permanently save evaluated OMR marks to Exam List & Database ---
@@ -3532,6 +4031,7 @@
                     if (targetSch) {
                         targetSch.marksEntryTime = nowFormatted;
                         targetSch.hasMarks = true;
+                        targetSch.hasMcqMarks = true;
                         targetSch.totalEntered = evaluatedStudents.length;
                         targetSch.totalStudents = state.students.length;
                         targetSch.omrEvaluatedAt = nowIso;
@@ -3548,7 +4048,17 @@
                         }).catch(() => { });
                     }
 
-                    // 2. Update student marks in school_student_marks
+                    // 2. Load all school students to guarantee matching master student records
+                    let allStudents = [];
+                    try {
+                        if (typeof loadStudents === 'function') {
+                            allStudents = loadStudents() || [];
+                        } else {
+                            allStudents = safeJsonParse('school_students', []);
+                        }
+                    } catch (e) { }
+
+                    // 3. Update student marks in school_student_marks
                     let savedMarks = {};
                     try {
                         if (typeof loadStudentMarks === 'function') {
@@ -3558,48 +4068,148 @@
                         }
                     } catch (e) { }
 
-                    const subjectCode = (targetSch && (targetSch.subjectCode || targetSch.subject)) || examInfo.subject || 'MCQ';
+                    const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+                    const schClass = targetSch ? targetSch.class : (examInfo.class || '');
+                    const classSubjects = subMap[schClass] || [];
+                    const subObj = classSubjects.find(s => s.name && targetSch && s.name.trim().toLowerCase() === (targetSch.subject || '').trim().toLowerCase());
+                    const activeExamSubjectCode = subObj ? subObj.code : ((targetSch && (targetSch.subjectCode || targetSch.subject)) || examInfo.subject || 'MCQ');
+                    
+                    const targetSubjectKeys = new Set([
+                        activeExamSubjectCode,
+                        targetSch ? targetSch.subject : null,
+                        targetSch ? targetSch.subjectCode : null,
+                        examInfo.subject
+                    ].filter(Boolean));
+
                     const examVal = targetSch ? targetSch.term : (examInfo.examName || 'Exam');
 
                     state.students.forEach(student => {
                         const rawReg = toEnglishDigits(student.id || student.regNo || '').trim();
                         const rawRoll = toEnglishDigits(student.roll || '').trim();
-                        const mcqScore = (student.status === 'পেন্ডিং' && (!student.correct || student.correct === 0)) ? 0 : (student.correct || 0);
-                        const isAbsent = student.status === 'পেন্ডিং' && !student.isRealScanned;
+                        const isPending = (student.status === 'পেন্ডিং' && !student.isRealScanned && (!student.correct || student.correct === 0));
+                        
+                        // Do not create unentered/absent dummy entries for students whose OMR was not evaluated
+                        if (isPending) return;
 
-                        const keysToUpdate = [
-                            `marks_${rawReg}_${schId}`,
-                            `marks_${student.id}_${schId}`,
-                            `marks_${rawReg}_${examVal}`,
-                            `marks_${student.id}_${examVal}`
-                        ];
-                        if (student.studentId) {
-                            keysToUpdate.push(`marks_${student.studentId}_${schId}`);
-                            keysToUpdate.push(`marks_${student.studentId}_${examVal}`);
+                        const mcqScore = typeof student.correct === 'number' ? student.correct : (parseInt(student.correct, 10) || 0);
+
+                        // Strict Step 1: Find master student record by Registration Number / Student ID / ID first (Unique Exact Match)
+                        let masterSt = allStudents.find(st =>
+                            isRegNoMatch(st.regNo, rawReg) ||
+                            isRegNoMatch(st.studentId, rawReg) ||
+                            isRegNoMatch(st.id, rawReg)
+                        );
+
+                        // Strict Step 2: Fallback ONLY if no match found by RegNo: Match by Class + Section + Roll
+                        if (!masterSt) {
+                            const sSec = (student.section || '').trim().toLowerCase();
+                            const sCls = mapClassToNumber(student.class);
+                            masterSt = allStudents.find(st =>
+                                mapClassToNumber(st.class) === sCls &&
+                                (String(st.section || '').trim().toLowerCase() === sSec) &&
+                                toEnglishDigits(String(st.roll || '')).trim() === rawRoll
+                            );
                         }
 
-                        keysToUpdate.forEach(k => {
-                            savedMarks[k] = savedMarks[k] || {};
-                            const existingData = savedMarks[k][subjectCode] || Object.values(savedMarks[k])[0] || {};
-                            const cqVal = (existingData.cq !== undefined && !isNaN(parseInt(existingData.cq))) ? parseInt(existingData.cq) : 0;
-                            const pracVal = (existingData.practical !== undefined && !isNaN(parseInt(existingData.practical))) ? parseInt(existingData.practical) : 0;
-                            const totalVal = cqVal + mcqScore + pracVal;
+                        // Strict Step 3: Fallback ONLY if still no match and section is not specified/All: Match by Class + Roll
+                        if (!masterSt) {
+                            const sCls = mapClassToNumber(student.class);
+                            masterSt = allStudents.find(st =>
+                                mapClassToNumber(st.class) === sCls &&
+                                toEnglishDigits(String(st.roll || '')).trim() === rawRoll
+                            );
+                        }
 
-                            savedMarks[k][subjectCode] = {
-                                total: totalVal,
-                                isAbsent: isAbsent,
-                                cq: cqVal,
-                                mcq: isAbsent ? 0 : mcqScore,
-                                practical: pracVal,
-                                set: student.set || 'ক',
-                                answers: isAbsent ? {} : (student.answers || {}),
-                                percentage: isAbsent ? '0.0' : (student.percentage || ((mcqScore / 30) * 100).toFixed(1)),
-                                status: isAbsent ? 'পেন্ডিং' : student.status,
-                                fileName: isAbsent ? '' : (student.fileName || ''),
-                                omrEvaluatedAt: isAbsent ? null : (student.evaluatedAt || nowIso)
-                            };
+                        const targetStudentIds = new Set();
+                        if (masterSt) {
+                            if (masterSt.id !== undefined && masterSt.id !== null) targetStudentIds.add(String(masterSt.id));
+                            if (masterSt.studentId) targetStudentIds.add(String(masterSt.studentId));
+                            if (masterSt.regNo) targetStudentIds.add(String(masterSt.regNo));
+                        }
+                        if (student.id) targetStudentIds.add(String(student.id));
+                        if (student.regNo) targetStudentIds.add(String(student.regNo));
+                        if (student.studentId) targetStudentIds.add(String(student.studentId));
+                        if (rawReg) targetStudentIds.add(rawReg);
+
+                        // Discover authoritative existing CQ and Practical marks across all candidate lookup keys
+                        let authoritativeExistingCq = undefined;
+                        let authoritativeExistingPrac = undefined;
+
+                        const candidateLookupKeys = [];
+                        targetStudentIds.forEach(idVal => {
+                            candidateLookupKeys.push(`marks_${idVal}_${schId}`);
+                            candidateLookupKeys.push(`marks_${idVal}_${examVal}`);
+                        });
+
+                        for (const lookupKey of candidateLookupKeys) {
+                            const record = savedMarks[lookupKey];
+                            if (record && typeof record === 'object') {
+                                for (const subKey of targetSubjectKeys) {
+                                    const subObj = record[subKey];
+                                    if (subObj && typeof subObj === 'object') {
+                                        if (authoritativeExistingCq === undefined && subObj.cq !== undefined && subObj.cq !== null && subObj.cq !== '') {
+                                            authoritativeExistingCq = subObj.cq;
+                                        }
+                                        if (authoritativeExistingPrac === undefined && subObj.practical !== undefined && subObj.practical !== null && subObj.practical !== '') {
+                                            authoritativeExistingPrac = subObj.practical;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        let cleanCq = undefined;
+                        if (authoritativeExistingCq !== undefined && authoritativeExistingCq !== null && authoritativeExistingCq !== '') {
+                            if (authoritativeExistingCq === 'A' || authoritativeExistingCq === 'ABS' || authoritativeExistingCq === 'ABSENT') {
+                                cleanCq = 'A';
+                            } else if (!isNaN(parseInt(authoritativeExistingCq, 10))) {
+                                cleanCq = parseInt(authoritativeExistingCq, 10);
+                            }
+                        }
+
+                        let cleanPrac = undefined;
+                        if (authoritativeExistingPrac !== undefined && authoritativeExistingPrac !== null && authoritativeExistingPrac !== '') {
+                            if (authoritativeExistingPrac === 'A' || authoritativeExistingPrac === 'ABS' || authoritativeExistingPrac === 'ABSENT') {
+                                cleanPrac = 'A';
+                            } else if (!isNaN(parseInt(authoritativeExistingPrac, 10))) {
+                                cleanPrac = parseInt(authoritativeExistingPrac, 10);
+                            }
+                        }
+
+                        const numCq = typeof cleanCq === 'number' ? cleanCq : 0;
+                        const numPrac = typeof cleanPrac === 'number' ? cleanPrac : 0;
+                        const totalVal = numCq + mcqScore + numPrac;
+
+                        const studentMarkPayload = {
+                            total: totalVal,
+                            isAbsent: false,
+                            cq: cleanCq,
+                            mcq: mcqScore,
+                            practical: cleanPrac,
+                            set: student.set || 'ক',
+                            answers: student.answers || {},
+                            percentage: student.percentage || ((mcqScore / 30) * 100).toFixed(1),
+                            status: student.status,
+                            fileName: student.fileName || '',
+                            omrEvaluatedAt: student.evaluatedAt || nowIso
+                        };
+
+                        targetStudentIds.forEach(stId => {
+                            // 1. Update schedule-specific key: marks_${stId}_${schId}
+                            const schKey = `marks_${stId}_${schId}`;
+                            savedMarks[schKey] = savedMarks[schKey] || {};
+                            targetSubjectKeys.forEach(sKey => {
+                                savedMarks[schKey][sKey] = studentMarkPayload;
+                            });
+
+                            // 2. Update term-level key: marks_${stId}_${examVal} (preserving all other subjects in the term)
+                            const termKey = `marks_${stId}_${examVal}`;
+                            savedMarks[termKey] = savedMarks[termKey] || {};
+                            savedMarks[termKey][activeExamSubjectCode] = studentMarkPayload;
                         });
                     });
+
+                    savedMarks[`timestamp_${schId}`] = nowFormatted;
 
                     localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
                     fetch('/api/db/set', {

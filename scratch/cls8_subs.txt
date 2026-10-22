@@ -1,0 +1,11 @@
+101: Bangla Sahitya | বাংলা সাহিত্য
+102: Bangla Bhashar Byakaran and Nirmiti | বাংলা ভাষার ব্যাকরণ ও নির্মিতি
+103: English For Today | ইংরেজি ১ম পত্র
+104: English Grammar and Composition | ইংরেজি ২য় পত্র
+105: Mathematics | সাধারণ গণিত
+106: Information And Communication Technology | তথ্য ও যোগাযোগ প্রযুক্তি
+107: Bangladesh And Global Studies | বাংলাদেশ ও বিশ্বপরিচয়
+108: Science | বিজ্ঞান
+109: Agriculture Studies | কৃষি শিক্ষা
+110: Islamic Studies | ইসলাম ও নৈতিক শিক্ষা
+111: Hindu Religion Studies | হিন্দুধর্ম ও নৈতিক শিক্ষা
