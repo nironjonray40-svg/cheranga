@@ -1,2 +1,0 @@
-# Server Log Initialized Cleanly
-[2026-10-22 08:52:04] HTTP 500 DB Error on POST /api/db/bulk-save: attempt to write a readonly database

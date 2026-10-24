@@ -7340,6 +7340,7 @@
 
         // Returns 'all' | 'partial' | 'none' based on how many students have marks entered for a given exam schedule
         function getExamMarkStatus(sch) {
+            if (!sch) return 'none';
             const allStudents = loadStudents();
             const targetSections = sch.section && sch.section !== 'All'
                 ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
@@ -7347,7 +7348,7 @@
             const students = allStudents.filter(s => {
                 if (!s.class) return false;
                 const sClassClean = s.class.trim().toUpperCase();
-                const schClassClean = sch.class.trim().toUpperCase();
+                const schClassClean = (sch.class || '').trim().toUpperCase();
                 if (sClassClean !== schClassClean && !sClassClean.includes(schClassClean) && !schClassClean.includes(sClassClean)) return false;
                 if (targetSections.length > 0 && s.section) {
                     return targetSections.includes(s.section.trim().toUpperCase());
@@ -7355,24 +7356,52 @@
                 return true;
             });
 
-            if (students.length === 0) return 'none';
+            const savedMarks = loadStudentMarks();
+            if (students.length === 0) {
+                if (sch.hasMarks || (savedMarks && savedMarks['timestamp_' + sch.id])) return 'all';
+                return 'none';
+            }
 
             const subMap = loadSubjects();
             const classSubjects = subMap[sch.class] || [];
-            const subObj = classSubjects.find(s => s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
-            const subCode = subObj ? subObj.code : sch.subject;
+            const subObj = classSubjects.find(s => s && s.name && sch && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+            const subCode = subObj ? subObj.code : (sch.subjectCode || sch.subject);
 
-            const savedMarks = loadStudentMarks();
             let enteredCount = 0;
 
             students.forEach(student => {
-                const key = `marks_${student.id}_${sch.id}`;
-                const marks = savedMarks[key] ? savedMarks[key][subCode] : null;
-                if (marks !== null && marks !== undefined) enteredCount++;
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawId = toEnglishDigits(student.id || '').trim();
+                const rawRoll = toEnglishDigits(student.roll || '').trim();
+
+                const possibleKeys = [
+                    `marks_${student.id}_${sch.id}`,
+                    `marks_${rawReg}_${sch.id}`,
+                    `marks_${rawId}_${sch.id}`,
+                    `marks_${student.regNo}_${sch.id}`,
+                    `marks_${student.studentId}_${sch.id}`,
+                    `marks_${rawRoll}_${sch.id}`,
+                    `marks_${student.id}_${sch.term}`,
+                    `marks_${rawReg}_${sch.term}`
+                ];
+
+                let found = false;
+                for (const k of possibleKeys) {
+                    if (savedMarks[k] && typeof savedMarks[k] === 'object') {
+                        if (savedMarks[k][subCode] !== undefined || (sch.subject && savedMarks[k][sch.subject] !== undefined) || (sch.subjectCode && savedMarks[k][sch.subjectCode] !== undefined)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) enteredCount++;
             });
 
-            if (enteredCount === 0) return 'none';
-            if (enteredCount === students.length) return 'all';
+            if (enteredCount === 0) {
+                if (sch.hasMarks || (savedMarks && savedMarks['timestamp_' + sch.id])) return 'all';
+                return 'none';
+            }
+            if (enteredCount >= students.length) return 'all';
             return 'partial';
         }
 
@@ -8540,12 +8569,19 @@
 
             let schedules = loadSchedules();
             schedules.push(...newSchedules);
-            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+            const schedulesStr = JSON.stringify(schedules);
+            localStorage.setItem('school_exam_schedules', schedulesStr);
             if (termName) {
                 localStorage.setItem('school_active_exam_filter', termName);
             }
             try {
+                fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: 'school_exam_schedules', value: schedulesStr })
+                }).catch(() => { });
                 window.dispatchEvent(new CustomEvent('dbSynced'));
+                window.dispatchEvent(new Event('storage'));
             } catch (e) { }
 
             resetScheduleForm();
@@ -8809,12 +8845,19 @@
                 schedules.push(newSchedule);
                 alert("Exam Schedule Routine added successfully!");
             }
-            localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+            const schedulesStr = JSON.stringify(schedules);
+            localStorage.setItem('school_exam_schedules', schedulesStr);
             if (termName) {
                 localStorage.setItem('school_active_exam_filter', termName);
             }
             try {
+                fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: 'school_exam_schedules', value: schedulesStr })
+                }).catch(() => { });
                 window.dispatchEvent(new CustomEvent('dbSynced'));
+                window.dispatchEvent(new Event('storage'));
             } catch (e) { }
 
             resetScheduleForm();
@@ -8828,7 +8871,17 @@
             if (!confirm("Are you sure you want to delete this schedule?")) return;
             const schedules = loadSchedules();
             const filtered = schedules.filter(s => s.id !== id);
-            localStorage.setItem('school_exam_schedules', JSON.stringify(filtered));
+            const filteredStr = JSON.stringify(filtered);
+            localStorage.setItem('school_exam_schedules', filteredStr);
+            try {
+                fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: 'school_exam_schedules', value: filteredStr })
+                }).catch(() => { });
+                window.dispatchEvent(new CustomEvent('dbSynced'));
+                window.dispatchEvent(new Event('storage'));
+            } catch (e) { }
             populateAllScheduleFilters();
             renderScheduleList();
             renderDashboardRoutineSummary();
@@ -9459,7 +9512,17 @@ function openExamMarksEntryModal(scheduleId) {
 
         function autoSaveCurrentModalInputsToMemory() {
             if (!activeExamScheduleId || !activeExamSubjectCode) return;
+            const schedules = loadSchedules();
+            const sch = schedules.find(s => String(s.id) === String(activeExamScheduleId));
+            const examVal = sch ? sch.term : '';
             const savedMarks = loadStudentMarks();
+
+            const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
+            const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
+            const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
+
+            let hasAnyChange = false;
+
             activeExamStudents.forEach(student => {
                 const row = document.getElementById(`modal-row-student-${student.id}`);
                 if (!row) return;
@@ -9467,10 +9530,6 @@ function openExamMarksEntryModal(scheduleId) {
                 const mcqIn = row.querySelector('.modal-mark-mcq');
                 const pracIn = row.querySelector('.modal-mark-prac');
                 const absIn = row.querySelector('.modal-mark-absent');
-
-                const hasActiveCq = activeExamDist && activeExamDist.cq > 0;
-                const hasActiveMcq = activeExamDist && activeExamDist.mcq > 0;
-                const hasActivePrac = activeExamDist && activeExamDist.practical > 0;
 
                 const rawCq = (hasActiveCq && cqIn) ? cqIn.value.trim() : "";
                 const rawMcq = (hasActiveMcq && mcqIn) ? mcqIn.value.trim() : "";
@@ -9481,21 +9540,26 @@ function openExamMarksEntryModal(scheduleId) {
                     (hasActivePrac && (rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT"));
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                const key = `marks_${student.id}_${activeExamScheduleId}`;
+                const targetStudentIds = new Set();
+                if (student.id) targetStudentIds.add(toEnglishDigits(student.id).trim());
+                if (student.regNo) targetStudentIds.add(toEnglishDigits(student.regNo).trim());
+                if (student.registrationNo) targetStudentIds.add(toEnglishDigits(student.registrationNo).trim());
+                if (student.studentId) targetStudentIds.add(toEnglishDigits(student.studentId).trim());
+                if (student.roll && student.class) targetStudentIds.add(`${toEnglishDigits(student.roll).trim()}`);
+
+                const targetSubjectKeys = new Set();
+                if (activeExamSubjectCode) targetSubjectKeys.add(activeExamSubjectCode);
+                if (sch && sch.subject) targetSubjectKeys.add(sch.subject);
+                if (sch && sch.subjectCode) targetSubjectKeys.add(sch.subjectCode);
 
                 if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
-                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
-                        delete savedMarks[key][activeExamSubjectCode];
-                        if (Object.keys(savedMarks[key]).length === 0) {
-                            delete savedMarks[key];
-                        }
-                    }
                     return;
                 }
 
-                savedMarks[key] = savedMarks[key] || {};
+                hasAnyChange = true;
+                let markPayload;
                 if (isAbsent) {
-                    savedMarks[key][activeExamSubjectCode] = {
+                    markPayload = {
                         total: 0,
                         isAbsent: true,
                         cq: hasActiveCq ? (rawCq ? rawCq.toUpperCase() : "A") : undefined,
@@ -9510,7 +9574,7 @@ function openExamMarksEntryModal(scheduleId) {
                     const hasMcq = hasActiveMcq && rawMcq !== "" && !isNaN(nMcq);
                     const hasPrac = hasActivePrac && rawPrac !== "" && !isNaN(nPrac);
 
-                    savedMarks[key][activeExamSubjectCode] = {
+                    markPayload = {
                         total: (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0),
                         isAbsent: false,
                         cq: hasCq ? nCq : undefined,
@@ -9518,8 +9582,34 @@ function openExamMarksEntryModal(scheduleId) {
                         practical: hasPrac ? nPrac : undefined
                     };
                 }
+
+                targetStudentIds.forEach(stId => {
+                    const schKey = `marks_${stId}_${activeExamScheduleId}`;
+                    savedMarks[schKey] = savedMarks[schKey] || {};
+                    targetSubjectKeys.forEach(sKey => {
+                        savedMarks[schKey][sKey] = markPayload;
+                    });
+                    if (examVal) {
+                        const termKey = `marks_${stId}_${examVal}`;
+                        savedMarks[termKey] = savedMarks[termKey] || {};
+                        targetSubjectKeys.forEach(sKey => {
+                            savedMarks[termKey][sKey] = markPayload;
+                        });
+                    }
+                });
             });
-            localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
+
+            if (hasAnyChange) {
+                const marksJson = JSON.stringify(savedMarks);
+                localStorage.setItem('school_student_marks', marksJson);
+                try {
+                    fetch('/api/db/set', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: 'school_student_marks', value: marksJson })
+                    }).catch(() => { });
+                } catch (e) { }
+            }
         }
 
         function changeMarksEntryViewType(newType) {
@@ -9531,6 +9621,11 @@ function openExamMarksEntryModal(scheduleId) {
         }
 
         function closeExamMarksEntryModal() {
+            if (activeExamScheduleId) {
+                try {
+                    autoSaveCurrentModalInputsToMemory();
+                } catch (e) { }
+            }
             const modal = document.getElementById('exam-marks-entry-modal');
             if (modal) {
                 modal.classList.remove('active');
@@ -9973,28 +10068,66 @@ function openExamMarksEntryModal(scheduleId) {
                     (hasActivePrac && (rawPrac.toUpperCase() === "A" || rawPrac.toUpperCase() === "ABS" || rawPrac.toUpperCase() === "ABSENT"));
                 const isAbsent = (absIn && absIn.checked) || hasAType;
 
-                const key = `marks_${student.id}_${activeExamScheduleId}`;
+                const targetStudentIds = new Set();
+                if (student.id) targetStudentIds.add(toEnglishDigits(student.id).trim());
+                if (student.regNo) targetStudentIds.add(toEnglishDigits(student.regNo).trim());
+                if (student.registrationNo) targetStudentIds.add(toEnglishDigits(student.registrationNo).trim());
+                if (student.studentId) targetStudentIds.add(toEnglishDigits(student.studentId).trim());
+                if (student.roll && student.class) targetStudentIds.add(`${toEnglishDigits(student.roll).trim()}`);
+
+                const targetSubjectKeys = new Set();
+                if (activeExamSubjectCode) targetSubjectKeys.add(activeExamSubjectCode);
+                if (sch.subject) targetSubjectKeys.add(sch.subject);
+                if (sch.subjectCode) targetSubjectKeys.add(sch.subjectCode);
 
                 if (!isAbsent && rawCq === "" && rawMcq === "" && rawPrac === "") {
-                    if (savedMarks[key] && savedMarks[key][activeExamSubjectCode]) {
-                        delete savedMarks[key][activeExamSubjectCode];
-                        if (Object.keys(savedMarks[key]).length === 0) {
-                            delete savedMarks[key];
+                    targetStudentIds.forEach(stId => {
+                        const schKey = `marks_${stId}_${activeExamScheduleId}`;
+                        if (savedMarks[schKey]) {
+                            targetSubjectKeys.forEach(sKey => {
+                                delete savedMarks[schKey][sKey];
+                            });
+                            if (Object.keys(savedMarks[schKey]).length === 0) {
+                                delete savedMarks[schKey];
+                            }
                         }
-                    }
+                        if (examVal) {
+                            const termKey = `marks_${stId}_${examVal}`;
+                            if (savedMarks[termKey]) {
+                                targetSubjectKeys.forEach(sKey => {
+                                    delete savedMarks[termKey][sKey];
+                                });
+                                if (Object.keys(savedMarks[termKey]).length === 0) {
+                                    delete savedMarks[termKey];
+                                }
+                            }
+                        }
+                    });
                     return;
                 }
 
-                savedMarks[key] = savedMarks[key] || {};
-
                 if (isAbsent) {
-                    savedMarks[key][activeExamSubjectCode] = {
+                    const markPayload = {
                         total: 0,
                         isAbsent: true,
                         cq: hasActiveCq ? (rawCq ? rawCq.toUpperCase() : "A") : undefined,
                         mcq: hasActiveMcq ? (rawMcq ? rawMcq.toUpperCase() : "A") : undefined,
                         practical: hasActivePrac ? (rawPrac ? rawPrac.toUpperCase() : "A") : undefined
                     };
+                    targetStudentIds.forEach(stId => {
+                        const schKey = `marks_${stId}_${activeExamScheduleId}`;
+                        savedMarks[schKey] = savedMarks[schKey] || {};
+                        targetSubjectKeys.forEach(sKey => {
+                            savedMarks[schKey][sKey] = markPayload;
+                        });
+                        if (examVal) {
+                            const termKey = `marks_${stId}_${examVal}`;
+                            savedMarks[termKey] = savedMarks[termKey] || {};
+                            targetSubjectKeys.forEach(sKey => {
+                                savedMarks[termKey][sKey] = markPayload;
+                            });
+                        }
+                    });
                     countSaved++;
                 } else {
                     const nCq = parseInt(rawCq, 10);
@@ -10011,13 +10144,28 @@ function openExamMarksEntryModal(scheduleId) {
 
                     const totalVal = (hasCq ? nCq : 0) + (hasMcq ? nMcq : 0) + (hasPrac ? nPrac : 0);
 
-                    savedMarks[key][activeExamSubjectCode] = {
+                    const markPayload = {
                         total: totalVal,
                         isAbsent: false,
                         cq: hasCq ? nCq : undefined,
                         mcq: hasMcq ? nMcq : undefined,
                         practical: hasPrac ? nPrac : undefined
                     };
+
+                    targetStudentIds.forEach(stId => {
+                        const schKey = `marks_${stId}_${activeExamScheduleId}`;
+                        savedMarks[schKey] = savedMarks[schKey] || {};
+                        targetSubjectKeys.forEach(sKey => {
+                            savedMarks[schKey][sKey] = markPayload;
+                        });
+                        if (examVal) {
+                            const termKey = `marks_${stId}_${examVal}`;
+                            savedMarks[termKey] = savedMarks[termKey] || {};
+                            targetSubjectKeys.forEach(sKey => {
+                                savedMarks[termKey][sKey] = markPayload;
+                            });
+                        }
+                    });
                     countSaved++;
                 }
             });
@@ -10049,15 +10197,49 @@ function openExamMarksEntryModal(scheduleId) {
                     schedules[scheduleIdx].marksEntryTime = formattedTimestamp;
                     schedules[scheduleIdx].hasMarks = true;
                 }
-                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
                 if (sch.term) {
                     localStorage.setItem('school_active_exam_filter', sch.term);
                 }
             }
 
-            localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
-            showExamToast(`Saved exam marks for ${countSaved} students successfully!`, true);
+            const marksJson = JSON.stringify(savedMarks);
+            const schedulesJson = JSON.stringify(schedules);
+
+            localStorage.setItem('school_student_marks', marksJson);
+            localStorage.setItem('school_exam_schedules', schedulesJson);
+
+            // PERMANENT STORAGE TO SERVER & SQLITE DATABASE
+            try {
+                fetch('/api/db/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: {
+                            school_student_marks: marksJson,
+                            school_exam_schedules: schedulesJson,
+                            school_active_exam_filter: sch.term || ''
+                        }
+                    })
+                }).catch(() => { });
+
+                fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: 'school_student_marks', value: marksJson })
+                }).catch(() => { });
+
+                fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: 'school_exam_schedules', value: schedulesJson })
+                }).catch(() => { });
+            } catch (e) {
+                console.error("Error saving marks to server:", e);
+            }
+
+            showExamToast(`Saved exam marks for ${countSaved} students permanently!`, true);
             window.dispatchEvent(new CustomEvent('dbSynced'));
+            window.dispatchEvent(new Event('storage'));
             // Refresh schedule list and dashboard routine summary so row colors and statuses update immediately
             if (typeof renderScheduleList === 'function') renderScheduleList();
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
@@ -15857,6 +16039,80 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
+        // --- BACKGROUND LIVE DATABASE SYNC FOR EXAM PORTAL ---
+        async function syncExamPortalWithServerDb() {
+            try {
+                const res = await fetch('/api/db?keys=school_exam_schedules,school_student_marks,school_students,school_subjects,school_exam_types,school_marking_system,school_omr_exams');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data || typeof data !== 'object') return;
+
+                let hasChanged = false;
+
+                // 1. Sync student marks (Preserve local fresh entries and merge server marks)
+                if (data.school_student_marks) {
+                    const serverMarks = typeof data.school_student_marks === 'string' ? JSON.parse(data.school_student_marks) : data.school_student_marks;
+                    const localMarks = safeJsonParse('school_student_marks', {});
+                    let mergedMarks = { ...serverMarks, ...localMarks };
+                    Object.keys(serverMarks).forEach(k => {
+                        if (localMarks[k] && typeof localMarks[k] === 'object' && typeof serverMarks[k] === 'object') {
+                            mergedMarks[k] = { ...serverMarks[k], ...localMarks[k] };
+                        }
+                    });
+                    const mergedStr = JSON.stringify(mergedMarks);
+                    if (localStorage.getItem('school_student_marks') !== mergedStr) {
+                        localStorage.setItem('school_student_marks', mergedStr);
+                        hasChanged = true;
+                    }
+                }
+
+                // 2. Sync schedules
+                if (data.school_exam_schedules) {
+                    const serverSchedules = typeof data.school_exam_schedules === 'string' ? JSON.parse(data.school_exam_schedules) : data.school_exam_schedules;
+                    const localSchedules = safeJsonParse('school_exam_schedules', []);
+                    if (Array.isArray(serverSchedules) && serverSchedules.length > 0) {
+                        if (localSchedules.length === 0) {
+                            localStorage.setItem('school_exam_schedules', JSON.stringify(serverSchedules));
+                            hasChanged = true;
+                        } else {
+                            let schedulesUpdated = false;
+                            serverSchedules.forEach(sSch => {
+                                const lIdx = localSchedules.findIndex(l => String(l.id) === String(sSch.id));
+                                if (lIdx !== -1) {
+                                    if (sSch.hasMarks && !localSchedules[lIdx].hasMarks) {
+                                        localSchedules[lIdx].hasMarks = true;
+                                        localSchedules[lIdx].marksEntryTime = sSch.marksEntryTime;
+                                        schedulesUpdated = true;
+                                    }
+                                } else {
+                                    localSchedules.push(sSch);
+                                    schedulesUpdated = true;
+                                }
+                            });
+                            if (schedulesUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(localSchedules));
+                                hasChanged = true;
+                            }
+                        }
+                    }
+                }
+
+                // 3. Sync students if local is missing
+                if (data.school_students && !localStorage.getItem('school_students')) {
+                    const str = typeof data.school_students === 'string' ? data.school_students : JSON.stringify(data.school_students);
+                    localStorage.setItem('school_students', str);
+                    hasChanged = true;
+                }
+
+                if (hasChanged) {
+                    if (typeof renderScheduleList === 'function') renderScheduleList();
+                    if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+                }
+            } catch (e) {
+                // Silently skip if network unreachable
+            }
+        }
+
         // --- GLOBAL INITIALIZATIONS ---
         document.addEventListener('DOMContentLoaded', () => {
             // Pre-initialize databases
@@ -15871,6 +16127,11 @@ function openExamMarksEntryModal(scheduleId) {
 
             // Check view and display the correct panel
             checkURLParameters();
+
+            // Initial sync with SQLite backend database
+            syncExamPortalWithServerDb();
+            setInterval(syncExamPortalWithServerDb, 15000);
+            window.addEventListener('focus', syncExamPortalWithServerDb);
 
             // Listen to browser popstate (back/forward clicks)
             window.addEventListener('popstate', checkURLParameters);
