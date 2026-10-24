@@ -7725,70 +7725,42 @@
 
         function loadSubjects() {
             let subjects = localStorage.getItem('school_subjects');
-            let needToSave = false;
+            // If localStorage is empty, try server boot data cache
+            if (!subjects && typeof window !== 'undefined' && window.__SERVER_SYNC_DATA__ && window.__SERVER_SYNC_DATA__.school_subjects) {
+                subjects = window.__SERVER_SYNC_DATA__.school_subjects;
+                try {
+                    localStorage.setItem('school_subjects', typeof subjects === 'string' ? subjects : JSON.stringify(subjects));
+                } catch (e) { }
+            }
+
             let parsed = null;
-
-            const defaultSubjects = getNewDefaultSubjects();
-
             if (subjects) {
                 try {
-                    parsed = JSON.parse(subjects);
-
-                    const hasOldClass6 = parsed["Class 6"] !== undefined;
-
-                    if (hasOldClass6) {
-                        parsed = defaultSubjects;
-                        needToSave = true;
-                    } else {
-                        // Check if any subject in any class is missing 'shortName', if so, add it.
-                        let missingShortName = false;
-                        Object.keys(parsed).forEach(cls => {
-                            if (Array.isArray(parsed[cls])) {
-                                parsed[cls].forEach(sub => {
-                                    if (!sub.shortName) {
-                                        missingShortName = true;
-                                        // Try to match it with a default subject's shortName, otherwise use name
-                                        const defaultSub = defaultSubjects["Six"].find(ds => ds.name === sub.name || ds.code === sub.code);
-                                        sub.shortName = defaultSub ? defaultSub.shortName : sub.name;
-                                    }
-                                });
-                            }
-                        });
-                        if (missingShortName) {
-                            needToSave = true;
-                        }
-                    }
+                    parsed = typeof subjects === 'string' ? JSON.parse(subjects) : subjects;
                 } catch (e) {
-                    parsed = defaultSubjects;
-                    needToSave = true;
+                    parsed = null;
                 }
-            } else {
-                parsed = defaultSubjects;
-                needToSave = true;
             }
 
-            const classes = loadClasses();
+            // When subject data exists, it is permanently fixed and user-managed.
+            // DO NOT automatically overwrite with defaults, DO NOT delete classes, and DO NOT alter subject names/codes!
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Object.keys(parsed).length > 0) {
+                const classes = loadClasses();
+                // Ensure empty array access for any requested class that does not have subjects yet without persisting defaults
+                classes.forEach(c => {
+                    if (parsed[c] === undefined) {
+                        parsed[c] = [];
+                    }
+                });
+                return parsed;
+            }
 
-            // Clean up obsolete class keys from the subject database
-            Object.keys(parsed).forEach(key => {
-                if (!classes.includes(key)) {
-                    delete parsed[key];
-                    needToSave = true;
-                }
-            });
-
-            // Also check if any classes returned by loadClasses() are missing from parsed
-            classes.forEach(c => {
-                if (!parsed[c]) {
-                    const defaultList = defaultSubjects[c] || [];
-                    parsed[c] = JSON.parse(JSON.stringify(defaultList));
-                    needToSave = true;
-                }
-            });
-
-            if (needToSave) {
+            // Only on a completely clean / uninitialized installation, provide initial defaults:
+            const defaultSubjects = getNewDefaultSubjects();
+            parsed = JSON.parse(JSON.stringify(defaultSubjects));
+            try {
                 persistAcademicSubjectsSync(parsed);
-            }
+            } catch (e) { }
             return parsed;
         }
 
@@ -12797,10 +12769,16 @@ function openExamMarksEntryModal(scheduleId) {
                 if (!subjectsMap) return;
                 const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
                 localStorage.setItem('school_subjects', subStr);
+                localStorage.setItem('school_subjects_fixed', 'true');
                 fetch('/api/db/set', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ key: 'school_subjects', value: subStr })
+                }).catch(() => { });
+                fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: 'school_subjects_fixed', value: 'true' })
                 }).catch(() => { });
                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
                 window.dispatchEvent(new Event('storage'));
@@ -13387,7 +13365,8 @@ function openExamMarksEntryModal(scheduleId) {
                 }
             }
 
-            // Remove old entry
+            // Remove old entry and preserve section if set
+            let existingSec = 'All';
             const idx = oldClassSubjects.findIndex(s => {
                 if (!s) return false;
                 const sCodeClean = (s.code || '').trim().toLowerCase();
@@ -13396,13 +13375,17 @@ function openExamMarksEntryModal(scheduleId) {
                     (editOrigNameClean && sNameClean === editOrigNameClean);
             });
             if (idx !== -1) {
+                if (oldClassSubjects[idx] && oldClassSubjects[idx].section) {
+                    existingSec = oldClassSubjects[idx].section;
+                }
                 oldClassSubjects.splice(idx, 1);
             }
             subjectsMap[editClass] = oldClassSubjects;
 
             // Add updated entry
             const targetClassSubjects = (classVal === editClass) ? oldClassSubjects : (subjectsMap[classVal] || []);
-            targetClassSubjects.push({ code, name, nameBn, shortName, isOptional });
+            const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? existingSec : 'All';
+            targetClassSubjects.push({ code, name, nameBn, shortName, isOptional, section: finalSec });
             subjectsMap[classVal] = targetClassSubjects;
 
             // Propagate subject rename to schedules and routines

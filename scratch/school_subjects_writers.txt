@@ -1,0 +1,55 @@
+Admit Card.html:3720: subjectsData = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+advance.html:9605: const subjectData = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+advance.html:9671: const schoolSubjects = localStorage.getItem('school_subjects') || '{}';
+cms.html:5800: ERP_SUBJECTS = getStoreData('school_subjects', {}) || {};
+cms.html:5826: const res = await fetch('/api/db?keys=school_notices,school_ticker_notices,school_important_links,school_quick_links,school_cms_settings,sch
+cms.html:5863: ERP_SUBJECTS = safeParse(data.school_subjects, ERP_SUBJECTS);
+cms.html:5864: localStorage.setItem('school_subjects', typeof data.school_subjects === 'string' ? data.school_subjects : JSON.stringify(data.school_subject
+cms.html:7408: let allSubjects = getStoreData('school_subjects', null);
+cms.html:7411: const local = localStorage.getItem('school_subjects');
+cms.html:9641: const rawSubjectsMap = localStorage.getItem('school_subjects');
+cms.html:11327: } else if (e.key === 'school_subjects') {
+cms.html:11328: ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+cms.html:11355: window.addEventListener('school_subjects_synced', () => {
+cms.html:11356: ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+cms.html:11375: if (!e.detail || !e.detail.key || e.detail.key === 'school_subjects') {
+cms.html:11376: ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+exam-portal.html:7727: let subjects = localStorage.getItem('school_subjects');
+exam-portal.html:12799: localStorage.setItem('school_subjects', subStr);
+exam-portal.html:12805: window.dispatchEvent(new CustomEvent('school_subjects_synced'));
+exam-portal.html:15957: if (e.key === 'school_class_sections' || e.key === 'school_classes' || e.key === 'school_subjects') {
+exam-portal.html:19772: const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+exam-portal.html:20041: const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+Marksheet.html:2032: const rawSubjectsMap = localStorage.getItem('school_subjects');
+Marksheet.html:3718: fetch('/api/db?keys=school_exam_schedules,school_student_marks,school_students,school_subjects,school_classes,school_exam_types,school_exam_
+Marksheet.html:3723: ['school_exam_schedules', 'school_student_marks', 'school_students', 'school_subjects', 'school_classes', 'school_exam_types', 'school_exam_
+Marksheet.html:3815: if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sectio
+Marksheet1.html:2199: const rawSubjectsMap = localStorage.getItem('school_subjects');
+Marksheet1.html:4025: fetch('/api/db?keys=school_exam_schedules,school_student_marks,school_students,school_subjects,school_classes,school_exam_types,school_exam_
+Marksheet1.html:4030: ['school_exam_schedules', 'school_student_marks', 'school_students', 'school_subjects', 'school_classes', 'school_exam_types', 'school_exam_
+Marksheet1.html:4122: if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sectio
+result-portal.html:1226: const rawSubjectsMap = localStorage.getItem('school_subjects');
+scratch_check_classes.py:6: cursor.execute('SELECT key, value FROM local_storage_sync WHERE key = "school_subjects"')
+seat-plan.html:6686: const subMap = safeJsonParse('school_subjects', {});
+seat-plan.html:6806: const subMap = safeJsonParse('school_subjects', {});
+seat-plan.html:6852: // Fallback default subject rows if school_subjects not yet configured
+seat-plan.html:7765: // Re-read latest school_subjects from localStorage (live real-time sync with Exam Portal)
+seat-plan.html:7768: subMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+seat-plan.html:18588: subjectsData = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+seat-plan.html:19259: const subMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+server.py:650: cursor.execute('SELECT value FROM local_storage_sync WHERE key = "school_subjects"')
+server.py:658: cursor.execute('INSERT OR REPLACE INTO local_storage_sync (key, value, updated_at) VALUES (?, ?, ?)', ('school_subjects', new_value, now_ms)
+server.py:662: print(f"Error syncing school_subjects: {e}")
+server.py:1392: 'school_shift_times', 'school_staff', 'school_subjects', 'school_settings',
+server.py:1947: 'school_shift_times', 'school_staff', 'school_subjects', 'school_settings',
+Student attendance sheet.html:1181: const subMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+student-portal.html:7055: const parsed = safeJsonParse('school_subjects', {});
+Tabulation Sheet.html:4135: subjectsMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+Tabulation Sheet.html:7686: subjectsMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+Tabulation Sheet.html:8062: if (!e.key || e.key === 'school_classes' || e.key === 'school_subjects' || e.key === 'school_marking_system' || e.key === 'school_exam_sched
+Tabulation Sheet.html:8068: window.addEventListener('school_subjects_synced', refreshTabulationSheetData);
+Tabulation Sheet.html:8085: lastKnownSubjectsJson = localStorage.getItem('school_subjects') || '';
+Tabulation Sheet.html:8096: fetch('/api/db?keys=school_exam_schedules,school_exam_types,school_exam_routines,school_omr_exams,school_classes,school_students,school_sett
+Tabulation Sheet.html:8101: ['school_exam_schedules', 'school_exam_types', 'school_exam_routines', 'school_omr_exams', 'school_classes', 'school_students', 'school_stud
+Tabulation Sheet.html:8125: const currentSubjectsJson = localStorage.getItem('school_subjects') || '';
+temp_script_0.js:2825: const parsed = safeJsonParse('school_subjects', {});

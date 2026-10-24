@@ -647,19 +647,8 @@ def sync_db_with_txt_files():
             except Exception as e:
                 print(f"Error syncing school_students: {e}")
                 
-        cursor.execute('SELECT value FROM local_storage_sync WHERE key = "school_subjects"')
-        row = cursor.fetchone()
-        if row:
-            value = row[0]
-            try:
-                new_value = update_subject_names(value)
-                if new_value != value:
-                    now_ms = int(time.time() * 1000)
-                    cursor.execute('INSERT OR REPLACE INTO local_storage_sync (key, value, updated_at) VALUES (?, ?, ?)', ('school_subjects', new_value, now_ms))
-                    conn.commit()
-                    print("[+] Synced school_subjects database with original text files.")
-            except Exception as e:
-                print(f"Error syncing school_subjects: {e}")
+        # Note: school_subjects is managed permanently by the user via Academic Subject Management.
+        # It remains permanently fixed and must NEVER be overwritten automatically by text files or startup sync.
                 
     except Exception as e:
         print(f"Database error during startup sync: {e}")

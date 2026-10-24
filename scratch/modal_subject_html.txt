@@ -1,0 +1,56 @@
+dal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SUBJECT EDIT MODAL (ON DOUBLE CLICK) -->
+    <div id="subject-modal" class="modal-overlay" onclick="closeSubjectModal()">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeSubjectModal()">&times;</button>
+            <h3 class="modal-title" style="color: var(--neon-cyan);">Edit Subject Details</h3>
+            <form id="modal-subject-form" onsubmit="saveModalSubject(event)">
+                <input type="hidden" id="modal-edit-class">
+                <input type="hidden" id="modal-edit-code">
+                <input type="hidden" id="modal-edit-name">
+
+                <div class="form-group">
+                    <label for="modal-subject-class">Class:</label>
+                    <select id="modal-subject-class" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-name">Subject Name (English):</label>
+                    <input type="text" id="modal-subject-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-name-bn">Subject Name (Bangla):</label>
+                    <input type="text" id="modal-subject-name-bn" class="form-control" placeholder="e.g. গণিত">
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-short-name">Subject Short Name:</label>
+                    <input type="text" id="modal-subject-short-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal-subject-code">Subject Code:</label>
+                    <input type="text" id="modal-subject-code" class="form-control" required>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                    <input type="checkbox" id="modal-subject-optional" style="width:18px; height:18px; cursor:pointer;">
+                    <label for="modal-subject-optional"
+                        style="margin:0; cursor:pointer; color:#fff; font-weight:600;">Optional</label>
+                </div>
+                <div class="form-group"
+                    style="display:flex; align-items:flex-start; gap:10px; margin-top:10px; margin-bottom:18px; background: rgba(56, 189, 248, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);">
+                    <input type="checkbox" id="modal-subject-sync-all-classes"
+                        style="width:18px; height:18px; margin-top: 2px; cursor:pointer;" checked>
+                    <label for="modal-subject-sync-all-classes"
+                        style="margin:0; cursor:pointer; color:#38bdf8; font-weight:700; font-size:0.88rem; line-height: 1.35;">
+                        ⚡ একই নামের বিষয় যেসব শ্রেণিতে যুক্ত আছে, সেগুলোতেও Subject Name ও Short Name একসাথে আপডেট করুন
+                    </label>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn-primary"
+                        style="flex:1; background:var(--accent-grad); box-shadow:var(--cyan-glow);">Save</button>
+                    <button type="button" class="btn-primary"
+                        style="back

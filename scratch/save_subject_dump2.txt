@@ -1,0 +1,144 @@
+an === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+                        });
+                        const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
+                        if (idx !== -1) {
+                            classSubs[idx] = { code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec };
+                        } else {
+                            classSubs.push({ code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec });
+                        }
+                        subjectsMap[classVal] = classSubs;
+                    });
+
+                    // Propagate subject rename to schedules and routines
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                            let schedUpdated = false;
+                            schedules.forEach(sch => {
+                                if (targetClasses.includes(sch.class) && (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode))) {
+                                    sch.subject = name;
+                                    schedUpdated = true;
+                                }
+                            });
+                            if (schedUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                                fetch('/api/db/set', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+                    }
+
+                    persistAcademicSubjectsSync(subjectsMap);
+                    resetSubjectForm();
+                    renderSubjectList();
+                    closeAddSubjectModal();
+                    alert("Academic subject updated successfully!");
+                    return;
+                }
+            } else {
+                // Add Mode for Multiple Target Classes
+                let addedCount = 0;
+                targetClasses.forEach((classVal) => {
+                    const classSubs = subjectsMap[classVal] || [];
+
+                    let targetCode = codeInput;
+                    if (!targetCode) {
+                        targetCode = String(101 + classSubs.length);
+                    }
+
+                    let finalCode = targetCode;
+                    let codeCounter = parseInt(targetCode) || 101;
+                    while (classSubs.some(s => s.code === String(finalCode))) {
+                        finalCode = String(++codeCounter);
+                    }
+
+                    const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
+
+                    const existingIdx = classSubs.findIndex(s => (s.name || '').toLowerCase() === name.toLowerCase());
+                    if (existingIdx !== -1) {
+                        classSubs[existingIdx] = { code: finalCode, name, nameBn, shortName, isOptional, section: finalSec };
+                    } else {
+                        classSubs.push({ code: finalCode, name, nameBn, shortName, isOptional, section: finalSec });
+                    }
+
+                    subjectsMap[classVal] = classSubs;
+                    addedCount++;
+                });
+
+                persistAcademicSubjectsSync(subjectsMap);
+                resetSubjectForm();
+                renderSubjectList();
+                closeAddSubjectModal();
+                alert(`✅ মোট ${addedCount} টি শ্রেণিতে নতুন বিষয়ের নাম ("${name}") এবং Short Name ("${shortName}") সফলভাবে যুক্ত করা হয়েছে!`);
+            }
+        }
+
+        function openAddSubjectModal(isEdit = false) {
+            populateClassDropdown('subject-class');
+            if (!isEdit) {
+                resetSubjectForm();
+                populateClassCheckboxesContainer('subject-class-checkboxes', []);
+                selectAllSubjectClasses('all');
+            }
+            const modal = document.getElementById('add-academic-subject-modal');
+            if (modal) modal.classList.add('active');
+            toggleSectionDropdownVisibility();
+        }
+
+        function closeAddSubjectModal() {
+            const modal = document.getElementById('add-academic-subject-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function deleteSubject(classVal, code) {
+            if (!confirm("Are you sure you want to delete this subject?")) return;
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+
+            const filtered = classSubjects.filter(s => s.code !== code);
+            subjectsMap[classVal] = filtered;
+
+            persistAcademicSubjectsSync(subjectsMap);
+
+            // If the subject currently being edited is deleted, reset the form
+            const editClass = document.getElementById('subject-edit-class').value;
+            const editCode = document.getElementById('subject-edit-code').value;
+            if (editClass === classVal && editCode === code) {
+                resetSubjectForm();
+            }
+
+            renderSubjectList();
+        }
+
+        function editSubject(classVal, code) {
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+            const sub = classSubjects.find(s => s.code === code);
+            if (!sub) return;
+
+            document.getElementById('subject-form-title').innerText = "Update Academic Subject";
+
+            document.getElementById('subject-edit-class').value = classVal;
+            document.getElementById('subject-edit-code').value = code;
+            if (document.getElementById('subject-edit-name')) {
+                document.getElementById('subject-edit-name').value = sub.name || '';
+            }
+
+            const classesContainingSub = [];
+            const subNameClean = (sub.name || '').trim().toLowerCase();
+            const subShortClean = (sub.shortName || '').trim().toLowerCase();
+            const subCodeClean = (code || '').trim().toLowerCase();
+
+            Object.keys(subjectsMap).forEach(cls => {
+                const list = subjectsMap[cls] || [];
+                if (list.some(s => {
+                    if (!s) return false;
+                    const sCode = (s.code || '').trim().toLowerCase();
+                    const sName = (s.name || '').trim().toLowerCase();
+                    const sShort = (s.shortName || '').trim().toLowerCase();
+                    return (sCode && sCode === subCodeClean) ||
+                        

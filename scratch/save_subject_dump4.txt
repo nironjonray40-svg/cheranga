@@ -1,0 +1,84 @@
+                 routines.forEach(r => {
+                            if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+                                r.subject = name;
+                                r.subjectName = name;
+                                routUpdated = true;
+                            }
+                        });
+                        if (routUpdated) {
+                            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                        }
+                    } catch (e) { }
+                }
+
+                persistAcademicSubjectsSync(subjectsMap);
+                closeSubjectModal();
+                renderSubjectList();
+                alert(`✅ একই বিষয়ের Name ও Short Name ("${shortName}") মোট ${updatedCount} টি শ্রেণিতে একসাথে সেভ/আপডেট করা হয়েছে!`);
+                return;
+            }
+
+            const oldClassSubjects = subjectsMap[editClass] || [];
+
+            // Check code uniqueness if code or class has changed
+            if (classVal !== editClass || code !== editCode) {
+                const targetClassSubjects = subjectsMap[classVal] || [];
+                if (targetClassSubjects.some(s => s.code === code)) {
+                    alert("Subject with this code already exists for this class!");
+                    return;
+                }
+            }
+
+            // Remove old entry
+            const idx = oldClassSubjects.findIndex(s => {
+                if (!s) return false;
+                const sCodeClean = (s.code || '').trim().toLowerCase();
+                const sNameClean = (s.name || '').trim().toLowerCase();
+                return (editCodeClean && sCodeClean === editCodeClean) ||
+                    (editOrigNameClean && sNameClean === editOrigNameClean);
+            });
+            if (idx !== -1) {
+                oldClassSubjects.splice(idx, 1);
+            }
+            subjectsMap[editClass] = oldClassSubjects;
+
+            // Add updated entry
+            const targetClassSubjects = (classVal === editClass) ? oldClassSubjects : (subjectsMap[classVal] || []);
+            targetClassSubjects.push({ code, name, nameBn, shortName, isOptional });
+            subjectsMap[classVal] = targetClassSubjects;
+
+            // Propagate subject rename to schedules and routines
+            if (editOriginalName && editOriginalName !== name) {
+                try {
+                    const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                    let schedUpdated = false;
+                    schedules.forEach(sch => {
+                        if (sch.class === editClass && (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode))) {
+                            sch.subject = name;
+                            schedUpdated = true;
+                        }
+                    });
+                    if (schedUpdated) {
+                        localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                        fetch('/api/db/set', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                        }).catch(() => { });
+                    }
+                } catch (e) { }
+            }
+
+            persistAcademicSubjectsSync(subjectsMap);
+
+            closeSubjectModal();
+            renderSubjectList();
+
+            // If the regular subject form was editing the same subject, reset it
+            const regularEditClass = document.getElementById('subject-edit-class').value;
+            const regularEditCode = document.getElementById('subject-edit-code').value;
+            if (regularEditClass === editClass && regularEditCode === editCode) {
+                resetSubjectForm();
+            }
+
+            ale

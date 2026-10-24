@@ -1,0 +1,271 @@
+=== MATCH 1 at 226273 ===
+                   <div style="flex:1; min-width:260px;">
+                        <h2 class="portal-section-title"
+                            style="margin:0 0 4px 0; font-size:1.6rem; color:#0f172a; font-weight:800; display:flex; align-items:center; gap:10px;">
+                            <span>📚 Academic Subject Management</span>
+                        </h2>
+                        <p style="margin:0; font-size:0.88rem; color:#64748b;">
+                            শ্রেণীভিত্তিক ও বিভাগভিত্তিক বিষয়সমূহ, ক্রেডিট এবং বিষয় কোড পরিচালনা করুন
+                        </p>
+                    </di
+
+=== MATCH 2 at 229259 ===
+Color"
+                                    stroke-width="2.5">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Academic Subject
+                            </button>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <select id="filter-subject-dept" class="form-control"
+                                st
+
+=== MATCH 3 at 316270 ===
+               </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden iframe for printing blank OMR -->
+    <iframe id="printIframe" style="display: none;"></iframe>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ADD ACADEMIC SUBJECT MODAL -->
+    <div id="add-academic-subject-modal" class="modal-overlay" onclick="closeAddSubjectModal()">
+        <div class="modal-container" style="max-width: 520px; max-height: 85vh; overflow-y: auto; padding: 25px;"
+            onclick="event.stopPropagation()">
+            <bu
+
+=== MATCH 4 at 317118 ===
+width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span id="subject-form-title">Add Academic Subject</span>
+            </h3>
+            <form id="subject-form" onsubmit="saveSubject(event)">
+                <input type="hidden" id="subject-edit-class">
+                <input type="hidden" id="subject-edit-code">
+                <input type="hidden" id="subject-edit-name">
+       
+
+=== MATCH 5 at 416798 ===
+                if (!parsed[c]) {
+                    const defaultList = defaultSubjects[c] || [];
+                    parsed[c] = JSON.parse(JSON.stringify(defaultList));
+                    needToSave = true;
+                }
+            });
+
+            if (needToSave) {
+                persistAcademicSubjectsSync(parsed);
+            }
+            return parsed;
+        }
+
+        function loadSchedules() {
+            return safeJsonParse('school_exam_schedules', []);
+        }
+
+        function loadMarkingSystem() {
+            let rules = localStorage.getItem('school_marking_system');
+
+=== MATCH 6 at 687640 ===
+       const isValidValue = Array.from(classEl.options).some(opt => opt.value === currentClass);
+            if (currentClass && isValidValue) {
+                classEl.value = currentClass;
+            } else {
+                classEl.value = 'All';
+            }
+        }
+
+        function persistAcademicSubjectsSync(subjectsMap) {
+            try {
+                if (!subjectsMap) return;
+                const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
+                localStorage.setItem('school_subjects', subStr);
+                fetch('/api/db/
+
+=== MATCH 7 at 688386 ===
+ringify({ key: 'school_subjects', value: subStr })
+                }).catch(() => { });
+                window.dispatchEvent(new CustomEvent('school_subjects_synced'));
+                window.dispatchEvent(new Event('storage'));
+            } catch (e) {
+                console.error("Error syncing academic subjects:", e);
+            }
+        }
+
+        function saveSubject(event) {
+            event.preventDefault();
+
+            const selectedClasses = Array.from(document.querySelectorAll('.subject-target-class-chk:checked')).map(cb => cb.value);
+            const fallbackClass = document.
+
+=== MATCH 8 at 694533 ===
+                         });
+                            if (routUpdated) {
+                                localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                            }
+                        } catch (e) { }
+                    }
+
+                    persistAcademicSubjectsSync(subjectsMap);
+                    resetSubjectForm();
+                    renderSubjectList();
+                    closeAddSubjectModal();
+                    alert(`✅ একই বিষয়ের Name ও Short Name ("${shortName}") মোট ${updatedCount} টি শ্রেণিতে একসাথে সফলভাবে আপডেট করা হয়েছে!`)
+
+=== MATCH 9 at 697525 ===
+,
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+                    }
+
+                    persistAcademicSubjectsSync(subjectsMap);
+                    resetSubjectForm();
+                    renderSubjectList();
+                    closeAddSubjectModal();
+                    alert("Academic subject updated successfully!");
+                    return;
+                }
+            } else {
+    
+
+=== MATCH 10 at 697712 ===
+                     }
+                        } catch (e) { }
+                    }
+
+                    persistAcademicSubjectsSync(subjectsMap);
+                    resetSubjectForm();
+                    renderSubjectList();
+                    closeAddSubjectModal();
+                    alert("Academic subject updated successfully!");
+                    return;
+                }
+            } else {
+                // Add Mode for Multiple Target Classes
+                let addedCount = 0;
+                targetClasses.forEach((classVal) => {
+                    const classSubs = subject
+
+=== MATCH 11 at 699188 ===
+                  } else {
+                        classSubs.push({ code: finalCode, name, nameBn, shortName, isOptional, section: finalSec });
+                    }
+
+                    subjectsMap[classVal] = classSubs;
+                    addedCount++;
+                });
+
+                persistAcademicSubjectsSync(subjectsMap);
+                resetSubjectForm();
+                renderSubjectList();
+                closeAddSubjectModal();
+                alert(`✅ মোট ${addedCount} টি শ্রেণিতে নতুন বিষয়ের নাম ("${name}") এবং Short Name ("${shortName}") সফলভাবে যুক্ত করা হয়েছে!`);
+         
+
+=== MATCH 12 at 700585 ===
+sure you want to delete this subject?")) return;
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+
+            const filtered = classSubjects.filter(s => s.code !== code);
+            subjectsMap[classVal] = filtered;
+
+            persistAcademicSubjectsSync(subjectsMap);
+
+            // If the subject currently being edited is deleted, reset the form
+            const editClass = document.getElementById('subject-edit-class').value;
+            const editCode = document.getElementById('subject-edit-code').value;
+            if (edit
+
+=== MATCH 13 at 701356 ===
+sVal, code) {
+            const subjectsMap = loadSubjects();
+            const classSubjects = subjectsMap[classVal] || [];
+            const sub = classSubjects.find(s => s.code === code);
+            if (!sub) return;
+
+            document.getElementById('subject-form-title').innerText = "Update Academic Subject";
+
+            document.getElementById('subject-edit-class').value = classVal;
+            document.getElementById('subject-edit-code').value = code;
+            if (document.getElementById('subject-edit-name')) {
+                document.getElementById('subject-edit-name').value = 
+
+=== MATCH 14 at 705239 ===
+
+            document.getElementById('subject-is-optional').checked = false;
+            const containerSec = document.getElementById('subject-section-checkboxes');
+            if (containerSec) containerSec.innerHTML = "";
+
+            document.getElementById('subject-form-title').innerText = "Add Academic Subject";
+
+            document.getElementById('subject-submit-btn').innerText = "Save Subject";
+            document.getElementById('subject-submit-btn').style.background = "var(--secondary-grad)";
+        }
+
+        function resetSubjectsToDefault() {
+            if (!confirm("Are you sur
+
+=== MATCH 15 at 705741 ===
+ad)";
+        }
+
+        function resetSubjectsToDefault() {
+            if (!confirm("Are you sure you want to restore the default subject listings? This will overwrite your current subjects for all classes.")) return;
+            const defaultSubjects = getNewDefaultSubjects();
+            persistAcademicSubjectsSync(defaultSubjects);
+
+            // Reset edit form to prevent editing a subject that might not exist anymore
+            resetSubjectForm();
+
+            renderSubjectList();
+            alert("Subject listings restored to defaults!");
+        }
+
+        function renderSubjectLis
+
+=== MATCH 16 at 720722 ===
+                       }
+                        });
+                        if (routUpdated) {
+                            localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                        }
+                    } catch (e) { }
+                }
+
+                persistAcademicSubjectsSync(subjectsMap);
+                closeSubjectModal();
+                renderSubjectList();
+                alert(`✅ একই বিষয়ের Name ও Short Name ("${shortName}") মোট ${updatedCount} টি শ্রেণিতে একসাথে সেভ/আপডেট করা হয়েছে!`);
+                return;
+            }
+
+            const 
+
+=== MATCH 17 at 723570 ===
+ headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                        }).catch(() => { });
+                    }
+                } catch (e) { }
+            }
+
+            persistAcademicSubjectsSync(subjectsMap);
+
+            closeSubjectModal();
+            renderSubjectList();
+
+            // If the regular subject form was editing the same subject, reset it
+            const regularEditClass = document.getElementById('subject-edit-class').value;
+            const regular
+

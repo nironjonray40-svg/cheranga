@@ -1,0 +1,1755 @@
+=== Around line 7360 ===
+7345:                 ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
+7346: 
+7347:             const students = allStudents.filter(s => {
+7348:                 if (!s.class) return false;
+7349:                 const sClassClean = s.class.trim().toUpperCase();
+7350:                 const schClassClean = sch.class.trim().toUpperCase();
+7351:                 if (sClassClean !== schClassClean && !sClassClean.includes(schClassClean) && !schClassClean.includes(sClassClean)) return false;
+7352:                 if (targetSections.length > 0 && s.section) {
+7353:                     return targetSections.includes(s.section.trim().toUpperCase());
+7354:                 }
+7355:                 return true;
+7356:             });
+7357: 
+7358:             if (students.length === 0) return 'none';
+7359: 
+7360:             const subMap = loadSubjects();
+7361:             const classSubjects = subMap[sch.class] || [];
+7362:             const subObj = classSubjects.find(s => s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+7363:             const subCode = subObj ? subObj.code : sch.subject;
+7364: 
+7365:             const savedMarks = loadStudentMarks();
+7366:             let enteredCount = 0;
+7367: 
+7368:             students.forEach(student => {
+7369:                 const key = `marks_${student.id}_${sch.id}`;
+7370:                 const marks = savedMarks[key] ? savedMarks[key][subCode] : null;
+7371:                 if (marks !== null && marks !== undefined) enteredCount++;
+7372:             });
+7373: 
+7374:             if (enteredCount === 0) return 'none';
+7375:             if (enteredCount === students.length) return 'all';
+7376:             return 'partial';
+7377:         }
+7378: 
+7379:         function getExamTypeConfig(termName, examTypeName = '') {
+
+========================================
+
+=== Around line 7502 ===
+7487:             if (override) {
+7488:                 return {
+7489:                     cq: override.cq !== undefined ? Number(override.cq) : 0,
+7490:                     mcq: override.mcq !== undefined ? Number(override.mcq) : 0,
+7491:                     practical: override.practical !== undefined ? Number(override.practical) : 0
+7492:                 };
+7493:             }
+7494:             return {
+7495:                 cq: examType.defaultCQ !== undefined ? Number(examType.defaultCQ) : 70,
+7496:                 mcq: examType.defaultMCQ !== undefined ? Number(examType.defaultMCQ) : 30,
+7497:                 practical: examType.defaultPractical !== undefined ? Number(examType.defaultPractical) : 0
+7498:             };
+7499:         }
+7500: 
+7501:         function getScheduleMarksText(className, term, subjectName, examTypeName = '') {
+7502:             const subMap = loadSubjects();
+7503:             const subCode = findSubjectCodeInMap(subMap, className, subjectName);
+7504: 
+7505:             const config = getExamTypeConfig(term, examTypeName);
+7506:             const dist = getSubjectDistribution(subCode, config, subjectName);
+7507: 
+7508:             let parts = [];
+7509:             if (dist.cq > 0) parts.push(`CQ: ${dist.cq}`);
+7510:             if (dist.mcq > 0) parts.push(`MCQ: ${dist.mcq}`);
+7511:             if (dist.practical > 0) parts.push(`Prac: ${dist.practical}`);
+7512:             if (parts.length === 0) {
+7513:                 const total = dist.cq + dist.mcq + dist.practical;
+7514:                 parts.push(`Total: ${total}`);
+7515:             }
+7516:             return parts.join(', ');
+7517:         }
+7518: 
+7519:         function getScheduleMarksBadgesHtml(className, term, subjectName, examTypeName = '', isDarkTheme = false) {
+7520:             const subMap = loadSubjects();
+7521:             const subCode = findSubjectCodeInMap(subMap, className, subjectName);
+
+========================================
+
+=== Around line 7520 ===
+7505:             const config = getExamTypeConfig(term, examTypeName);
+7506:             const dist = getSubjectDistribution(subCode, config, subjectName);
+7507: 
+7508:             let parts = [];
+7509:             if (dist.cq > 0) parts.push(`CQ: ${dist.cq}`);
+7510:             if (dist.mcq > 0) parts.push(`MCQ: ${dist.mcq}`);
+7511:             if (dist.practical > 0) parts.push(`Prac: ${dist.practical}`);
+7512:             if (parts.length === 0) {
+7513:                 const total = dist.cq + dist.mcq + dist.practical;
+7514:                 parts.push(`Total: ${total}`);
+7515:             }
+7516:             return parts.join(', ');
+7517:         }
+7518: 
+7519:         function getScheduleMarksBadgesHtml(className, term, subjectName, examTypeName = '', isDarkTheme = false) {
+7520:             const subMap = loadSubjects();
+7521:             const subCode = findSubjectCodeInMap(subMap, className, subjectName);
+7522: 
+7523:             const config = getExamTypeConfig(term, examTypeName);
+7524:             const dist = getSubjectDistribution(subCode, config, subjectName);
+7525: 
+7526:             if (isDarkTheme) {
+7527:                 return `
+7528:                     <div style="font-size:0.82rem; margin-top:3px; display:inline-flex; flex-wrap:wrap; gap:4px; align-items:center;">
+7529:                         <span style="background:rgba(2,132,199,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); padding:1px 6px; border-radius:4px; font-weight:700;">CQ: ${dist.cq}</span>
+7530:                         <span style="background:rgba(217,119,6,0.2); color:#fbbf24; border:1px solid rgba(251,191,36,0.35); padding:1px 6px; border-radius:4px; font-weight:700;">MCQ: ${dist.mcq}</span>
+7531:                         ${dist.practical > 0 ? `<span style="background:rgba(147,51,234,0.2); color:#c084fc; border:1px solid rgba(192,132,252,0.35); padding:1px 6px; border-radius:4px; font-weight:700;">Prac: ${dist.practical}</span>` : ''}
+7532:                     </div>
+7533:                 `;
+7534:             }
+7535: 
+7536:             return `
+7537:                 <div style="font-size:0.85rem; margin-top:3px; display:inline-flex; flex-wrap:wrap; gap:4px; align-items:center;">
+7538:                     <span style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:1px 7px; border-radius:4px; font-weight:700; font-size:0.8rem;">CQ: ${dist.cq}</span>
+7539:                     <span style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:1px 7px; border-radius:4px; font-weight:700; font-size:0.8rem;">MCQ: ${dist.mcq}</span>
+
+========================================
+
+=== Around line 7563 ===
+7548:             const previewBadges = document.getElementById('schedule-dist-preview-badges');
+7549:             if (!previewBox) return;
+7550: 
+7551:             const className = document.getElementById('schedule-class')?.value || '';
+7552:             const examName = document.getElementById('schedule-exam-name')?.value || '';
+7553:             const examType = document.getElementById('schedule-exam-type')?.value || '';
+7554:             const subject = document.getElementById('schedule-subject')?.value || '';
+7555: 
+7556:             if (!examName) {
+7557:                 previewBox.style.display = 'none';
+7558:                 return;
+7559:             }
+7560: 
+7561:             previewBox.style.display = 'flex';
+7562: 
+7563:             const subMap = loadSubjects();
+7564:             const subCode = findSubjectCodeInMap(subMap, className, subject);
+7565: 
+7566:             const config = getExamTypeConfig(examName, examType);
+7567:             const dist = getSubjectDistribution(subCode, config, subject);
+7568:             const total = dist.cq + dist.mcq + dist.practical;
+7569: 
+7570:             if (previewText) {
+7571:                 previewText.innerText = `CQ: ${dist.cq} | MCQ: ${dist.mcq}${dist.practical > 0 ? ' | ব্যবঃ: ' + dist.practical : ''} (মোট: ${total})`;
+7572:             }
+7573: 
+7574:             if (previewBadges) {
+7575:                 previewBadges.innerHTML = `
+7576:                     <span style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:3px 9px; border-radius:12px; font-weight:700; font-size:0.84rem;">CQ: ${dist.cq}</span>
+7577:                     <span style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:3px 9px; border-radius:12px; font-weight:700; font-size:0.84rem;">MCQ: ${dist.mcq}</span>
+7578:                     ${dist.practical > 0 ? `<span style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff; padding:3px 9px; border-radius:12px; font-weight:700; font-size:0.84rem;">ব্যবহারিক: ${dist.practical}</span>` : ''}
+7579:                     <span style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:3px 9px; border-radius:12px; font-weight:700; font-size:0.84rem;">মোট: ${total}</span>
+7580:                 `;
+7581:             }
+7582:         }
+
+========================================
+
+=== Around line 7630 ===
+7615: 
+7616:         // --- UTILITY JSON PARSE ---
+7617:         function safeJsonParse(key, defaultValue) {
+7618:             const item = localStorage.getItem(key);
+7619:             if (!item) return defaultValue;
+7620:             try {
+7621:                 return JSON.parse(item);
+7622:             } catch (e) {
+7623:                 return defaultValue;
+7624:             }
+7625:         }
+7626: 
+7627:         // --- CONSTANT DEFAULT DATA INITIALIZERS ---
+7628:         const DEFAULT_SCHEDULES = [];
+7629: 
+7630:         const getNewDefaultSubjects = () => {
+7631:             const list = [
+7632:                 { code: "101", name: "Bangla Sahitya", shortName: "Bangla 1st" },
+7633:                 { code: "102", name: "Bangla Bhashar Byakaran and Nirmiti", shortName: "Bangla 2nd" },
+7634:                 { code: "103", name: "English For Today", shortName: "English 1st" },
+7635:                 { code: "104", name: "English Grammar and Composition", shortName: "English 2nd" },
+7636:                 { code: "105", name: "Mathematics", shortName: "Math" },
+7637:                 { code: "106", name: "Information And Communication Technology", shortName: "ICT" },
+7638:                 { code: "107", name: "Bangladesh And Global Studies", shortName: "BGS" },
+7639:                 { code: "108", name: "Science", shortName: "Science" },
+7640:                 { code: "109", name: "Agriculture Studies", shortName: "Agri Studies" },
+7641:                 { code: "110", name: "Islamic Studies", shortName: "Islam" },
+7642:                 { code: "111", name: "Hindu Religion Studies", shortName: "Hindu" }
+7643:             ];
+7644:             return {
+7645:                 "Six": JSON.parse(JSON.stringify(list)),
+7646:                 "Seven": JSON.parse(JSON.stringify(list)),
+7647:                 "Eight": JSON.parse(JSON.stringify(list)),
+7648:                 "Nine": JSON.parse(JSON.stringify(list)),
+7649:                 "Ten": JSON.parse(JSON.stringify(list))
+
+========================================
+
+=== Around line 7652 ===
+7637:                 { code: "106", name: "Information And Communication Technology", shortName: "ICT" },
+7638:                 { code: "107", name: "Bangladesh And Global Studies", shortName: "BGS" },
+7639:                 { code: "108", name: "Science", shortName: "Science" },
+7640:                 { code: "109", name: "Agriculture Studies", shortName: "Agri Studies" },
+7641:                 { code: "110", name: "Islamic Studies", shortName: "Islam" },
+7642:                 { code: "111", name: "Hindu Religion Studies", shortName: "Hindu" }
+7643:             ];
+7644:             return {
+7645:                 "Six": JSON.parse(JSON.stringify(list)),
+7646:                 "Seven": JSON.parse(JSON.stringify(list)),
+7647:                 "Eight": JSON.parse(JSON.stringify(list)),
+7648:                 "Nine": JSON.parse(JSON.stringify(list)),
+7649:                 "Ten": JSON.parse(JSON.stringify(list))
+7650:             };
+7651:         };
+7652:         const DEFAULT_SUBJECTS = getNewDefaultSubjects();
+7653: 
+7654:         const DEFAULT_GRADE_RULES = [
+7655:             { id: "1", name: "A+", min: 80, max: 100, gp: 5.0 },
+7656:             { id: "2", name: "A", min: 70, max: 79, gp: 4.0 },
+7657:             { id: "3", name: "A-", min: 60, max: 69, gp: 3.5 },
+7658:             { id: "4", name: "B", min: 50, max: 59, gp: 3.0 },
+7659:             { id: "5", name: "C", min: 40, max: 49, gp: 2.0 },
+7660:             { id: "6", name: "D", min: 33, max: 39, gp: 1.0 },
+7661:             { id: "7", name: "F", min: 0, max: 32, gp: 0.0 }
+7662:         ];
+7663: 
+7664:         // --- CORE DATABASE DATA GETTERS/SETTERS ---
+7665:         function loadClasses() {
+7666:             const defaultClasses = ["Play", "Nursery", "KG", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+7667:             const parsed = safeJsonParse('school_classes', null);
+7668:             if (Array.isArray(parsed) && parsed.length > 0) {
+7669:                 return parsed.filter(c => c && typeof c === 'string' && c.trim() !== '');
+7670:             }
+7671:             return defaultClasses;
+
+========================================
+
+=== Around line 7726 ===
+7711:                 'nursery': '#ffab00'      // Gold
+7712:             };
+7713: 
+7714:             if (classColorMap[cleanLower]) {
+7715:                 return classColorMap[cleanLower];
+7716:             }
+7717: 
+7718:             let hash = 0;
+7719:             for (let i = 0; i < cleanName.length; i++) {
+7720:                 hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+7721:             }
+7722:             const hue = Math.abs(hash) % 360;
+7723:             return `hsl(${hue}, 95%, 62%)`;
+7724:         }
+7725: 
+7726:         function loadSubjects() {
+7727:             let subjects = localStorage.getItem('school_subjects');
+7728:             let needToSave = false;
+7729:             let parsed = null;
+7730: 
+7731:             const defaultSubjects = getNewDefaultSubjects();
+7732: 
+7733:             if (subjects) {
+7734:                 try {
+7735:                     parsed = JSON.parse(subjects);
+7736: 
+7737:                     const hasOldClass6 = parsed["Class 6"] !== undefined;
+7738: 
+7739:                     if (hasOldClass6) {
+7740:                         parsed = defaultSubjects;
+7741:                         needToSave = true;
+7742:                     } else {
+7743:                         // Check if any subject in any class is missing 'shortName', if so, add it.
+7744:                         let missingShortName = false;
+7745:                         Object.keys(parsed).forEach(cls => {
+
+========================================
+
+=== Around line 7727 ===
+7712:             };
+7713: 
+7714:             if (classColorMap[cleanLower]) {
+7715:                 return classColorMap[cleanLower];
+7716:             }
+7717: 
+7718:             let hash = 0;
+7719:             for (let i = 0; i < cleanName.length; i++) {
+7720:                 hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+7721:             }
+7722:             const hue = Math.abs(hash) % 360;
+7723:             return `hsl(${hue}, 95%, 62%)`;
+7724:         }
+7725: 
+7726:         function loadSubjects() {
+7727:             let subjects = localStorage.getItem('school_subjects');
+7728:             let needToSave = false;
+7729:             let parsed = null;
+7730: 
+7731:             const defaultSubjects = getNewDefaultSubjects();
+7732: 
+7733:             if (subjects) {
+7734:                 try {
+7735:                     parsed = JSON.parse(subjects);
+7736: 
+7737:                     const hasOldClass6 = parsed["Class 6"] !== undefined;
+7738: 
+7739:                     if (hasOldClass6) {
+7740:                         parsed = defaultSubjects;
+7741:                         needToSave = true;
+7742:                     } else {
+7743:                         // Check if any subject in any class is missing 'shortName', if so, add it.
+7744:                         let missingShortName = false;
+7745:                         Object.keys(parsed).forEach(cls => {
+7746:                             if (Array.isArray(parsed[cls])) {
+
+========================================
+
+=== Around line 7731 ===
+7716:             }
+7717: 
+7718:             let hash = 0;
+7719:             for (let i = 0; i < cleanName.length; i++) {
+7720:                 hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+7721:             }
+7722:             const hue = Math.abs(hash) % 360;
+7723:             return `hsl(${hue}, 95%, 62%)`;
+7724:         }
+7725: 
+7726:         function loadSubjects() {
+7727:             let subjects = localStorage.getItem('school_subjects');
+7728:             let needToSave = false;
+7729:             let parsed = null;
+7730: 
+7731:             const defaultSubjects = getNewDefaultSubjects();
+7732: 
+7733:             if (subjects) {
+7734:                 try {
+7735:                     parsed = JSON.parse(subjects);
+7736: 
+7737:                     const hasOldClass6 = parsed["Class 6"] !== undefined;
+7738: 
+7739:                     if (hasOldClass6) {
+7740:                         parsed = defaultSubjects;
+7741:                         needToSave = true;
+7742:                     } else {
+7743:                         // Check if any subject in any class is missing 'shortName', if so, add it.
+7744:                         let missingShortName = false;
+7745:                         Object.keys(parsed).forEach(cls => {
+7746:                             if (Array.isArray(parsed[cls])) {
+7747:                                 parsed[cls].forEach(sub => {
+7748:                                     if (!sub.shortName) {
+7749:                                         missingShortName = true;
+7750:                                         // Try to match it with a default subject's shortName, otherwise use name
+
+========================================
+
+=== Around line 7740 ===
+7725: 
+7726:         function loadSubjects() {
+7727:             let subjects = localStorage.getItem('school_subjects');
+7728:             let needToSave = false;
+7729:             let parsed = null;
+7730: 
+7731:             const defaultSubjects = getNewDefaultSubjects();
+7732: 
+7733:             if (subjects) {
+7734:                 try {
+7735:                     parsed = JSON.parse(subjects);
+7736: 
+7737:                     const hasOldClass6 = parsed["Class 6"] !== undefined;
+7738: 
+7739:                     if (hasOldClass6) {
+7740:                         parsed = defaultSubjects;
+7741:                         needToSave = true;
+7742:                     } else {
+7743:                         // Check if any subject in any class is missing 'shortName', if so, add it.
+7744:                         let missingShortName = false;
+7745:                         Object.keys(parsed).forEach(cls => {
+7746:                             if (Array.isArray(parsed[cls])) {
+7747:                                 parsed[cls].forEach(sub => {
+7748:                                     if (!sub.shortName) {
+7749:                                         missingShortName = true;
+7750:                                         // Try to match it with a default subject's shortName, otherwise use name
+7751:                                         const defaultSub = defaultSubjects["Six"].find(ds => ds.name === sub.name || ds.code === sub.code);
+7752:                                         sub.shortName = defaultSub ? defaultSub.shortName : sub.name;
+7753:                                     }
+7754:                                 });
+7755:                             }
+7756:                         });
+7757:                         if (missingShortName) {
+7758:                             needToSave = true;
+7759:                         }
+
+========================================
+
+=== Around line 7751 ===
+7736: 
+7737:                     const hasOldClass6 = parsed["Class 6"] !== undefined;
+7738: 
+7739:                     if (hasOldClass6) {
+7740:                         parsed = defaultSubjects;
+7741:                         needToSave = true;
+7742:                     } else {
+7743:                         // Check if any subject in any class is missing 'shortName', if so, add it.
+7744:                         let missingShortName = false;
+7745:                         Object.keys(parsed).forEach(cls => {
+7746:                             if (Array.isArray(parsed[cls])) {
+7747:                                 parsed[cls].forEach(sub => {
+7748:                                     if (!sub.shortName) {
+7749:                                         missingShortName = true;
+7750:                                         // Try to match it with a default subject's shortName, otherwise use name
+7751:                                         const defaultSub = defaultSubjects["Six"].find(ds => ds.name === sub.name || ds.code === sub.code);
+7752:                                         sub.shortName = defaultSub ? defaultSub.shortName : sub.name;
+7753:                                     }
+7754:                                 });
+7755:                             }
+7756:                         });
+7757:                         if (missingShortName) {
+7758:                             needToSave = true;
+7759:                         }
+7760:                     }
+7761:                 } catch (e) {
+7762:                     parsed = defaultSubjects;
+7763:                     needToSave = true;
+7764:                 }
+7765:             } else {
+7766:                 parsed = defaultSubjects;
+7767:                 needToSave = true;
+7768:             }
+7769: 
+7770:             const classes = loadClasses();
+
+========================================
+
+=== Around line 7762 ===
+7747:                                 parsed[cls].forEach(sub => {
+7748:                                     if (!sub.shortName) {
+7749:                                         missingShortName = true;
+7750:                                         // Try to match it with a default subject's shortName, otherwise use name
+7751:                                         const defaultSub = defaultSubjects["Six"].find(ds => ds.name === sub.name || ds.code === sub.code);
+7752:                                         sub.shortName = defaultSub ? defaultSub.shortName : sub.name;
+7753:                                     }
+7754:                                 });
+7755:                             }
+7756:                         });
+7757:                         if (missingShortName) {
+7758:                             needToSave = true;
+7759:                         }
+7760:                     }
+7761:                 } catch (e) {
+7762:                     parsed = defaultSubjects;
+7763:                     needToSave = true;
+7764:                 }
+7765:             } else {
+7766:                 parsed = defaultSubjects;
+7767:                 needToSave = true;
+7768:             }
+7769: 
+7770:             const classes = loadClasses();
+7771: 
+7772:             // Clean up obsolete class keys from the subject database
+7773:             Object.keys(parsed).forEach(key => {
+7774:                 if (!classes.includes(key)) {
+7775:                     delete parsed[key];
+7776:                     needToSave = true;
+7777:                 }
+7778:             });
+7779: 
+7780:             // Also check if any classes returned by loadClasses() are missing from parsed
+7781:             classes.forEach(c => {
+
+========================================
+
+=== Around line 7766 ===
+7751:                                         const defaultSub = defaultSubjects["Six"].find(ds => ds.name === sub.name || ds.code === sub.code);
+7752:                                         sub.shortName = defaultSub ? defaultSub.shortName : sub.name;
+7753:                                     }
+7754:                                 });
+7755:                             }
+7756:                         });
+7757:                         if (missingShortName) {
+7758:                             needToSave = true;
+7759:                         }
+7760:                     }
+7761:                 } catch (e) {
+7762:                     parsed = defaultSubjects;
+7763:                     needToSave = true;
+7764:                 }
+7765:             } else {
+7766:                 parsed = defaultSubjects;
+7767:                 needToSave = true;
+7768:             }
+7769: 
+7770:             const classes = loadClasses();
+7771: 
+7772:             // Clean up obsolete class keys from the subject database
+7773:             Object.keys(parsed).forEach(key => {
+7774:                 if (!classes.includes(key)) {
+7775:                     delete parsed[key];
+7776:                     needToSave = true;
+7777:                 }
+7778:             });
+7779: 
+7780:             // Also check if any classes returned by loadClasses() are missing from parsed
+7781:             classes.forEach(c => {
+7782:                 if (!parsed[c]) {
+7783:                     const defaultList = defaultSubjects[c] || [];
+7784:                     parsed[c] = JSON.parse(JSON.stringify(defaultList));
+7785:                     needToSave = true;
+
+========================================
+
+=== Around line 7783 ===
+7768:             }
+7769: 
+7770:             const classes = loadClasses();
+7771: 
+7772:             // Clean up obsolete class keys from the subject database
+7773:             Object.keys(parsed).forEach(key => {
+7774:                 if (!classes.includes(key)) {
+7775:                     delete parsed[key];
+7776:                     needToSave = true;
+7777:                 }
+7778:             });
+7779: 
+7780:             // Also check if any classes returned by loadClasses() are missing from parsed
+7781:             classes.forEach(c => {
+7782:                 if (!parsed[c]) {
+7783:                     const defaultList = defaultSubjects[c] || [];
+7784:                     parsed[c] = JSON.parse(JSON.stringify(defaultList));
+7785:                     needToSave = true;
+7786:                 }
+7787:             });
+7788: 
+7789:             if (needToSave) {
+7790:                 persistAcademicSubjectsSync(parsed);
+7791:             }
+7792:             return parsed;
+7793:         }
+7794: 
+7795:         function loadSchedules() {
+7796:             return safeJsonParse('school_exam_schedules', []);
+7797:         }
+7798: 
+7799:         function loadMarkingSystem() {
+7800:             let rules = localStorage.getItem('school_marking_system');
+7801:             if (!rules) {
+7802:                 rules = JSON.stringify(DEFAULT_GRADE_RULES);
+
+========================================
+
+=== Around line 7790 ===
+7775:                     delete parsed[key];
+7776:                     needToSave = true;
+7777:                 }
+7778:             });
+7779: 
+7780:             // Also check if any classes returned by loadClasses() are missing from parsed
+7781:             classes.forEach(c => {
+7782:                 if (!parsed[c]) {
+7783:                     const defaultList = defaultSubjects[c] || [];
+7784:                     parsed[c] = JSON.parse(JSON.stringify(defaultList));
+7785:                     needToSave = true;
+7786:                 }
+7787:             });
+7788: 
+7789:             if (needToSave) {
+7790:                 persistAcademicSubjectsSync(parsed);
+7791:             }
+7792:             return parsed;
+7793:         }
+7794: 
+7795:         function loadSchedules() {
+7796:             return safeJsonParse('school_exam_schedules', []);
+7797:         }
+7798: 
+7799:         function loadMarkingSystem() {
+7800:             let rules = localStorage.getItem('school_marking_system');
+7801:             if (!rules) {
+7802:                 rules = JSON.stringify(DEFAULT_GRADE_RULES);
+7803:                 localStorage.setItem('school_marking_system', rules);
+7804:             }
+7805:             try {
+7806:                 return JSON.parse(rules);
+7807:             } catch (e) {
+7808:                 return DEFAULT_GRADE_RULES;
+7809:             }
+
+========================================
+
+=== Around line 8310 ===
+8295:             const tbody = document.getElementById('bulk-subjects-table-tbody');
+8296:             if (!tbody) return;
+8297: 
+8298:             const classVal = document.getElementById('schedule-class')?.value;
+8299:             const examVal = document.getElementById('schedule-exam-name')?.value || '';
+8300:             const examTypeVal = document.getElementById('schedule-exam-type')?.value || '';
+8301:             const baseDate = document.getElementById('bulk-base-date')?.value || document.getElementById('schedule-date')?.value || getFormattedCurrentDate();
+8302:             const commonTeacher = document.getElementById('bulk-common-teacher')?.value || '';
+8303: 
+8304:             if (!classVal) {
+8305:                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">অনুগ্রহ করে প্রথমে একটি ক্লাস সিলেক্ট করুন।</td></tr>';
+8306:                 updateBulkSelectedCount();
+8307:                 return;
+8308:             }
+8309: 
+8310:             const subMap = loadSubjects();
+8311:             const subjects = subMap[classVal] || [];
+8312:             const teachers = loadTeachers();
+8313:             const config = getExamTypeConfig(examVal, examTypeVal);
+8314: 
+8315:             if (subjects.length === 0) {
+8316:                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:#dc2626; font-weight:600;">⚠️ এই ক্লাসের জন্য কোনো বিষয় তৈরি করা হয়নি। "All Subject" ট্যাব থেকে বিষয় যুক্ত করুন।</td></tr>';
+8317:                 updateBulkSelectedCount();
+8318:                 return;
+8319:             }
+8320: 
+8321:             let teacherOptionsHtml = '<option value="">-- No Teacher Assigned --</option>';
+8322:             if (teachers.length > 0) {
+8323:                 teacherOptionsHtml += teachers.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+8324:             }
+8325: 
+8326:             const schedules = loadSchedules();
+8327: 
+8328:             let html = '';
+8329:             subjects.forEach((s, idx) => {
+
+========================================
+
+=== Around line 8760 ===
+8745: 
+8746:         function updateScheduleClassDependencies() {
+8747:             updateScheduleSubjectsDropdown();
+8748:             populateScheduleSectionsDropdown();
+8749:             autoCalculateScheduleExamNo();
+8750:             renderBulkSubjectsTable();
+8751:         }
+8752: 
+8753:         function updateScheduleSubjectsDropdown() {
+8754:             const classVal = document.getElementById('schedule-class')?.value;
+8755:             const el = document.getElementById('schedule-subject');
+8756:             if (!el || !classVal) return;
+8757: 
+8758:             const prevVal = el.value;
+8759: 
+8760:             const subMap = loadSubjects();
+8761:             const subjects = subMap[classVal] || [];
+8762: 
+8763:             if (subjects.length === 0) {
+8764:                 el.innerHTML = `<option value="" disabled selected>-- No Subjects Created --</option>`;
+8765:             } else {
+8766:                 el.innerHTML = subjects.map(s => {
+8767:                     const bn = getSubjectNameBangla(s);
+8768:                     const label = (bn && bn !== s.name) ? `${s.name} - ${bn} (${s.code})` : `${s.name} (${s.code})`;
+8769:                     return `<option value="${s.name}">${label}</option>`;
+8770:                 }).join('');
+8771:             }
+8772: 
+8773:             if (prevVal && Array.from(el.options).some(o => o.value === prevVal)) {
+8774:                 el.value = prevVal;
+8775:             }
+8776:         }
+8777: 
+8778:         function saveExamSchedule(event) {
+8779:             event.preventDefault();
+
+========================================
+
+=== Around line 9347 ===
+9332: 
+9333:         
+9334: 
+9335: 
+9336: function openExamMarksEntryModal(scheduleId) {
+9337:             const schedules = loadSchedules();
+9338:             const sch = schedules.find(s => String(s.id) === String(scheduleId));
+9339:             if (!sch) {
+9340:                 alert("Exam Schedule not found!");
+9341:                 return;
+9342:             }
+9343: 
+9344:             activeExamScheduleId = scheduleId;
+9345: 
+9346:             // Find matching subject code
+9347:             const subMap = loadSubjects();
+9348:             const classSubjects = subMap[sch.class] || [];
+9349:             const subObj = classSubjects.find(s => s && s.name && sch && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+9350:             const subCode = subObj ? subObj.code : (sch.subjectCode || sch.subject || '101');
+9351:             activeExamSubjectCode = subCode;
+9352: 
+9353:             // Get Exam Type distribution dynamically according to sch.term and sch.examType
+9354:             const examTypeConfig = getExamTypeConfig(sch.term, sch.examType);
+9355:             const dist = getSubjectDistribution(subCode, examTypeConfig, sch.subject);
+9356:             const subjectTotal = dist.cq + dist.mcq + dist.practical;
+9357:             activeExamDist = { ...dist, total: subjectTotal, passPercent: examTypeConfig.passMarkPercent !== undefined ? examTypeConfig.passMarkPercent : 33 };
+9358: 
+9359:             // Update modal header badges & text
+9360:             document.getElementById('modal-exam-class-badge').innerText = sch.class;
+9361:             document.getElementById('modal-exam-section-badge').innerText = `Sec: ${sch.section || 'All'}`;
+9362:             document.getElementById('modal-exam-subject-code').innerText = `Code: ${subCode}`;
+9363:             document.getElementById('modal-exam-title-text').innerText = `${sch.subject} - ${sch.term}${sch.examType ? ' (' + sch.examType + ')' : ''}`;
+9364: 
+9365:             let distParts = [];
+9366:             if (dist.cq > 0) distParts.push(`CQ: ${dist.cq}`);
+
+========================================
+
+=== Around line 11554 ===
+11539: 
+11540:             if (classStudents.length === 0) {
+11541:                 el.innerHTML = `<option value="" disabled selected>-- No Students in this Class --</option>`;
+11542:             } else {
+11543:                 el.innerHTML = classStudents.map(s => `<option value="${s.id}">${s.name} (Roll: ${s.roll})</option>`).join('');
+11544:             }
+11545:         }
+11546: 
+11547:         function generateSubjectMarkInputFields() {
+11548:             const classVal = document.getElementById('input-mark-class').value;
+11549:             const container = document.getElementById('subject-marks-inputs-container');
+11550:             const alertEl = document.getElementById('no-subjects-alert');
+11551:             const examVal = document.getElementById('input-mark-exam').value;
+11552:             if (!container) return;
+11553: 
+11554:             const subMap = loadSubjects();
+11555:             let subjects = subMap[classVal] || [];
+11556: 
+11557:             if (classVal === 'Nine' || classVal === 'Ten') {
+11558:                 const students = loadStudents();
+11559:                 const selectedStudentId = document.getElementById('input-mark-student').value;
+11560:                 const student = students.find(s => s.id === selectedStudentId);
+11561:                 if (student) {
+11562:                     let studentGroup = (student.group || student.branch || student.section || '').toLowerCase();
+11563:                     if (!studentGroup || studentGroup === 'none' || studentGroup === 'a') {
+11564:                         const nameLower = (student.name || '').toLowerCase().trim();
+11565:                         if (nameLower.endsWith('s') || nameLower.includes(' s') || nameLower.includes('— s') || nameLower.includes('- s')) {
+11566:                             studentGroup = 'science';
+11567:                         } else if (nameLower.endsWith('a') || nameLower.includes(' a') || nameLower.includes('— a') || nameLower.includes('- a')) {
+11568:                             studentGroup = 'humanities';
+11569:                         } else if (nameLower.endsWith('b') || nameLower.includes(' b') || nameLower.includes('— b') || nameLower.includes('- b')) {
+11570:                             studentGroup = 'business';
+11571:                         }
+11572:                     }
+11573:                     const matchGroupAndSection = (stdGrp, sec) => {
+
+========================================
+
+=== Around line 11894 ===
+11879:         function generateStudentTranscriptCard() {
+11880:             const classVal = document.getElementById('search-result-class').value;
+11881:             const studentId = document.getElementById('search-result-student').value;
+11882:             const examVal = document.getElementById('search-result-exam').value;
+11883:             const container = document.getElementById('student-transcript-container');
+11884: 
+11885:             if (!studentId) {
+11886:                 alert("Please select a student to display transcript!");
+11887:                 return;
+11888:             }
+11889: 
+11890:             const students = loadStudents();
+11891:             const s = students.find(stud => stud.id === studentId);
+11892:             if (!s) return;
+11893: 
+11894:             const subMap = loadSubjects();
+11895:             let subjects = subMap[classVal] || [];
+11896: 
+11897:             if (classVal === 'Nine' || classVal === 'Ten') {
+11898:                 let studentGroup = (s.group || s.branch || s.section || '').toLowerCase();
+11899:                 if (!studentGroup || studentGroup === 'none' || studentGroup === 'a') {
+11900:                     const nameLower = (s.name || '').toLowerCase().trim();
+11901:                     if (nameLower.endsWith('s') || nameLower.includes(' s') || nameLower.includes('— s') || nameLower.includes('- s')) {
+11902:                         studentGroup = 'science';
+11903:                     } else if (nameLower.endsWith('a') || nameLower.includes(' a') || nameLower.includes('— a') || nameLower.includes('- a')) {
+11904:                         studentGroup = 'humanities';
+11905:                     } else if (nameLower.endsWith('b') || nameLower.includes(' b') || nameLower.includes('— b') || nameLower.includes('- b')) {
+11906:                         studentGroup = 'business';
+11907:                     }
+11908:                 }
+11909:                 const matchGroupAndSection = (stdGrp, sec) => {
+11910:                     const sg = stdGrp.toLowerCase().trim();
+11911:                     const sc = sec.toLowerCase().trim();
+11912:                     if (sg === sc) return true;
+11913:                     if (sg === 'science' && sc === 'a') return true;
+
+========================================
+
+=== Around line 12041 ===
+12026:             setTimeout(() => {
+12027:                 container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+12028:             }, 100);
+12029:         }
+12030: 
+12031:         function quickAutofillMockMarks() {
+12032:             const classVal = document.getElementById('search-result-class').value;
+12033:             const studentId = document.getElementById('search-result-student').value;
+12034:             const examVal = document.getElementById('search-result-exam').value;
+12035: 
+12036:             if (!studentId) {
+12037:                 alert("Please select a student first!");
+12038:                 return;
+12039:             }
+12040: 
+12041:             const subMap = loadSubjects();
+12042:             let subjects = subMap[classVal] || [];
+12043: 
+12044:             if (classVal === 'Nine' || classVal === 'Ten') {
+12045:                 const students = loadStudents();
+12046:                 const s = students.find(stud => stud.id === studentId);
+12047:                 if (s) {
+12048:                     let studentGroup = (s.group || s.branch || s.section || '').toLowerCase();
+12049:                     if (!studentGroup || studentGroup === 'none' || studentGroup === 'a') {
+12050:                         const nameLower = (s.name || '').toLowerCase().trim();
+12051:                         if (nameLower.endsWith('s') || nameLower.includes(' s') || nameLower.includes('— s') || nameLower.includes('- s')) {
+12052:                             studentGroup = 'science';
+12053:                         } else if (nameLower.endsWith('a') || nameLower.includes(' a') || nameLower.includes('— a') || nameLower.includes('- a')) {
+12054:                             studentGroup = 'humanities';
+12055:                         } else if (nameLower.endsWith('b') || nameLower.includes(' b') || nameLower.includes('— b') || nameLower.includes('- b')) {
+12056:                             studentGroup = 'business';
+12057:                         }
+12058:                     }
+12059:                     const matchGroupAndSection = (stdGrp, sec) => {
+12060:                         const sg = stdGrp.toLowerCase().trim();
+
+========================================
+
+=== Around line 12795 ===
+12780:                     html += high.map(c => `<option value="${c}">${c}</option>`).join('');
+12781:                     html += `</optgroup>`;
+12782:                 }
+12783:             }
+12784: 
+12785:             classEl.innerHTML = html;
+12786: 
+12787:             const isValidValue = Array.from(classEl.options).some(opt => opt.value === currentClass);
+12788:             if (currentClass && isValidValue) {
+12789:                 classEl.value = currentClass;
+12790:             } else {
+12791:                 classEl.value = 'All';
+12792:             }
+12793:         }
+12794: 
+12795:         function persistAcademicSubjectsSync(subjectsMap) {
+12796:             try {
+12797:                 if (!subjectsMap) return;
+12798:                 const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
+12799:                 localStorage.setItem('school_subjects', subStr);
+12800:                 fetch('/api/db/set', {
+12801:                     method: 'POST',
+12802:                     headers: { 'Content-Type': 'application/json' },
+12803:                     body: JSON.stringify({ key: 'school_subjects', value: subStr })
+12804:                 }).catch(() => { });
+12805:                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
+12806:                 window.dispatchEvent(new Event('storage'));
+12807:             } catch (e) {
+12808:                 console.error("Error syncing academic subjects:", e);
+12809:             }
+12810:         }
+12811: 
+12812:         function saveSubject(event) {
+12813:             event.preventDefault();
+12814: 
+
+========================================
+
+=== Around line 12799 ===
+12784: 
+12785:             classEl.innerHTML = html;
+12786: 
+12787:             const isValidValue = Array.from(classEl.options).some(opt => opt.value === currentClass);
+12788:             if (currentClass && isValidValue) {
+12789:                 classEl.value = currentClass;
+12790:             } else {
+12791:                 classEl.value = 'All';
+12792:             }
+12793:         }
+12794: 
+12795:         function persistAcademicSubjectsSync(subjectsMap) {
+12796:             try {
+12797:                 if (!subjectsMap) return;
+12798:                 const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
+12799:                 localStorage.setItem('school_subjects', subStr);
+12800:                 fetch('/api/db/set', {
+12801:                     method: 'POST',
+12802:                     headers: { 'Content-Type': 'application/json' },
+12803:                     body: JSON.stringify({ key: 'school_subjects', value: subStr })
+12804:                 }).catch(() => { });
+12805:                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
+12806:                 window.dispatchEvent(new Event('storage'));
+12807:             } catch (e) {
+12808:                 console.error("Error syncing academic subjects:", e);
+12809:             }
+12810:         }
+12811: 
+12812:         function saveSubject(event) {
+12813:             event.preventDefault();
+12814: 
+12815:             const selectedClasses = Array.from(document.querySelectorAll('.subject-target-class-chk:checked')).map(cb => cb.value);
+12816:             const fallbackClass = document.getElementById('subject-class')?.value;
+12817:             const targetClasses = selectedClasses.length > 0 ? selectedClasses : (fallbackClass ? [fallbackClass] : []);
+12818: 
+
+========================================
+
+=== Around line 12803 ===
+12788:             if (currentClass && isValidValue) {
+12789:                 classEl.value = currentClass;
+12790:             } else {
+12791:                 classEl.value = 'All';
+12792:             }
+12793:         }
+12794: 
+12795:         function persistAcademicSubjectsSync(subjectsMap) {
+12796:             try {
+12797:                 if (!subjectsMap) return;
+12798:                 const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
+12799:                 localStorage.setItem('school_subjects', subStr);
+12800:                 fetch('/api/db/set', {
+12801:                     method: 'POST',
+12802:                     headers: { 'Content-Type': 'application/json' },
+12803:                     body: JSON.stringify({ key: 'school_subjects', value: subStr })
+12804:                 }).catch(() => { });
+12805:                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
+12806:                 window.dispatchEvent(new Event('storage'));
+12807:             } catch (e) {
+12808:                 console.error("Error syncing academic subjects:", e);
+12809:             }
+12810:         }
+12811: 
+12812:         function saveSubject(event) {
+12813:             event.preventDefault();
+12814: 
+12815:             const selectedClasses = Array.from(document.querySelectorAll('.subject-target-class-chk:checked')).map(cb => cb.value);
+12816:             const fallbackClass = document.getElementById('subject-class')?.value;
+12817:             const targetClasses = selectedClasses.length > 0 ? selectedClasses : (fallbackClass ? [fallbackClass] : []);
+12818: 
+12819:             if (targetClasses.length === 0) {
+12820:                 alert("⚠️ অনুগ্রহ করে অন্তত একটি শ্রেণি নির্বাচন করুন!");
+12821:                 return;
+12822:             }
+
+========================================
+
+=== Around line 12805 ===
+12790:             } else {
+12791:                 classEl.value = 'All';
+12792:             }
+12793:         }
+12794: 
+12795:         function persistAcademicSubjectsSync(subjectsMap) {
+12796:             try {
+12797:                 if (!subjectsMap) return;
+12798:                 const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
+12799:                 localStorage.setItem('school_subjects', subStr);
+12800:                 fetch('/api/db/set', {
+12801:                     method: 'POST',
+12802:                     headers: { 'Content-Type': 'application/json' },
+12803:                     body: JSON.stringify({ key: 'school_subjects', value: subStr })
+12804:                 }).catch(() => { });
+12805:                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
+12806:                 window.dispatchEvent(new Event('storage'));
+12807:             } catch (e) {
+12808:                 console.error("Error syncing academic subjects:", e);
+12809:             }
+12810:         }
+12811: 
+12812:         function saveSubject(event) {
+12813:             event.preventDefault();
+12814: 
+12815:             const selectedClasses = Array.from(document.querySelectorAll('.subject-target-class-chk:checked')).map(cb => cb.value);
+12816:             const fallbackClass = document.getElementById('subject-class')?.value;
+12817:             const targetClasses = selectedClasses.length > 0 ? selectedClasses : (fallbackClass ? [fallbackClass] : []);
+12818: 
+12819:             if (targetClasses.length === 0) {
+12820:                 alert("⚠️ অনুগ্রহ করে অন্তত একটি শ্রেণি নির্বাচন করুন!");
+12821:                 return;
+12822:             }
+12823: 
+12824:             const name = document.getElementById('subject-name').value.trim();
+
+========================================
+
+=== Around line 12844 ===
+12829:             const isOptional = document.getElementById('subject-is-optional').checked;
+12830:             const syncAll = document.getElementById('subject-sync-all-classes')?.checked;
+12831:             let sectionVal = 'All';
+12832:             const allChk = document.getElementById('section-chk-all');
+12833:             if (!allChk || !allChk.checked) {
+12834:                 const selectedSecs = Array.from(document.querySelectorAll('.subject-target-section-chk:checked')).map(cb => cb.value);
+12835:                 if (selectedSecs.length > 0) {
+12836:                     sectionVal = selectedSecs.join(', ');
+12837:                 }
+12838:             }
+12839: 
+12840:             const editClass = document.getElementById('subject-edit-class').value;
+12841:             const editCode = document.getElementById('subject-edit-code').value;
+12842:             const editOriginalName = (document.getElementById('subject-edit-name')?.value || '').trim();
+12843: 
+12844:             const subjectsMap = loadSubjects();
+12845: 
+12846:             if (editClass && editCode) {
+12847:                 // Edit Mode
+12848:                 const editCodeClean = (editCode || '').trim().toLowerCase();
+12849:                 const editOrigNameClean = editOriginalName.toLowerCase();
+12850:                 const newNameClean = name.toLowerCase();
+12851: 
+12852:                 if (syncAll) {
+12853:                     let updatedCount = 0;
+12854: 
+12855:                     Object.keys(subjectsMap).forEach(cls => {
+12856:                         const list = subjectsMap[cls] || [];
+12857:                         list.forEach(s => {
+12858:                             if (!s) return;
+12859:                             const sCodeClean = (s.code || '').trim().toLowerCase();
+12860:                             const sNameClean = (s.name || '').trim().toLowerCase();
+12861:                             const sShortClean = (s.shortName || '').trim().toLowerCase();
+12862: 
+12863:                             const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+
+========================================
+
+=== Around line 12923 ===
+12908:                             const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+12909:                             let routUpdated = false;
+12910:                             routines.forEach(r => {
+12911:                                 if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+12912:                                     r.subject = name;
+12913:                                     r.subjectName = name;
+12914:                                     routUpdated = true;
+12915:                                 }
+12916:                             });
+12917:                             if (routUpdated) {
+12918:                                 localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+12919:                             }
+12920:                         } catch (e) { }
+12921:                     }
+12922: 
+12923:                     persistAcademicSubjectsSync(subjectsMap);
+12924:                     resetSubjectForm();
+12925:                     renderSubjectList();
+12926:                     closeAddSubjectModal();
+12927:                     alert(`✅ একই বিষয়ের Name ও Short Name ("${shortName}") মোট ${updatedCount} টি শ্রেণিতে একসাথে সফলভাবে আপডেট করা হয়েছে!`);
+12928:                     return;
+12929:                 } else {
+12930:                     targetClasses.forEach(classVal => {
+12931:                         const classSubs = subjectsMap[classVal] || [];
+12932:                         const idx = classSubs.findIndex(s => {
+12933:                             if (!s) return false;
+12934:                             const sCodeClean = (s.code || '').trim().toLowerCase();
+12935:                             const sNameClean = (s.name || '').trim().toLowerCase();
+12936:                             return (editCodeClean && sCodeClean === editCodeClean) ||
+12937:                                 (editOrigNameClean && sNameClean === editOrigNameClean) ||
+12938:                                 (newNameClean && sNameClean === newNameClean);
+12939:                         });
+12940:                         const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
+12941:                         if (idx !== -1) {
+12942:                             classSubs[idx] = { code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec };
+
+========================================
+
+=== Around line 12971 ===
+12956:                                     sch.subject = name;
+12957:                                     schedUpdated = true;
+12958:                                 }
+12959:                             });
+12960:                             if (schedUpdated) {
+12961:                                 localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+12962:                                 fetch('/api/db/set', {
+12963:                                     method: 'POST',
+12964:                                     headers: { 'Content-Type': 'application/json' },
+12965:                                     body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+12966:                                 }).catch(() => { });
+12967:                             }
+12968:                         } catch (e) { }
+12969:                     }
+12970: 
+12971:                     persistAcademicSubjectsSync(subjectsMap);
+12972:                     resetSubjectForm();
+12973:                     renderSubjectList();
+12974:                     closeAddSubjectModal();
+12975:                     alert("Academic subject updated successfully!");
+12976:                     return;
+12977:                 }
+12978:             } else {
+12979:                 // Add Mode for Multiple Target Classes
+12980:                 let addedCount = 0;
+12981:                 targetClasses.forEach((classVal) => {
+12982:                     const classSubs = subjectsMap[classVal] || [];
+12983: 
+12984:                     let targetCode = codeInput;
+12985:                     if (!targetCode) {
+12986:                         targetCode = String(101 + classSubs.length);
+12987:                     }
+12988: 
+12989:                     let finalCode = targetCode;
+12990:                     let codeCounter = parseInt(targetCode) || 101;
+
+========================================
+
+=== Around line 13008 ===
+12993:                     }
+12994: 
+12995:                     const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
+12996: 
+12997:                     const existingIdx = classSubs.findIndex(s => (s.name || '').toLowerCase() === name.toLowerCase());
+12998:                     if (existingIdx !== -1) {
+12999:                         classSubs[existingIdx] = { code: finalCode, name, nameBn, shortName, isOptional, section: finalSec };
+13000:                     } else {
+13001:                         classSubs.push({ code: finalCode, name, nameBn, shortName, isOptional, section: finalSec });
+13002:                     }
+13003: 
+13004:                     subjectsMap[classVal] = classSubs;
+13005:                     addedCount++;
+13006:                 });
+13007: 
+13008:                 persistAcademicSubjectsSync(subjectsMap);
+13009:                 resetSubjectForm();
+13010:                 renderSubjectList();
+13011:                 closeAddSubjectModal();
+13012:                 alert(`✅ মোট ${addedCount} টি শ্রেণিতে নতুন বিষয়ের নাম ("${name}") এবং Short Name ("${shortName}") সফলভাবে যুক্ত করা হয়েছে!`);
+13013:             }
+13014:         }
+13015: 
+13016:         function openAddSubjectModal(isEdit = false) {
+13017:             populateClassDropdown('subject-class');
+13018:             if (!isEdit) {
+13019:                 resetSubjectForm();
+13020:                 populateClassCheckboxesContainer('subject-class-checkboxes', []);
+13021:                 selectAllSubjectClasses('all');
+13022:             }
+13023:             const modal = document.getElementById('add-academic-subject-modal');
+13024:             if (modal) modal.classList.add('active');
+13025:             toggleSectionDropdownVisibility();
+13026:         }
+13027: 
+
+========================================
+
+=== Around line 13035 ===
+13020:                 populateClassCheckboxesContainer('subject-class-checkboxes', []);
+13021:                 selectAllSubjectClasses('all');
+13022:             }
+13023:             const modal = document.getElementById('add-academic-subject-modal');
+13024:             if (modal) modal.classList.add('active');
+13025:             toggleSectionDropdownVisibility();
+13026:         }
+13027: 
+13028:         function closeAddSubjectModal() {
+13029:             const modal = document.getElementById('add-academic-subject-modal');
+13030:             if (modal) modal.classList.remove('active');
+13031:         }
+13032: 
+13033:         function deleteSubject(classVal, code) {
+13034:             if (!confirm("Are you sure you want to delete this subject?")) return;
+13035:             const subjectsMap = loadSubjects();
+13036:             const classSubjects = subjectsMap[classVal] || [];
+13037: 
+13038:             const filtered = classSubjects.filter(s => s.code !== code);
+13039:             subjectsMap[classVal] = filtered;
+13040: 
+13041:             persistAcademicSubjectsSync(subjectsMap);
+13042: 
+13043:             // If the subject currently being edited is deleted, reset the form
+13044:             const editClass = document.getElementById('subject-edit-class').value;
+13045:             const editCode = document.getElementById('subject-edit-code').value;
+13046:             if (editClass === classVal && editCode === code) {
+13047:                 resetSubjectForm();
+13048:             }
+13049: 
+13050:             renderSubjectList();
+13051:         }
+13052: 
+13053:         function editSubject(classVal, code) {
+13054:             const subjectsMap = loadSubjects();
+
+========================================
+
+=== Around line 13041 ===
+13026:         }
+13027: 
+13028:         function closeAddSubjectModal() {
+13029:             const modal = document.getElementById('add-academic-subject-modal');
+13030:             if (modal) modal.classList.remove('active');
+13031:         }
+13032: 
+13033:         function deleteSubject(classVal, code) {
+13034:             if (!confirm("Are you sure you want to delete this subject?")) return;
+13035:             const subjectsMap = loadSubjects();
+13036:             const classSubjects = subjectsMap[classVal] || [];
+13037: 
+13038:             const filtered = classSubjects.filter(s => s.code !== code);
+13039:             subjectsMap[classVal] = filtered;
+13040: 
+13041:             persistAcademicSubjectsSync(subjectsMap);
+13042: 
+13043:             // If the subject currently being edited is deleted, reset the form
+13044:             const editClass = document.getElementById('subject-edit-class').value;
+13045:             const editCode = document.getElementById('subject-edit-code').value;
+13046:             if (editClass === classVal && editCode === code) {
+13047:                 resetSubjectForm();
+13048:             }
+13049: 
+13050:             renderSubjectList();
+13051:         }
+13052: 
+13053:         function editSubject(classVal, code) {
+13054:             const subjectsMap = loadSubjects();
+13055:             const classSubjects = subjectsMap[classVal] || [];
+13056:             const sub = classSubjects.find(s => s.code === code);
+13057:             if (!sub) return;
+13058: 
+13059:             document.getElementById('subject-form-title').innerText = "Update Academic Subject";
+13060: 
+
+========================================
+
+=== Around line 13054 ===
+13039:             subjectsMap[classVal] = filtered;
+13040: 
+13041:             persistAcademicSubjectsSync(subjectsMap);
+13042: 
+13043:             // If the subject currently being edited is deleted, reset the form
+13044:             const editClass = document.getElementById('subject-edit-class').value;
+13045:             const editCode = document.getElementById('subject-edit-code').value;
+13046:             if (editClass === classVal && editCode === code) {
+13047:                 resetSubjectForm();
+13048:             }
+13049: 
+13050:             renderSubjectList();
+13051:         }
+13052: 
+13053:         function editSubject(classVal, code) {
+13054:             const subjectsMap = loadSubjects();
+13055:             const classSubjects = subjectsMap[classVal] || [];
+13056:             const sub = classSubjects.find(s => s.code === code);
+13057:             if (!sub) return;
+13058: 
+13059:             document.getElementById('subject-form-title').innerText = "Update Academic Subject";
+13060: 
+13061:             document.getElementById('subject-edit-class').value = classVal;
+13062:             document.getElementById('subject-edit-code').value = code;
+13063:             if (document.getElementById('subject-edit-name')) {
+13064:                 document.getElementById('subject-edit-name').value = sub.name || '';
+13065:             }
+13066: 
+13067:             const classesContainingSub = [];
+13068:             const subNameClean = (sub.name || '').trim().toLowerCase();
+13069:             const subShortClean = (sub.shortName || '').trim().toLowerCase();
+13070:             const subCodeClean = (code || '').trim().toLowerCase();
+13071: 
+13072:             Object.keys(subjectsMap).forEach(cls => {
+13073:                 const list = subjectsMap[cls] || [];
+
+========================================
+
+=== Around line 13140 ===
+13125:             document.getElementById('subject-edit-code').value = "";
+13126:             if (document.getElementById('subject-edit-name')) document.getElementById('subject-edit-name').value = "";
+13127:             if (document.getElementById('subject-name-bn')) document.getElementById('subject-name-bn').value = "";
+13128:             document.getElementById('subject-is-optional').checked = false;
+13129:             const containerSec = document.getElementById('subject-section-checkboxes');
+13130:             if (containerSec) containerSec.innerHTML = "";
+13131: 
+13132:             document.getElementById('subject-form-title').innerText = "Add Academic Subject";
+13133: 
+13134:             document.getElementById('subject-submit-btn').innerText = "Save Subject";
+13135:             document.getElementById('subject-submit-btn').style.background = "var(--secondary-grad)";
+13136:         }
+13137: 
+13138:         function resetSubjectsToDefault() {
+13139:             if (!confirm("Are you sure you want to restore the default subject listings? This will overwrite your current subjects for all classes.")) return;
+13140:             const defaultSubjects = getNewDefaultSubjects();
+13141:             persistAcademicSubjectsSync(defaultSubjects);
+13142: 
+13143:             // Reset edit form to prevent editing a subject that might not exist anymore
+13144:             resetSubjectForm();
+13145: 
+13146:             renderSubjectList();
+13147:             alert("Subject listings restored to defaults!");
+13148:         }
+13149: 
+13150:         function renderSubjectList() {
+13151:             const container = document.getElementById('subject-tables-container');
+13152:             if (!container) return;
+13153: 
+13154:             const filterDept = document.getElementById('filter-subject-dept')?.value || 'All';
+13155:             const filterClass = document.getElementById('filter-subject-class')?.value || 'All';
+13156:             const subjectsMap = loadSubjects();
+13157: 
+13158:             const sortedClasses = loadClasses();
+13159: 
+
+========================================
+
+=== Around line 13141 ===
+13126:             if (document.getElementById('subject-edit-name')) document.getElementById('subject-edit-name').value = "";
+13127:             if (document.getElementById('subject-name-bn')) document.getElementById('subject-name-bn').value = "";
+13128:             document.getElementById('subject-is-optional').checked = false;
+13129:             const containerSec = document.getElementById('subject-section-checkboxes');
+13130:             if (containerSec) containerSec.innerHTML = "";
+13131: 
+13132:             document.getElementById('subject-form-title').innerText = "Add Academic Subject";
+13133: 
+13134:             document.getElementById('subject-submit-btn').innerText = "Save Subject";
+13135:             document.getElementById('subject-submit-btn').style.background = "var(--secondary-grad)";
+13136:         }
+13137: 
+13138:         function resetSubjectsToDefault() {
+13139:             if (!confirm("Are you sure you want to restore the default subject listings? This will overwrite your current subjects for all classes.")) return;
+13140:             const defaultSubjects = getNewDefaultSubjects();
+13141:             persistAcademicSubjectsSync(defaultSubjects);
+13142: 
+13143:             // Reset edit form to prevent editing a subject that might not exist anymore
+13144:             resetSubjectForm();
+13145: 
+13146:             renderSubjectList();
+13147:             alert("Subject listings restored to defaults!");
+13148:         }
+13149: 
+13150:         function renderSubjectList() {
+13151:             const container = document.getElementById('subject-tables-container');
+13152:             if (!container) return;
+13153: 
+13154:             const filterDept = document.getElementById('filter-subject-dept')?.value || 'All';
+13155:             const filterClass = document.getElementById('filter-subject-class')?.value || 'All';
+13156:             const subjectsMap = loadSubjects();
+13157: 
+13158:             const sortedClasses = loadClasses();
+13159: 
+13160:             let html = "";
+
+========================================
+
+=== Around line 13156 ===
+13141:             persistAcademicSubjectsSync(defaultSubjects);
+13142: 
+13143:             // Reset edit form to prevent editing a subject that might not exist anymore
+13144:             resetSubjectForm();
+13145: 
+13146:             renderSubjectList();
+13147:             alert("Subject listings restored to defaults!");
+13148:         }
+13149: 
+13150:         function renderSubjectList() {
+13151:             const container = document.getElementById('subject-tables-container');
+13152:             if (!container) return;
+13153: 
+13154:             const filterDept = document.getElementById('filter-subject-dept')?.value || 'All';
+13155:             const filterClass = document.getElementById('filter-subject-class')?.value || 'All';
+13156:             const subjectsMap = loadSubjects();
+13157: 
+13158:             const sortedClasses = loadClasses();
+13159: 
+13160:             let html = "";
+13161:             let totalCount = 0;
+13162: 
+13163:             sortedClasses.forEach(cls => {
+13164:                 if (filterClass !== 'All' && cls !== filterClass) return;
+13165:                 const dept = getDepartmentForClass(cls);
+13166:                 if (filterDept !== 'All' && dept !== filterDept) return;
+13167: 
+13168:                 const subjects = subjectsMap[cls] || [];
+13169:                 if (subjects.length === 0) return;
+13170: 
+13171:                 totalCount += subjects.length;
+13172:                 const color = getClassColor(cls);
+13173: 
+13174:                 let tableRows = "";
+13175:                 subjects.forEach(sub => {
+
+========================================
+
+=== Around line 13251 ===
+13236:                         </div>
+13237:                     </div>
+13238:                 `;
+13239:             });
+13240: 
+13241:             if (totalCount === 0) {
+13242:                 container.innerHTML = `<div style="text-align:center; padding: 30px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); color:var(--muted-text); font-style:italic;">No subjects created matching filter.</div>`;
+13243:                 return;
+13244:             }
+13245: 
+13246:             container.innerHTML = html;
+13247:         }
+13248: 
+13249:         // --- DOUBLE-CLICK SUBJECT EDIT MODAL CONTROLLERS ---
+13250:         function openSubjectModal(classVal, code) {
+13251:             const subjectsMap = loadSubjects();
+13252:             const classSubjects = subjectsMap[classVal] || [];
+13253:             const sub = classSubjects.find(s => s.code === code);
+13254:             if (!sub) return;
+13255: 
+13256:             // Populate Class dropdown in modal
+13257:             populateClassDropdown('modal-subject-class');
+13258: 
+13259:             document.getElementById('modal-edit-class').value = classVal;
+13260:             document.getElementById('modal-edit-code').value = code;
+13261:             if (document.getElementById('modal-edit-name')) {
+13262:                 document.getElementById('modal-edit-name').value = sub.name || '';
+13263:             }
+13264: 
+13265:             document.getElementById('modal-subject-class').value = classVal;
+13266:             document.getElementById('modal-subject-name').value = sub.name;
+13267:             if (document.getElementById('modal-subject-name-bn')) {
+13268:                 document.getElementById('modal-subject-name-bn').value = sub.nameBn || getSubjectNameBangla(sub);
+13269:             }
+13270:             document.getElementById('modal-subject-short-name').value = sub.shortName || sub.name;
+
+========================================
+
+=== Around line 13300 ===
+13285:         function saveModalSubject(event) {
+13286:             event.preventDefault();
+13287:             const classVal = document.getElementById('modal-subject-class').value;
+13288:             const name = document.getElementById('modal-subject-name').value.trim();
+13289:             const nameBnEl = document.getElementById('modal-subject-name-bn');
+13290:             const nameBn = nameBnEl ? nameBnEl.value.trim() : '';
+13291:             const shortName = document.getElementById('modal-subject-short-name').value.trim();
+13292:             const code = document.getElementById('modal-subject-code').value.trim();
+13293:             const isOptional = document.getElementById('modal-subject-optional').checked;
+13294:             const syncAll = document.getElementById('modal-subject-sync-all-classes')?.checked;
+13295: 
+13296:             const editClass = document.getElementById('modal-edit-class').value;
+13297:             const editCode = document.getElementById('modal-edit-code').value;
+13298:             const editOriginalName = (document.getElementById('modal-edit-name')?.value || '').trim();
+13299: 
+13300:             const subjectsMap = loadSubjects();
+13301: 
+13302:             const editCodeClean = (editCode || '').trim().toLowerCase();
+13303:             const editOrigNameClean = editOriginalName.toLowerCase();
+13304:             const newNameClean = name.toLowerCase();
+13305: 
+13306:             if (syncAll) {
+13307:                 let updatedCount = 0;
+13308: 
+13309:                 Object.keys(subjectsMap).forEach(cls => {
+13310:                     const list = subjectsMap[cls] || [];
+13311:                     list.forEach(s => {
+13312:                         if (!s) return;
+13313:                         const sCodeClean = (s.code || '').trim().toLowerCase();
+13314:                         const sNameClean = (s.name || '').trim().toLowerCase();
+13315:                         const sShortClean = (s.shortName || '').trim().toLowerCase();
+13316: 
+13317:                         const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+13318:                             (editOrigNameClean && sNameClean === editOrigNameClean) ||
+13319:                             (editOrigNameClean && sShortClean === editOrigNameClean) ||
+
+========================================
+
+=== Around line 13372 ===
+13357:                         const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+13358:                         let routUpdated = false;
+13359:                         routines.forEach(r => {
+13360:                             if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+13361:                                 r.subject = name;
+13362:                                 r.subjectName = name;
+13363:                                 routUpdated = true;
+13364:                             }
+13365:                         });
+13366:                         if (routUpdated) {
+13367:                             localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+13368:                         }
+13369:                     } catch (e) { }
+13370:                 }
+13371: 
+13372:                 persistAcademicSubjectsSync(subjectsMap);
+13373:                 closeSubjectModal();
+13374:                 renderSubjectList();
+13375:                 alert(`✅ একই বিষয়ের Name ও Short Name ("${shortName}") মোট ${updatedCount} টি শ্রেণিতে একসাথে সেভ/আপডেট করা হয়েছে!`);
+13376:                 return;
+13377:             }
+13378: 
+13379:             const oldClassSubjects = subjectsMap[editClass] || [];
+13380: 
+13381:             // Check code uniqueness if code or class has changed
+13382:             if (classVal !== editClass || code !== editCode) {
+13383:                 const targetClassSubjects = subjectsMap[classVal] || [];
+13384:                 if (targetClassSubjects.some(s => s.code === code)) {
+13385:                     alert("Subject with this code already exists for this class!");
+13386:                     return;
+13387:                 }
+13388:             }
+13389: 
+13390:             // Remove old entry
+13391:             const idx = oldClassSubjects.findIndex(s => {
+
+========================================
+
+=== Around line 13430 ===
+13415:                             sch.subject = name;
+13416:                             schedUpdated = true;
+13417:                         }
+13418:                     });
+13419:                     if (schedUpdated) {
+13420:                         localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+13421:                         fetch('/api/db/set', {
+13422:                             method: 'POST',
+13423:                             headers: { 'Content-Type': 'application/json' },
+13424:                             body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+13425:                         }).catch(() => { });
+13426:                     }
+13427:                 } catch (e) { }
+13428:             }
+13429: 
+13430:             persistAcademicSubjectsSync(subjectsMap);
+13431: 
+13432:             closeSubjectModal();
+13433:             renderSubjectList();
+13434: 
+13435:             // If the regular subject form was editing the same subject, reset it
+13436:             const regularEditClass = document.getElementById('subject-edit-class').value;
+13437:             const regularEditCode = document.getElementById('subject-edit-code').value;
+13438:             if (regularEditClass === editClass && regularEditCode === editCode) {
+13439:                 resetSubjectForm();
+13440:             }
+13441: 
+13442:             alert("Subject details updated successfully!");
+13443:         }
+13444: 
+13445:         // --- SUBVIEW: EXAM TYPES CONTROLLERS ---
+13446:         let currentFormOverrides = [];
+13447: 
+13448:         function populateScheduleExamTypesDropdown(selectedType = '') {
+13449:             const examNameSelect = document.getElementById('schedule-exam-name');
+
+========================================
+
+=== Around line 13572 ===
+13557:             if (val === '__ACTION_CREATE__') {
+13558:                 if (previousValidScheduleExamName) {
+13559:                     el.value = previousValidScheduleExamName;
+13560:                 } else {
+13561:                     const types = loadExamTypes();
+13562:                     if (types.length > 0) el.value = types[0].name;
+13563:                 }
+13564:                 openExamNameCreateModal();
+13565:                 return;
+13566:             }
+13567:             previousValidScheduleExamName = val;
+13568:             populateScheduleExamTypesDropdown();
+13569:         }
+13570: 
+13571:         function populateOverrideSubjectsDropdown() {
+13572:             const subMap = loadSubjects();
+13573:             const selectEl = document.getElementById('override-subject');
+13574:             if (!selectEl) return;
+13575: 
+13576:             const uniqueSubs = [];
+13577:             const codes = new Set();
+13578: 
+13579:             Object.keys(subMap).forEach(cls => {
+13580:                 const subs = subMap[cls] || [];
+13581:                 subs.forEach(s => {
+13582:                     if (!codes.has(s.code)) {
+13583:                         codes.add(s.code);
+13584:                         uniqueSubs.push(s);
+13585:                     }
+13586:                 });
+13587:             });
+13588: 
+13589:             let html = '<option value="" disabled selected>-- Select Subject --</option>';
+13590:             uniqueSubs.forEach(s => {
+13591:                 html += `<option value="${s.code}" data-name="${s.name}">${s.name} (${s.code})</option>`;
+
+========================================
+
+=== Around line 15551 ===
+15536:             let namePlaceholder = "[Student]";
+15537:             let gpaPlaceholder = "4.50";
+15538:             let gradePlaceholder = "A";
+15539: 
+15540:             if (targetStudentId !== 'All') {
+15541:                 const students = loadStudents();
+15542:                 const s = students.find(stud => stud.id === targetStudentId);
+15543:                 if (s) {
+15544:                     namePlaceholder = s.name;
+15545: 
+15546:                     // Fetch real marks if possible to make preview dynamic
+15547:                     const allMarks = loadStudentMarks();
+15548:                     const key = `marks_${s.id}_Half-Yearly Examination 2026`;
+15549:                     const marks = allMarks[key];
+15550:                     if (marks) {
+15551:                         const subMap = loadSubjects();
+15552:                         let subjects = subMap[classVal] || [];
+15553:                         const subjectResults = [];
+15554: 
+15555:                         if (classVal === 'Nine' || classVal === 'Ten') {
+15556:                             let studentGroup = (s.group || s.branch || s.section || '').toLowerCase();
+15557:                             if (!studentGroup || studentGroup === 'none' || studentGroup === 'a') {
+15558:                                 const nameLower = (s.name || '').toLowerCase().trim();
+15559:                                 if (nameLower.endsWith('s') || nameLower.includes(' s') || nameLower.includes('— s') || nameLower.includes('- s')) {
+15560:                                     studentGroup = 'science';
+15561:                                 } else if (nameLower.endsWith('a') || nameLower.includes(' a') || nameLower.includes('— a') || nameLower.includes('- a')) {
+15562:                                     studentGroup = 'humanities';
+15563:                                 } else if (nameLower.endsWith('b') || nameLower.includes(' b') || nameLower.includes('— b') || nameLower.includes('- b')) {
+15564:                                     studentGroup = 'business';
+15565:                                 }
+15566:                             }
+15567:                             const matchGroupAndSection = (stdGrp, sec) => {
+15568:                                 const sg = stdGrp.toLowerCase().trim();
+15569:                                 const sc = sec.toLowerCase().trim();
+15570:                                 if (sg === sc) return true;
+
+========================================
+
+=== Around line 15881 ===
+15866:                 const now = new Date();
+15867:                 let hours = now.getHours();
+15868:                 let minutes = now.getMinutes();
+15869:                 const ampm = hours >= 12 ? 'PM' : 'AM';
+15870:                 hours = hours % 12;
+15871:                 hours = hours ? hours : 12;
+15872:                 minutes = minutes < 10 ? '0' + minutes : minutes;
+15873:                 timeEl.textContent = `${hours}:${minutes} \${ampm}`;
+15874:             }
+15875:         }
+15876: 
+15877:         // --- GLOBAL INITIALIZATIONS ---
+15878:         document.addEventListener('DOMContentLoaded', () => {
+15879:             // Pre-initialize databases
+15880:             loadSchedules();
+15881:             loadSubjects();
+15882:             loadMarkingSystem();
+15883:             loadExamTypes();
+15884:             populateExamDropdowns();
+15885: 
+15886:             // Initial render of Dashboard summary & Exam list
+15887:             renderDashboardRoutineSummary();
+15888: 
+15889:             // Check view and display the correct panel
+15890:             checkURLParameters();
+15891: 
+15892:             // Listen to browser popstate (back/forward clicks)
+15893:             window.addEventListener('popstate', checkURLParameters);
+15894: 
+15895:             // Update live mobile phone preview time clocks
+15896:             updateMockPhoneTime();
+15897:             setInterval(updateMockPhoneTime, 10000);
+15898:         });
+15899: 
+15900:         // Listen to Database Sync from Server (Periodic sync)
+
+========================================
+
+=== Around line 15957 ===
+15942:                 loadExamTypes();
+15943:                 populateExamDropdowns();
+15944:                 populateScheduleExamTypesDropdown();
+15945:                 renderDashboardRoutineSummary();
+15946:                 if (typeof renderScheduleList === 'function') {
+15947:                     renderScheduleList();
+15948:                 }
+15949:                 if (typeof renderExamTypes === 'function') {
+15950:                     renderExamTypes();
+15951:                 }
+15952:                 if (typeof updateScheduleDistLivePreview === 'function') {
+15953:                     updateScheduleDistLivePreview();
+15954:                 }
+15955:             }
+15956: 
+15957:             if (e.key === 'school_class_sections' || e.key === 'school_classes' || e.key === 'school_subjects') {
+15958:                 populateDropdownsForSubjects();
+15959:                 renderSubjectList();
+15960: 
+15961:                 const modal = document.getElementById('add-academic-subject-modal');
+15962:                 const isModalOpen = modal && modal.classList.contains('active');
+15963:                 if (!isModalOpen) {
+15964:                     populateSubjectSectionDropdown();
+15965:                 }
+15966:             }
+15967:         });
+15968:     </script>
+15969: 
+15970:     <!-- OMR READER APPLICATION LOGIC -->
+15971:     <script id="omr-reader-script">
+15972:         (function () {
+15973: 
+15974:             // Bengali & English number formatting utilities
+15975:             const toBengaliNumber = num => String(num).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+15976:             const toEnglishDigits = str => String(str ?? '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+
+========================================
+
+=== Around line 19772 ===
+19757:                 if (classStudents.length === 0) {
+19758:                     classStudents = allStudents.filter(s => {
+19759:                         const sClassNum = mapClassToNumber(s.class);
+19760:                         return (targetClassNum && sClassNum && sClassNum === targetClassNum) ||
+19761:                             (sch.class && String(s.class).toLowerCase() === String(sch.class).toLowerCase());
+19762:                     });
+19763:                 }
+19764: 
+19765:                 if (classStudents.length === 0) {
+19766:                     classStudents = allStudents.slice(0, 30);
+19767:                 }
+19768: 
+19769:                 // Sort students sequentially by Registration Number in ascending serial order
+19770:                 sortStudentsByRegNo(classStudents);
+19771: 
+19772:                 const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+19773:                 const schClass = sch.class || '';
+19774:                 const classSubjects = subMap[schClass] || [];
+19775:                 const subObj = classSubjects.find(s => s && s.name && sch.subject && s.name.trim().toLowerCase() === sch.subject.trim().toLowerCase());
+19776:                 const activeExamSubjectCode = subObj ? subObj.code : (sch.subjectCode || sch.subject || '');
+19777:                 const targetSubjectCode = sch.subjectCode || sch.subject;
+19778: 
+19779:                 const allowedSubjectKeys = [
+19780:                     targetSubjectCode,
+19781:                     sch.subject,
+19782:                     sch.subjectCode,
+19783:                     activeExamSubjectCode
+19784:                 ].filter(Boolean).map(s => String(s).trim().toLowerCase());
+19785: 
+19786:                 let totalLoadedWithMarks = 0;
+19787: 
+19788:                 const importedStudents = classStudents.map((student, idx) => {
+19789:                     const rawReg = toEnglishDigits(student.regNo || student.id || student.studentId || '').trim();
+19790:                     const rawId = toEnglishDigits(student.id || '').trim();
+19791:                     const fallbackReg = '2211' + String(student.roll || idx + 1).padStart(3, '0');
+
+========================================
+
+=== Around line 20041 ===
+20026:                         } else {
+20027:                             allStudents = safeJsonParse('school_students', []);
+20028:                         }
+20029:                     } catch (e) { }
+20030: 
+20031:                     // 3. Update student marks in school_student_marks
+20032:                     let savedMarks = {};
+20033:                     try {
+20034:                         if (typeof loadStudentMarks === 'function') {
+20035:                             savedMarks = loadStudentMarks() || {};
+20036:                         } else {
+20037:                             savedMarks = safeJsonParse('school_student_marks', {});
+20038:                         }
+20039:                     } catch (e) { }
+20040: 
+20041:                     const subMap = (typeof loadSubjects === 'function') ? loadSubjects() : safeJsonParse('school_subjects', {});
+20042:                     const schClass = targetSch ? targetSch.class : (examInfo.class || '');
+20043:                     const classSubjects = subMap[schClass] || [];
+20044:                     const subObj = classSubjects.find(s => s.name && targetSch && s.name.trim().toLowerCase() === (targetSch.subject || '').trim().toLowerCase());
+20045:                     const activeExamSubjectCode = subObj ? subObj.code : ((targetSch && (targetSch.subjectCode || targetSch.subject)) || examInfo.subject || 'MCQ');
+20046:                     
+20047:                     const targetSubjectKeys = new Set([
+20048:                         activeExamSubjectCode,
+20049:                         targetSch ? targetSch.subject : null,
+20050:                         targetSch ? targetSch.subjectCode : null,
+20051:                         examInfo.subject
+20052:                     ].filter(Boolean));
+20053: 
+20054:                     const examVal = targetSch ? targetSch.term : (examInfo.examName || 'Exam');
+20055: 
+20056:                     state.students.forEach(student => {
+20057:                         const rawReg = toEnglishDigits(student.id || student.regNo || '').trim();
+20058:                         const rawRoll = toEnglishDigits(student.roll || '').trim();
+20059:                         const isPending = (student.status === 'পেন্ডিং' && !student.isRealScanned && (!student.correct || student.correct === 0));
+20060:                         
+
+========================================
+

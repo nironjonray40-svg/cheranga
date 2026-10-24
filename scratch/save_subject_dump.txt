@@ -1,0 +1,142 @@
+function saveSubject(event) {
+            event.preventDefault();
+
+            const selectedClasses = Array.from(document.querySelectorAll('.subject-target-class-chk:checked')).map(cb => cb.value);
+            const fallbackClass = document.getElementById('subject-class')?.value;
+            const targetClasses = selectedClasses.length > 0 ? selectedClasses : (fallbackClass ? [fallbackClass] : []);
+
+            if (targetClasses.length === 0) {
+                alert("⚠️ অনুগ্রহ করে অন্তত একটি শ্রেণি নির্বাচন করুন!");
+                return;
+            }
+
+            const name = document.getElementById('subject-name').value.trim();
+            const nameBnEl = document.getElementById('subject-name-bn');
+            const nameBn = nameBnEl ? nameBnEl.value.trim() : '';
+            const shortName = document.getElementById('subject-short-name').value.trim();
+            const codeInput = document.getElementById('subject-code').value.trim();
+            const isOptional = document.getElementById('subject-is-optional').checked;
+            const syncAll = document.getElementById('subject-sync-all-classes')?.checked;
+            let sectionVal = 'All';
+            const allChk = document.getElementById('section-chk-all');
+            if (!allChk || !allChk.checked) {
+                const selectedSecs = Array.from(document.querySelectorAll('.subject-target-section-chk:checked')).map(cb => cb.value);
+                if (selectedSecs.length > 0) {
+                    sectionVal = selectedSecs.join(', ');
+                }
+            }
+
+            const editClass = document.getElementById('subject-edit-class').value;
+            const editCode = document.getElementById('subject-edit-code').value;
+            const editOriginalName = (document.getElementById('subject-edit-name')?.value || '').trim();
+
+            const subjectsMap = loadSubjects();
+
+            if (editClass && editCode) {
+                // Edit Mode
+                const editCodeClean = (editCode || '').trim().toLowerCase();
+                const editOrigNameClean = editOriginalName.toLowerCase();
+                const newNameClean = name.toLowerCase();
+
+                if (syncAll) {
+                    let updatedCount = 0;
+
+                    Object.keys(subjectsMap).forEach(cls => {
+                        const list = subjectsMap[cls] || [];
+                        list.forEach(s => {
+                            if (!s) return;
+                            const sCodeClean = (s.code || '').trim().toLowerCase();
+                            const sNameClean = (s.name || '').trim().toLowerCase();
+                            const sShortClean = (s.shortName || '').trim().toLowerCase();
+
+                            const isMatch = (editCodeClean && sCodeClean === editCodeClean) ||
+                                (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                                (editOrigNameClean && sShortClean === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+
+                            if (isMatch) {
+                                s.name = name;
+                                s.nameBn = nameBn;
+                                s.shortName = shortName;
+                                if (targetClasses.includes(cls) && codeInput) {
+                                    s.code = codeInput;
+                                }
+                                s.isOptional = isOptional;
+                                if (cls === 'Nine' || cls === 'Ten') {
+                                    s.section = sectionVal;
+                                } else {
+                                    s.section = 'All';
+                                }
+                                updatedCount++;
+                            }
+                        });
+                    });
+
+                    // Propagate subject rename to schedules and routines if name was changed
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+                            let schedUpdated = false;
+                            schedules.forEach(sch => {
+                                if (sch.subject === editOriginalName || (sch.subjectCode && sch.subjectCode === editCode)) {
+                                    sch.subject = name;
+                                    schedUpdated = true;
+                                }
+                            });
+                            if (schedUpdated) {
+                                localStorage.setItem('school_exam_schedules', JSON.stringify(schedules));
+                                fetch('/api/db/set', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ key: 'school_exam_schedules', value: JSON.stringify(schedules) })
+                                }).catch(() => { });
+                            }
+                        } catch (e) { }
+
+                        try {
+                            const routines = JSON.parse(localStorage.getItem('school_exam_routines') || '[]');
+                            let routUpdated = false;
+                            routines.forEach(r => {
+                                if (r.subject === editOriginalName || r.subjectName === editOriginalName || (r.code && r.code === editCode)) {
+                                    r.subject = name;
+                                    r.subjectName = name;
+                                    routUpdated = true;
+                                }
+                            });
+                            if (routUpdated) {
+                                localStorage.setItem('school_exam_routines', JSON.stringify(routines));
+                            }
+                        } catch (e) { }
+                    }
+
+                    persistAcademicSubjectsSync(subjectsMap);
+                    resetSubjectForm();
+                    renderSubjectList();
+                    closeAddSubjectModal();
+                    alert(`✅ একই বিষয়ের Name ও Short Name ("${shortName}") মোট ${updatedCount} টি শ্রেণিতে একসাথে সফলভাবে আপডেট করা হয়েছে!`);
+                    return;
+                } else {
+                    targetClasses.forEach(classVal => {
+                        const classSubs = subjectsMap[classVal] || [];
+                        const idx = classSubs.findIndex(s => {
+                            if (!s) return false;
+                            const sCodeClean = (s.code || '').trim().toLowerCase();
+                            const sNameClean = (s.name || '').trim().toLowerCase();
+                            return (editCodeClean && sCodeClean === editCodeClean) ||
+                                (editOrigNameClean && sNameClean === editOrigNameClean) ||
+                                (newNameClean && sNameClean === newNameClean);
+                        });
+                        const finalSec = (classVal === 'Nine' || classVal === 'Ten') ? sectionVal : 'All';
+                        if (idx !== -1) {
+                            classSubs[idx] = { code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec };
+                        } else {
+                            classSubs.push({ code: codeInput || editCode, name, nameBn, shortName, isOptional, section: finalSec });
+                        }
+                        subjectsMap[classVal] = classSubs;
+                    });
+
+                    // Propagate subject rename to schedules and routines
+                    if (editOriginalName && editOriginalName !== name) {
+                        try {
+                            const schedules = JSON.parse(localStorage.getItem('school_exam_schedules') || '[]');
+               

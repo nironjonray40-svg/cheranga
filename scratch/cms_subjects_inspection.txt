@@ -1,0 +1,609 @@
+=== Line 4602 in cms.html ===
+4592:                                                 <span>অপশনাল বিষয়</span>
+4593:                                                 <button type="button" class="adm-info-btn"
+4594:                                                     onclick="openOptionalPolicyModal()"
+4595:                                                     title="অপশনাল বিষয় নির্বাচনের নীতিমালা ও নির্দেশিকা">
+4596:                                                     <i class="fa-solid fa-circle-info"></i>
+4597:                                                 </button>
+4598:                                             </label>
+4599:                                         </div>
+4600:                                         <select class="form-control" id="admOptionalSubject">
+4601:                                             <option value="">-- অপশনাল বিষয় নির্বাচন করুন --</option>
+4602:                                             <!-- Dynamically populated from Exam Portal -> Academic Subject Management -->
+4603:                                         </select>
+4604:                                     </div>
+4605:                                 </div>
+4606: 
+4607:                                 <!-- Hidden Fields: Shift, Medium, Application Type -->
+4608:                                 <div style="display: none !important;">
+4609:                                     <select id="admShift">
+4610:                                         <option value="দিবা শাখা" selected>দিবা শাখা</option>
+4611:                                     </select>
+4612:                                     <select id="admMedium">
+4613:                                         <option value="বাংলা মাধ্যম" selected>বাংলা মাধ্যম</option>
+4614:                                     </select>
+4615:                                     <select id="admAppType">
+4616:                                         <option value="নতুন ভর্তি" selected>নতুন ভর্তি</option>
+
+========================================
+
+=== Line 5800 in cms.html ===
+5790: 
+5791:                 // 1. School Profile & Settings
+5792:                 ERP_SETTINGS = getStoreData('school_settings', {}) || (window.__SERVER_SYNC_DATA__ && safeParse(window.__SERVER_SYNC_DATA__.school_settings, {})) || {};
+5793: 
+5794:                 // 2. Staff Directory
+5795:                 ERP_STAFF = getStoreData('school_staff', []) || (window.__SERVER_SYNC_DATA__ && safeParse(window.__SERVER_SYNC_DATA__.school_staff, [])) || [];
+5796: 
+5797:                 // 3. Classes & Sections
+5798:                 ERP_CLASSES = getStoreData('school_classes', ["Six", "Seven", "Eight", "Nine", "Ten"]) || [];
+5799:                 ERP_SECTIONS = getStoreData('school_class_sections', []) || [];
+5800:                 ERP_SUBJECTS = getStoreData('school_subjects', {}) || {};
+5801: 
+5802:                 // 4. Notices & Tickers
+5803:                 ERP_TICKER = getStoreData('school_ticker_notices', []) || [];
+5804:                 ERP_NOTICES = getStoreData('school_notices', []) || [];
+5805: 
+5806:                 // 5. Fees & Sliders
+5807:                 ERP_FEES = getStoreData('school_class_fees', {}) || {};
+5808:                 ERP_SLIDERS = getStoreData('school_slider_images', []) || [];
+5809:                 ERP_QUICK_LINKS = getStoreData('school_important_links', null) || getStoreData('school_quick_links', []) || [];
+5810:                 CMS_CONFIG = getStoreData('school_cms_settings', {}) || {};
+5811: 
+5812:                 // Initial render from local/bootstrap cache (instant, zero blocking network requests)
+5813:                 renderAllCmsSections();
+5814: 
+
+========================================
+
+=== Line 5826 in cms.html ===
+5816:                 window.__CMS_DATA_LOADED__ = true;
+5817:             } catch (err) {
+5818:                 console.error("Error initializing CMS:", err);
+5819:             }
+5820:         }
+5821: 
+5822:         // --- REALTIME DATA SYNC REFRESH ---
+5823:         async function refreshCmsRealtimeData() {
+5824:             try {
+5825:                 // Request CMS content + live ERP Marksheet (Temp-01) keys for continuous live sync
+5826:                 const res = await fetch('/api/db?keys=school_notices,school_ticker_notices,school_important_links,school_quick_links,school_cms_settings,school_settings,school_staff,school_students,school_subjects,school_exam_types,school_exam_schedules,school_student_marks,school_logo,school_classes,school_class_sections');
+5827:                 if (!res.ok) return;
+5828:                 const data = await res.json();
+5829:                 if (data && typeof data === 'object') {
+5830:                     let hasChanges = false;
+5831:                     if (data.school_notices) { ERP_NOTICES = safeParse(data.school_notices, ERP_NOTICES); hasChanges = true; }
+5832:                     if (data.school_ticker_notices) { ERP_TICKER = safeParse(data.school_ticker_notices, ERP_TICKER); hasChanges = true; }
+5833:                     if (data.school_important_links) {
+5834:                         ERP_QUICK_LINKS = safeParse(data.school_important_links, ERP_QUICK_LINKS);
+5835:                         hasChanges = true;
+5836:                     } else if (data.school_quick_links) {
+5837:                         ERP_QUICK_LINKS = safeParse(data.school_quick_links, ERP_QUICK_LINKS);
+5838:                         hasChanges = true;
+5839:                     }
+5840:                     if (data.school_settings) { 
+
+========================================
+
+=== Line 5862 in cms.html ===
+5852:                         initAdmissionClassDropdown();
+5853:                     }
+5854:                     if (data.school_class_sections) {
+5855:                         ERP_SECTIONS = safeParse(data.school_class_sections, ERP_SECTIONS);
+5856:                         localStorage.setItem('school_class_sections', typeof data.school_class_sections === 'string' ? data.school_class_sections : JSON.stringify(data.school_class_sections));
+5857:                         const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+5858:                         if (targetCls && isClassNineOrTenMatch(targetCls)) {
+5859:                             handleAdmClassChange(targetCls);
+5860:                         }
+5861:                     }
+5862:                     if (data.school_subjects) {
+5863:                         ERP_SUBJECTS = safeParse(data.school_subjects, ERP_SUBJECTS);
+5864:                         localStorage.setItem('school_subjects', typeof data.school_subjects === 'string' ? data.school_subjects : JSON.stringify(data.school_subjects));
+5865:                         const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+5866:                         const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+5867:                         if (targetCls && isClassNineOrTenMatch(targetCls)) {
+5868:                             handleAdmGroupChange(targetGrp);
+5869:                         }
+5870:                     }
+5871:                     if (data.school_students) {
+5872:                         localStorage.setItem('school_students', typeof data.school_students === 'string' ? data.school_students : JSON.stringify(data.school_students));
+5873:                     }
+5874:                     if (data.school_exam_types) {
+5875:                         localStorage.setItem('school_exam_types', typeof data.school_exam_types === 'string' ? data.school_exam_types : JSON.stringify(data.school_exam_types));
+5876:                     }
+
+========================================
+
+=== Line 5863 in cms.html ===
+5853:                     }
+5854:                     if (data.school_class_sections) {
+5855:                         ERP_SECTIONS = safeParse(data.school_class_sections, ERP_SECTIONS);
+5856:                         localStorage.setItem('school_class_sections', typeof data.school_class_sections === 'string' ? data.school_class_sections : JSON.stringify(data.school_class_sections));
+5857:                         const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+5858:                         if (targetCls && isClassNineOrTenMatch(targetCls)) {
+5859:                             handleAdmClassChange(targetCls);
+5860:                         }
+5861:                     }
+5862:                     if (data.school_subjects) {
+5863:                         ERP_SUBJECTS = safeParse(data.school_subjects, ERP_SUBJECTS);
+5864:                         localStorage.setItem('school_subjects', typeof data.school_subjects === 'string' ? data.school_subjects : JSON.stringify(data.school_subjects));
+5865:                         const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+5866:                         const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+5867:                         if (targetCls && isClassNineOrTenMatch(targetCls)) {
+5868:                             handleAdmGroupChange(targetGrp);
+5869:                         }
+5870:                     }
+5871:                     if (data.school_students) {
+5872:                         localStorage.setItem('school_students', typeof data.school_students === 'string' ? data.school_students : JSON.stringify(data.school_students));
+5873:                     }
+5874:                     if (data.school_exam_types) {
+5875:                         localStorage.setItem('school_exam_types', typeof data.school_exam_types === 'string' ? data.school_exam_types : JSON.stringify(data.school_exam_types));
+5876:                     }
+5877:                     if (data.school_exam_schedules) {
+
+========================================
+
+=== Line 5864 in cms.html ===
+5854:                     if (data.school_class_sections) {
+5855:                         ERP_SECTIONS = safeParse(data.school_class_sections, ERP_SECTIONS);
+5856:                         localStorage.setItem('school_class_sections', typeof data.school_class_sections === 'string' ? data.school_class_sections : JSON.stringify(data.school_class_sections));
+5857:                         const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+5858:                         if (targetCls && isClassNineOrTenMatch(targetCls)) {
+5859:                             handleAdmClassChange(targetCls);
+5860:                         }
+5861:                     }
+5862:                     if (data.school_subjects) {
+5863:                         ERP_SUBJECTS = safeParse(data.school_subjects, ERP_SUBJECTS);
+5864:                         localStorage.setItem('school_subjects', typeof data.school_subjects === 'string' ? data.school_subjects : JSON.stringify(data.school_subjects));
+5865:                         const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+5866:                         const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+5867:                         if (targetCls && isClassNineOrTenMatch(targetCls)) {
+5868:                             handleAdmGroupChange(targetGrp);
+5869:                         }
+5870:                     }
+5871:                     if (data.school_students) {
+5872:                         localStorage.setItem('school_students', typeof data.school_students === 'string' ? data.school_students : JSON.stringify(data.school_students));
+5873:                     }
+5874:                     if (data.school_exam_types) {
+5875:                         localStorage.setItem('school_exam_types', typeof data.school_exam_types === 'string' ? data.school_exam_types : JSON.stringify(data.school_exam_types));
+5876:                     }
+5877:                     if (data.school_exam_schedules) {
+5878:                         localStorage.setItem('school_exam_schedules', typeof data.school_exam_schedules === 'string' ? data.school_exam_schedules : JSON.stringify(data.school_exam_schedules));
+
+========================================
+
+=== Line 7408 in cms.html ===
+7398:                 }
+7399:             } else {
+7400:                 if (grpContainer) grpContainer.style.display = 'none';
+7401:                 if (optContainer) optContainer.style.display = 'none';
+7402:                 if (grpSelect) grpSelect.value = 'সাধারণ';
+7403:                 if (optSelect) optSelect.value = '';
+7404:             }
+7405:         }
+7406: 
+7407:         function getAdmissionOptionalSubjects(classVal, groupVal) {
+7408:             let allSubjects = getStoreData('school_subjects', null);
+7409:             if (!allSubjects || typeof allSubjects !== 'object') {
+7410:                 try {
+7411:                     const local = localStorage.getItem('school_subjects');
+7412:                     if (local) allSubjects = JSON.parse(local);
+7413:                 } catch (e) { }
+7414:             }
+7415:             if (!allSubjects || typeof allSubjects !== 'object') {
+7416:                 allSubjects = ERP_SUBJECTS || {};
+7417:             }
+7418: 
+7419:             // Find class subjects list
+7420:             let classSubs = [];
+7421:             const isNine = isClassNineMatch(classVal);
+7422:             const isTen = isClassTenMatch(classVal);
+
+========================================
+
+=== Line 7411 in cms.html ===
+7401:                 if (optContainer) optContainer.style.display = 'none';
+7402:                 if (grpSelect) grpSelect.value = 'সাধারণ';
+7403:                 if (optSelect) optSelect.value = '';
+7404:             }
+7405:         }
+7406: 
+7407:         function getAdmissionOptionalSubjects(classVal, groupVal) {
+7408:             let allSubjects = getStoreData('school_subjects', null);
+7409:             if (!allSubjects || typeof allSubjects !== 'object') {
+7410:                 try {
+7411:                     const local = localStorage.getItem('school_subjects');
+7412:                     if (local) allSubjects = JSON.parse(local);
+7413:                 } catch (e) { }
+7414:             }
+7415:             if (!allSubjects || typeof allSubjects !== 'object') {
+7416:                 allSubjects = ERP_SUBJECTS || {};
+7417:             }
+7418: 
+7419:             // Find class subjects list
+7420:             let classSubs = [];
+7421:             const isNine = isClassNineMatch(classVal);
+7422:             const isTen = isClassTenMatch(classVal);
+7423: 
+7424:             if (Array.isArray(allSubjects)) {
+7425:                 classSubs = allSubjects;
+
+========================================
+
+=== Line 7480 in cms.html ===
+7470:                         }
+7471:                         if (cleanGrp.includes('ব্যবসায়') || cleanGrp.includes('business') || cleanGrp.includes('commerce')) {
+7472:                             return subSec.includes('ব্যবসায়') || subSec.includes('business') || subSec.includes('commerce');
+7473:                         }
+7474:                         return false;
+7475:                     }
+7476:                     return true;
+7477:                 });
+7478:             }
+7479: 
+7480:             // Return dynamically retrieved subjects from Exam Portal -> Academic Subject Management
+7481:             if (optionalSubs.length > 0) {
+7482:                 return optionalSubs.map(s => {
+7483:                     const nameBn = (s.nameBn || '').trim();
+7484:                     const nameEn = (s.name || '').trim();
+7485:                     const val = nameBn || nameEn;
+7486:                     let label = val;
+7487:                     if (nameBn && nameEn && nameBn !== nameEn) {
+7488:                         label = `${nameBn} (${nameEn})`;
+7489:                     }
+7490:                     return { val: val, label: label, code: s.code || '' };
+7491:                 });
+7492:             }
+7493: 
+7494:             // Default fallback if no optional subjects are configured yet in Academic Subject Management
+
+========================================
+
+=== Line 7494 in cms.html ===
+7484:                     const nameEn = (s.name || '').trim();
+7485:                     const val = nameBn || nameEn;
+7486:                     let label = val;
+7487:                     if (nameBn && nameEn && nameBn !== nameEn) {
+7488:                         label = `${nameBn} (${nameEn})`;
+7489:                     }
+7490:                     return { val: val, label: label, code: s.code || '' };
+7491:                 });
+7492:             }
+7493: 
+7494:             // Default fallback if no optional subjects are configured yet in Academic Subject Management
+7495:             if (cleanGrp.includes('বিজ্ঞান') || cleanGrp.includes('science')) {
+7496:                 return [
+7497:                     { val: 'উচ্চতর গণিত', label: 'উচ্চতর গণিত (Higher Math)' },
+7498:                     { val: 'জীববিজ্ঞান', label: 'জীববিজ্ঞান (Biology)' },
+7499:                     { val: 'কৃষি শিক্ষা', label: 'কৃষি শিক্ষা (Agriculture)' },
+7500:                     { val: 'গার্হস্থ্য বিজ্ঞান', label: 'গার্হস্থ্য বিজ্ঞান (Home Science)' }
+7501:                 ];
+7502:             } else if (cleanGrp.includes('মানবিক') || cleanGrp.includes('humanities') || cleanGrp.includes('arts')) {
+7503:                 return [
+7504:                     { val: 'কৃষি শিক্ষা', label: 'কৃষি শিক্ষা (Agriculture)' },
+7505:                     { val: 'গার্হস্থ্য বিজ্ঞান', label: 'গার্হস্থ্য বিজ্ঞান (Home Science)' },
+7506:                     { val: 'পৌরনীতি ও নাগরিকতা', label: 'পৌরনীতি ও নাগরিকতা (Civics)' },
+7507:                     { val: 'অর্থনীতি', label: 'অর্থনীতি (Economics)' },
+7508:                     { val: 'ভূগোল ও পরিবেশ', label: 'ভূগোল ও পরিবেশ (Geography)' }
+
+========================================
+
+=== Line 9639 in cms.html ===
+9629:     const normS = normalizeSectionString(selectedSection);
+9630:     const isSecondary = ['9', '10'].includes(normC);
+9631:     const isJunior = ['6', '7', '8'].includes(normC);
+9632:     const isPrimary = ['play', 'nursery', 'kg', '1', '2', '3', '4', '5'].includes(normC);
+9633: 
+9634:     const relInfo = getStudentReligionInfo(student);
+9635:     const optInfo = getStudentOptionalSubjectInfo(student, normS);
+9636: 
+9637:     let rawList = [];
+9638: 
+9639:     // 1. Try reading subjects directly from Exam Portal's school_subjects map
+9640:     try {
+9641:         const rawSubjectsMap = localStorage.getItem('school_subjects');
+9642:         if (rawSubjectsMap) {
+9643:             const subMap = JSON.parse(rawSubjectsMap);
+9644:             if (typeof subMap === 'object' && subMap !== null) {
+9645:                 const classKeys = Object.keys(subMap);
+9646:                 const matchedKey = classKeys.find(k => {
+9647:                     const nk = normalizeClassString(k);
+9648:                     return nk === normC || k.toLowerCase().trim() === (selectedClass || '').toLowerCase().trim();
+9649:                 });
+9650:                 if (matchedKey && Array.isArray(subMap[matchedKey]) && subMap[matchedKey].length > 0) {
+9651:                     const candidateSubs = subMap[matchedKey];
+9652:                     candidateSubs.forEach(s => {
+9653:                         if (!s) return;
+
+========================================
+
+=== Line 9641 in cms.html ===
+9631:     const isJunior = ['6', '7', '8'].includes(normC);
+9632:     const isPrimary = ['play', 'nursery', 'kg', '1', '2', '3', '4', '5'].includes(normC);
+9633: 
+9634:     const relInfo = getStudentReligionInfo(student);
+9635:     const optInfo = getStudentOptionalSubjectInfo(student, normS);
+9636: 
+9637:     let rawList = [];
+9638: 
+9639:     // 1. Try reading subjects directly from Exam Portal's school_subjects map
+9640:     try {
+9641:         const rawSubjectsMap = localStorage.getItem('school_subjects');
+9642:         if (rawSubjectsMap) {
+9643:             const subMap = JSON.parse(rawSubjectsMap);
+9644:             if (typeof subMap === 'object' && subMap !== null) {
+9645:                 const classKeys = Object.keys(subMap);
+9646:                 const matchedKey = classKeys.find(k => {
+9647:                     const nk = normalizeClassString(k);
+9648:                     return nk === normC || k.toLowerCase().trim() === (selectedClass || '').toLowerCase().trim();
+9649:                 });
+9650:                 if (matchedKey && Array.isArray(subMap[matchedKey]) && subMap[matchedKey].length > 0) {
+9651:                     const candidateSubs = subMap[matchedKey];
+9652:                     candidateSubs.forEach(s => {
+9653:                         if (!s) return;
+9654:                         const sec = (s.section || 'All').toString().trim().toLowerCase();
+9655:                         const sBnName = getSubjectNameBangla(s);
+
+========================================
+
+=== Line 9736 in cms.html ===
+9726:                             rawList.push({ name: 'Accounting', nameBn: 'হিসাববিজ্ঞান', fullMarks: 100, code: '146', group: 'elective' });
+9727:                             rawList.push({ name: 'Business Ent', nameBn: 'ব্যবসায় উদ্যোগ', fullMarks: 100, code: '143', group: 'elective' });
+9728:                             rawList.push({ name: 'Finance', nameBn: 'ফিন্যান্স ও ব্যাংকিং', fullMarks: 100, code: '152', group: 'elective' });
+9729:                             rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, fullMarks: 100, code: '134', group: 'optional', isOptional: true });
+9730:                         }
+9731:                     }
+9732:                 }
+9733:             }
+9734:         }
+9735:     } catch(e) {
+9736:         console.error("Error reading school_subjects from Exam Portal:", e);
+9737:     }
+9738: 
+9739:     // 2. If no subjects found in school_subjects, check school_exam_schedules
+9740:     if (rawList.length === 0) {
+9741:         try {
+9742:             const rawSchedules = localStorage.getItem('school_exam_schedules');
+9743:             if (rawSchedules) {
+9744:                 const schedules = JSON.parse(rawSchedules);
+9745:                 if (Array.isArray(schedules) && schedules.length > 0) {
+9746:                     const matchedSchedules = schedules.filter(sc => {
+9747:                         const matchExam = !selectedExam || (sc.term === selectedExam || sc.examName === selectedExam);
+9748:                         const matchClass = normalizeClassString(sc.className || sc.class) === normC;
+9749:                         const matchSec = !sc.section || sc.section === 'All' || normalizeSectionString(sc.section) === normS;
+9750:                         return matchExam && matchClass && matchSec;
+
+========================================
+
+=== Line 9739 in cms.html ===
+9729:                             rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, fullMarks: 100, code: '134', group: 'optional', isOptional: true });
+9730:                         }
+9731:                     }
+9732:                 }
+9733:             }
+9734:         }
+9735:     } catch(e) {
+9736:         console.error("Error reading school_subjects from Exam Portal:", e);
+9737:     }
+9738: 
+9739:     // 2. If no subjects found in school_subjects, check school_exam_schedules
+9740:     if (rawList.length === 0) {
+9741:         try {
+9742:             const rawSchedules = localStorage.getItem('school_exam_schedules');
+9743:             if (rawSchedules) {
+9744:                 const schedules = JSON.parse(rawSchedules);
+9745:                 if (Array.isArray(schedules) && schedules.length > 0) {
+9746:                     const matchedSchedules = schedules.filter(sc => {
+9747:                         const matchExam = !selectedExam || (sc.term === selectedExam || sc.examName === selectedExam);
+9748:                         const matchClass = normalizeClassString(sc.className || sc.class) === normC;
+9749:                         const matchSec = !sc.section || sc.section === 'All' || normalizeSectionString(sc.section) === normS;
+9750:                         return matchExam && matchClass && matchSec;
+9751:                     });
+9752:                     if (matchedSchedules.length > 0) {
+9753:                         const seenNames = new Set();
+
+========================================
+
+=== Line 10468 in cms.html ===
+10458:         }
+10459:     }
+10460: });
+10461: 
+10462: // Real-time synchronization listeners across browser tabs / ERP storage
+10463: window.addEventListener('storage', (e) => {
+10464:     if (!e.key || [
+10465:         'school_settings',
+10466:         'school_logo',
+10467:         'school_students',
+10468:         'school_subjects',
+10469:         'school_exam_types',
+10470:         'school_exam_schedules',
+10471:         'school_student_marks',
+10472:         'school_classes',
+10473:         'school_class_sections'
+10474:     ].includes(e.key)) {
+10475:         syncCmsResultDropdowns('storage');
+10476:         triggerCmsRealtimeMarksheetAutoUpdate();
+10477:     }
+10478: });
+10479: 
+10480: // Periodic live-sync polling heartbeat (every 3 seconds) for instant live updates
+10481: setInterval(() => {
+10482:     triggerCmsRealtimeMarksheetAutoUpdate();
+
+========================================
+
+=== Line 11327 in cms.html ===
+11317:                     renderTicker();
+11318:                 } else if (e.key === 'school_settings') {
+11319:                     ERP_SETTINGS = getStoreData('school_settings', {}) || {};
+11320:                     renderSchoolIdentity();
+11321:                     renderSpeeches();
+11322:                 } else if (e.key === 'school_classes' || e.key === 'school_class_sections') {
+11323:                     if (e.key === 'school_classes') ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+11324:                     if (e.key === 'school_class_sections') ERP_SECTIONS = getStoreData('school_class_sections', ERP_SECTIONS);
+11325:                     initAdmissionClassDropdown();
+11326:                     renderClassesAndCurriculum();
+11327:                 } else if (e.key === 'school_subjects') {
+11328:                     ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+11329:                     const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+11330:                     const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+11331:                     if (targetCls && isClassNineOrTenMatch(targetCls)) {
+11332:                         handleAdmGroupChange(targetGrp);
+11333:                     }
+11334:                 } else if (e.key === 'bd_geo_admission_data' || !e.key) {
+11335:                     initAdmissionGeoDropdowns();
+11336:                     initAdmissionClassDropdown();
+11337:                 }
+11338:             });
+11339: 
+11340:             // Instant Custom Event Sync
+11341:             window.addEventListener('importantLinksUpdated', () => {
+
+========================================
+
+=== Line 11328 in cms.html ===
+11318:                 } else if (e.key === 'school_settings') {
+11319:                     ERP_SETTINGS = getStoreData('school_settings', {}) || {};
+11320:                     renderSchoolIdentity();
+11321:                     renderSpeeches();
+11322:                 } else if (e.key === 'school_classes' || e.key === 'school_class_sections') {
+11323:                     if (e.key === 'school_classes') ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+11324:                     if (e.key === 'school_class_sections') ERP_SECTIONS = getStoreData('school_class_sections', ERP_SECTIONS);
+11325:                     initAdmissionClassDropdown();
+11326:                     renderClassesAndCurriculum();
+11327:                 } else if (e.key === 'school_subjects') {
+11328:                     ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+11329:                     const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+11330:                     const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+11331:                     if (targetCls && isClassNineOrTenMatch(targetCls)) {
+11332:                         handleAdmGroupChange(targetGrp);
+11333:                     }
+11334:                 } else if (e.key === 'bd_geo_admission_data' || !e.key) {
+11335:                     initAdmissionGeoDropdowns();
+11336:                     initAdmissionClassDropdown();
+11337:                 }
+11338:             });
+11339: 
+11340:             // Instant Custom Event Sync
+11341:             window.addEventListener('importantLinksUpdated', () => {
+11342:                 ERP_QUICK_LINKS = getStoreData('school_important_links', null) || getStoreData('school_quick_links', []) || [];
+
+========================================
+
+=== Line 11355 in cms.html ===
+11345: 
+11346:             // Instant School Classes & Sections Sync Event Listener
+11347:             window.addEventListener('school_classes_synced', () => {
+11348:                 ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+11349:                 ERP_SECTIONS = getStoreData('school_class_sections', ERP_SECTIONS);
+11350:                 initAdmissionClassDropdown();
+11351:                 renderClassesAndCurriculum();
+11352:             });
+11353: 
+11354:             // Instant School Subjects Sync Event Listener
+11355:             window.addEventListener('school_subjects_synced', () => {
+11356:                 ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+11357:                 const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+11358:                 const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+11359:                 if (targetCls && isClassNineOrTenMatch(targetCls)) {
+11360:                     handleAdmGroupChange(targetGrp);
+11361:                 }
+11362:             });
+11363: 
+11364:             // Database Sync Event Listener
+11365:             window.addEventListener('dbSynced', (e) => {
+11366:                 if (!e.detail || !e.detail.key || e.detail.key === 'bd_geo_admission_data') {
+11367:                     initAdmissionGeoDropdowns();
+11368:                 }
+11369:                 if (!e.detail || !e.detail.key || e.detail.key === 'school_classes' || e.detail.key === 'school_class_sections') {
+
+========================================
+
+=== Line 11356 in cms.html ===
+11346:             // Instant School Classes & Sections Sync Event Listener
+11347:             window.addEventListener('school_classes_synced', () => {
+11348:                 ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+11349:                 ERP_SECTIONS = getStoreData('school_class_sections', ERP_SECTIONS);
+11350:                 initAdmissionClassDropdown();
+11351:                 renderClassesAndCurriculum();
+11352:             });
+11353: 
+11354:             // Instant School Subjects Sync Event Listener
+11355:             window.addEventListener('school_subjects_synced', () => {
+11356:                 ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+11357:                 const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+11358:                 const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+11359:                 if (targetCls && isClassNineOrTenMatch(targetCls)) {
+11360:                     handleAdmGroupChange(targetGrp);
+11361:                 }
+11362:             });
+11363: 
+11364:             // Database Sync Event Listener
+11365:             window.addEventListener('dbSynced', (e) => {
+11366:                 if (!e.detail || !e.detail.key || e.detail.key === 'bd_geo_admission_data') {
+11367:                     initAdmissionGeoDropdowns();
+11368:                 }
+11369:                 if (!e.detail || !e.detail.key || e.detail.key === 'school_classes' || e.detail.key === 'school_class_sections') {
+11370:                     ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+
+========================================
+
+=== Line 11375 in cms.html ===
+11365:             window.addEventListener('dbSynced', (e) => {
+11366:                 if (!e.detail || !e.detail.key || e.detail.key === 'bd_geo_admission_data') {
+11367:                     initAdmissionGeoDropdowns();
+11368:                 }
+11369:                 if (!e.detail || !e.detail.key || e.detail.key === 'school_classes' || e.detail.key === 'school_class_sections') {
+11370:                     ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+11371:                     ERP_SECTIONS = getStoreData('school_class_sections', ERP_SECTIONS);
+11372:                     initAdmissionClassDropdown();
+11373:                     renderClassesAndCurriculum();
+11374:                 }
+11375:                 if (!e.detail || !e.detail.key || e.detail.key === 'school_subjects') {
+11376:                     ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+11377:                     const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+11378:                     const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+11379:                     if (targetCls && isClassNineOrTenMatch(targetCls)) {
+11380:                         handleAdmGroupChange(targetGrp);
+11381:                     }
+11382:                 }
+11383:             });
+11384: 
+11385:             // Check if URL requests teachers section
+11386:             if (window.location.hash === '#teachers') {
+11387:                 window.location.href = 'teachers.html';
+11388:             }
+11389: 
+
+========================================
+
+=== Line 11376 in cms.html ===
+11366:                 if (!e.detail || !e.detail.key || e.detail.key === 'bd_geo_admission_data') {
+11367:                     initAdmissionGeoDropdowns();
+11368:                 }
+11369:                 if (!e.detail || !e.detail.key || e.detail.key === 'school_classes' || e.detail.key === 'school_class_sections') {
+11370:                     ERP_CLASSES = getStoreData('school_classes', ERP_CLASSES);
+11371:                     ERP_SECTIONS = getStoreData('school_class_sections', ERP_SECTIONS);
+11372:                     initAdmissionClassDropdown();
+11373:                     renderClassesAndCurriculum();
+11374:                 }
+11375:                 if (!e.detail || !e.detail.key || e.detail.key === 'school_subjects') {
+11376:                     ERP_SUBJECTS = getStoreData('school_subjects', ERP_SUBJECTS) || {};
+11377:                     const targetCls = document.getElementById('admTargetClass') ? document.getElementById('admTargetClass').value : '';
+11378:                     const targetGrp = document.getElementById('admGroup') ? document.getElementById('admGroup').value : '';
+11379:                     if (targetCls && isClassNineOrTenMatch(targetCls)) {
+11380:                         handleAdmGroupChange(targetGrp);
+11381:                     }
+11382:                 }
+11383:             });
+11384: 
+11385:             // Check if URL requests teachers section
+11386:             if (window.location.hash === '#teachers') {
+11387:                 window.location.href = 'teachers.html';
+11388:             }
+11389: 
+11390:             // Check if URL requests login
+
+========================================
+

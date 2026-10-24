@@ -1,0 +1,408 @@
+{
+  "Six": [
+    {
+      "code": "101",
+      "name": "Bangla 1st Paper",
+      "shortName": "BNG1",
+      "nameBn": "বাংলা ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "102",
+      "name": "Bangla 2nd Paper",
+      "shortName": "BNG2",
+      "nameBn": "বাংলা ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "103",
+      "name": "English For Today",
+      "shortName": "ENG1",
+      "nameBn": "ইংরেজি ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "104",
+      "name": "English Grammar and Composition",
+      "shortName": "ENG2",
+      "nameBn": "ইংরেজি ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "105",
+      "name": "Mathematics",
+      "shortName": "Math",
+      "nameBn": "সাধারণ গণিত"
+    },
+    {
+      "code": "106",
+      "name": "Information And Communication Technology",
+      "shortName": "ICT",
+      "nameBn": "তথ্য ও যোগাযোগ প্রযুক্তি"
+    },
+    {
+      "code": "107",
+      "name": "Bangladesh And Global Studies",
+      "shortName": "BGS",
+      "nameBn": "বাংলাদেশ ও বিশ্বপরিচয়"
+    },
+    {
+      "code": "108",
+      "name": "Science",
+      "shortName": "Science",
+      "nameBn": "বিজ্ঞান"
+    },
+    {
+      "code": "109",
+      "name": "Agriculture Studies",
+      "nameBn": "কৃষি শিক্ষা",
+      "shortName": "Agri Studies",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "110",
+      "name": "Islamic Studies",
+      "shortName": "Islam",
+      "nameBn": "ইসলাম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "111",
+      "name": "Hindu Religion Studies",
+      "shortName": "Hindu",
+      "nameBn": "হিন্দুধর্ম ও নৈতিক শিক্ষা"
+    }
+  ],
+  "Seven": [
+    {
+      "code": "101",
+      "name": "Bangla 1st Paper",
+      "shortName": "BNG1",
+      "nameBn": "বাংলা ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "102",
+      "name": "Bangla 2nd Paper",
+      "shortName": "BNG2",
+      "nameBn": "বাংলা ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "103",
+      "name": "English For Today",
+      "shortName": "ENG1",
+      "nameBn": "ইংরেজি ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "104",
+      "name": "English Grammar and Composition",
+      "shortName": "ENG2",
+      "nameBn": "ইংরেজি ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "105",
+      "name": "Mathematics",
+      "shortName": "Math",
+      "nameBn": "সাধারণ গণিত"
+    },
+    {
+      "code": "106",
+      "name": "Information And Communication Technology",
+      "shortName": "ICT",
+      "nameBn": "তথ্য ও যোগাযোগ প্রযুক্তি"
+    },
+    {
+      "code": "107",
+      "name": "Bangladesh And Global Studies",
+      "shortName": "BGS",
+      "nameBn": "বাংলাদেশ ও বিশ্বপরিচয়"
+    },
+    {
+      "code": "108",
+      "name": "Science",
+      "shortName": "Science",
+      "nameBn": "বিজ্ঞান"
+    },
+    {
+      "code": "109",
+      "name": "Agriculture Studies",
+      "nameBn": "কৃষি শিক্ষা",
+      "shortName": "Agri Studies",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "110",
+      "name": "Islamic Studies",
+      "shortName": "Islam",
+      "nameBn": "ইসলাম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "111",
+      "name": "Hindu Religion Studies",
+      "shortName": "Hindu",
+      "nameBn": "হিন্দুধর্ম ও নৈতিক শিক্ষা"
+    }
+  ],
+  "Eight": [
+    {
+      "code": "101",
+      "name": "Bangla 1st Paper",
+      "shortName": "BNG1",
+      "nameBn": "বাংলা ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "102",
+      "name": "Bangla 2nd Paper",
+      "shortName": "BNG2",
+      "nameBn": "বাংলা ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "103",
+      "name": "English For Today",
+      "shortName": "ENG1",
+      "nameBn": "ইংরেজি ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "104",
+      "name": "English Grammar and Composition",
+      "shortName": "ENG2",
+      "nameBn": "ইংরেজি ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "105",
+      "name": "Mathematics",
+      "shortName": "Math",
+      "nameBn": "সাধারণ গণিত"
+    },
+    {
+      "code": "106",
+      "name": "Information And Communication Technology",
+      "shortName": "ICT",
+      "nameBn": "তথ্য ও যোগাযোগ প্রযুক্তি"
+    },
+    {
+      "code": "107",
+      "name": "Bangladesh And Global Studies",
+      "shortName": "BGS",
+      "nameBn": "বাংলাদেশ ও বিশ্বপরিচয়"
+    },
+    {
+      "code": "108",
+      "name": "Science",
+      "shortName": "Science",
+      "nameBn": "বিজ্ঞান"
+    },
+    {
+      "code": "109",
+      "name": "Agriculture Studies",
+      "nameBn": "কৃষি শিক্ষা",
+      "shortName": "Agri Studies",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "110",
+      "name": "Islamic Studies",
+      "shortName": "Islam",
+      "nameBn": "ইসলাম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "111",
+      "name": "Hindu Religion Studies",
+      "shortName": "Hindu",
+      "nameBn": "হিন্দুধর্ম ও নৈতিক শিক্ষা"
+    }
+  ],
+  "Nine": [
+    {
+      "code": "101",
+      "name": "Bangla 1st Paper",
+      "shortName": "BNG1",
+      "nameBn": "বাংলা ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "102",
+      "name": "Bangla 2nd Paper",
+      "shortName": "BNG2",
+      "nameBn": "বাংলা ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "103",
+      "name": "English For Today",
+      "shortName": "ENG1",
+      "nameBn": "ইংরেজি ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "104",
+      "name": "English Grammar and Composition",
+      "shortName": "ENG2",
+      "nameBn": "ইংরেজি ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "105",
+      "name": "Mathematics",
+      "shortName": "Math",
+      "nameBn": "সাধারণ গণিত"
+    },
+    {
+      "code": "106",
+      "name": "Information And Communication Technology",
+      "shortName": "ICT",
+      "nameBn": "তথ্য ও যোগাযোগ প্রযুক্তি"
+    },
+    {
+      "code": "107",
+      "name": "Bangladesh And Global Studies",
+      "shortName": "BGS",
+      "nameBn": "বাংলাদেশ ও বিশ্বপরিচয়"
+    },
+    {
+      "code": "108",
+      "name": "Science",
+      "shortName": "Science",
+      "nameBn": "বিজ্ঞান"
+    },
+    {
+      "code": "109",
+      "name": "Agriculture Studies",
+      "nameBn": "কৃষি শিক্ষা",
+      "shortName": "AGRI",
+      "isOptional": true,
+      "section": "All"
+    },
+    {
+      "code": "110",
+      "name": "Islamic Studies",
+      "shortName": "Islam",
+      "nameBn": "ইসলাম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "111",
+      "name": "Hindu Religion Studies",
+      "shortName": "Hindu",
+      "nameBn": "হিন্দুধর্ম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "112",
+      "name": "Higher Math",
+      "nameBn": "উচ্চতর গণিত",
+      "shortName": "H.MATH",
+      "isOptional": true,
+      "section": "বিজ্ঞান"
+    }
+  ],
+  "Ten": [
+    {
+      "code": "101",
+      "name": "Bangla 1st Paper",
+      "shortName": "BNG1",
+      "nameBn": "বাংলা ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "102",
+      "name": "Bangla 2nd Paper",
+      "shortName": "BNG2",
+      "nameBn": "বাংলা ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "103",
+      "name": "English For Today",
+      "shortName": "ENG1",
+      "nameBn": "ইংরেজি ১ম পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "104",
+      "name": "English Grammar and Composition",
+      "shortName": "ENG2",
+      "nameBn": "ইংরেজি ২য় পত্র",
+      "isOptional": false,
+      "section": "All"
+    },
+    {
+      "code": "105",
+      "name": "Mathematics",
+      "shortName": "Math",
+      "nameBn": "সাধারণ গণিত"
+    },
+    {
+      "code": "106",
+      "name": "Information And Communication Technology",
+      "shortName": "ICT",
+      "nameBn": "তথ্য ও যোগাযোগ প্রযুক্তি"
+    },
+    {
+      "code": "107",
+      "name": "Bangladesh And Global Studies",
+      "shortName": "BGS",
+      "nameBn": "বাংলাদেশ ও বিশ্বপরিচয়"
+    },
+    {
+      "code": "108",
+      "name": "Science",
+      "shortName": "Science",
+      "nameBn": "বিজ্ঞান"
+    },
+    {
+      "code": "109",
+      "name": "Agriculture Studies",
+      "nameBn": "কৃষি শিক্ষা",
+      "shortName": "AGRI",
+      "isOptional": true,
+      "section": "All"
+    },
+    {
+      "code": "110",
+      "name": "Islamic Studies",
+      "shortName": "Islam",
+      "nameBn": "ইসলাম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "111",
+      "name": "Hindu Religion Studies",
+      "shortName": "Hindu",
+      "nameBn": "হিন্দুধর্ম ও নৈতিক শিক্ষা"
+    },
+    {
+      "code": "112",
+      "name": "Higher Math",
+      "nameBn": "উচ্চতর গণিত",
+      "shortName": "H.MATH",
+      "isOptional": true,
+      "section": "বিজ্ঞান"
+    }
+  ]
+}
