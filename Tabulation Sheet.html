@@ -1314,8 +1314,10 @@
                 <div class="control-group">
                     <label for="sort-order">ক্রম:</label>
                     <select id="sort-order" onchange="sortStudents(this.value)">
-                        <option value="roll">রোল</option>
-                        <option value="merit">মেধাক্রম</option>
+                        <option value="section_roll">রোল অনুসারে সেকশন অনুযায়ী</option>
+                        <option value="section_merit">মেধা অনুসারে সেকশন অনুযায়ী</option>
+                        <option value="class_id">আইডি অনুসারে Full Class</option>
+                        <option value="class_merit">মেধা অনুসারে Full Class</option>
                     </select>
                 </div>
             </div>
@@ -4925,14 +4927,25 @@
                 el.textContent = lang === 'en' ? 'GPA System:' : 'GPA পদ্ধতি:';
             });
 
-            // Re-sort to refresh translated section divider texts and numbers
+            // Translate Sort Order label and options
+            document.querySelectorAll('label[for="sort-order"]').forEach(el => {
+                el.textContent = lang === 'en' ? 'Order:' : 'ক্রম:';
+            });
 
             const sortOrderEl = document.getElementById('sort-order');
-
             if (sortOrderEl) {
-
+                [...sortOrderEl.options].forEach(opt => {
+                    if (opt.value === 'section_roll' || opt.value === 'roll') {
+                        opt.textContent = lang === 'en' ? 'Roll (Section-wise)' : 'রোল অনুসারে সেকশন অনুযায়ী';
+                    } else if (opt.value === 'section_merit' || opt.value === 'merit') {
+                        opt.textContent = lang === 'en' ? 'Merit (Section-wise)' : 'মেধা অনুসারে সেকশন অনুযায়ী';
+                    } else if (opt.value === 'class_id') {
+                        opt.textContent = lang === 'en' ? 'ID (Full Class)' : 'আইডি অনুসারে Full Class';
+                    } else if (opt.value === 'class_merit') {
+                        opt.textContent = lang === 'en' ? 'Merit (Full Class)' : 'মেধা অনুসারে Full Class';
+                    }
+                });
                 sortStudents(sortOrderEl.value);
-
             }
 
         }
@@ -5025,8 +5038,8 @@
             if (sel) sel.value = method;
             recalculateTableGradesAndRanks();
             const sortOrderEl = document.getElementById('sort-order');
-            if (sortOrderEl && sortOrderEl.value === 'merit') {
-                sortStudents('merit');
+            if (sortOrderEl && (sortOrderEl.value === 'section_merit' || sortOrderEl.value === 'class_merit' || sortOrderEl.value === 'merit')) {
+                sortStudents(sortOrderEl.value);
             }
         }
 
@@ -6793,8 +6806,16 @@
             const isJuniorClass = ['6', '7', '8', '6th', '7th', '8th', 'six', 'seven', 'eight', '৬ষ্ঠ', '৭ম', '৮ম', 'five', 'four', 'three', 'two', 'one', 'play', 'nursery', 'kg'].some(k => valLower.includes(k));
             const isSeniorClass = ['9', '10', '9th', '10th', 'nine', 'ten', '৯ম', '১০ম'].some(k => valLower.includes(k));
 
+            const sortOrderEl = document.getElementById('sort-order');
+            const currentSortCriteria = sortOrderEl ? sortOrderEl.value : 'section_roll';
+            const isFullClassSort = (currentSortCriteria === 'class_id' || currentSortCriteria === 'class_merit');
+
             // 1. Show/Hide section divider rows
             document.querySelectorAll('.section-divider-row').forEach(row => {
+                if (isFullClassSort) {
+                    row.style.display = 'none';
+                    return;
+                }
                 const secName = row.getAttribute('data-section-name');
                 const hasVisibleStudents = Array.from(document.querySelectorAll(`tbody tr[data-section="${secName}"][data-has-student="true"]`)).length > 0;
                 if (!hasVisibleStudents) {
@@ -6828,6 +6849,13 @@
                     return;
                 }
 
+                if (isFullClassSort) {
+                    if (currentFilterSection === 'all' && (!isSeniorClass || currentFilterGroup === 'all')) {
+                        row.style.display = '';
+                        return;
+                    }
+                }
+
                 const sec = row.getAttribute('data-section');
                 let rowGroup = row.getAttribute('data-group') || (sec === 'A' ? 'science' : (sec === 'B' ? 'humanities' : (sec === 'C' ? 'business' : 'none')));
 
@@ -6851,144 +6879,152 @@
         }
 
         function sortStudents(criteria) {
+            if (criteria === 'roll') criteria = 'section_roll';
+            if (criteria === 'merit') criteria = 'section_merit';
+            if (!criteria) criteria = 'section_roll';
+
+            const sortSelect = document.getElementById('sort-order');
+            if (sortSelect) sortSelect.value = criteria;
+
+            if (criteria === 'class_id' || criteria === 'class_merit') {
+                currentFilterSection = 'all';
+                currentFilterGroup = 'all';
+                const secFilter = document.getElementById('section-filter');
+                if (secFilter) secFilter.value = 'all';
+                const grpFilter = document.getElementById('group-filter');
+                if (grpFilter) grpFilter.value = 'all';
+            }
 
             syncStudentNamesFromDatabase();
             recalculateTableGradesAndRanks();
-
-            document.getElementById('sort-order').value = criteria; // Sync UI
 
             const tbody = getTabulationTbody();
             if (!tbody) return;
 
             const studentRows = Array.from(tbody.querySelectorAll('tr[data-section]'));
 
-
-
             const sections = {};
-
-
-
             studentRows.forEach(row => {
-
                 const sec = row.getAttribute('data-section') || 'Unassigned';
-
                 if (!sections[sec]) {
-
                     sections[sec] = [];
-
                 }
-
                 sections[sec].push(row);
-
             });
-
-
 
             const sortedSecKeys = Object.keys(sections).sort();
-
-
-
             updateSectionFilterOptions(sortedSecKeys);
 
-
-
-            const sortFunc = (a, b) => {
-
+            // Sorting helper 1: By Roll (within section)
+            const sortByRoll = (a, b) => {
                 const aCells = a.querySelectorAll('td');
-
                 const bCells = b.querySelectorAll('td');
-
-                if (aCells.length < 68 || bCells.length < 68) return 0;
-
-
-
-                let valA, valB;
-
-                if (criteria === 'merit') {
-
-                    const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
-
-                    const textB = banglaToEnglishDigits(bCells[67].textContent.trim());
-
-                    valA = parseInt(textA, 10) || Infinity;
-
-                    valB = parseInt(textB, 10) || Infinity;
-
-                    if (valA !== valB) return valA - valB;
-
-                    const totalA = parseFloat(banglaToEnglishDigits(aCells[62].textContent.trim())) || 0;
-
-                    const totalB = parseFloat(banglaToEnglishDigits(bCells[62].textContent.trim())) || 0;
-
-                    if (totalA !== totalB) return totalB - totalA;
-
-                    const rollA = parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
-
-                    const rollB = parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
-
-                    return rollA - rollB;
-
-                } else {
-
-                    const textA = banglaToEnglishDigits(aCells[0].textContent.trim());
-
-                    const textB = banglaToEnglishDigits(bCells[0].textContent.trim());
-
-                    const numA = parseInt(textA.replace(/\D/g, ''), 10);
-
-                    const numB = parseInt(textB.replace(/\D/g, ''), 10);
-
-                    if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
-
-                        valA = numA;
-
-                        valB = numB;
-
-                    } else {
-
-                        return textA.localeCompare(textB, undefined, { numeric: true, sensitivity: 'base' });
-
-                    }
-
+                if (aCells.length === 0 || bCells.length === 0) return 0;
+                const textA = banglaToEnglishDigits(aCells[0].textContent.trim());
+                const textB = banglaToEnglishDigits(bCells[0].textContent.trim());
+                const numA = parseInt(textA.replace(/\D/g, ''), 10);
+                const numB = parseInt(textB.replace(/\D/g, ''), 10);
+                if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+                    return numA - numB;
                 }
-
-
-
-                return valA - valB;
-
+                return textA.localeCompare(textB, undefined, { numeric: true, sensitivity: 'base' });
             };
 
+            // Sorting helper 2: By Merit (within section)
+            const sortBySectionMerit = (a, b) => {
+                const aCells = a.querySelectorAll('td');
+                const bCells = b.querySelectorAll('td');
+                if (aCells.length < 68 || bCells.length < 68) return 0;
 
+                const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
+                const textB = banglaToEnglishDigits(bCells[67].textContent.trim());
+                const rankA = parseInt(textA, 10) || Infinity;
+                const rankB = parseInt(textB, 10) || Infinity;
+                if (rankA !== rankB) return rankA - rankB;
 
-            sortedSecKeys.forEach(sec => {
+                const totalA = parseFloat(banglaToEnglishDigits(aCells[62].textContent.trim())) || 0;
+                const totalB = parseFloat(banglaToEnglishDigits(bCells[62].textContent.trim())) || 0;
+                if (totalA !== totalB) return totalB - totalA;
 
-                sections[sec].sort(sortFunc);
+                const gpaA = parseFloat(banglaToEnglishDigits(aCells[65].textContent.trim())) || 0;
+                const gpaB = parseFloat(banglaToEnglishDigits(bCells[65].textContent.trim())) || 0;
+                if (gpaA !== gpaB) return gpaB - gpaA;
 
-            });
+                const rollA = parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
+                const rollB = parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
+                return rollA - rollB;
+            };
 
+            // Sorting helper 3: By Student ID (Full Class)
+            const sortByClassId = (a, b) => {
+                const codeA = (a.getAttribute('data-student-code') || a.getAttribute('data-student-id') || a.getAttribute('data-student-roll') || '').trim();
+                const codeB = (b.getAttribute('data-student-code') || b.getAttribute('data-student-id') || b.getAttribute('data-student-roll') || '').trim();
+                const cleanA = banglaToEnglishDigits(codeA);
+                const cleanB = banglaToEnglishDigits(codeB);
+                const digitsA = cleanA.replace(/\D/g, '');
+                const digitsB = cleanB.replace(/\D/g, '');
+                const numA = digitsA ? parseInt(digitsA, 10) : NaN;
+                const numB = digitsB ? parseInt(digitsB, 10) : NaN;
 
+                if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+                    return numA - numB;
+                }
+                if (cleanA && cleanB && cleanA !== cleanB) {
+                    const strCmp = cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: 'base' });
+                    if (strCmp !== 0) return strCmp;
+                }
 
-            tbody.innerHTML = '';
+                // Tie breaker: Section order
+                const secA = (a.getAttribute('data-section') || '').toUpperCase();
+                const secB = (b.getAttribute('data-section') || '').toUpperCase();
+                if (secA !== secB) return secA.localeCompare(secB);
 
+                // Tie breaker: Roll number
+                const aCells = a.querySelectorAll('td');
+                const bCells = b.querySelectorAll('td');
+                const rollA = aCells.length > 0 ? (parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = bCells.length > 0 ? (parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0) : 0;
+                return rollA - rollB;
+            };
 
+            // Sorting helper 4: By Overall Merit Rank (Full Class)
+            const sortByClassMerit = (a, b) => {
+                const aCells = a.querySelectorAll('td');
+                const bCells = b.querySelectorAll('td');
+                if (aCells.length < 68 || bCells.length < 68) return 0;
+
+                const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
+                const textB = banglaToEnglishDigits(bCells[67].textContent.trim());
+                const rankA = parseInt(textA, 10) || Infinity;
+                const rankB = parseInt(textB, 10) || Infinity;
+                if (rankA !== rankB) return rankA - rankB;
+
+                const totalA = parseFloat(banglaToEnglishDigits(aCells[62].textContent.trim())) || 0;
+                const totalB = parseFloat(banglaToEnglishDigits(bCells[62].textContent.trim())) || 0;
+                if (totalA !== totalB) return totalB - totalA;
+
+                const gpaA = parseFloat(banglaToEnglishDigits(aCells[65].textContent.trim())) || 0;
+                const gpaB = parseFloat(banglaToEnglishDigits(bCells[65].textContent.trim())) || 0;
+                if (gpaA !== gpaB) return gpaB - gpaA;
+
+                const secA = (a.getAttribute('data-section') || '').toUpperCase();
+                const secB = (b.getAttribute('data-section') || '').toUpperCase();
+                if (secA !== secB) return secA.localeCompare(secB);
+
+                const rollA = parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
+                const rollB = parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
+                return rollA - rollB;
+            };
 
             const createDivider = (name) => {
-
                 const tr = document.createElement('tr');
-
                 tr.className = 'section-divider-row';
-
                 tr.setAttribute('data-section-name', name);
-
                 const td = document.createElement('td');
-
                 td.setAttribute('colspan', getActiveColspan().toString());
-
                 td.className = 'section-divider-cell';
 
-                
-
-                const realStudentsInSec = sections[name].filter(r => r.getAttribute('data-has-student') === 'true');
+                const realStudentsInSec = (sections[name] || []).filter(r => r.getAttribute('data-has-student') === 'true');
                 const count = realStudentsInSec.length;
 
                 const isSeniorClass = ['9', '10', '9th', '10th', 'nine', 'ten', '৯ম', '১০ম'].some(k => currentFilterClass.toLowerCase().includes(k));
@@ -7014,18 +7050,52 @@
                 return tr;
             };
 
-            sortedSecKeys.forEach(sec => {
-                const secRealStudents = sections[sec].filter(r => r.getAttribute('data-has-student') === 'true');
-                if (secRealStudents.length > 0) {
-                    tbody.appendChild(createDivider(sec));
-                    sections[sec].forEach(row => tbody.appendChild(row));
+            tbody.innerHTML = '';
+
+            if (criteria === 'class_id' || criteria === 'class_merit') {
+                // Full Class mode: Unified list across all sections without section dividers
+                const realStudents = studentRows.filter(r => r.getAttribute('data-has-student') === 'true');
+                const dummyRows = studentRows.filter(r => r.getAttribute('data-has-student') !== 'true');
+
+                if (criteria === 'class_id') {
+                    realStudents.sort(sortByClassId);
+                } else {
+                    realStudents.sort(sortByClassMerit);
                 }
-            });
 
+                realStudents.forEach(row => {
+                    row.style.display = '';
+                    tbody.appendChild(row);
+                });
+                dummyRows.forEach(row => {
+                    row.style.display = 'none';
+                    tbody.appendChild(row);
+                });
+            } else {
+                // Section-wise mode: Grouped and separated by section dividers
+                sortedSecKeys.forEach(sec => {
+                    if (criteria === 'section_merit') {
+                        sections[sec].sort(sortBySectionMerit);
+                    } else {
+                        sections[sec].sort(sortByRoll);
+                    }
+                });
 
+                sortedSecKeys.forEach(sec => {
+                    const secRealStudents = sections[sec].filter(r => r.getAttribute('data-has-student') === 'true');
+                    const secDummyRows = sections[sec].filter(r => r.getAttribute('data-has-student') !== 'true');
+                    if (secRealStudents.length > 0) {
+                        tbody.appendChild(createDivider(sec));
+                        secRealStudents.forEach(row => tbody.appendChild(row));
+                        secDummyRows.forEach(row => {
+                            row.style.display = 'none';
+                            tbody.appendChild(row);
+                        });
+                    }
+                });
+            }
 
             applyFilters();
-
         }
 
 
@@ -7107,7 +7177,12 @@
             applyTableSettings();
             recalculateTableGradesAndRanks();
             highlightFailures();
-            applyFilters();
+            const sortOrderEl = document.getElementById('sort-order');
+            if (sortOrderEl) {
+                sortStudents(sortOrderEl.value);
+            } else {
+                applyFilters();
+            }
         }
 
         function filterGroup(val) {
@@ -7639,7 +7714,15 @@
             });
 
             // Update section divider rows
+            const sortOrderEl = document.getElementById('sort-order');
+            const currentSortVal = sortOrderEl ? sortOrderEl.value : 'section_roll';
+            const isFullClassSort = (currentSortVal === 'class_id' || currentSortVal === 'class_merit');
+
             document.querySelectorAll('.section-divider-row').forEach(row => {
+                if (isFullClassSort) {
+                    row.style.display = 'none';
+                    return;
+                }
                 const secName = row.getAttribute('data-section-name');
                 const hasStudentsInSec = (sectionStudents[secName] || []).length > 0;
                 if (!hasStudentsInSec) {
@@ -8030,7 +8113,7 @@
         if (defaultExam) filterExam(defaultExam);
         changePaperSize('A3');
         resetFontSize();
-        sortStudents('roll');
+        sortStudents('section_roll');
         const gpaMethodEl = document.getElementById('gpa-calc-method');
         if (gpaMethodEl) gpaMethodEl.value = currentGPACalcMethod;
 
