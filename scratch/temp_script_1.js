@@ -994,6 +994,10 @@
                     }
                     return;
                 }
+                if (el.classList.contains('sec-col') || el.id === 'sec-col-header') {
+                    el.textContent = (lang === 'en') ? 'Section' : 'শাখা';
+                    return;
+                }
 
                 const targetEl = el.querySelector('.v-text-inner') || el;
                 const gtTextSpan = targetEl.querySelector('.grand-total-text');
@@ -1085,7 +1089,7 @@
 
                 if (row.classList.contains('section-divider-row')) return;
 
-                let cells = row.querySelectorAll('td');
+                let cells = row.querySelectorAll('td:not(.sec-col)');
 
                 cells.forEach((cell, idx) => {
 
@@ -1111,6 +1115,13 @@
 
                 });
 
+            });
+
+            document.querySelectorAll('tbody tr td.sec-col').forEach(cell => {
+                const row = cell.closest('tr');
+                if (row && typeof formatStudentSection === 'function') {
+                    cell.textContent = formatStudentSection(row, lang);
+                }
             });
 
             
@@ -1380,7 +1391,7 @@
             const allStudentList = [];
 
             rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
+                const cells = row.querySelectorAll('td:not(.sec-col)');
                 if (cells.length < 68) return;
 
                 const getCellFloat = (idx) => {
@@ -1997,12 +2008,12 @@
 
             // Assign unique 1..N rank with ZERO duplicate ranks for students with marks
             allStudentList.forEach(st => {
-                const rankCell = st.row.querySelectorAll('td')[67];
+                const rankCell = st.row.querySelectorAll('td:not(.sec-col)')[67];
                 if (rankCell) rankCell.textContent = '-';
             });
             rankedStudents.forEach((st, idx) => {
                 const rankNum = idx + 1;
-                const rankCell = st.row.querySelectorAll('td')[67];
+                const rankCell = st.row.querySelectorAll('td:not(.sec-col)')[67];
                 if (rankCell) {
                     rankCell.textContent = translateDigits(rankNum.toString(), currentLang);
                 }
@@ -2484,6 +2495,11 @@
             const pracStatus = (typeof getSubjectPracticalStatus === 'function') ? getSubjectPracticalStatus() : { chem: false, phys: false, bio: false, agri: false };
 
             let total = 2; // Roll, Name
+            const sortVal = (document.getElementById('sort-order') ? document.getElementById('sort-order').value : '') || '';
+            const isFullClassReg = (sortVal === 'class_id' || sortVal === 'class_merit' || document.body.classList.contains('reg-no-mode'));
+            if (isFullClassReg) {
+                total += 1; // Section column
+            }
             slots.forEach(k => {
                 if (isSubjectSlotActive(k)) {
                     total += getSubjectColspanCount(k, isCompact, isHideMCQW, pracStatus);
@@ -2639,7 +2655,7 @@
             ];
 
             document.querySelectorAll('tbody tr').forEach(row => {
-                const cells = row.querySelectorAll('td');
+                const cells = row.querySelectorAll('td:not(.sec-col)');
                 if (cells.length < 68) return; // Not a student data row
 
                 slots.forEach(k => {
@@ -3184,6 +3200,32 @@
             recalculateTableGradesAndRanks();
         }
 
+        function formatStudentSection(row, lang) {
+            if (!row) return '';
+            try {
+                const clsVal = (row.getAttribute('data-class') || (document.getElementById('class-filter') ? document.getElementById('class-filter').value : '') || currentFilterClass || '').toString().toLowerCase().trim();
+                const isSenior = ['10', '9', 'ten', 'nine', '১০', '৯'].some(k => clsVal.includes(k));
+
+                let sec = (row.getAttribute('data-student-section') || row.getAttribute('data-section') || '').trim();
+                sec = sec.replace(/^SECTION\s*/i, '').replace(/^শাখা\s*/i, '').trim();
+
+                if (isSenior) {
+                    const secUpper = sec.toUpperCase();
+                    if (secUpper === 'A' || secUpper === 'SCIENCE' || sec === 'বিজ্ঞান') {
+                        return (lang === 'en') ? 'Science' : 'বিজ্ঞান';
+                    } else if (secUpper === 'B' || secUpper === 'HUMANITIES' || secUpper === 'ARTS' || sec === 'মানবিক') {
+                        return (lang === 'en') ? 'Humanities' : 'মানবিক';
+                    } else if (secUpper === 'C' || secUpper === 'BUSINESS' || secUpper === 'COMMERCE' || sec === 'ব্যবসায়') {
+                        return (lang === 'en') ? 'Business' : 'ব্যবসায়';
+                    }
+                }
+                return sec || 'A';
+            } catch (err) {
+                console.error("Error in formatStudentSection:", err);
+                return (row.getAttribute('data-section') || 'A').trim();
+            }
+        }
+
         function updateRollOrRegDisplay(isRegMode) {
             const rollColHeader = document.getElementById('roll-col-header') || document.querySelector('thead th.roll-col');
             if (rollColHeader) {
@@ -3194,6 +3236,12 @@
                 }
             }
 
+            const secColHeader = document.getElementById('sec-col-header') || document.querySelector('thead th.sec-col');
+            if (secColHeader) {
+                secColHeader.style.display = isRegMode ? '' : 'none';
+                secColHeader.textContent = (currentLang === 'en') ? 'Section' : 'শাখা';
+            }
+
             if (isRegMode) {
                 document.body.classList.add('reg-no-mode');
             } else {
@@ -3201,15 +3249,47 @@
             }
 
             document.querySelectorAll('tbody tr[data-section]').forEach(row => {
-                const cells = row.querySelectorAll('td');
+                const cells = row.querySelectorAll('td:not(.sec-col)');
                 if (cells.length === 0) return;
+
                 if (isRegMode) {
                     const reg = (row.getAttribute('data-student-reg') || row.getAttribute('data-student-code') || row.getAttribute('data-student-id') || row.getAttribute('data-student-roll') || '').trim();
                     cells[0].textContent = translateDigits(reg, currentLang);
+
+                    let secCell = row.querySelector('td.sec-col');
+                    if (!secCell) {
+                        secCell = document.createElement('td');
+                        secCell.className = 'sec-col';
+                        const nameCell = row.querySelector('td.name-col') || (cells.length > 1 ? cells[1] : null);
+                        if (nameCell) {
+                            row.insertBefore(secCell, nameCell);
+                        } else if (cells[0] && cells[0].nextSibling) {
+                            row.insertBefore(secCell, cells[0].nextSibling);
+                        } else {
+                            row.appendChild(secCell);
+                        }
+                    }
+                    secCell.style.display = '';
+                    secCell.textContent = formatStudentSection(row, currentLang);
                 } else {
                     const roll = (row.getAttribute('data-student-roll') || row.getAttribute('data-original-roll') || '').trim();
                     cells[0].textContent = translateDigits(roll, currentLang);
+
+                    const secCell = row.querySelector('td.sec-col');
+                    if (secCell) {
+                        if (secCell.remove) secCell.remove();
+                        else if (secCell.parentNode) secCell.parentNode.removeChild(secCell);
+                    }
                 }
+            });
+
+            const activeColspan = getActiveColspan();
+            const insideHeaderTh = document.querySelector('#inside-header-row th');
+            if (insideHeaderTh) insideHeaderTh.setAttribute('colspan', activeColspan);
+            const tfootTd = document.querySelector('#print-tfoot-signatures td');
+            if (tfootTd) tfootTd.setAttribute('colspan', activeColspan);
+            document.querySelectorAll('.section-divider-cell').forEach(td => {
+                td.setAttribute('colspan', activeColspan);
             });
         }
 
@@ -3268,8 +3348,8 @@
 
             // Sorting helper 2: By Merit (within section)
             const sortBySectionMerit = (a, b) => {
-                const aCells = a.querySelectorAll('td');
-                const bCells = b.querySelectorAll('td');
+                const aCells = a.querySelectorAll('td:not(.sec-col)');
+                const bCells = b.querySelectorAll('td:not(.sec-col)');
                 if (aCells.length < 68 || bCells.length < 68) return 0;
 
                 const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
@@ -3327,8 +3407,8 @@
 
             // Sorting helper 4: By Overall Merit Rank (Full Class)
             const sortByClassMerit = (a, b) => {
-                const aCells = a.querySelectorAll('td');
-                const bCells = b.querySelectorAll('td');
+                const aCells = a.querySelectorAll('td:not(.sec-col)');
+                const bCells = b.querySelectorAll('td:not(.sec-col)');
                 if (aCells.length < 68 || bCells.length < 68) return 0;
 
                 const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
@@ -3768,7 +3848,7 @@
             ];
 
             document.querySelectorAll('tbody tr').forEach(row => {
-                const cells = row.querySelectorAll('td');
+                const cells = row.querySelectorAll('td:not(.sec-col)');
                 if (cells.length < 68) return; // Not a data row
 
                 // 1. Highlight subject cells if subject grade is F / fail or Absent (A with 0 GP)
@@ -3955,7 +4035,7 @@
                     if (existingRow) {
                         const newRow = existingRow.cloneNode(true);
                         newRow.setAttribute('data-section', secLetter);
-                        const newCells = newRow.querySelectorAll('td');
+                        const newCells = newRow.querySelectorAll('td:not(.sec-col)');
                         newCells.forEach((c, idx) => {
                             if (idx >= 2) {
                                 c.textContent = '-';
@@ -3978,7 +4058,7 @@
                         const newRow = lastRow.cloneNode(true);
                         newRow.setAttribute('data-section', secLetter);
 
-                        const newCells = newRow.querySelectorAll('td');
+                        const newCells = newRow.querySelectorAll('td:not(.sec-col)');
                         newCells.forEach((c, idx) => {
                             if (idx >= 2) {
                                 c.textContent = '-';
@@ -3998,7 +4078,7 @@
 
                 // Map database students to table rows
                 sectionRows.forEach((row, idx) => {
-                    const cells = row.querySelectorAll('td');
+                    const cells = row.querySelectorAll('td:not(.sec-col)');
                     if (cells.length < 2) return;
 
                     const rollCell = cells[0];
@@ -4032,9 +4112,33 @@
                         row.setAttribute('data-student-code', dbStudent.studentId || '');
                         row.setAttribute('data-student-roll', displayRoll);
                         row.setAttribute('data-student-reg', displayReg);
+                        row.setAttribute('data-student-section', dbStudent.section || secLetter || '');
                         row.setAttribute('data-class', currentFilterClass);
                         row.setAttribute('data-exam', currentFilterExam);
                         row.setAttribute('data-has-student', 'true');
+
+                        let secCell = row.querySelector('td.sec-col');
+                        if (isFullClassReg) {
+                            if (!secCell) {
+                                secCell = document.createElement('td');
+                                secCell.className = 'sec-col';
+                                const nameCellEl = row.querySelector('td.name-col') || (cells.length > 1 ? cells[1] : null);
+                                if (nameCellEl) {
+                                    row.insertBefore(secCell, nameCellEl);
+                                } else if (cells[0] && cells[0].nextSibling) {
+                                    row.insertBefore(secCell, cells[0].nextSibling);
+                                } else {
+                                    row.appendChild(secCell);
+                                }
+                            }
+                            secCell.style.display = '';
+                            secCell.textContent = formatStudentSection(row, currentLang);
+                        } else {
+                            if (secCell) {
+                                if (secCell.remove) secCell.remove();
+                                else if (secCell.parentNode) secCell.parentNode.removeChild(secCell);
+                            }
+                        }
 
                         let showSection = false;
                         if (!isJunior) {
@@ -4092,19 +4196,7 @@
                 }
             });
 
-            const rollColHeader = document.getElementById('roll-col-header') || document.querySelector('thead th.roll-col');
-            if (rollColHeader) {
-                if (isFullClassSort) {
-                    rollColHeader.textContent = 'Reg No';
-                } else {
-                    rollColHeader.textContent = (currentLang === 'en') ? 'Roll' : 'রোল';
-                }
-            }
-            if (isFullClassSort) {
-                document.body.classList.add('reg-no-mode');
-            } else {
-                document.body.classList.remove('reg-no-mode');
-            }
+            updateRollOrRegDisplay(isFullClassSort);
 
             // Dynamically update section-filter dropdown with actually available sections from Exam List
             updateSectionFilterOptions();
@@ -4189,7 +4281,7 @@
 
             const rows = document.querySelectorAll('tbody tr[data-section]');
             rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
+                const cells = row.querySelectorAll('td:not(.sec-col)');
                 if (cells.length < 68) return;
 
                 const stId = row.getAttribute('data-student-id');
