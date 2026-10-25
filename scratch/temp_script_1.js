@@ -984,6 +984,17 @@
 
             // 2. Translate non-subject table headers
             document.querySelectorAll('thead th:not([data-subj])').forEach(el => {
+                if (el.classList.contains('roll-col') || el.id === 'roll-col-header') {
+                    const sortOrderEl = document.getElementById('sort-order');
+                    const isFullClassReg = sortOrderEl && (sortOrderEl.value === 'class_id' || sortOrderEl.value === 'class_merit');
+                    if (isFullClassReg) {
+                        el.textContent = 'Reg No';
+                    } else {
+                        el.textContent = (lang === 'en') ? 'Roll' : 'রোল';
+                    }
+                    return;
+                }
+
                 const targetEl = el.querySelector('.v-text-inner') || el;
                 const gtTextSpan = targetEl.querySelector('.grand-total-text');
                 if (gtTextSpan) {
@@ -1222,14 +1233,25 @@
                 el.textContent = lang === 'en' ? 'GPA System:' : 'GPA পদ্ধতি:';
             });
 
-            // Re-sort to refresh translated section divider texts and numbers
+            // Translate Sort Order label and options
+            document.querySelectorAll('label[for="sort-order"]').forEach(el => {
+                el.textContent = lang === 'en' ? 'Order:' : 'ক্রম:';
+            });
 
             const sortOrderEl = document.getElementById('sort-order');
-
             if (sortOrderEl) {
-
+                [...sortOrderEl.options].forEach(opt => {
+                    if (opt.value === 'section_roll' || opt.value === 'roll') {
+                        opt.textContent = lang === 'en' ? 'Roll (Section-wise)' : 'রোল অনুসারে সেকশন অনুযায়ী';
+                    } else if (opt.value === 'section_merit' || opt.value === 'merit') {
+                        opt.textContent = lang === 'en' ? 'Merit (Section-wise)' : 'মেধা অনুসারে সেকশন অনুযায়ী';
+                    } else if (opt.value === 'class_id') {
+                        opt.textContent = lang === 'en' ? 'Reg No (Full Class)' : 'Reg No অনুসারে Full Class';
+                    } else if (opt.value === 'class_merit') {
+                        opt.textContent = lang === 'en' ? 'Merit (Full Class)' : 'মেধা অনুসারে Full Class';
+                    }
+                });
                 sortStudents(sortOrderEl.value);
-
             }
 
         }
@@ -1322,13 +1344,31 @@
             if (sel) sel.value = method;
             recalculateTableGradesAndRanks();
             const sortOrderEl = document.getElementById('sort-order');
-            if (sortOrderEl && sortOrderEl.value === 'merit') {
-                sortStudents('merit');
+            if (sortOrderEl && (sortOrderEl.value === 'section_merit' || sortOrderEl.value === 'class_merit' || sortOrderEl.value === 'merit')) {
+                sortStudents(sortOrderEl.value);
             }
         }
 
+        function getTabulationTbody() {
+            const mainTable = document.getElementById('tabulation-main-table');
+            if (mainTable) {
+                const tb = mainTable.querySelector('tbody');
+                if (tb) return tb;
+            }
+            const studentRow = document.querySelector('tr[data-section]');
+            if (studentRow) {
+                const tb = studentRow.closest('tbody');
+                if (tb) return tb;
+            }
+            const allTbodies = document.querySelectorAll('table tbody');
+            for (const tb of allTbodies) {
+                if (tb.querySelector('tr[data-section]')) return tb;
+            }
+            return document.querySelector('table tbody');
+        }
+
         function recalculateTableGradesAndRanks() {
-            const tbody = document.querySelector('table tbody');
+            const tbody = getTabulationTbody();
             if (!tbody) return;
             const rows = Array.from(tbody.querySelectorAll('tr[data-section]'));
             if (rows.length === 0) return;
@@ -1349,6 +1389,12 @@
                     return parseFloat(txt);
                 };
 
+                const isCellAbsent = (idx) => {
+                    if (!cells[idx]) return false;
+                    const txt = cells[idx].textContent.trim().toUpperCase();
+                    return txt === 'A' || txt === 'ABS';
+                };
+
                 const setCellVal = (idx, num, isFloat = false) => {
                     if (isNaN(num)) {
                         cells[idx].textContent = '-';
@@ -1364,6 +1410,24 @@
 
                 const curClass = currentFilterClass || 'Ten';
                 const curExam = currentFilterExam || 'all';
+
+                let examDef = null;
+                try {
+                    const examTypes = JSON.parse(localStorage.getItem('school_exam_types') || '[]');
+                    examDef = Array.isArray(examTypes) ? examTypes.find(et => isExamMatch(et.name, curExam)) : null;
+                } catch (e) { }
+
+                const passPct = (examDef && examDef.passMarkPercent !== undefined && !isNaN(examDef.passMarkPercent))
+                    ? Number(examDef.passMarkPercent)
+                    : 33;
+
+                // Component-wise pass check: Pass if mark meets the component's minimum pass mark
+                const checkComponentPass = (mark, fullMarks) => {
+                    if (!fullMarks || fullMarks <= 0) return true; // Component not attached
+                    if (mark === null || mark === undefined || isNaN(mark)) return false; // Absent / missing
+                    const minPass = Math.round(fullMarks * (passPct / 100));
+                    return (mark >= minPass) || ((mark / fullMarks) * 100 >= passPct);
+                };
 
                 // Subject marks distributions dynamically retrieved from Exam List
                 const distB1 = getSubjectMarksDistribution('bangla1', curClass, curExam);
@@ -1388,7 +1452,7 @@
                 const b1MCQ = getCellFloat(2);
                 const b1Wri = getCellFloat(3);
                 let b1Total = getCellFloat(4);
-                if (isNaN(b1Total) && (!isNaN(b1MCQ) || !isNaN(b1Wri))) {
+                if (!isNaN(b1MCQ) || !isNaN(b1Wri)) {
                     b1Total = (isNaN(b1MCQ) ? 0 : b1MCQ) + (isNaN(b1Wri) ? 0 : b1Wri);
                     setCellVal(4, b1Total);
                 }
@@ -1397,88 +1461,162 @@
                 const b2MCQ = getCellFloat(5);
                 const b2Wri = getCellFloat(6);
                 let b2Total = getCellFloat(7);
-                if (isNaN(b2Total) && (!isNaN(b2MCQ) || !isNaN(b2Wri))) {
+                if (!isNaN(b2MCQ) || !isNaN(b2Wri)) {
                     b2Total = (isNaN(b2MCQ) ? 0 : b2MCQ) + (isNaN(b2Wri) ? 0 : b2Wri);
                     setCellVal(7, b2Total);
                 }
 
-                // Bangla Grand Total (cell 8) & Avg / Percentage (cell 9)
+                // Bangla Grand Total (cell 8) & Avg (cell 9)
                 let bGrandTotal = getCellFloat(8);
-                if (isNaN(bGrandTotal) && (!isNaN(b1Total) || !isNaN(b2Total))) {
+                if (!isNaN(b1Total) || !isNaN(b2Total)) {
                     bGrandTotal = (isNaN(b1Total) ? 0 : b1Total) + (isNaN(b2Total) ? 0 : b2Total);
                     setCellVal(8, bGrandTotal);
                 }
 
-                const bFullMarksTotal = (distB1.total || 100) + (distB2.total || 100);
-                let banglaAvg = getCellFloat(9);
+                const hasB1 = distB1.hasSchedule || !isNaN(b1Total);
+                const hasB2 = distB2.hasSchedule || !isNaN(b2Total);
+                const bPaperCount = (hasB1 && hasB2) ? 2 : 1;
+                const bFullMarksTotal = (hasB1 ? (distB1.total || 100) : 0) + (hasB2 ? (distB2.total || 100) : 0) || (distB1.total || 100);
+                let banglaAvg = NaN;
                 if (!isNaN(bGrandTotal)) {
-                    banglaAvg = (bFullMarksTotal > 0) ? (bGrandTotal / bFullMarksTotal) * 100 : bGrandTotal;
+                    banglaAvg = bGrandTotal / bPaperCount;
                     setCellVal(9, banglaAvg);
+                } else {
+                    setCellVal(9, NaN);
                 }
 
-                const bAbsent = (cells[2]?.textContent.trim().toUpperCase() === 'A' || cells[3]?.textContent.trim().toUpperCase() === 'A' || cells[5]?.textContent.trim().toUpperCase() === 'A' || cells[6]?.textContent.trim().toUpperCase() === 'A');
-                const banglaInfo = bAbsent ? { name: 'F', gp: 0 } : (!isNaN(banglaAvg) ? getGradeForPercentage(banglaAvg) : { name: '-', gp: 0 });
-                if (!isNaN(banglaAvg) || bAbsent) {
+                const bFullMCQ = (hasB1 ? (distB1.mcq || 0) : 0) + (hasB2 ? (distB2.mcq || 0) : 0);
+                const bFullCQ = (hasB1 ? (distB1.cq || 0) : 0) + (hasB2 ? (distB2.cq || 0) : 0);
+                const bTotalMCQ = (isNaN(b1MCQ) ? 0 : b1MCQ) + (isNaN(b2MCQ) ? 0 : b2MCQ);
+                const bTotalCQ = (isNaN(b1Wri) ? 0 : b1Wri) + (isNaN(b2Wri) ? 0 : b2Wri);
+
+                const bMCQPass = (bFullMCQ <= 0) || checkComponentPass(bTotalMCQ, bFullMCQ);
+                const bCQPass = (bFullCQ <= 0) || checkComponentPass(bTotalCQ, bFullCQ);
+                const banglaPct = (!isNaN(bGrandTotal) && bFullMarksTotal > 0) ? (bGrandTotal / bFullMarksTotal) * 100 : banglaAvg;
+                const bAbsent = isCellAbsent(2) || isCellAbsent(3) || isCellAbsent(4) || isCellAbsent(5) || isCellAbsent(6) || isCellAbsent(7);
+                const hasBMarks = !isNaN(b1Total) || !isNaN(b2Total) || bAbsent;
+
+                let banglaInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasBMarks) {
+                    const bOverallPass = !bAbsent && bMCQPass && bCQPass && (banglaPct >= passPct);
+                    banglaInfo = bAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!bOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(banglaPct, passPct), isAbsent: false });
                     cells[10].textContent = banglaInfo.name;
                     cells[11].textContent = translateDigits(banglaInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[10].textContent = '-';
+                    cells[11].textContent = '-';
                 }
 
                 // 2. English
-                // 1st Paper (cell 12), 2nd Paper (cell 13), Grand Total (cell 14), Avg / Percentage (cell 15)
+                // 1st Paper (cell 12), 2nd Paper (cell 13), Grand Total (cell 14), Avg (cell 15)
                 const eng1 = getCellFloat(12);
                 const eng2 = getCellFloat(13);
                 let engGrandTotal = getCellFloat(14);
-                if (isNaN(engGrandTotal) && (!isNaN(eng1) || !isNaN(eng2))) {
+                if (!isNaN(eng1) || !isNaN(eng2)) {
                     engGrandTotal = (isNaN(eng1) ? 0 : eng1) + (isNaN(eng2) ? 0 : eng2);
                     setCellVal(14, engGrandTotal);
                 }
 
-                const engFullMarksTotal = (distEng1.total || 100) + (distEng2.total || 100);
-                let engAvg = getCellFloat(15);
+                const hasEng1 = distEng1.hasSchedule || !isNaN(eng1);
+                const hasEng2 = distEng2.hasSchedule || !isNaN(eng2);
+                const engPaperCount = (hasEng1 && hasEng2) ? 2 : 1;
+                const engFullMarksTotal = (hasEng1 ? (distEng1.total || 100) : 0) + (hasEng2 ? (distEng2.total || 100) : 0) || (distEng1.total || 100);
+                let engAvg = NaN;
                 if (!isNaN(engGrandTotal)) {
-                    engAvg = (engFullMarksTotal > 0) ? (engGrandTotal / engFullMarksTotal) * 100 : engGrandTotal;
+                    engAvg = engGrandTotal / engPaperCount;
                     setCellVal(15, engAvg);
+                } else {
+                    setCellVal(15, NaN);
                 }
 
-                const engAbsent = (cells[12]?.textContent.trim().toUpperCase() === 'A' || cells[13]?.textContent.trim().toUpperCase() === 'A');
-                const engInfo = engAbsent ? { name: 'F', gp: 0 } : (!isNaN(engAvg) ? getGradeForPercentage(engAvg) : { name: '-', gp: 0 });
-                if (!isNaN(engAvg) || engAbsent) {
+                const engPct = (!isNaN(engGrandTotal) && engFullMarksTotal > 0) ? (engGrandTotal / engFullMarksTotal) * 100 : engAvg;
+                const engAbsent = isCellAbsent(12) || isCellAbsent(13) || isCellAbsent(14);
+                const hasEngMarks = !isNaN(engGrandTotal) || engAbsent;
+
+                let engInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasEngMarks) {
+                    const engCQPass = checkComponentPass(engGrandTotal, engFullMarksTotal);
+                    const engOverallPass = !engAbsent && engCQPass && (engPct >= passPct);
+                    engInfo = engAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!engOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(engPct, passPct), isAbsent: false });
                     cells[16].textContent = engInfo.name;
                     cells[17].textContent = translateDigits(engInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[16].textContent = '-';
+                    cells[17].textContent = '-';
                 }
 
                 // 3. Math (MCQ cell 18, Written cell 19, Total cell 20)
                 const mathMCQ = getCellFloat(18);
                 const mathWri = getCellFloat(19);
                 let mathTotal = getCellFloat(20);
-                if (isNaN(mathTotal) && (!isNaN(mathMCQ) || !isNaN(mathWri))) {
+                if (!isNaN(mathMCQ) || !isNaN(mathWri)) {
                     mathTotal = (isNaN(mathMCQ) ? 0 : mathMCQ) + (isNaN(mathWri) ? 0 : mathWri);
                     setCellVal(20, mathTotal);
                 }
                 const mathFull = distMath.total || 100;
                 const mathPct = !isNaN(mathTotal) ? (mathTotal / mathFull) * 100 : NaN;
-                const mathAbsent = (cells[18]?.textContent.trim().toUpperCase() === 'A' || cells[19]?.textContent.trim().toUpperCase() === 'A');
-                const mathInfo = mathAbsent ? { name: 'F', gp: 0 } : (!isNaN(mathPct) ? getGradeForPercentage(mathPct) : { name: '-', gp: 0 });
-                if (!isNaN(mathPct) || mathAbsent) {
+                const mathAbsent = isCellAbsent(18) || isCellAbsent(19) || isCellAbsent(20);
+                const hasMathMarks = !isNaN(mathTotal) || mathAbsent;
+
+                let mathInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasMathMarks) {
+                    const mathMCQFull = distMath.mcq || 0;
+                    const mathCQFull = distMath.cq || 0;
+                    const mathMCQPass = (mathMCQFull <= 0) || checkComponentPass(mathMCQ, mathMCQFull);
+                    const mathCQPass = (mathCQFull <= 0) || checkComponentPass(mathWri, mathCQFull);
+                    const mathOverallPass = !mathAbsent && mathMCQPass && mathCQPass && (mathPct >= passPct);
+
+                    mathInfo = mathAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!mathOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(mathPct, passPct), isAbsent: false });
                     cells[21].textContent = mathInfo.name;
                     cells[22].textContent = translateDigits(mathInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[21].textContent = '-';
+                    cells[22].textContent = '-';
                 }
 
                 // 4. BGS (MCQ cell 23, Written cell 24, Total cell 25)
                 const bgsMCQ = getCellFloat(23);
                 const bgsWri = getCellFloat(24);
                 let bgsTotal = getCellFloat(25);
-                if (isNaN(bgsTotal) && (!isNaN(bgsMCQ) || !isNaN(bgsWri))) {
+                if (!isNaN(bgsMCQ) || !isNaN(bgsWri)) {
                     bgsTotal = (isNaN(bgsMCQ) ? 0 : bgsMCQ) + (isNaN(bgsWri) ? 0 : bgsWri);
                     setCellVal(25, bgsTotal);
                 }
                 const bgsFull = distBgs.total || 100;
                 const bgsPct = !isNaN(bgsTotal) ? (bgsTotal / bgsFull) * 100 : NaN;
-                const bgsAbsent = (cells[23]?.textContent.trim().toUpperCase() === 'A' || cells[24]?.textContent.trim().toUpperCase() === 'A');
-                const bgsInfo = bgsAbsent ? { name: 'F', gp: 0 } : (!isNaN(bgsPct) ? getGradeForPercentage(bgsPct) : { name: '-', gp: 0 });
-                if (!isNaN(bgsPct) || bgsAbsent) {
+                const bgsAbsent = isCellAbsent(23) || isCellAbsent(24) || isCellAbsent(25);
+                const hasBgsMarks = !isNaN(bgsTotal) || bgsAbsent;
+
+                let bgsInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasBgsMarks) {
+                    const bgsMCQFull = distBgs.mcq || 0;
+                    const bgsCQFull = distBgs.cq || 0;
+                    const bgsMCQPass = (bgsMCQFull <= 0) || checkComponentPass(bgsMCQ, bgsMCQFull);
+                    const bgsCQPass = (bgsCQFull <= 0) || checkComponentPass(bgsWri, bgsCQFull);
+                    const bgsOverallPass = !bgsAbsent && bgsMCQPass && bgsCQPass && (bgsPct >= passPct);
+
+                    bgsInfo = bgsAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!bgsOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(bgsPct, passPct), isAbsent: false });
                     cells[26].textContent = bgsInfo.name;
                     cells[27].textContent = translateDigits(bgsInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[26].textContent = '-';
+                    cells[27].textContent = '-';
                 }
 
                 // 5. Chemistry / Science (MCQ cell 28, Written cell 29, Practical cell 30, Total cell 31)
@@ -1486,17 +1624,35 @@
                 const chemWri = getCellFloat(29);
                 const chemPrac = pracStatus.chem ? getCellFloat(30) : 0;
                 let chemTotal = getCellFloat(31);
-                if (isNaN(chemTotal) && (!isNaN(chemMCQ) || !isNaN(chemWri) || (pracStatus.chem && !isNaN(chemPrac)))) {
+                if (!isNaN(chemMCQ) || !isNaN(chemWri) || (pracStatus.chem && !isNaN(chemPrac))) {
                     chemTotal = (isNaN(chemMCQ) ? 0 : chemMCQ) + (isNaN(chemWri) ? 0 : chemWri) + (pracStatus.chem && !isNaN(chemPrac) ? chemPrac : 0);
                     setCellVal(31, chemTotal);
                 }
                 const chemFull = distChem.total || 100;
                 const chemPct = !isNaN(chemTotal) ? (chemTotal / chemFull) * 100 : NaN;
-                const chemAbsent = (cells[28]?.textContent.trim().toUpperCase() === 'A' || cells[29]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.chem && cells[30]?.textContent.trim().toUpperCase() === 'A'));
-                const chemInfo = chemAbsent ? { name: 'F', gp: 0 } : (!isNaN(chemPct) ? getGradeForPercentage(chemPct) : { name: '-', gp: 0 });
-                if (!isNaN(chemPct) || chemAbsent) {
+                const chemAbsent = isCellAbsent(28) || isCellAbsent(29) || (pracStatus.chem && isCellAbsent(30)) || isCellAbsent(31);
+                const hasChemMarks = !isNaN(chemTotal) || chemAbsent;
+
+                let chemInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasChemMarks) {
+                    const chemMCQFull = distChem.mcq || 0;
+                    const chemCQFull = distChem.cq || 0;
+                    const chemPracFull = (pracStatus.chem && distChem.practical) ? distChem.practical : 0;
+                    const chemMCQPass = (chemMCQFull <= 0) || checkComponentPass(chemMCQ, chemMCQFull);
+                    const chemCQPass = (chemCQFull <= 0) || checkComponentPass(chemWri, chemCQFull);
+                    const chemPracPass = (chemPracFull <= 0) || checkComponentPass(chemPrac, chemPracFull);
+                    const chemOverallPass = !chemAbsent && chemMCQPass && chemCQPass && chemPracPass && (chemPct >= passPct);
+
+                    chemInfo = chemAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!chemOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(chemPct, passPct), isAbsent: false });
                     cells[32].textContent = chemInfo.name;
                     cells[33].textContent = translateDigits(chemInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[32].textContent = '-';
+                    cells[33].textContent = '-';
                 }
 
                 // 6. Physics (MCQ cell 34, Written cell 35, Practical cell 36, Total cell 37)
@@ -1504,17 +1660,35 @@
                 const physWri = getCellFloat(35);
                 const physPrac = pracStatus.phys ? getCellFloat(36) : 0;
                 let physTotal = getCellFloat(37);
-                if (isNaN(physTotal) && (!isNaN(physMCQ) || !isNaN(physWri) || (pracStatus.phys && !isNaN(physPrac)))) {
+                if (!isNaN(physMCQ) || !isNaN(physWri) || (pracStatus.phys && !isNaN(physPrac))) {
                     physTotal = (isNaN(physMCQ) ? 0 : physMCQ) + (isNaN(physWri) ? 0 : physWri) + (pracStatus.phys && !isNaN(physPrac) ? physPrac : 0);
                     setCellVal(37, physTotal);
                 }
                 const physFull = distPhys.total || 100;
                 const physPct = !isNaN(physTotal) ? (physTotal / physFull) * 100 : NaN;
-                const physAbsent = (cells[34]?.textContent.trim().toUpperCase() === 'A' || cells[35]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.phys && cells[36]?.textContent.trim().toUpperCase() === 'A'));
-                const physInfo = physAbsent ? { name: 'F', gp: 0 } : (!isNaN(physPct) ? getGradeForPercentage(physPct) : { name: '-', gp: 0 });
-                if (!isNaN(physPct) || physAbsent) {
+                const physAbsent = isCellAbsent(34) || isCellAbsent(35) || (pracStatus.phys && isCellAbsent(36)) || isCellAbsent(37);
+                const hasPhysMarks = !isNaN(physTotal) || physAbsent;
+
+                let physInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasPhysMarks) {
+                    const physMCQFull = distPhys.mcq || 0;
+                    const physCQFull = distPhys.cq || 0;
+                    const physPracFull = (pracStatus.phys && distPhys.practical) ? distPhys.practical : 0;
+                    const physMCQPass = (physMCQFull <= 0) || checkComponentPass(physMCQ, physMCQFull);
+                    const physCQPass = (physCQFull <= 0) || checkComponentPass(physWri, physCQFull);
+                    const physPracPass = (physPracFull <= 0) || checkComponentPass(physPrac, physPracFull);
+                    const physOverallPass = !physAbsent && physMCQPass && physCQPass && physPracPass && (physPct >= passPct);
+
+                    physInfo = physAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!physOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(physPct, passPct), isAbsent: false });
                     cells[38].textContent = physInfo.name;
                     cells[39].textContent = translateDigits(physInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[38].textContent = '-';
+                    cells[39].textContent = '-';
                 }
 
                 // 7. Biology (MCQ cell 40, Written cell 41, Practical cell 42, Total cell 43)
@@ -1522,51 +1696,101 @@
                 const bioWri = getCellFloat(41);
                 const bioPrac = pracStatus.bio ? getCellFloat(42) : 0;
                 let bioTotal = getCellFloat(43);
-                if (isNaN(bioTotal) && (!isNaN(bioMCQ) || !isNaN(bioWri) || (pracStatus.bio && !isNaN(bioPrac)))) {
+                if (!isNaN(bioMCQ) || !isNaN(bioWri) || (pracStatus.bio && !isNaN(bioPrac))) {
                     bioTotal = (isNaN(bioMCQ) ? 0 : bioMCQ) + (isNaN(bioWri) ? 0 : bioWri) + (pracStatus.bio && !isNaN(bioPrac) ? bioPrac : 0);
                     setCellVal(43, bioTotal);
                 }
                 const bioFull = distBio.total || 100;
                 const bioPct = !isNaN(bioTotal) ? (bioTotal / bioFull) * 100 : NaN;
-                const bioAbsent = (cells[40]?.textContent.trim().toUpperCase() === 'A' || cells[41]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.bio && cells[42]?.textContent.trim().toUpperCase() === 'A'));
-                const bioInfo = bioAbsent ? { name: 'F', gp: 0 } : (!isNaN(bioPct) ? getGradeForPercentage(bioPct) : { name: '-', gp: 0 });
-                if (!isNaN(bioPct) || bioAbsent) {
+                const bioAbsent = isCellAbsent(40) || isCellAbsent(41) || (pracStatus.bio && isCellAbsent(42)) || isCellAbsent(43);
+                const hasBioMarks = !isNaN(bioTotal) || bioAbsent;
+
+                let bioInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasBioMarks) {
+                    const bioMCQFull = distBio.mcq || 0;
+                    const bioCQFull = distBio.cq || 0;
+                    const bioPracFull = (pracStatus.bio && distBio.practical) ? distBio.practical : 0;
+                    const bioMCQPass = (bioMCQFull <= 0) || checkComponentPass(bioMCQ, bioMCQFull);
+                    const bioCQPass = (bioCQFull <= 0) || checkComponentPass(bioWri, bioCQFull);
+                    const bioPracPass = (bioPracFull <= 0) || checkComponentPass(bioPrac, bioPracFull);
+                    const bioOverallPass = !bioAbsent && bioMCQPass && bioCQPass && bioPracPass && (bioPct >= passPct);
+
+                    bioInfo = bioAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!bioOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(bioPct, passPct), isAbsent: false });
                     cells[44].textContent = bioInfo.name;
                     cells[45].textContent = translateDigits(bioInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[44].textContent = '-';
+                    cells[45].textContent = '-';
                 }
 
                 // 8. Religion (MCQ cell 46, Written cell 47, Total cell 48)
                 const relMCQ = getCellFloat(46);
                 const relWri = getCellFloat(47);
                 let relTotal = getCellFloat(48);
-                if (isNaN(relTotal) && (!isNaN(relMCQ) || !isNaN(relWri))) {
+                if (!isNaN(relMCQ) || !isNaN(relWri)) {
                     relTotal = (isNaN(relMCQ) ? 0 : relMCQ) + (isNaN(relWri) ? 0 : relWri);
                     setCellVal(48, relTotal);
                 }
                 const relFull = distRel.total || 100;
                 const relPct = !isNaN(relTotal) ? (relTotal / relFull) * 100 : NaN;
-                const relAbsent = (cells[46]?.textContent.trim().toUpperCase() === 'A' || cells[47]?.textContent.trim().toUpperCase() === 'A');
-                const relInfo = relAbsent ? { name: 'F', gp: 0 } : (!isNaN(relPct) ? getGradeForPercentage(relPct) : { name: '-', gp: 0 });
-                if (!isNaN(relPct) || relAbsent) {
+                const relAbsent = isCellAbsent(46) || isCellAbsent(47) || isCellAbsent(48);
+                const hasRelMarks = !isNaN(relTotal) || relAbsent;
+
+                let relInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasRelMarks) {
+                    const relMCQFull = distRel.mcq || 0;
+                    const relCQFull = distRel.cq || 0;
+                    const relMCQPass = (relMCQFull <= 0) || checkComponentPass(relMCQ, relMCQFull);
+                    const relCQPass = (relCQFull <= 0) || checkComponentPass(relWri, relCQFull);
+                    const relOverallPass = !relAbsent && relMCQPass && relCQPass && (relPct >= passPct);
+
+                    relInfo = relAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!relOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(relPct, passPct), isAbsent: false });
                     cells[49].textContent = relInfo.name;
                     cells[50].textContent = translateDigits(relInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[49].textContent = '-';
+                    cells[50].textContent = '-';
                 }
 
                 // 9. ICT (MCQ cell 51, Written cell 52, Total cell 53)
                 const ictMCQ = getCellFloat(51);
                 const ictWri = getCellFloat(52);
                 let ictTotal = getCellFloat(53);
-                if (isNaN(ictTotal) && (!isNaN(ictMCQ) || !isNaN(ictWri))) {
+                if (!isNaN(ictMCQ) || !isNaN(ictWri)) {
                     ictTotal = (isNaN(ictMCQ) ? 0 : ictMCQ) + (isNaN(ictWri) ? 0 : ictWri);
                     setCellVal(53, ictTotal);
                 }
                 const ictFull = distIct.total || 50;
                 const ictPct = !isNaN(ictTotal) ? (ictTotal / ictFull) * 100 : NaN;
-                const ictAbsent = (cells[51]?.textContent.trim().toUpperCase() === 'A' || cells[52]?.textContent.trim().toUpperCase() === 'A');
-                const ictInfo = ictAbsent ? { name: 'F', gp: 0 } : (!isNaN(ictPct) ? getGradeForPercentage(ictPct) : { name: '-', gp: 0 });
-                if (!isNaN(ictPct) || ictAbsent) {
+                const ictAbsent = isCellAbsent(51) || isCellAbsent(52) || isCellAbsent(53);
+                const hasIctMarks = !isNaN(ictTotal) || ictAbsent;
+
+                let ictInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasIctMarks) {
+                    const ictMCQFull = distIct.mcq || 0;
+                    const ictCQFull = distIct.cq || 0;
+                    const ictMCQPass = (ictMCQFull <= 0) || checkComponentPass(ictMCQ, ictMCQFull);
+                    const ictCQPass = (ictCQFull <= 0) || checkComponentPass(ictWri, ictCQFull);
+                    const ictOverallPass = !ictAbsent && ictMCQPass && ictCQPass && (ictPct >= passPct);
+
+                    ictInfo = ictAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!ictOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(ictPct, passPct), isAbsent: false });
                     cells[54].textContent = ictInfo.name;
                     cells[55].textContent = translateDigits(ictInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[54].textContent = '-';
+                    cells[55].textContent = '-';
                 }
 
                 // 10. Agriculture / Higher Math (Optional Subject)
@@ -1574,22 +1798,56 @@
                 const optWri = getCellFloat(57);
                 const optPrac = pracStatus.agri ? getCellFloat(58) : 0;
                 let optTotal = getCellFloat(59);
-                if (isNaN(optTotal) && (!isNaN(optMCQ) || !isNaN(optWri) || (pracStatus.agri && !isNaN(optPrac)))) {
+                if (!isNaN(optMCQ) || !isNaN(optWri) || (pracStatus.agri && !isNaN(optPrac))) {
                     optTotal = (isNaN(optMCQ) ? 0 : optMCQ) + (isNaN(optWri) ? 0 : optWri) + (pracStatus.agri && !isNaN(optPrac) ? optPrac : 0);
                     setCellVal(59, optTotal);
                 }
                 const optFull = distAgri.total || 100;
                 const optPct = !isNaN(optTotal) ? (optTotal / optFull) * 100 : NaN;
-                const optAbsent = (cells[56]?.textContent.trim().toUpperCase() === 'A' || cells[57]?.textContent.trim().toUpperCase() === 'A' || (pracStatus.agri && cells[58]?.textContent.trim().toUpperCase() === 'A'));
-                const optInfo = optAbsent ? { name: 'F', gp: 0 } : (!isNaN(optPct) ? getGradeForPercentage(optPct) : { name: '-', gp: 0 });
-                if (!isNaN(optPct) || optAbsent) {
+                const optAbsent = isCellAbsent(56) || isCellAbsent(57) || (pracStatus.agri && isCellAbsent(58)) || isCellAbsent(59);
+                const hasOptMarks = !isNaN(optTotal) || optAbsent;
+
+                let optInfo = { name: '-', gp: 0.0, isAbsent: false };
+                if (hasOptMarks) {
+                    const optMCQFull = distAgri.mcq || 0;
+                    const optCQFull = distAgri.cq || 0;
+                    const optPracFull = (pracStatus.agri && distAgri.practical) ? distAgri.practical : 0;
+                    const optMCQPass = (optMCQFull <= 0) || checkComponentPass(optMCQ, optMCQFull);
+                    const optCQPass = (optCQFull <= 0) || checkComponentPass(optWri, optCQFull);
+                    const optPracPass = (optPracFull <= 0) || checkComponentPass(optPrac, optPracFull);
+                    const optOverallPass = !optAbsent && optMCQPass && optCQPass && optPracPass && (optPct >= passPct);
+
+                    optInfo = optAbsent
+                        ? { name: 'A', gp: 0.0, isAbsent: true }
+                        : (!optOverallPass
+                            ? { name: failRule.name || 'F', gp: 0.0, isAbsent: false }
+                            : { ...getGradeForPercentage(optPct, passPct), isAbsent: false });
                     cells[60].textContent = optInfo.name;
                     cells[61].textContent = translateDigits(optInfo.gp.toFixed(2), currentLang);
+                } else {
+                    cells[60].textContent = '-';
+                    cells[61].textContent = '-';
                 }
 
-                // Main Subjects List (9 subjects)
-                const mainSubjects = [banglaInfo, engInfo, mathInfo, bgsInfo, chemInfo, physInfo, bioInfo, relInfo, ictInfo];
+                // Main Subjects List (Only include active slots for current class)
+                const candidateSubjects = [
+                    { slot: 'bangla', info: banglaInfo, total: bGrandTotal, full: bFullMarksTotal, isAbsent: bAbsent },
+                    { slot: 'english', info: engInfo, total: engGrandTotal, full: engFullMarksTotal, isAbsent: engAbsent },
+                    { slot: 'math', info: mathInfo, total: mathTotal, full: mathFull, isAbsent: mathAbsent },
+                    { slot: 'bgs', info: bgsInfo, total: bgsTotal, full: bgsFull, isAbsent: bgsAbsent },
+                    { slot: 'chem', info: chemInfo, total: chemTotal, full: chemFull, isAbsent: chemAbsent },
+                    { slot: 'phys', info: physInfo, total: physTotal, full: physFull, isAbsent: physAbsent },
+                    { slot: 'bio', info: bioInfo, total: bioTotal, full: bioFull, isAbsent: bioAbsent },
+                    { slot: 'rel', info: relInfo, total: relTotal, full: relFull, isAbsent: relAbsent },
+                    { slot: 'ict', info: ictInfo, total: ictTotal, full: ictFull, isAbsent: ictAbsent }
+                ];
+                const activeMain = candidateSubjects.filter(cs => isSubjectSlotActive(cs.slot));
+                const mainSubjects = activeMain.map(cs => cs.info);
                 const hasValidMainSubjects = mainSubjects.some(s => s.name !== '-');
+
+                // Check if student has Abs in one or more active subjects
+                const isOptActive = isSubjectSlotActive('agri');
+                const hasAnyAbsent = activeMain.some(cs => cs.isAbsent) || (isOptActive && optAbsent);
 
                 let failsCount = 0;
                 let mainGPSum = 0;
@@ -1600,7 +1858,7 @@
                         if (sub.name !== '-') {
                             mainSubCount++;
                             mainGPSum += sub.gp;
-                            if (sub.gp === 0 || sub.name === failRule.name || sub.name === 'F') {
+                            if (sub.gp === 0 || sub.name === failRule.name || sub.name === 'F' || sub.name === 'ABS' || sub.isAbsent || (sub.name === 'A' && sub.gp === 0)) {
                                 failsCount++;
                             }
                         }
@@ -1613,51 +1871,53 @@
                 const optBaseDeductMarks = (optBaseDeductPct / 100) * optFull;
 
                 // Optional bonus: extra GP above 2.00 and extra marks above 2.00 threshold
-                const optionalBonusGP = (!isNaN(optTotal) && optInfo.name !== '-' && optInfo.gp > 2.00) ? (optInfo.gp - 2.00) : 0;
-                const optionalBonusMarks = (!isNaN(optTotal) && optTotal > optBaseDeductMarks) ? (optTotal - optBaseDeductMarks) : 0;
+                const optionalBonusGP = (isOptActive && !isNaN(optTotal) && !optAbsent && optInfo.name !== '-' && optInfo.gp > 2.00) ? (optInfo.gp - 2.00) : 0;
+                const optionalBonusMarks = (isOptActive && !isNaN(optTotal) && !optAbsent && optTotal > optBaseDeductMarks) ? (optTotal - optBaseDeductMarks) : 0;
 
-                // Grand Total (Cell 62): Sum of main subjects + Optional extra marks above 2.00 (above 40 marks)
+                // Grand Total (Cell 62): Sum of active main subjects + Optional extra marks above 2.00 (above 40 marks)
                 let computedGrandTotal = 0;
                 let hasAnySubject = false;
-                const mainSubTotals = [bGrandTotal, engGrandTotal, mathTotal, bgsTotal, chemTotal, physTotal, bioTotal, relTotal, ictTotal];
-                mainSubTotals.forEach(st => {
-                    if (!isNaN(st)) {
-                        computedGrandTotal += st;
+                activeMain.forEach(item => {
+                    if (!isNaN(item.total)) {
+                        computedGrandTotal += item.total;
+                        hasAnySubject = true;
+                    } else if (item.isAbsent) {
                         hasAnySubject = true;
                     }
                 });
-                if (!isNaN(optTotal)) {
+                if (isOptActive && (!isNaN(optTotal) || optAbsent)) {
                     hasAnySubject = true;
-                    computedGrandTotal += optionalBonusMarks;
+                    if (!isNaN(optTotal) && !optAbsent) {
+                        computedGrandTotal += optionalBonusMarks;
+                    }
                 }
                 const grandTotalRaw = hasAnySubject ? computedGrandTotal : 0;
 
                 let displayGpaNoOpt = 0.00;
                 let displayFinalGpa = 0.00;
-                let displayFinalGrade = failRule.name || 'F';
+                let displayFinalGrade = hasAnyAbsent ? 'A' : (failRule.name || 'F');
 
-                if (hasValidMainSubjects) {
-                    if (currentGPACalcMethod === 'total') {
-                        // Total Mark Based Method (dynamically calculated from all main subject full marks)
-                        const totalMax = bFullMarksTotal + engFullMarksTotal + mathFull + bgsFull + chemFull + physFull + bioFull + relFull + ictFull;
-                        const pct = (grandTotalRaw / totalMax) * 100;
-                        if (failsCount > 0) {
-                            displayFinalGpa = 0.00;
-                            displayFinalGrade = failRule.name || 'F';
-                            displayGpaNoOpt = 0.00;
-                        } else {
+                if (hasValidMainSubjects && mainSubCount > 0) {
+                    if (hasAnyAbsent) {
+                        // Policy: If student is Abs in one or more subjects, final Grade is 'A' (Absent), GPA is 0.00
+                        displayFinalGrade = 'A';
+                        displayFinalGpa = 0.00;
+                        displayGpaNoOpt = 0.00;
+                    } else if (failsCount > 0) {
+                        displayFinalGpa = 0.00;
+                        displayFinalGrade = failRule.name || 'F';
+                        displayGpaNoOpt = 0.00;
+                    } else {
+                        if (currentGPACalcMethod === 'total') {
+                            // Total Mark Based Method (dynamically calculated from all active main subject full marks)
+                            const totalMax = activeMain.reduce((sum, item) => sum + (item.full || 100), 0);
+                            const pct = (totalMax > 0) ? (grandTotalRaw / totalMax) * 100 : 0;
                             const totalGradeInfo = getGradeForPercentage(pct);
                             displayFinalGpa = totalGradeInfo.gp;
                             displayFinalGrade = totalGradeInfo.name;
                             displayGpaNoOpt = totalGradeInfo.gp;
-                        }
-                    } else {
-                        // Standard Board GPA Method
-                        if (failsCount > 0) {
-                            displayFinalGpa = 0.00;
-                            displayFinalGrade = failRule.name || 'F';
-                            displayGpaNoOpt = 0.00;
                         } else {
+                            // Standard Board GPA Method
                             displayGpaNoOpt = mainGPSum / mainSubCount;
                             const rawFinalGPA = (mainGPSum + optionalBonusGP) / mainSubCount;
                             displayFinalGpa = Math.min(maxScaleGP, rawFinalGPA);
@@ -1682,7 +1942,7 @@
                     cells[66].textContent = displayFinalGrade;
                 }
 
-                const rollRaw = banglaToEnglishDigits(cells[0].textContent.trim());
+                const rollRaw = banglaToEnglishDigits((row.getAttribute('data-student-roll') || cells[0].textContent.trim()));
                 const digitsOnly = rollRaw.replace(/\D/g, '');
                 const sec = row.getAttribute('data-section') || 'Unassigned';
 
@@ -1693,6 +1953,7 @@
                     computedGpa: displayFinalGpa,
                     computedGrade: displayFinalGrade,
                     fails: failsCount,
+                    hasAbsent: hasAnyAbsent,
                     grandTotal: grandTotalRaw,
                     rollInt: parseInt(digitsOnly, 10) || 0
                 });
@@ -1702,11 +1963,11 @@
             const rankedStudents = allStudentList.filter(s => s.hasAnySubject);
             if (currentGPACalcMethod === 'total') {
                 rankedStudents.sort((a, b) => {
-                    const aFailed = a.fails > 0;
-                    const bFailed = b.fails > 0;
+                    const aFailed = a.fails > 0 || a.hasAbsent;
+                    const bFailed = b.fails > 0 || b.hasAbsent;
                     if (aFailed !== bFailed) return aFailed ? 1 : -1;
                     if (aFailed && bFailed) {
-                        // Failed students are ranked strictly based on "সর্বমোট" (Grand Total) marks
+                        // Failed / absent students are ranked strictly based on "সর্বমোট" (Grand Total) marks
                         if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
                         if (a.rollInt !== b.rollInt) return a.rollInt - b.rollInt;
                         return a.sec.localeCompare(b.sec);
@@ -1718,11 +1979,11 @@
                 });
             } else {
                 rankedStudents.sort((a, b) => {
-                    const aFailed = a.fails > 0;
-                    const bFailed = b.fails > 0;
+                    const aFailed = a.fails > 0 || a.hasAbsent;
+                    const bFailed = b.fails > 0 || b.hasAbsent;
                     if (aFailed !== bFailed) return aFailed ? 1 : -1;
                     if (aFailed && bFailed) {
-                        // Failed students are ranked strictly based on "সর্বমোট" (Grand Total) marks
+                        // Failed / absent students are ranked strictly based on "সর্বমোট" (Grand Total) marks
                         if (b.grandTotal !== a.grandTotal) return b.grandTotal - a.grandTotal;
                         if (a.rollInt !== b.rollInt) return a.rollInt - b.rollInt;
                         return a.sec.localeCompare(b.sec);
@@ -1756,7 +2017,7 @@
 
         // --- Attach table live editing listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            const tableBody = document.querySelector('table tbody');
+            const tableBody = getTabulationTbody();
             if (tableBody) {
                 tableBody.addEventListener('input', () => recalculateTableGradesAndRanks());
                 tableBody.addEventListener('blur', () => recalculateTableGradesAndRanks(), true);
@@ -2851,8 +3112,16 @@
             const isJuniorClass = ['6', '7', '8', '6th', '7th', '8th', 'six', 'seven', 'eight', '৬ষ্ঠ', '৭ম', '৮ম', 'five', 'four', 'three', 'two', 'one', 'play', 'nursery', 'kg'].some(k => valLower.includes(k));
             const isSeniorClass = ['9', '10', '9th', '10th', 'nine', 'ten', '৯ম', '১০ম'].some(k => valLower.includes(k));
 
+            const sortOrderEl = document.getElementById('sort-order');
+            const currentSortCriteria = sortOrderEl ? sortOrderEl.value : 'section_roll';
+            const isFullClassSort = (currentSortCriteria === 'class_id' || currentSortCriteria === 'class_merit');
+
             // 1. Show/Hide section divider rows
             document.querySelectorAll('.section-divider-row').forEach(row => {
+                if (isFullClassSort) {
+                    row.style.display = 'none';
+                    return;
+                }
                 const secName = row.getAttribute('data-section-name');
                 const hasVisibleStudents = Array.from(document.querySelectorAll(`tbody tr[data-section="${secName}"][data-has-student="true"]`)).length > 0;
                 if (!hasVisibleStudents) {
@@ -2886,6 +3155,13 @@
                     return;
                 }
 
+                if (isFullClassSort) {
+                    if (currentFilterSection === 'all' && (!isSeniorClass || currentFilterGroup === 'all')) {
+                        row.style.display = '';
+                        return;
+                    }
+                }
+
                 const sec = row.getAttribute('data-section');
                 let rowGroup = row.getAttribute('data-group') || (sec === 'A' ? 'science' : (sec === 'B' ? 'humanities' : (sec === 'C' ? 'business' : 'none')));
 
@@ -2908,144 +3184,187 @@
             recalculateTableGradesAndRanks();
         }
 
+        function updateRollOrRegDisplay(isRegMode) {
+            const rollColHeader = document.getElementById('roll-col-header') || document.querySelector('thead th.roll-col');
+            if (rollColHeader) {
+                if (isRegMode) {
+                    rollColHeader.textContent = 'Reg No';
+                } else {
+                    rollColHeader.textContent = (currentLang === 'en') ? 'Roll' : 'রোল';
+                }
+            }
+
+            if (isRegMode) {
+                document.body.classList.add('reg-no-mode');
+            } else {
+                document.body.classList.remove('reg-no-mode');
+            }
+
+            document.querySelectorAll('tbody tr[data-section]').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return;
+                if (isRegMode) {
+                    const reg = (row.getAttribute('data-student-reg') || row.getAttribute('data-student-code') || row.getAttribute('data-student-id') || row.getAttribute('data-student-roll') || '').trim();
+                    cells[0].textContent = translateDigits(reg, currentLang);
+                } else {
+                    const roll = (row.getAttribute('data-student-roll') || row.getAttribute('data-original-roll') || '').trim();
+                    cells[0].textContent = translateDigits(roll, currentLang);
+                }
+            });
+        }
+
         function sortStudents(criteria) {
+            if (criteria === 'roll') criteria = 'section_roll';
+            if (criteria === 'merit') criteria = 'section_merit';
+            if (!criteria) criteria = 'section_roll';
+
+            const sortSelect = document.getElementById('sort-order');
+            if (sortSelect) sortSelect.value = criteria;
+
+            const isFullClassReg = (criteria === 'class_id' || criteria === 'class_merit');
+
+            if (isFullClassReg) {
+                currentFilterSection = 'all';
+                currentFilterGroup = 'all';
+                const secFilter = document.getElementById('section-filter');
+                if (secFilter) secFilter.value = 'all';
+                const grpFilter = document.getElementById('group-filter');
+                if (grpFilter) grpFilter.value = 'all';
+            }
 
             syncStudentNamesFromDatabase();
             recalculateTableGradesAndRanks();
 
-            document.getElementById('sort-order').value = criteria; // Sync UI
-
-            const tbody = document.querySelector('table tbody');
+            const tbody = getTabulationTbody();
+            if (!tbody) return;
 
             const studentRows = Array.from(tbody.querySelectorAll('tr[data-section]'));
 
-
-
             const sections = {};
-
-
-
             studentRows.forEach(row => {
-
                 const sec = row.getAttribute('data-section') || 'Unassigned';
-
                 if (!sections[sec]) {
-
                     sections[sec] = [];
-
                 }
-
                 sections[sec].push(row);
-
             });
-
-
 
             const sortedSecKeys = Object.keys(sections).sort();
-
-
-
             updateSectionFilterOptions(sortedSecKeys);
 
-
-
-            const sortFunc = (a, b) => {
-
-                const aCells = a.querySelectorAll('td');
-
-                const bCells = b.querySelectorAll('td');
-
-                if (aCells.length < 68 || bCells.length < 68) return 0;
-
-
-
-                let valA, valB;
-
-                if (criteria === 'merit') {
-
-                    const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
-
-                    const textB = banglaToEnglishDigits(bCells[67].textContent.trim());
-
-                    valA = parseInt(textA, 10) || Infinity;
-
-                    valB = parseInt(textB, 10) || Infinity;
-
-                    if (valA !== valB) return valA - valB;
-
-                    const totalA = parseFloat(banglaToEnglishDigits(aCells[62].textContent.trim())) || 0;
-
-                    const totalB = parseFloat(banglaToEnglishDigits(bCells[62].textContent.trim())) || 0;
-
-                    if (totalA !== totalB) return totalB - totalA;
-
-                    const rollA = parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
-
-                    const rollB = parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
-
-                    return rollA - rollB;
-
-                } else {
-
-                    const textA = banglaToEnglishDigits(aCells[0].textContent.trim());
-
-                    const textB = banglaToEnglishDigits(bCells[0].textContent.trim());
-
-                    const numA = parseInt(textA.replace(/\D/g, ''), 10);
-
-                    const numB = parseInt(textB.replace(/\D/g, ''), 10);
-
-                    if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
-
-                        valA = numA;
-
-                        valB = numB;
-
-                    } else {
-
-                        return textA.localeCompare(textB, undefined, { numeric: true, sensitivity: 'base' });
-
-                    }
-
+            // Sorting helper 1: By Roll (within section)
+            const sortByRoll = (a, b) => {
+                const rollAVal = a.getAttribute('data-student-roll') || (a.querySelector('td') ? a.querySelector('td').textContent.trim() : '');
+                const rollBVal = b.getAttribute('data-student-roll') || (b.querySelector('td') ? b.querySelector('td').textContent.trim() : '');
+                const textA = banglaToEnglishDigits(rollAVal);
+                const textB = banglaToEnglishDigits(rollBVal);
+                const numA = parseInt(textA.replace(/\D/g, ''), 10);
+                const numB = parseInt(textB.replace(/\D/g, ''), 10);
+                if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+                    return numA - numB;
                 }
-
-
-
-                return valA - valB;
-
+                return textA.localeCompare(textB, undefined, { numeric: true, sensitivity: 'base' });
             };
 
+            // Sorting helper 2: By Merit (within section)
+            const sortBySectionMerit = (a, b) => {
+                const aCells = a.querySelectorAll('td');
+                const bCells = b.querySelectorAll('td');
+                if (aCells.length < 68 || bCells.length < 68) return 0;
 
+                const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
+                const textB = banglaToEnglishDigits(bCells[67].textContent.trim());
+                const rankA = parseInt(textA, 10) || Infinity;
+                const rankB = parseInt(textB, 10) || Infinity;
+                if (rankA !== rankB) return rankA - rankB;
 
-            sortedSecKeys.forEach(sec => {
+                const totalA = parseFloat(banglaToEnglishDigits(aCells[62].textContent.trim())) || 0;
+                const totalB = parseFloat(banglaToEnglishDigits(bCells[62].textContent.trim())) || 0;
+                if (totalA !== totalB) return totalB - totalA;
 
-                sections[sec].sort(sortFunc);
+                const gpaA = parseFloat(banglaToEnglishDigits(aCells[65].textContent.trim())) || 0;
+                const gpaB = parseFloat(banglaToEnglishDigits(bCells[65].textContent.trim())) || 0;
+                if (gpaA !== gpaB) return gpaB - gpaA;
 
-            });
+                const rollAVal = a.getAttribute('data-student-roll') || (aCells.length > 0 ? aCells[0].textContent.trim() : '');
+                const rollBVal = b.getAttribute('data-student-roll') || (bCells.length > 0 ? bCells[0].textContent.trim() : '');
+                const rollA = rollAVal ? (parseInt(banglaToEnglishDigits(rollAVal).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = rollBVal ? (parseInt(banglaToEnglishDigits(rollBVal).replace(/\D/g, ''), 10) || 0) : 0;
+                return rollA - rollB;
+            };
 
+            // Sorting helper 3: By Student Reg No (Full Class)
+            const sortByClassId = (a, b) => {
+                const regA = (a.getAttribute('data-student-reg') || a.getAttribute('data-student-code') || a.getAttribute('data-student-id') || a.getAttribute('data-student-roll') || '').trim();
+                const regB = (b.getAttribute('data-student-reg') || b.getAttribute('data-student-code') || b.getAttribute('data-student-id') || b.getAttribute('data-student-roll') || '').trim();
+                const cleanA = banglaToEnglishDigits(regA);
+                const cleanB = banglaToEnglishDigits(regB);
+                const digitsA = cleanA.replace(/\D/g, '');
+                const digitsB = cleanB.replace(/\D/g, '');
+                const numA = digitsA ? parseInt(digitsA, 10) : NaN;
+                const numB = digitsB ? parseInt(digitsB, 10) : NaN;
 
+                if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+                    return numA - numB;
+                }
+                if (cleanA && cleanB && cleanA !== cleanB) {
+                    const strCmp = cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: 'base' });
+                    if (strCmp !== 0) return strCmp;
+                }
 
-            tbody.innerHTML = '';
+                // Tie breaker: Section order
+                const secA = (a.getAttribute('data-section') || '').toUpperCase();
+                const secB = (b.getAttribute('data-section') || '').toUpperCase();
+                if (secA !== secB) return secA.localeCompare(secB);
 
+                // Tie breaker: Roll number
+                const rollAVal = a.getAttribute('data-student-roll') || '';
+                const rollBVal = b.getAttribute('data-student-roll') || '';
+                const rollA = rollAVal ? (parseInt(banglaToEnglishDigits(rollAVal).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = rollBVal ? (parseInt(banglaToEnglishDigits(rollBVal).replace(/\D/g, ''), 10) || 0) : 0;
+                return rollA - rollB;
+            };
 
+            // Sorting helper 4: By Overall Merit Rank (Full Class)
+            const sortByClassMerit = (a, b) => {
+                const aCells = a.querySelectorAll('td');
+                const bCells = b.querySelectorAll('td');
+                if (aCells.length < 68 || bCells.length < 68) return 0;
+
+                const textA = banglaToEnglishDigits(aCells[67].textContent.trim());
+                const textB = banglaToEnglishDigits(bCells[67].textContent.trim());
+                const rankA = parseInt(textA, 10) || Infinity;
+                const rankB = parseInt(textB, 10) || Infinity;
+                if (rankA !== rankB) return rankA - rankB;
+
+                const totalA = parseFloat(banglaToEnglishDigits(aCells[62].textContent.trim())) || 0;
+                const totalB = parseFloat(banglaToEnglishDigits(bCells[62].textContent.trim())) || 0;
+                if (totalA !== totalB) return totalB - totalA;
+
+                const gpaA = parseFloat(banglaToEnglishDigits(aCells[65].textContent.trim())) || 0;
+                const gpaB = parseFloat(banglaToEnglishDigits(bCells[65].textContent.trim())) || 0;
+                if (gpaA !== gpaB) return gpaB - gpaA;
+
+                const secA = (a.getAttribute('data-section') || '').toUpperCase();
+                const secB = (b.getAttribute('data-section') || '').toUpperCase();
+                if (secA !== secB) return secA.localeCompare(secB);
+
+                const rollAVal = a.getAttribute('data-student-roll') || (aCells.length > 0 ? aCells[0].textContent.trim() : '');
+                const rollBVal = b.getAttribute('data-student-roll') || (bCells.length > 0 ? bCells[0].textContent.trim() : '');
+                const rollA = rollAVal ? (parseInt(banglaToEnglishDigits(rollAVal).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = rollBVal ? (parseInt(banglaToEnglishDigits(rollBVal).replace(/\D/g, ''), 10) || 0) : 0;
+                return rollA - rollB;
+            };
 
             const createDivider = (name) => {
-
                 const tr = document.createElement('tr');
-
                 tr.className = 'section-divider-row';
-
                 tr.setAttribute('data-section-name', name);
-
                 const td = document.createElement('td');
-
                 td.setAttribute('colspan', getActiveColspan().toString());
-
                 td.className = 'section-divider-cell';
 
-                
-
-                const realStudentsInSec = sections[name].filter(r => r.getAttribute('data-has-student') === 'true');
+                const realStudentsInSec = (sections[name] || []).filter(r => r.getAttribute('data-has-student') === 'true');
                 const count = realStudentsInSec.length;
 
                 const isSeniorClass = ['9', '10', '9th', '10th', 'nine', 'ten', '৯ম', '১০ম'].some(k => currentFilterClass.toLowerCase().includes(k));
@@ -3071,18 +3390,53 @@
                 return tr;
             };
 
-            sortedSecKeys.forEach(sec => {
-                const secRealStudents = sections[sec].filter(r => r.getAttribute('data-has-student') === 'true');
-                if (secRealStudents.length > 0) {
-                    tbody.appendChild(createDivider(sec));
-                    sections[sec].forEach(row => tbody.appendChild(row));
+            tbody.innerHTML = '';
+
+            if (criteria === 'class_id' || criteria === 'class_merit') {
+                // Full Class mode: Unified list across all sections without section dividers
+                const realStudents = studentRows.filter(r => r.getAttribute('data-has-student') === 'true');
+                const dummyRows = studentRows.filter(r => r.getAttribute('data-has-student') !== 'true');
+
+                if (criteria === 'class_id') {
+                    realStudents.sort(sortByClassId);
+                } else {
+                    realStudents.sort(sortByClassMerit);
                 }
-            });
 
+                realStudents.forEach(row => {
+                    row.style.display = '';
+                    tbody.appendChild(row);
+                });
+                dummyRows.forEach(row => {
+                    row.style.display = 'none';
+                    tbody.appendChild(row);
+                });
+            } else {
+                // Section-wise mode: Grouped and separated by section dividers
+                sortedSecKeys.forEach(sec => {
+                    if (criteria === 'section_merit') {
+                        sections[sec].sort(sortBySectionMerit);
+                    } else {
+                        sections[sec].sort(sortByRoll);
+                    }
+                });
 
+                sortedSecKeys.forEach(sec => {
+                    const secRealStudents = sections[sec].filter(r => r.getAttribute('data-has-student') === 'true');
+                    const secDummyRows = sections[sec].filter(r => r.getAttribute('data-has-student') !== 'true');
+                    if (secRealStudents.length > 0) {
+                        tbody.appendChild(createDivider(sec));
+                        secRealStudents.forEach(row => tbody.appendChild(row));
+                        secDummyRows.forEach(row => {
+                            row.style.display = 'none';
+                            tbody.appendChild(row);
+                        });
+                    }
+                });
+            }
 
+            updateRollOrRegDisplay(isFullClassReg);
             applyFilters();
-
         }
 
 
@@ -3164,7 +3518,12 @@
             applyTableSettings();
             recalculateTableGradesAndRanks();
             highlightFailures();
-            applyFilters();
+            const sortOrderEl = document.getElementById('sort-order');
+            if (sortOrderEl) {
+                sortStudents(sortOrderEl.value);
+            } else {
+                applyFilters();
+            }
         }
 
         function filterGroup(val) {
@@ -3389,33 +3748,36 @@
 
 
 
-        // Highlight subject blocks and overall GPA/Grade cells if student failed (F grade or 0 GP)
+        // Highlight subject blocks and overall GPA/Grade cells if student failed (F grade or 0 GP or Absent)
         function highlightFailures() {
             const rules = loadMarkingSystem();
             const failRule = rules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0 };
             const failGradeName = failRule.name || 'F';
 
             const subjectCellGroups = [
-                { indices: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], gradeIdx: 10 }, // Bangla
-                { indices: [12, 13, 14, 15, 16, 17], gradeIdx: 16 },         // English
-                { indices: [18, 19, 20, 21, 22], gradeIdx: 21 },             // Math
-                { indices: [23, 24, 25, 26, 27], gradeIdx: 26 },             // BGS
-                { indices: [28, 29, 30, 31, 32, 33], gradeIdx: 32 },         // Chemistry
-                { indices: [34, 35, 36, 37, 38, 39], gradeIdx: 38 },         // Physics
-                { indices: [40, 41, 42, 43, 44, 45], gradeIdx: 44 },         // Biology
-                { indices: [46, 47, 48, 49, 50], gradeIdx: 49 },             // Religion
-                { indices: [51, 52, 53, 54, 55], gradeIdx: 54 },             // ICT
-                { indices: [56, 57, 58, 59, 60, 61], gradeIdx: 60 }          // Agriculture
+                { indices: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], gradeIdx: 10, gpIdx: 11 }, // Bangla
+                { indices: [12, 13, 14, 15, 16, 17], gradeIdx: 16, gpIdx: 17 },         // English
+                { indices: [18, 19, 20, 21, 22], gradeIdx: 21, gpIdx: 22 },             // Math
+                { indices: [23, 24, 25, 26, 27], gradeIdx: 26, gpIdx: 27 },             // BGS
+                { indices: [28, 29, 30, 31, 32, 33], gradeIdx: 32, gpIdx: 33 },         // Chemistry
+                { indices: [34, 35, 36, 37, 38, 39], gradeIdx: 38, gpIdx: 39 },         // Physics
+                { indices: [40, 41, 42, 43, 44, 45], gradeIdx: 44, gpIdx: 45 },         // Biology
+                { indices: [46, 47, 48, 49, 50], gradeIdx: 49, gpIdx: 50 },             // Religion
+                { indices: [51, 52, 53, 54, 55], gradeIdx: 54, gpIdx: 55 },             // ICT
+                { indices: [56, 57, 58, 59, 60, 61], gradeIdx: 60, gpIdx: 61 }          // Agriculture
             ];
 
             document.querySelectorAll('tbody tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
                 if (cells.length < 68) return; // Not a data row
 
-                // 1. Highlight subject cells if subject grade is F / fail
+                // 1. Highlight subject cells if subject grade is F / fail or Absent (A with 0 GP)
                 subjectCellGroups.forEach(group => {
                     const gradeVal = cells[group.gradeIdx].textContent.trim();
-                    if (gradeVal === failGradeName || gradeVal === 'F') {
+                    const gpTxt = banglaToEnglishDigits(cells[group.gpIdx]?.textContent.trim() || '');
+                    const isZeroGP = gpTxt === '0.00' || gpTxt === '0' || gpTxt === '0.0' || gpTxt === '০.০০';
+                    const isSubjectFail = (gradeVal === failGradeName || gradeVal === 'F' || gradeVal === 'ABS' || (gradeVal === 'A' && isZeroGP));
+                    if (isSubjectFail) {
                         group.indices.forEach(idx => {
                             cells[idx].style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
                         });
@@ -3428,9 +3790,11 @@
                     }
                 });
 
-                // 2. Highlight final GPA and Grade columns if overall grade is F / fail
+                // 2. Highlight final GPA and Grade columns if overall grade is F / fail or Absent (A with 0 GPA)
                 const finalGradeVal = cells[66].textContent.trim();
-                if (finalGradeVal === failGradeName || finalGradeVal === 'F') {
+                const finalGpaTxt = banglaToEnglishDigits(cells[65].textContent.trim() || '');
+                const isFinalFail = (finalGradeVal === failGradeName || finalGradeVal === 'F' || finalGradeVal === 'ABS' || (finalGradeVal === 'A' && (finalGpaTxt === '0.00' || finalGpaTxt === '0' || finalGpaTxt === '০.০০')));
+                if (isFinalFail) {
                     cells[65].style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
                     cells[66].style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
                 } else {
@@ -3599,8 +3963,8 @@
                                 c.style.backgroundColor = '';
                             }
                         });
-                        const tbody = document.querySelector('table tbody');
-                        tbody.appendChild(newRow);
+                        const tbody = getTabulationTbody();
+                        if (tbody) tbody.appendChild(newRow);
                         sectionRows.push(newRow);
                         clonedAny = true;
                     }
@@ -3623,7 +3987,7 @@
                             }
                         });
 
-                        const parent = lastRow.parentNode || document.querySelector('table tbody');
+                        const parent = lastRow.parentNode || getTabulationTbody();
                         if (parent) {
                             parent.insertBefore(newRow, lastRow.nextSibling);
                         }
@@ -3643,6 +4007,7 @@
                     if (idx < dbList.length) {
                         const dbStudent = dbList[idx];
                         const displayRoll = getStudentIdRoll(dbStudent);
+                        const displayReg = (dbStudent.regNo || dbStudent.registrationNo || dbStudent.registration || dbStudent.reg || dbStudent.studentId || dbStudent.id || displayRoll || '').toString().trim();
 
                         const dbBn = dbStudent.nameBn || dbStudent.name || dbStudent.studentName || '';
                         const dbEn = dbStudent.name || dbStudent.studentName || dbStudent.nameBn || '';
@@ -3650,9 +4015,14 @@
                         const cleanBn = dbBn.replace(/\s*[-—–]\s*[SABsab]\s*$/, '');
                         const cleanEn = dbEn.replace(/\s*[-—–]\s*[SABsab]\s*$/, '');
 
-                        rollCell.textContent = translateDigits(displayRoll, currentLang);
+                        const sortOrderEl = document.getElementById('sort-order');
+                        const currentSortVal = sortOrderEl ? sortOrderEl.value : 'section_roll';
+                        const isFullClassReg = (currentSortVal === 'class_id' || currentSortVal === 'class_merit');
+
+                        rollCell.textContent = isFullClassReg ? translateDigits(displayReg, currentLang) : translateDigits(displayRoll, currentLang);
                         rollCell.setAttribute('data-original-roll', displayRoll);
                         rollCell.setAttribute('data-db-roll', displayRoll);
+                        rollCell.setAttribute('data-db-reg', displayReg);
 
                         nameCell.textContent = currentLang === 'en' ? cleanEn : cleanBn;
                         nameCell.setAttribute('data-original-bn', cleanBn);
@@ -3661,6 +4031,7 @@
                         row.setAttribute('data-student-id', dbStudent.id || '');
                         row.setAttribute('data-student-code', dbStudent.studentId || '');
                         row.setAttribute('data-student-roll', displayRoll);
+                        row.setAttribute('data-student-reg', displayReg);
                         row.setAttribute('data-class', currentFilterClass);
                         row.setAttribute('data-exam', currentFilterExam);
                         row.setAttribute('data-has-student', 'true');
@@ -3686,12 +4057,21 @@
                         row.removeAttribute('data-student-id');
                         row.removeAttribute('data-student-code');
                         row.removeAttribute('data-student-roll');
+                        row.removeAttribute('data-student-reg');
                     }
                 });
             });
 
             // Update section divider rows
+            const sortOrderEl = document.getElementById('sort-order');
+            const currentSortVal = sortOrderEl ? sortOrderEl.value : 'section_roll';
+            const isFullClassSort = (currentSortVal === 'class_id' || currentSortVal === 'class_merit');
+
             document.querySelectorAll('.section-divider-row').forEach(row => {
+                if (isFullClassSort) {
+                    row.style.display = 'none';
+                    return;
+                }
                 const secName = row.getAttribute('data-section-name');
                 const hasStudentsInSec = (sectionStudents[secName] || []).length > 0;
                 if (!hasStudentsInSec) {
@@ -3712,6 +4092,20 @@
                 }
             });
 
+            const rollColHeader = document.getElementById('roll-col-header') || document.querySelector('thead th.roll-col');
+            if (rollColHeader) {
+                if (isFullClassSort) {
+                    rollColHeader.textContent = 'Reg No';
+                } else {
+                    rollColHeader.textContent = (currentLang === 'en') ? 'Roll' : 'রোল';
+                }
+            }
+            if (isFullClassSort) {
+                document.body.classList.add('reg-no-mode');
+            } else {
+                document.body.classList.remove('reg-no-mode');
+            }
+
             // Dynamically update section-filter dropdown with actually available sections from Exam List
             updateSectionFilterOptions();
 
@@ -3722,29 +4116,6 @@
         }
 
         // --- LIVE MARKS INJECTION FROM EXAM PORTAL (Exam List / school_student_marks) ---
-        function getSubjectSlot(subName, subCode) {
-            const sName = (subName || '').toLowerCase().trim();
-            const code = (subCode || '').toString().trim();
-
-            if (code && typeof activeClassSlotMap !== 'undefined' && activeClassSlotMap && activeClassSlotMap[code]) return activeClassSlotMap[code];
-            if (sName && typeof activeClassSlotMap !== 'undefined' && activeClassSlotMap && activeClassSlotMap[sName]) return activeClassSlotMap[sName];
-
-            if (code === '101' || /bangla.*1|বাং.*১|বাংলা সাহিত্য/i.test(sName)) return 'bangla1';
-            if (code === '102' || /bangla.*2|বাং.*২|ব্যাকরণ/i.test(sName)) return 'bangla2';
-            if (code === '103' || /english.*1|eng.*1|ইংরেজি ১ম|for today/i.test(sName)) return 'english1';
-            if (code === '104' || /english.*2|eng.*2|ইংরেজি ২য়|grammar/i.test(sName)) return 'english2';
-            if (code === '105' || /math|গণিত/i.test(sName)) return 'math';
-            if (code === '107' || /bgs|global studies|বিশ্বপরিচয়/i.test(sName)) return 'bgs';
-            if (code === '1111' || /physics|পদার্থ/i.test(sName)) return 'phys';
-            if (code === '135' || /chemistry|রসায়ন/i.test(sName)) return 'chem';
-            if (code === '108' || /science|বিজ্ঞান/i.test(sName)) return 'chem'; // General Science maps to slot 5 (chem)
-            if (code === '180' || /biology|জীববিজ্ঞান/i.test(sName)) return 'bio';
-            if (['110', '111', '112', '113'].includes(code) || /religion|islam|hindu|ধর্ম/i.test(sName)) return 'rel';
-            if (code === '106' || /ict|information.*tech|যোগাযোগ/i.test(sName)) return 'ict';
-            if (['109', '126', '505'].includes(code) || /agri|কৃষি|higher.*math|উচ্চতর/i.test(sName)) return 'agri';
-
-            return null;
-        }
 
         function populateStudentMarksFromDatabase() {
             const pracStatus = getSubjectPracticalStatus();
@@ -3824,9 +4195,10 @@
                 const stId = row.getAttribute('data-student-id');
                 const stCode = row.getAttribute('data-student-code');
                 const stRoll = row.getAttribute('data-student-roll');
+                const stReg = row.getAttribute('data-student-reg');
 
                 // If this is a database student row
-                if (stId || stCode || stRoll) {
+                if (stId || stCode || stRoll || stReg) {
                     // Reset all mark cells (index 2 to 61) to '-' before populating for the active exam
                     for (let c = 2; c <= 61; c++) {
                         cells[c].textContent = '-';
@@ -3841,12 +4213,16 @@
                         let markRecord = null;
                         if (stId && savedMarks[`marks_${stId}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stId}_${item.id}`];
+                        } else if (stReg && savedMarks[`marks_${stReg}_${item.id}`]) {
+                            markRecord = savedMarks[`marks_${stReg}_${item.id}`];
                         } else if (stCode && savedMarks[`marks_${stCode}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stCode}_${item.id}`];
                         } else if (stRoll && savedMarks[`marks_${stRoll}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stRoll}_${item.id}`];
                         } else if (stId && savedMarks[`marks_${stId}_${activeExam}`]) {
                             markRecord = savedMarks[`marks_${stId}_${activeExam}`];
+                        } else if (stReg && savedMarks[`marks_${stReg}_${activeExam}`]) {
+                            markRecord = savedMarks[`marks_${stReg}_${activeExam}`];
                         } else if (stCode && savedMarks[`marks_${stCode}_${activeExam}`]) {
                             markRecord = savedMarks[`marks_${stCode}_${activeExam}`];
                         } else if (stRoll && savedMarks[`marks_${stRoll}_${activeExam}`]) {
@@ -3983,6 +4359,7 @@
                     });
                 }
             });
+            recalculateTableGradesAndRanks();
         }
 
         function populateDynamicFilters() {
@@ -4104,7 +4481,7 @@
         if (defaultExam) filterExam(defaultExam);
         changePaperSize('A3');
         resetFontSize();
-        sortStudents('roll');
+        sortStudents('section_roll');
         const gpaMethodEl = document.getElementById('gpa-calc-method');
         if (gpaMethodEl) gpaMethodEl.value = currentGPACalcMethod;
 
@@ -4126,6 +4503,10 @@
             recalculateTableGradesAndRanks();
             highlightFailures();
             applyFilters();
+            const sortOrderEl = document.getElementById('sort-order');
+            if (sortOrderEl && sortOrderEl.value) {
+                sortStudents(sortOrderEl.value);
+            }
             const modal = document.getElementById('grading-system-modal');
             if (modal && modal.style.display !== 'none') {
                 renderGradingSystemModalContent();

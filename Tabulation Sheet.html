@@ -179,6 +179,11 @@
 
         }
 
+        body.reg-no-mode .roll-col,
+        body.reg-no-mode tbody tr td:first-child {
+            min-width: 52px;
+        }
+
 
 
         .name-col {
@@ -1316,7 +1321,7 @@
                     <select id="sort-order" onchange="sortStudents(this.value)">
                         <option value="section_roll">রোল অনুসারে সেকশন অনুযায়ী</option>
                         <option value="section_merit">মেধা অনুসারে সেকশন অনুযায়ী</option>
-                        <option value="class_id">আইডি অনুসারে Full Class</option>
+                        <option value="class_id">Reg No অনুসারে Full Class</option>
                         <option value="class_merit">মেধা অনুসারে Full Class</option>
                     </select>
                 </div>
@@ -2050,7 +2055,7 @@
 
             <tr>
 
-                <th rowspan="4" class="roll-col">রোল</th>
+                <th rowspan="4" class="roll-col" id="roll-col-header">রোল</th>
 
                 <th rowspan="4" class="name-col">শিক্ষার্থীর নাম</th>
 
@@ -4689,6 +4694,17 @@
 
             // 2. Translate non-subject table headers
             document.querySelectorAll('thead th:not([data-subj])').forEach(el => {
+                if (el.classList.contains('roll-col') || el.id === 'roll-col-header') {
+                    const sortOrderEl = document.getElementById('sort-order');
+                    const isFullClassReg = sortOrderEl && (sortOrderEl.value === 'class_id' || sortOrderEl.value === 'class_merit');
+                    if (isFullClassReg) {
+                        el.textContent = 'Reg No';
+                    } else {
+                        el.textContent = (lang === 'en') ? 'Roll' : 'রোল';
+                    }
+                    return;
+                }
+
                 const targetEl = el.querySelector('.v-text-inner') || el;
                 const gtTextSpan = targetEl.querySelector('.grand-total-text');
                 if (gtTextSpan) {
@@ -4940,7 +4956,7 @@
                     } else if (opt.value === 'section_merit' || opt.value === 'merit') {
                         opt.textContent = lang === 'en' ? 'Merit (Section-wise)' : 'মেধা অনুসারে সেকশন অনুযায়ী';
                     } else if (opt.value === 'class_id') {
-                        opt.textContent = lang === 'en' ? 'ID (Full Class)' : 'আইডি অনুসারে Full Class';
+                        opt.textContent = lang === 'en' ? 'Reg No (Full Class)' : 'Reg No অনুসারে Full Class';
                     } else if (opt.value === 'class_merit') {
                         opt.textContent = lang === 'en' ? 'Merit (Full Class)' : 'মেধা অনুসারে Full Class';
                     }
@@ -5636,7 +5652,7 @@
                     cells[66].textContent = displayFinalGrade;
                 }
 
-                const rollRaw = banglaToEnglishDigits(cells[0].textContent.trim());
+                const rollRaw = banglaToEnglishDigits((row.getAttribute('data-student-roll') || cells[0].textContent.trim()));
                 const digitsOnly = rollRaw.replace(/\D/g, '');
                 const sec = row.getAttribute('data-section') || 'Unassigned';
 
@@ -6878,6 +6894,35 @@
             recalculateTableGradesAndRanks();
         }
 
+        function updateRollOrRegDisplay(isRegMode) {
+            const rollColHeader = document.getElementById('roll-col-header') || document.querySelector('thead th.roll-col');
+            if (rollColHeader) {
+                if (isRegMode) {
+                    rollColHeader.textContent = 'Reg No';
+                } else {
+                    rollColHeader.textContent = (currentLang === 'en') ? 'Roll' : 'রোল';
+                }
+            }
+
+            if (isRegMode) {
+                document.body.classList.add('reg-no-mode');
+            } else {
+                document.body.classList.remove('reg-no-mode');
+            }
+
+            document.querySelectorAll('tbody tr[data-section]').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return;
+                if (isRegMode) {
+                    const reg = (row.getAttribute('data-student-reg') || row.getAttribute('data-student-code') || row.getAttribute('data-student-id') || row.getAttribute('data-student-roll') || '').trim();
+                    cells[0].textContent = translateDigits(reg, currentLang);
+                } else {
+                    const roll = (row.getAttribute('data-student-roll') || row.getAttribute('data-original-roll') || '').trim();
+                    cells[0].textContent = translateDigits(roll, currentLang);
+                }
+            });
+        }
+
         function sortStudents(criteria) {
             if (criteria === 'roll') criteria = 'section_roll';
             if (criteria === 'merit') criteria = 'section_merit';
@@ -6886,7 +6931,9 @@
             const sortSelect = document.getElementById('sort-order');
             if (sortSelect) sortSelect.value = criteria;
 
-            if (criteria === 'class_id' || criteria === 'class_merit') {
+            const isFullClassReg = (criteria === 'class_id' || criteria === 'class_merit');
+
+            if (isFullClassReg) {
                 currentFilterSection = 'all';
                 currentFilterGroup = 'all';
                 const secFilter = document.getElementById('section-filter');
@@ -6917,11 +6964,10 @@
 
             // Sorting helper 1: By Roll (within section)
             const sortByRoll = (a, b) => {
-                const aCells = a.querySelectorAll('td');
-                const bCells = b.querySelectorAll('td');
-                if (aCells.length === 0 || bCells.length === 0) return 0;
-                const textA = banglaToEnglishDigits(aCells[0].textContent.trim());
-                const textB = banglaToEnglishDigits(bCells[0].textContent.trim());
+                const rollAVal = a.getAttribute('data-student-roll') || (a.querySelector('td') ? a.querySelector('td').textContent.trim() : '');
+                const rollBVal = b.getAttribute('data-student-roll') || (b.querySelector('td') ? b.querySelector('td').textContent.trim() : '');
+                const textA = banglaToEnglishDigits(rollAVal);
+                const textB = banglaToEnglishDigits(rollBVal);
                 const numA = parseInt(textA.replace(/\D/g, ''), 10);
                 const numB = parseInt(textB.replace(/\D/g, ''), 10);
                 if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
@@ -6950,17 +6996,19 @@
                 const gpaB = parseFloat(banglaToEnglishDigits(bCells[65].textContent.trim())) || 0;
                 if (gpaA !== gpaB) return gpaB - gpaA;
 
-                const rollA = parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
-                const rollB = parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
+                const rollAVal = a.getAttribute('data-student-roll') || (aCells.length > 0 ? aCells[0].textContent.trim() : '');
+                const rollBVal = b.getAttribute('data-student-roll') || (bCells.length > 0 ? bCells[0].textContent.trim() : '');
+                const rollA = rollAVal ? (parseInt(banglaToEnglishDigits(rollAVal).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = rollBVal ? (parseInt(banglaToEnglishDigits(rollBVal).replace(/\D/g, ''), 10) || 0) : 0;
                 return rollA - rollB;
             };
 
-            // Sorting helper 3: By Student ID (Full Class)
+            // Sorting helper 3: By Student Reg No (Full Class)
             const sortByClassId = (a, b) => {
-                const codeA = (a.getAttribute('data-student-code') || a.getAttribute('data-student-id') || a.getAttribute('data-student-roll') || '').trim();
-                const codeB = (b.getAttribute('data-student-code') || b.getAttribute('data-student-id') || b.getAttribute('data-student-roll') || '').trim();
-                const cleanA = banglaToEnglishDigits(codeA);
-                const cleanB = banglaToEnglishDigits(codeB);
+                const regA = (a.getAttribute('data-student-reg') || a.getAttribute('data-student-code') || a.getAttribute('data-student-id') || a.getAttribute('data-student-roll') || '').trim();
+                const regB = (b.getAttribute('data-student-reg') || b.getAttribute('data-student-code') || b.getAttribute('data-student-id') || b.getAttribute('data-student-roll') || '').trim();
+                const cleanA = banglaToEnglishDigits(regA);
+                const cleanB = banglaToEnglishDigits(regB);
                 const digitsA = cleanA.replace(/\D/g, '');
                 const digitsB = cleanB.replace(/\D/g, '');
                 const numA = digitsA ? parseInt(digitsA, 10) : NaN;
@@ -6980,10 +7028,10 @@
                 if (secA !== secB) return secA.localeCompare(secB);
 
                 // Tie breaker: Roll number
-                const aCells = a.querySelectorAll('td');
-                const bCells = b.querySelectorAll('td');
-                const rollA = aCells.length > 0 ? (parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0) : 0;
-                const rollB = bCells.length > 0 ? (parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollAVal = a.getAttribute('data-student-roll') || '';
+                const rollBVal = b.getAttribute('data-student-roll') || '';
+                const rollA = rollAVal ? (parseInt(banglaToEnglishDigits(rollAVal).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = rollBVal ? (parseInt(banglaToEnglishDigits(rollBVal).replace(/\D/g, ''), 10) || 0) : 0;
                 return rollA - rollB;
             };
 
@@ -7011,8 +7059,10 @@
                 const secB = (b.getAttribute('data-section') || '').toUpperCase();
                 if (secA !== secB) return secA.localeCompare(secB);
 
-                const rollA = parseInt(banglaToEnglishDigits(aCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
-                const rollB = parseInt(banglaToEnglishDigits(bCells[0].textContent.trim()).replace(/\D/g, ''), 10) || 0;
+                const rollAVal = a.getAttribute('data-student-roll') || (aCells.length > 0 ? aCells[0].textContent.trim() : '');
+                const rollBVal = b.getAttribute('data-student-roll') || (bCells.length > 0 ? bCells[0].textContent.trim() : '');
+                const rollA = rollAVal ? (parseInt(banglaToEnglishDigits(rollAVal).replace(/\D/g, ''), 10) || 0) : 0;
+                const rollB = rollBVal ? (parseInt(banglaToEnglishDigits(rollBVal).replace(/\D/g, ''), 10) || 0) : 0;
                 return rollA - rollB;
             };
 
@@ -7095,6 +7145,7 @@
                 });
             }
 
+            updateRollOrRegDisplay(isFullClassReg);
             applyFilters();
         }
 
@@ -7666,6 +7717,7 @@
                     if (idx < dbList.length) {
                         const dbStudent = dbList[idx];
                         const displayRoll = getStudentIdRoll(dbStudent);
+                        const displayReg = (dbStudent.regNo || dbStudent.registrationNo || dbStudent.registration || dbStudent.reg || dbStudent.studentId || dbStudent.id || displayRoll || '').toString().trim();
 
                         const dbBn = dbStudent.nameBn || dbStudent.name || dbStudent.studentName || '';
                         const dbEn = dbStudent.name || dbStudent.studentName || dbStudent.nameBn || '';
@@ -7673,9 +7725,14 @@
                         const cleanBn = dbBn.replace(/\s*[-—–]\s*[SABsab]\s*$/, '');
                         const cleanEn = dbEn.replace(/\s*[-—–]\s*[SABsab]\s*$/, '');
 
-                        rollCell.textContent = translateDigits(displayRoll, currentLang);
+                        const sortOrderEl = document.getElementById('sort-order');
+                        const currentSortVal = sortOrderEl ? sortOrderEl.value : 'section_roll';
+                        const isFullClassReg = (currentSortVal === 'class_id' || currentSortVal === 'class_merit');
+
+                        rollCell.textContent = isFullClassReg ? translateDigits(displayReg, currentLang) : translateDigits(displayRoll, currentLang);
                         rollCell.setAttribute('data-original-roll', displayRoll);
                         rollCell.setAttribute('data-db-roll', displayRoll);
+                        rollCell.setAttribute('data-db-reg', displayReg);
 
                         nameCell.textContent = currentLang === 'en' ? cleanEn : cleanBn;
                         nameCell.setAttribute('data-original-bn', cleanBn);
@@ -7684,6 +7741,7 @@
                         row.setAttribute('data-student-id', dbStudent.id || '');
                         row.setAttribute('data-student-code', dbStudent.studentId || '');
                         row.setAttribute('data-student-roll', displayRoll);
+                        row.setAttribute('data-student-reg', displayReg);
                         row.setAttribute('data-class', currentFilterClass);
                         row.setAttribute('data-exam', currentFilterExam);
                         row.setAttribute('data-has-student', 'true');
@@ -7709,6 +7767,7 @@
                         row.removeAttribute('data-student-id');
                         row.removeAttribute('data-student-code');
                         row.removeAttribute('data-student-roll');
+                        row.removeAttribute('data-student-reg');
                     }
                 });
             });
@@ -7742,6 +7801,20 @@
                     row.style.display = (currentFilterSection === 'all' || secName === currentFilterSection) ? '' : 'none';
                 }
             });
+
+            const rollColHeader = document.getElementById('roll-col-header') || document.querySelector('thead th.roll-col');
+            if (rollColHeader) {
+                if (isFullClassSort) {
+                    rollColHeader.textContent = 'Reg No';
+                } else {
+                    rollColHeader.textContent = (currentLang === 'en') ? 'Roll' : 'রোল';
+                }
+            }
+            if (isFullClassSort) {
+                document.body.classList.add('reg-no-mode');
+            } else {
+                document.body.classList.remove('reg-no-mode');
+            }
 
             // Dynamically update section-filter dropdown with actually available sections from Exam List
             updateSectionFilterOptions();
@@ -7832,9 +7905,10 @@
                 const stId = row.getAttribute('data-student-id');
                 const stCode = row.getAttribute('data-student-code');
                 const stRoll = row.getAttribute('data-student-roll');
+                const stReg = row.getAttribute('data-student-reg');
 
                 // If this is a database student row
-                if (stId || stCode || stRoll) {
+                if (stId || stCode || stRoll || stReg) {
                     // Reset all mark cells (index 2 to 61) to '-' before populating for the active exam
                     for (let c = 2; c <= 61; c++) {
                         cells[c].textContent = '-';
@@ -7849,12 +7923,16 @@
                         let markRecord = null;
                         if (stId && savedMarks[`marks_${stId}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stId}_${item.id}`];
+                        } else if (stReg && savedMarks[`marks_${stReg}_${item.id}`]) {
+                            markRecord = savedMarks[`marks_${stReg}_${item.id}`];
                         } else if (stCode && savedMarks[`marks_${stCode}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stCode}_${item.id}`];
                         } else if (stRoll && savedMarks[`marks_${stRoll}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stRoll}_${item.id}`];
                         } else if (stId && savedMarks[`marks_${stId}_${activeExam}`]) {
                             markRecord = savedMarks[`marks_${stId}_${activeExam}`];
+                        } else if (stReg && savedMarks[`marks_${stReg}_${activeExam}`]) {
+                            markRecord = savedMarks[`marks_${stReg}_${activeExam}`];
                         } else if (stCode && savedMarks[`marks_${stCode}_${activeExam}`]) {
                             markRecord = savedMarks[`marks_${stCode}_${activeExam}`];
                         } else if (stRoll && savedMarks[`marks_${stRoll}_${activeExam}`]) {
@@ -8135,6 +8213,10 @@
             recalculateTableGradesAndRanks();
             highlightFailures();
             applyFilters();
+            const sortOrderEl = document.getElementById('sort-order');
+            if (sortOrderEl && sortOrderEl.value) {
+                sortStudents(sortOrderEl.value);
+            }
             const modal = document.getElementById('grading-system-modal');
             if (modal && modal.style.display !== 'none') {
                 renderGradingSystemModalContent();
