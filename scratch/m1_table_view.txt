@@ -1,0 +1,100 @@
+2851: function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
+2852:     const tbody = document.getElementById('transcript-tbody-1');
+2853:     if (tbody) {
+2854:         updateTableHeaderMarks(exam, selectedClass);
+2855:     }
+2856:     if (!tbody) return;
+2857: 
+2858:     const isEn = (currentLanguage === 'en');
+2859:     const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+2860:     const summary = calculateOverallMarksheetSummary(subjects, exam, selectedClass);
+2861: 
+2862:     let tableHtml = '';
+2863:     let hasCompulsoryHeader = false;
+2864:     let hasElectiveHeader = false;
+2865:     let hasOptionalHeader = false;
+2866: 
+2867:     summary.evaluatedSubjects.forEach(({ sub, res, isOpt }) => {
+2868:         if (!hasCompulsoryHeader && (!sub.group || sub.group === 'compulsory')) {
+2869:             tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
+2870:             hasCompulsoryHeader = true;
+2871:         } else if (!hasElectiveHeader && sub.group === 'elective') {
+2872:             tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
+2873:             hasElectiveHeader = true;
+2874:         } else if (!hasOptionalHeader && sub.group === 'optional') {
+2875:             tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
+2876:             hasOptionalHeader = true;
+2877:         }
+2878: 
+2879:         if (sub.isCombined) {
+2880:             const hasPaperMarks = res.hasMarks;
+2881:             const m1 = res.p1Total;
+2882:             const m2 = res.p2Total;
+2883:             const combTotal = res.total;
+2884: 
+2885:             const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+2886:                                   (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+2887:             const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+2888:                                   (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+2889: 
+2890:             const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+2891:             const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+2892:             const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+2893:             const p1TotDisplay = (hasPaperMarks && m1 !== null) ? formatDigits(m1) : '<span class="blank-field">—</span>';
+2894: 
+2895:             const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '<span class="blank-field">—</span>');
+2896:             const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '<span class="blank-field">—</span>';
+2897:             const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '<span class="blank-field">—</span>');
+2898:             const p2TotDisplay = (hasPaperMarks && m2 !== null) ? formatDigits(m2) : '<span class="blank-field">—</span>';
+2899: 
+2900:             const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '<span class="blank-field">—</span>';
+2901:             const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+2902:             const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+2903: 
+2904:             const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+2905:             const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+2906:             const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+2907:             const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+2908: 
+2909:             tableHtml += `<tr>
+2910:                 <td class="sub-name">${p1NameHtml}</td>
+2911:                 <td>${p1McqDisplay}</td>
+2912:                 <td>${p1CqDisplay}</td>
+2913:                 <td>${p1PrDisplay}</td>
+2914:                 <td>${p1TotDisplay}</td>
+2915:                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combTotDisplay}</td>
+2916:                 <td rowspan="2" style="font-weight:800; color:#000000;">${combGradeDisplay}</td>
+2917:                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combGpDisplay}</td>
+2918:             </tr>
+2919:             <tr>
+2920:                 <td class="sub-name">${p2NameHtml}</td>
+2921:                 <td>${p2McqDisplay}</td>
+2922:                 <td>${p2CqDisplay}</td>
+2923:                 <td>${p2PrDisplay}</td>
+2924:                 <td>${p2TotDisplay}</td>
+2925:             </tr>`;
+2926:         } else {
+2927:             const isOptional = sub.group === 'optional';
+2928:             const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+2929:                                 (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+2930: 
+2931:             const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+2932:             const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+2933:             const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+2934:             const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+2935:             const totDisplay = res.hasMarks ? formatDigits(res.total) : '<span class="blank-field">—</span>';
+2936:             const gradeDisplay = res.hasMarks ? res.grade : '—';
+2937:             const gpDisplay = res.hasMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+2938: 
+2939:             const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+2940:             const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+2941: 
+2942:             tableHtml += `<tr style="${isOptional ? 'background:#f0fdf4;' : ''}">
+2943:                 <td class="sub-name">${subNameHtml}</td>
+2944:                 <td>${mcqDisplay}</td>
+2945:                 <td>${cqDisplay}</td>
+2946:                 <td>${prDisplay}</td>
+2947:                 <td>${totDisplay}</td>
+2948:                 <td>${totDisplay}</td>
+2949:                 <td style="font-weight:800; color:#000000;">${gradeDisplay}</td>
+2950:                 <td>${gpDisplay}</td>

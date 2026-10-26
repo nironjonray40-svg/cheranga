@@ -1,0 +1,22 @@
+Line 1237:                     <label for="class-filter">ক্লাস:</label>
+Line 1238:                     <select id="class-filter" onchange="filterClass(this.value)">
+Line 1248:                     <label for="exam-filter">পরীক্ষা:</label>
+Line 1249:                     <select id="exam-filter" onchange="filterExam(this.value)">
+Line 4691:                     const classSelect = document.getElementById('class-filter');
+Line 4722:             const activeExam = (currentFilterExam || document.getElementById('exam-filter')?.value || 'all').trim();
+Line 5484:             const classSelect = document.getElementById('class-filter');
+Line 5510:             const examSelect = document.getElementById('exam-filter');
+Line 6432:             const classSelect = document.getElementById('class-filter');
+Line 6462:             const classSelect = document.getElementById('class-filter');
+Line 7350:             const examSelect = document.getElementById('exam-filter');
+Line 7551:             const examSelect = document.getElementById('exam-filter');
+Line 7661:                 const clsVal = (row.getAttribute('data-class') || (document.getElementById('class-filter') ? document.getElementById('class-filter').value : '') || currentFilterClass || '').toString().toLowerCase().trim();
+Line 7979:         function filterClass(val) {
+Line 7981:             const filterEl = document.getElementById('class-filter');
+Line 8034:         function filterExam(val) {
+Line 8036:             const filterEl = document.getElementById('exam-filter');
+Line 8934:             const classSelect = document.getElementById('class-filter');
+Line 9034:         const defaultClass = document.getElementById('class-filter')?.value || currentFilterClass;
+Line 9035:         const defaultExam = document.getElementById('exam-filter')?.value || currentFilterExam;
+Line 9042:         filterClass(defaultClass);
+Line 9043:         if (defaultExam) filterExam(defaultExam);

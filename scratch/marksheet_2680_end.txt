@@ -1,0 +1,320 @@
+2681:             } catch(e) {}
+2682:         }
+2683:         initSubjectMarksBreakdownPreference();
+2684: 
+2685:         function renderMarksheetTable(selectedClass, selectedSection, student, exam) {
+2686:             const tbody = document.getElementById('marksheet-tbody');
+2687:             if (tbody) {
+2688:                 updateTableHeaderMarks(exam, selectedClass);
+2689:             }
+2690:             if (!tbody) return;
+2691: 
+2692:             const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+2693:             const summary = calculateOverallMarksheetSummary(subjects, exam, selectedClass);
+2694: 
+2695:             let tableHtml = '';
+2696: 
+2697:             summary.evaluatedSubjects.forEach(({ sub, res, isOpt }) => {
+2698:                 if (sub.isCombined) {
+2699:                     const hasPaperMarks = res.hasMarks;
+2700:                     const m1 = res.p1Total;
+2701:                     const m2 = res.p2Total;
+2702:                     const combTotal = res.total;
+2703: 
+2704:                     const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+2705:                                           (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+2706:                     const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+2707:                                           (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+2708: 
+2709:                     const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+2710:                     const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+2711:                     const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+2712:                     const p1TotDisplay = (hasPaperMarks && m1 !== null) ? formatDigits(m1) : '—';
+2713: 
+2714:                     const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
+2715:                     const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
+2716:                     const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
+2717:                     const p2TotDisplay = (hasPaperMarks && m2 !== null) ? formatDigits(m2) : '—';
+2718: 
+2719:                     const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
+2720:                     const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+2721:                     const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+2722: 
+2723:                     const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+2724:                     const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+2725: 
+2726:                     const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+2727:                     const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+2728: 
+2729:                     tableHtml += `<tr>
+2730:                         <td class="subject-col">${p1NameHtml}</td>
+2731:                         <td>${p1McqDisplay}</td>
+2732:                         <td>${p1CqDisplay}</td>
+2733:                         <td>${p1PrDisplay}</td>
+2734:                         <td>${p1TotDisplay}</td>
+2735:                         <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combTotDisplay}</td>
+2736:                         <td rowspan="2" style="font-weight: bold;">${combGradeDisplay}</td>
+2737:                         <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
+2738:                     </tr>
+2739:                     <tr>
+2740:                         <td class="subject-col">${p2NameHtml}</td>
+2741:                         <td>${p2McqDisplay}</td>
+2742:                         <td>${p2CqDisplay}</td>
+2743:                         <td>${p2PrDisplay}</td>
+2744:                         <td>${p2TotDisplay}</td>
+2745:                     </tr>`;
+2746:                 } else {
+2747:                     const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+2748:                                         (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+2749: 
+2750:                     const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+2751:                     const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+2752:                     const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+2753:                     const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+2754:                     const totDisplay = res.hasMarks ? formatDigits(res.total) : '—';
+2755:                     const gradeDisplay = res.hasMarks ? res.grade : '—';
+2756:                     const gpDisplay = res.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+2757: 
+2758:                     const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+2759:                     const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+2760: 
+2761:                     tableHtml += `<tr>
+2762:                         <td class="subject-col">${subNameHtml}</td>
+2763:                         <td>${mcqDisplay}</td>
+2764:                         <td>${cqDisplay}</td>
+2765:                         <td>${prDisplay}</td>
+2766:                         <td>${totDisplay}</td>
+2767:                         <td style="font-weight: bold; background: #f8fafc;">${totDisplay}</td>
+2768:                         <td style="font-weight: bold;">${gradeDisplay}</td>
+2769:                         <td style="font-weight: bold; background: #f8fafc;">${gpDisplay}</td>
+2770:                     </tr>`;
+2771:                 }
+2772:             });
+2773: 
+2774:             const zeroGpaStr = isEn ? '0.00' : '০.০০';
+2775:             const finalGpaStr = summary.hasAnyMarks ? ((summary.hasFailed || summary.hasAnyAbsent) ? zeroGpaStr : formatDigits(summary.finalGPA.toFixed(2))) : '—';
+2776:             const finalGrade = summary.hasAnyMarks ? (summary.hasAnyAbsent ? 'A' : (summary.hasFailed ? (summary.failRule.name || 'F') : summary.finalGradeName)) : '—';
+2777:             const grandTotalDisplay = summary.hasAnyMarks ? formatDigits(summary.grandTotal) : '—';
+2778:             const rankStr = formatDigits(rankNum);
+2779:             return `
+2780:             <div class="mark-sheet-container" style="margin-bottom: 25px;">
+2781:                 <div class="mark-sheet-border">
+2782:                     <!-- Header Section -->
+2783:                     <div class="header-section">
+2784:                         ${getGradingScaleTableHTML()}
+2785: 
+2786:                         <div class="header-center">
+2787:                             <h1 class="school-name">${schoolName}</h1>
+2788:                             <p class="address">${addressText}</p>
+2789:                             <div class="logo">
+2790:                                 <img src="${customLogo}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;">
+2791:                             </div>
+2792:                             <div class="exam-badge">${examBadgeTitle}</div>
+2793:                         </div>
+2794:                     </div>
+2795: 
+2796:                     <!-- Student Info Section -->
+2797:                     <div class="student-info">
+2798:                         <div style="flex: 1.1;">
+2799:                             <div class="info-row">
+2800:                                 <div class="info-label">${isEn ? "Student Name" : "শিক্ষার্থীর নাম"}</div>
+2801:                                 <div>: <span>${studentName}</span></div>
+2802:                             </div>
+2803:                             <div class="info-row">
+2804:                                 <div class="info-label">${isEn ? "Roll No" : "রোল নং"}</div>
+2805:                                 <div>: <span>${formatDigits(rollNo)}</span></div>
+2806:                             </div>
+2807:                             <div class="info-row">
+2808:                                 <div class="info-label">${isEn ? "Class" : "শ্রেণি"}</div>
+2809:                                 <div>: <span>${displayCls}</span> <span class="branch-info" style="margin-left: 20px;">${isEn ? "Section = " + displaySec : "শাখা = " + displaySec}</span></div>
+2810:                             </div>
+2811:                         </div>
+2812:                         <div style="flex: 0.9; padding-left: 20px;">
+2813:                             <div class="info-row">
+2814:                                 <div class="info-label" style="width: 125px;">${isEn ? "Religion" : "ধর্ম (Religion)"}</div>
+2815:                                 <div>: <span>${displayRel}</span></div>
+2816:                             </div>
+2817:                             ${isSecondary ? `
+2818:                             <div class="info-row">
+2819:                                 <div class="info-label" style="width: 125px;">${isEn ? "Optional (4th)" : "ঐচ্ছিক বিষয় (৪র্থ)"}</div>
+2820:                                 <div>: <span>${displayOpt}</span></div>
+2821:                             </div>` : ''}
+2822:                             <div class="info-row">
+2823:                                 <div class="info-label" style="width: 125px;">${isEn ? "Student ID" : "শিক্ষার্থী আইডি"}</div>
+2824:                                 <div>: <span>${formatDigits(studentId)}</span></div>
+2825:                             </div>
+2826:                         </div>
+2827:                     </div>
+2828: 
+2829:                     <!-- Marks Table -->
+2830:                     <table class="marks-table">
+2831:                         <thead>
+2832:                             <tr>
+2833:                                 <th class="subject-col">${isEn ? "Subject" : "বিষয়"}</th>
+2834:                                 <th>${isEn ? "MCQ" : "বহুনির্বাচনি"}</th>
+2835:                                 <th>${isEn ? "CQ" : "লিখিত"}</th>
+2836:                                 <th>${isEn ? "Practical" : "ব্যবহারিক"}</th>
+2837:                                 <th>${isEn ? "Total" : "মোট"}</th>
+2838:                                 <th>${isEn ? "Total" : "সর্বমোট"}</th>
+2839:                                 <th>${isEn ? "Grade" : "গ্রেড"}</th>
+2840:                                 <th>${isEn ? "GPA" : "পয়েন্ট"}</th>
+2841:                             </tr>
+2842:                         </thead>
+2843:                         <tbody>
+2844:                             ${tableHtml}
+2845:                         </tbody>
+2846:                     </table>
+2847: 
+2848:                     <!-- Bottom Tables -->
+2849:                     <div class="bottom-section">
+2850:                         <table class="rank-table">
+2851:                             <tr>
+2852:                                 <td style="width: 50%;">${isEn ? "Rank" : "স্থান"}</td>
+2853:                                 <td style="width: 50%;">${rankStr}</td>
+2854:                             </tr>
+2855:                         </table>
+2856: 
+2857:                         <table class="summary-table">
+2858:                             <tr>
+2859:                                 <td style="width: 50%;">${isEn ? "Total Marks" : "সর্বমোট"}</td>
+2860:                                 <td style="width: 50%;">${grandTotalDisplay}</td>
+2861:                             </tr>
+2862:                             <tr>
+2863:                                 <td>${isEn ? "GPA" : "পয়েন্ট"}</td>
+2864:                                 <td>${finalGpaStr}</td>
+2865:                             </tr>
+2866:                             <tr>
+2867:                                 <td>${isEn ? "Grade" : "গ্রেড"}</td>
+2868:                                 <td>${finalGrade}</td>
+2869:                             </tr>
+2870:                         </table>
+2871:                     </div>
+2872: 
+2873:                     <!-- Signatures Section -->
+2874:                     <div class="signatures">
+2875:                         <div class="sig-col">
+2876:                             <div class="sig-line"></div>
+2877:                             <div class="sig-label">${isEn ? "Guardian's Signature" : "অভিভাবকের স্বাক্ষর"}</div>
+2878:                         </div>
+2879:                         <div class="sig-col">
+2880:                             <div class="sig-line"></div>
+2881:                             <div class="sig-label">${isEn ? "Headmaster's Signature" : "প্রধান শিক্ষকের স্বাক্ষর"}</div>
+2882:                         </div>
+2883:                     </div>
+2884:                 </div>
+2885:             </div>`;
+2886:         }
+2887: 
+2888:         function renderBatchMarksheets(selectedClass, selectedSection, exam) {
+2889:             const batchContainer = document.getElementById('batch-marksheets-container');
+2890:             const singleContainer = document.getElementById('single-marksheet-container');
+2891:             if (!batchContainer) return;
+2892: 
+2893:             const allStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
+2894:             const isFiltered = Boolean(currentSearchQuery);
+2895:             const students = isFiltered
+2896:                 ? allStudents.filter(st => matchesStudentQuery(st, currentSearchQuery))
+2897:                 : allStudents;
+2898: 
+2899:             if (students.length === 0) {
+2900:                 batchContainer.innerHTML = `
+2901:                 <div class="batch-status-banner no-print" style="flex-direction: column; text-align: center; padding: 25px 20px; gap: 12px; justify-content: center; margin: 20px auto;">
+2902:                     <div style="font-size: 16px; font-weight: 700; color: #f87171;">
+2903:                         "${escapeHtml(currentSearchQuery)}" এর সাথে কোনো শিক্ষার্থীর মার্কশীট পাওয়া যায়নি!
+2904:                     </div>
+2905:                     <div style="font-size: 13px; color: #cbd5e1;">
+2906:                         রোল নম্বর, শিক্ষার্থীর নাম অথবা আইডি পুনরায় যাচাই করুন।
+2907:                     </div>
+2908:                     <button type="button" class="btn-batch-action btn-batch-single" onclick="clearStudentSearch()" style="background: #3b82f6; color: #fff; margin-top: 5px; padding: 6px 16px;">
+2909:                         সকল শিক্ষার্থীর মার্কশীট প্রদর্শন করুন
+2910:                     </button>
+2911:                 </div>`;
+2912:                 batchContainer.style.display = 'block';
+2913:                 if (singleContainer) singleContainer.style.display = 'none';
+2914:                 return;
+2915:             }
+2916: 
+2917:             let html = `
+2918:             <div class="batch-status-banner no-print">
+2919:                 <div class="batch-info">
+2920:                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+2921:                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+2922:                         <circle cx="9" cy="7" r="4"></circle>
+2923:                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+2924:                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+2925:                     </svg>
+2926:                     <span>শ্রেণি: <strong>${selectedClass}</strong> | শাখা: <strong>${selectedSection}</strong> | পরীক্ষা: <strong>${exam}</strong></span>
+2927:                     <span class="badge-count">মোট ${toBnDigits(students.length)} জন শিক্ষার্থী${isFiltered ? ' (অনুসন্ধান)' : ''}</span>
+2928:                 </div>
+2929:                 <div class="batch-actions">
+2930:                     ${isFiltered ? `
+2931:                     <button type="button" class="btn-batch-action btn-batch-single" onclick="clearStudentSearch()" title="সার্চ মুছুন এবং সকল শিক্ষার্থী দেখুন">
+2932:                         <span>সকল শিক্ষার্থী</span>
+2933:                     </button>` : ''}
+2934:                     <button type="button" class="btn-batch-action btn-batch-print" onclick="window.print()" title="প্রদর্শিত সকল শিক্ষার্থীর মার্কশীট প্রিন্ট করুন">
+2935:                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+2936:                             <polyline points="6 9 6 2 18 2 18 9"></polyline>
+2937:                             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+2938:                             <rect x="6" y="14" width="12" height="8"></rect>
+2939:                         </svg>
+2940:                         <span>Print ${isFiltered ? 'Filtered' : 'All'}</span>
+2941:                     </button>
+2942:                     <button type="button" class="btn-batch-action btn-batch-single" onclick="toggleCreateAll()" title="একক শিক্ষার্থী ভিউতে ফিরে যান">
+2943:                         <span>Single View</span>
+2944:                     </button>
+2945:                 </div>
+2946:             </div>`;
+2947: 
+2948:             students.forEach((st, idx) => {
+2949:                 html += generateMarksheetCardHTML(st, selectedClass, selectedSection, exam, idx + 1);
+2950:             });
+2951: 
+2952:             batchContainer.innerHTML = html;
+2953:             batchContainer.style.display = 'block';
+2954:             if (singleContainer) singleContainer.style.display = 'none';
+2955:         }
+2956: 
+2957:         function updateMarksheetExam(val) {
+2958:             localStorage.setItem('school_marksheet_exam', val);
+2959:             syncCascadingFilters('exam_changed');
+2960:         }
+2961: 
+2962:         function updateMarksheetClass(val) {
+2963:             localStorage.setItem('school_marksheet_class', val);
+2964:             if (currentSelectedStudent && normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className) !== normalizeClassString(val)) {
+2965:                 currentSelectedStudent = null;
+2966:                 currentSearchQuery = '';
+2967:                 const input = document.getElementById('filter-student-search');
+2968:                 const clearBtn = document.getElementById('btn-clear-search');
+2969:                 if (input) input.value = '';
+2970:                 if (clearBtn) clearBtn.style.display = 'none';
+2971:             }
+2972:             syncCascadingFilters('class_changed');
+2973:         }
+2974: 
+2975:         function updateMarksheetSection(val) {
+2976:             localStorage.setItem('school_marksheet_section', val);
+2977:             if (currentSelectedStudent && normalizeSectionString(currentSelectedStudent.section || currentSelectedStudent.group) !== normalizeSectionString(val)) {
+2978:                 currentSelectedStudent = null;
+2979:                 currentSearchQuery = '';
+2980:                 const input = document.getElementById('filter-student-search');
+2981:                 const clearBtn = document.getElementById('btn-clear-search');
+2982:                 if (input) input.value = '';
+2983:                 if (clearBtn) clearBtn.style.display = 'none';
+2984:             }
+2985:             syncCascadingFilters('section_changed');
+2986:         }
+2987: 
+2988:         function switchTemplate(val) {
+2989:             let extra = isCreateAllMode ? '?mode=all' : '?mode=single';
+2990:             const roll = currentSelectedStudent ? (currentSelectedStudent.roll || currentSelectedStudent.rollNo) : '';
+2991:             if (roll) {
+2992:                 extra += '&roll=' + encodeURIComponent(toEnDigits(roll));
+2993:             }
+2994:             if (currentLanguage) {
+2995:                 extra += '&lang=' + encodeURIComponent(currentLanguage);
+2996:             }
+2997:             if (val === 'Temp-01') {
+2998:                 window.location.href = 'Marksheet.html' + extra;
+2999:             } else if (val === 'Temp-02') {
+3000:                 window.location.href = 'Marksheet1.html' + extra;

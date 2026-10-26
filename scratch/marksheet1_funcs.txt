@@ -1,0 +1,10 @@
+2851: function renderMarksheet1Table(selectedClass, selectedSection, student, exam) {
+2862:     let tableHtml = '';
+2863:     let hasCompulsoryHeader = false;
+2864:     let hasElectiveHeader = false;
+2865:     let hasOptionalHeader = false;
+3106: function renderBatchMarksheets1(selectedClass, selectedSection, exam) {
+3135:     let html = `
+3175: function updateMarksheetExam(val) {
+3177:     syncCascadingFilters('exam_changed');
+3180: function updateMarksheetClass(val) {

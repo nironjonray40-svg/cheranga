@@ -1,0 +1,155 @@
+3396:             <!-- SUB-VIEW 0: DASHBOARD (DEFAULT OVERVIEW) -->
+3397:             <div id="subview-dashboard" class="portal-sub-view">
+3398:                 <div class="quick-nav-grid">
+3399:                     <div class="quick-nav-card" onclick="navigateExamView('exam-entry')">
+3400:                         <div class="quick-nav-icon" style="color:var(--neon-purple);">
+3401:                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+3402:                                 <path
+3403:                                     d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+3404:                             </svg>
+3405:                         </div>
+3406:                         <h4>Exam List</h4>
+3407:                         <p>Manage exam schedules & routines</p>
+3408:                     </div>
+3409:                     <div class="quick-nav-card" onclick="navigateExamView('omr-reader')">
+3410:                         <div class="quick-nav-icon" style="color: #ec4899;">
+3411:                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+3412:                                 <path
+3413:                                     d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+3414:                             </svg>
+3415:                         </div>
+3416:                         <h4>Omr Reder</h4>
+3417:                         <p>ওএমআর শিট মূল্যায়ন ও রেজাল্ট প্রসেসর</p>
+3418:                     </div>
+3419:                     <div class="quick-nav-card" onclick="navigateExamView('sms')">
+3420:                         <div class="quick-nav-icon" style="color:var(--neon-green);">
+3421:                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+3422:                                 <path
+3423:                                     d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
+3424:                             </svg>
+3425:                         </div>
+3426:                         <h4>SMS</h4>
+3427:                         <p>Notify guardians in real-time</p>
+3428:                     </div>
+3429:                     <div class="quick-nav-card" onclick="navigateExamView('all-subject')">
+3430:                         <div class="quick-nav-icon" style="color:var(--neon-pink);">
+3431:                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+3432:                                 <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+3433:                             </svg>
+3434:                         </div>
+3435:                         <h4>All Subject</h4>
+3436:                         <p>List & assign class subjects</p>
+3437:                     </div>
+3438:                     <div class="quick-nav-card" onclick="navigateExamView('exam-names')">
+3439:                         <div class="quick-nav-icon" style="color:var(--neon-purple);">
+3440:                             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2">
+3441:                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+3442:                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+3443:                             </svg>
+3444:                         </div>
+3445:                         <h4>Exam Names</h4>
+3446:                         <p>পরীক্ষার নাম আপডেট ও পরিচালনা করুন</p>
+3447:                     </div>
+3448:                     <div class="quick-nav-card" onclick="navigateExamView('marking-system')">
+3449:                         <div class="quick-nav-icon" style="color:var(--neon-green);">
+3450:                             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+3451:                                 <path
+3452:                                     d="M12 2C6.48 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm1.01 16h-2v-2h2v2zm1.44-6.39l-.9.9c-.72.73-1.15 1.24-1.15 2.49h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.42 0-1.1-.9-2-2-2s-2 .9-2 2h-2c0-2.2 1.8-4 4-4s4 1.8 4 4c0 .88-.36 1.68-.96 2.3z" />
+3453:                             </svg>
+3454:                         </div>
+3455:                         <h4>Marking System</h4>
+3456:                         <p>Configure GPA scale & rules</p>
+3457:                     </div>
+3458:                 </div>
+3459: 
+3460:                 <div class="exam-layout">
+3461:                     <!-- Exam Schedule Summary (Full Exam List Table) -->
+3462:                     <div class="glass-card" style="margin-bottom: 25px;">
+3463:                         <div
+3464:                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+3465:                             <div style="display: flex; align-items: center; gap: 10px;">
+3466:                                 <h3 class="portal-form-title"
+3467:                                     style="margin-bottom:0; font-size:1.45rem; color: #0000ff; font-weight: 800; font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', serif;">
+3468:                                     Upcoming Exam Schedule Summary
+3469:                                 </h3>
+3470:                                 <span id="dashboard-total-exam-count"
+3471:                                     style="font-size: 1.15rem; color: var(--neon-cyan); font-weight: 700; font-family: 'Noto Rashi Hebrew', 'Tiro Bangla', serif;">
+3472:                                     (Total: 0)
+3473:                                 </span>
+3474:                             </div>
+3475:                             <div style="display: flex; gap: 10px; align-items: center;">
+3476:                                 <button class="btn-primary" onclick="navigateExamView('exam-entry')"
+3477:                                     style="background: rgba(0, 102, 255, 0.15); border: 1.5px solid rgba(0, 102, 255, 0.45); box-shadow: 0 4px 14px rgba(0, 102, 255, 0.2); padding: 8px 18px; border-radius: 20px; font-weight: 700; cursor: pointer; color: #000000; display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem;">
+3478:                                     <span>⚙️ Manage Exam List</span>
+3479:                                 </button>
+3480:                             </div>
+3481:                         </div>
+3482:                         <div style="overflow-x:auto; max-height:65vh;">
+3483:                             <table class="fee-list-table dark-teal-medium-2" style="font-size:1.02rem;">
+3484:                                 <thead>
+3485:                                     <tr>
+3486:                                         <th style="color:#fff; width:7%; text-align:center;">SL No</th>
+3487:                                         <th style="color:#fff; width:16%; text-align:left; padding-left:14px;">Class
+3488:                                         </th>
+3489:                                         <th style="color:#fff; width:25%; text-align:left; padding-left:14px;">Exam Name
+3490:                                         </th>
+3491:                                         <th style="color:#fff; width:15%; text-align:left; padding-left:14px;">Date</th>
+3492:                                         <th style="color:#fff; width:22%; text-align:left; padding-left:14px;">Subject
+3493:                                         </th>
+3494:                                         <th style="color:#fff; width:15%; text-align:center;">Action</th>
+3495:                                     </tr>
+3496:                                 </thead>
+3497:                                 <tbody id="dashboard-routine-rows">
+3498:                                     <!-- Populated via JS -->
+3499:                                 </tbody>
+3500:                             </table>
+3501:                         </div>
+3502:                     </div>
+3503: 
+3504:                     <!-- Live Quiz Practice -->
+3505:                     <div class="glass-card" style="display: none;">
+3506:                         <h3 class="portal-form-title" style="color:var(--neon-pink);">Live Quiz Practice</h3>
+3507:                         <div class="quiz-container" id="quiz-block">
+3508:                             <div
+3509:                                 style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--neon-cyan);">
+3510:                                 <span>Question No: <span id="quiz-q-num">1/3</span></span>
+3511:                                 <span>Score: <span id="quiz-score">0</span></span>
+3512:                             </div>
+3513:                             <div class="quiz-question" id="quiz-question-text">Who is the national poet of Bangladesh?
+3514:                             </div>
+3515: 
+3516:                             <div class="quiz-option" id="opt-0" onclick="checkQuizAnswer(0)">
+3517:                                 <span style="font-weight:bold;">A.</span> <span id="opt-text-0">Rabindranath
+3518:                                     Tagore</span>
+3519:                             </div>
+3520:                             <div class="quiz-option" id="opt-1" onclick="checkQuizAnswer(1)">
+3521:                                 <span style="font-weight:bold;">B.</span> <span id="opt-text-1">Kazi Nazrul Islam</span>
+3522:                             </div>
+3523:                             <div class="quiz-option" id="opt-2" onclick="checkQuizAnswer(2)">
+3524:                                 <span style="font-weight:bold;">C.</span> <span id="opt-text-2">Jasimmudin</span>
+3525:                             </div>
+3526:                             <div class="quiz-option" id="opt-3" onclick="checkQuizAnswer(3)">
+3527:                                 <span style="font-weight:bold;">D.</span> <span id="opt-text-3">Jibanananda Das</span>
+3528:                             </div>
+3529:                             <button class="btn-primary" id="quiz-next-btn" style="margin-top:15px; display:none;"
+3530:                                 onclick="loadNextQuiz()">Next Question</button>
+3531:                         </div>
+3532:                     </div>
+3533:                 </div>
+3534:             </div>
+3535: 
+3536:             <!-- SUB-VIEW 1: EXAM ENTRY (Modern Clean Light Theme) -->
+3537:             <div id="subview-exam-entry" class="portal-sub-view active">
+3538:                 <!-- Top Header Row: Exam List, Create Exam Schedule & Back Button -->
+3539:                 <div
+3540:                     style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:14px 20px; box-shadow:0 2px 10px rgba(0,0,0,0.03); flex-wrap:wrap; gap:10px;">
+3541:                     <div style="display:flex; align-items:center; gap:12px;">
+3542:                         <h3
+3543:                             style="margin:0; font-size:1.7rem; color:#0f172a; font-weight:800; font-family:'Outfit', 'Noto Rashi Hebrew', 'Tiro Bangla', sans-serif; letter-spacing:0.2px;">
+3544:                             Exam List
+3545:                         </h3>
+3546:                         <span id="total-exam-count"
+3547:                             style="font-size:1.02rem; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; font-weight:700; padding:3px 14px; border-radius:20px;">
+3548:                             (Total: 0)
+3549:                         </span>
+3550:                     </div>

@@ -1,0 +1,57 @@
+2754: function isExamMatch(target, selected) {
+2770: function getAllExams() {
+2774:     function addExam(name) {
+2808: function getClassesForExam(examName) {
+2864: function getSectionsForClass(className, examName) {
+2915:         let currentSearchQuery = '';
+2916:         let currentSelectedStudent = null;
+2918:         function escapeHtml(text) {
+2925:         function getAllStudentsList() {
+2926:             let raw = localStorage.getItem('school_students');
+2927:             let list = [];
+2944:                 function getEffectiveStudentId(st, currentClass = '', rankNum = 1) {
+2973:         function matchesStudentQuery(student, query) {
+2999:         function handleStudentSearchInput(val) {
+3014:                     syncCascadingFilters('search_cleared');
+3027:                 syncCascadingFilters('search_typing');
+3031:         function renderSearchSuggestions(query) {
+3078:             let itemsHtml = topMatches.map((st, idx) => {
+3101:         function selectSearchedStudentByIndex(idx) {
+3107:         function selectSearchedStudent(student) {
+3140:             syncCascadingFilters('student_searched');
+3143:         function clearStudentSearch() {
+3155:             syncCascadingFilters('search_cleared');
+3158:         function handleStudentSearchKeydown(e) {
+3184:         function handleStudentSearchFocus() {
+3202: function syncCascadingFilters(trigger = 'all') {
+3298:         let rawStudents = localStorage.getItem('school_students');
+3299:         let students = [];
+3304:         let matchedStudent = null;
+3354:         let studentName = 'মো: আব্দুল্লাহ আল নোমান';
+3413:         console.error("Error in syncCascadingFilters in Marksheet1:", e);
+3417: let isCreateAllMode = true;
+3419: function toggleCreateAll() {
+3432:     syncCascadingFilters('mode_toggled');
+3435: function getAllStudentsForClassAndSection(selectedClass, selectedSection) {
+3440:     let rawStudents = localStorage.getItem('school_students');
+3441:     let students = [];
+3446:     let filtered = [];
+3475: function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exam, rankNum) {
+3493:     let rawSettings = localStorage.getItem('school_settings');
+3494:     let settings = {};
+3497:     let addressText = settings.schoolAddress || "মাথাভাঙ্গা, জলঢাকা, নীলফামারী।";
+3506:     let logoPosStyle = '';
+3519:     let tableHtml = '';
+3520:     let grandTotal = 0;
+3521:     let totalFullMarks = 0;
+3522:     let totalGP = 0;
+3523:     let subjectCount = 0;
+3524:     let hasFailed = false;
+3525:     let hasAnyMarks = false;
+3527:     let hasCompulsoryHeader = false;
+3528:     let hasElectiveHeader = false;
+3529:     let hasOptionalHeader = false;
+3531:     let mainSubjectsGP = 0;
+3532:     let mainSubjectCount = 0;
+3533:     let optionalBonusGP = 0;
+3815: function renderBatchMarksheets1(selectedClass, selectedSection, exam) {

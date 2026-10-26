@@ -1,0 +1,256 @@
+Starts at line 2571:         function isExamMatch(target, selected) {
+2571:         function isExamMatch(target, selected) {
+2572:             if (!target || !selected) return false;
+2573:             const t = String(target).trim().toLowerCase();
+2574:             const s = String(selected).trim().toLowerCase();
+2575:             if (t === s) return true;
+2576:             const stripYr = str => str.replace(/২০২[০-৯]|202[0-9]/g, '').trim();
+2577:             const tNoYr = stripYr(t);
+2578:             const sNoYr = stripYr(s);
+2579:             if (tNoYr && sNoYr) {
+2580:                 if (tNoYr === sNoYr) return true;
+2581:                 if (tNoYr.includes(sNoYr) || sNoYr.includes(tNoYr)) return true;
+2582:             }
+2583:             return false;
+2584:         }
+2585: 
+2586:         // 1. Get all available Exams from "Exam List" (school_exam_schedules) that have an exam created with a subject
+2587:         function getAllExams() {
+2588:             const examList = [];
+2589:             const seen = new Set();
+2590: 
+2591:             function addExam(name) {
+2592:                 if (!name || typeof name !== 'string') return;
+2593:                 const clean = name.trim();
+2594:                 if (!clean) return;
+2595:                 const key = clean.toLowerCase();
+2596:                 if (!seen.has(key)) {
+2597:                     seen.add(key);
+2598:                     examList.push(clean);
+2599:                 }
+2600:             }
+2601: 
+2602:             // "Exam List" (school_exam_schedules) এ যে Exam Name এর নামে Subject সহ Exam Create করা থাকবে, শুধুমাত্র সেই Exam Name-ই Marksheet সেকশনে দৃশ্যমান হবে
+2603:             try {
+2604:                 const rawSchedules = localStorage.getItem('school_exam_schedules');
+2605:                 if (rawSchedules) {
+2606:                     const parsed = JSON.parse(rawSchedules);
+2607:                     if (Array.isArray(parsed)) {
+2608:                         parsed.forEach(s => {
+2609:                             if (s && typeof s === 'object') {
+2610:                                 const examName = (s.term || s.examName || '').trim();
+2611:                                 const subject = (s.subject || s.subjectName || s.sub || '').trim();
+2612:                                 if (examName && subject) {
+2613:                                     addExam(examName);
+2614:                                 }
+2615:                             }
+2616:                         });
+2617:                     }
+2618:                 }
+2619:             } catch(e) {}
+2620: 
+2621:             return examList;
+2622:         }
+2623: 
+2624:         // 2. Get Classes based strictly on Selected Exam Name ("Exam List" schedules with subject)
+2625:         function getClassesForExam(examName) {
+2626:             const classSet = new Set();
+2627: 
+2628:             // 1. Check "Exam List" (school_exam_schedules) for schedules with a subject
+2629:             try {
+2630:                 const rawSchedules = localStorage.getItem('school_exam_schedules');
+2631:                 if (rawSchedules) {
+
+-------------------
+Starts at line 2587:         function getAllExams() {
+2587:         function getAllExams() {
+2588:             const examList = [];
+2589:             const seen = new Set();
+2590: 
+2591:             function addExam(name) {
+2592:                 if (!name || typeof name !== 'string') return;
+2593:                 const clean = name.trim();
+2594:                 if (!clean) return;
+2595:                 const key = clean.toLowerCase();
+2596:                 if (!seen.has(key)) {
+2597:                     seen.add(key);
+2598:                     examList.push(clean);
+2599:                 }
+2600:             }
+2601: 
+2602:             // "Exam List" (school_exam_schedules) এ যে Exam Name এর নামে Subject সহ Exam Create করা থাকবে, শুধুমাত্র সেই Exam Name-ই Marksheet সেকশনে দৃশ্যমান হবে
+2603:             try {
+2604:                 const rawSchedules = localStorage.getItem('school_exam_schedules');
+2605:                 if (rawSchedules) {
+2606:                     const parsed = JSON.parse(rawSchedules);
+2607:                     if (Array.isArray(parsed)) {
+2608:                         parsed.forEach(s => {
+2609:                             if (s && typeof s === 'object') {
+2610:                                 const examName = (s.term || s.examName || '').trim();
+2611:                                 const subject = (s.subject || s.subjectName || s.sub || '').trim();
+2612:                                 if (examName && subject) {
+2613:                                     addExam(examName);
+2614:                                 }
+2615:                             }
+2616:                         });
+2617:                     }
+2618:                 }
+2619:             } catch(e) {}
+2620: 
+2621:             return examList;
+2622:         }
+2623: 
+2624:         // 2. Get Classes based strictly on Selected Exam Name ("Exam List" schedules with subject)
+2625:         function getClassesForExam(examName) {
+2626:             const classSet = new Set();
+2627: 
+2628:             // 1. Check "Exam List" (school_exam_schedules) for schedules with a subject
+2629:             try {
+2630:                 const rawSchedules = localStorage.getItem('school_exam_schedules');
+2631:                 if (rawSchedules) {
+2632:                     const parsed = JSON.parse(rawSchedules);
+2633:                     if (Array.isArray(parsed)) {
+2634:                         parsed.forEach(s => {
+2635:                             if (s && typeof s === 'object') {
+2636:                                 const sExam = (s.term || s.examName || '').trim();
+2637:                                 const sSubject = (s.subject || s.subjectName || s.sub || '').trim();
+2638:                                 if (sExam && sSubject && (!examName || isExamMatch(sExam, examName))) {
+2639:                                     const rawCls = s.class || s.className;
+2640:                                     if (rawCls) {
+2641:                                         String(rawCls).split(',').forEach(part => {
+2642:                                             const fmt = formatClassNameDisplay(part.trim());
+2643:                                             if (fmt) classSet.add(fmt);
+2644:                                         });
+2645:                                     }
+2646:                                 }
+2647:                             }
+
+-------------------
+Starts at line 2625:         function getClassesForExam(examName) {
+2625:         function getClassesForExam(examName) {
+2626:             const classSet = new Set();
+2627: 
+2628:             // 1. Check "Exam List" (school_exam_schedules) for schedules with a subject
+2629:             try {
+2630:                 const rawSchedules = localStorage.getItem('school_exam_schedules');
+2631:                 if (rawSchedules) {
+2632:                     const parsed = JSON.parse(rawSchedules);
+2633:                     if (Array.isArray(parsed)) {
+2634:                         parsed.forEach(s => {
+2635:                             if (s && typeof s === 'object') {
+2636:                                 const sExam = (s.term || s.examName || '').trim();
+2637:                                 const sSubject = (s.subject || s.subjectName || s.sub || '').trim();
+2638:                                 if (sExam && sSubject && (!examName || isExamMatch(sExam, examName))) {
+2639:                                     const rawCls = s.class || s.className;
+2640:                                     if (rawCls) {
+2641:                                         String(rawCls).split(',').forEach(part => {
+2642:                                             const fmt = formatClassNameDisplay(part.trim());
+2643:                                             if (fmt) classSet.add(fmt);
+2644:                                         });
+2645:                                     }
+2646:                                 }
+2647:                             }
+2648:                         });
+2649:                     }
+2650:                 }
+2651:             } catch(e) {}
+2652: 
+2653:             // 2. Also include classes from routines if they match this created exam
+2654:             try {
+2655:                 const rawRoutines = localStorage.getItem('school_exam_routines');
+2656:                 if (rawRoutines) {
+2657:                     const parsed = JSON.parse(rawRoutines);
+2658:                     if (Array.isArray(parsed)) {
+2659:                         parsed.forEach(r => {
+2660:                             if (r) {
+2661:                                 const rExam = r.examName || r.term;
+2662:                                 if (!examName || isExamMatch(rExam, examName)) {
+2663:                                     const rawCls = r.className || r.class;
+2664:                                     if (rawCls) {
+2665:                                         String(rawCls).split(',').forEach(part => {
+2666:                                             const fmt = formatClassNameDisplay(part.trim());
+2667:                                             if (fmt) classSet.add(fmt);
+2668:                                         });
+2669:                                     }
+2670:                                 }
+2671:                             }
+2672:                         });
+2673:                     }
+2674:                 }
+2675:             } catch(e) {}
+2676: 
+2677:             return sortClassesSequential(classSet);
+2678:         }
+2679: 
+2680:         // 3. Get Sections / Groups based on Selected Class (Cascading: Class -> Sections)
+2681:         function getSectionsForClass(className, examName) {
+2682:             const sectionSet = new Set();
+2683:             const normClass = normalizeClassString(className);
+2684:             const isSecondary = ['9', '10'].includes(normClass);
+2685: 
+
+-------------------
+Starts at line 2681:         function getSectionsForClass(className, examName) {
+2681:         function getSectionsForClass(className, examName) {
+2682:             const sectionSet = new Set();
+2683:             const normClass = normalizeClassString(className);
+2684:             const isSecondary = ['9', '10'].includes(normClass);
+2685: 
+2686:             try {
+2687:                 const rawStudents = localStorage.getItem('school_students');
+2688:                 if (rawStudents) {
+2689:                     const parsed = JSON.parse(rawStudents);
+2690:                     if (Array.isArray(parsed)) {
+2691:                         parsed.forEach(s => {
+2692:                             if (s && normalizeClassString(s.class || s.className) === normClass) {
+2693:                                 if (isSecondary) {
+2694:                                     if (s.group && s.group !== '(প্রযোজ্য না)') sectionSet.add(s.group.trim());
+2695:                                     if (s.section && s.section !== '(প্রযোজ্য না)' && !['ক','খ','গ','A','B','C'].includes(s.section)) sectionSet.add(s.section.trim());
+2696:                                 } else {
+2697:                                     if (s.section && s.section !== '(প্রযোজ্য না)') sectionSet.add(s.section.trim());
+2698:                                 }
+2699:                             }
+2700:                         });
+2701:                     }
+2702:                 }
+2703:             } catch(e) {}
+2704: 
+2705:             try {
+2706:                 const rawSchedules = localStorage.getItem('school_exam_schedules');
+2707:                 if (rawSchedules) {
+2708:                     const parsed = JSON.parse(rawSchedules);
+2709:                     if (Array.isArray(parsed)) {
+2710:                         parsed.forEach(s => {
+2711:                             if (s && normalizeClassString(s.className || s.class) === normClass && s.section && s.section !== 'All' && s.section !== '(প্রযোজ্য না)') {
+2712:                                 sectionSet.add(s.section.trim());
+2713:                             }
+2714:                         });
+2715:                     }
+2716:                 }
+2717:             } catch(e) {}
+2718: 
+2719:             if (sectionSet.size === 0) {
+2720:                 if (isSecondary) {
+2721:                     ["বিজ্ঞান", "মানবিক", "ব্যবসায় শিক্ষা"].forEach(s => sectionSet.add(s));
+2722:                 } else {
+2723:                     ["ক", "খ", "গ"].forEach(s => sectionSet.add(s));
+2724:                 }
+2725:             }
+2726: 
+2727:             return Array.from(sectionSet);
+2728:         }
+2729: 
+2730:         // Student Search State & Helpers
+2731:         let currentSearchQuery = '';
+2732:         let currentSelectedStudent = null;
+2733: 
+2734:         function escapeHtml(text) {
+2735:             if (!text) return '';
+2736:             return String(text).replace(/[&<>"']/g, function(m) {
+2737:                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+2738:             });
+2739:         }
+2740: 
+2741:         function getAllStudentsList() {
+
+-------------------

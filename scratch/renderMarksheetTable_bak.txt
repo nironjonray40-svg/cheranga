@@ -1,0 +1,170 @@
+2411:                 }
+2412:             } catch(e) {}
+2413:         }
+2414:         initSubjectMarksBreakdownPreference();
+2415: 
+2416:         function renderMarksheetTable(selectedClass, selectedSection, student, exam) {
+2417:             const tbody = document.getElementById('marksheet-tbody');
+2418:             if (tbody) {
+2419:                 updateTableHeaderMarks(exam, selectedClass);
+2420:             }
+2421:             if (!tbody) return;
+2422: 
+2423:             const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+2424:             let html = '';
+2425:             let grandTotal = 0;
+2426:             let totalFullMarks = 0;
+2427:             let totalGP = 0;
+2428:             let subjectCount = 0;
+2429:             let hasFailed = false;
+2430:             let hasAnyMarks = false;
+2431: 
+2432:             let mainSubjectsGP = 0;
+2433:             let mainSubjectCount = 0;
+2434:             let optionalBonusGP = 0;
+2435: 
+2436:             subjects.forEach(sub => {
+2437:                 const isOpt = !!(sub.isOptional || sub.group === 'optional');
+2438:                 if (sub.isCombined) {
+2439:                     const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
+2440:                     const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+2441:                     const m2 = sub.pairTotal !== null ? sub.pairTotal : ((parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPr) || 0));
+2442:                     const combTotal = m1 + m2;
+2443:                     const fullTotal = (sub.fullMarks || 100) + (sub.pairFull || 100);
+2444:                     const res = hasPaperMarks ? calculateGradeAndGP(combTotal, fullTotal) : { grade: '—', gp: 0 };
+2445: 
+2446:                     if (hasPaperMarks) {
+2447:                         hasAnyMarks = true;
+2448:                         grandTotal += combTotal;
+2449:                         totalFullMarks += fullTotal;
+2450:                         totalGP += res.gp;
+2451:                         subjectCount++;
+2452:                         if (isOpt) {
+2453:                             if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+2454:                         } else {
+2455:                             mainSubjectsGP += res.gp;
+2456:                             mainSubjectCount++;
+2457:                             if (res.gp === 0) hasFailed = true;
+2458:                         }
+2459:                     }
+2460: 
+2461:                     const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+2462:                                           (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+2463:                     const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+2464:                                           (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+2465: 
+2466:                     const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+2467:                     const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+2468:                     const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+2469:                     const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '—';
+2470: 
+2471:                     const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
+2472:                     const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
+2473:                     const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
+2474:                     const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '—';
+2475: 
+2476:                     const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
+2477:                     const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+2478:                     const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+2479: 
+2480:                     const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+2481:                     const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+2482: 
+2483:                     const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, currentLanguage === 'en');
+2484:                     const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, currentLanguage === 'en');
+2485: 
+2486:                     html += `<tr>
+2487:                         <td class="subject-col">${p1NameHtml}</td>
+2488:                         <td>${p1McqDisplay}</td>
+2489:                         <td>${p1CqDisplay}</td>
+2490:                         <td>${p1PrDisplay}</td>
+2491:                         <td>${p1TotDisplay}</td>
+2492:                         <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combTotDisplay}</td>
+2493:                         <td rowspan="2" style="font-weight: bold;">${combGradeDisplay}</td>
+2494:                         <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
+2495:                     </tr>
+2496:                     <tr>
+2497:                         <td class="subject-col">${p2NameHtml}</td>
+2498:                         <td>${p2McqDisplay}</td>
+2499:                         <td>${p2CqDisplay}</td>
+2500:                         <td>${p2PrDisplay}</td>
+2501:                         <td>${p2TotDisplay}</td>
+2502:                     </tr>`;
+2503:                 } else {
+2504:                     const tot = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+2505:                     const res = sub.hasMarks ? calculateGradeAndGP(tot, sub.fullMarks) : { grade: '—', gp: 0 };
+2506: 
+2507:                     if (sub.hasMarks) {
+2508:                         hasAnyMarks = true;
+2509:                         grandTotal += tot;
+2510:                         totalFullMarks += sub.fullMarks;
+2511:                         totalGP += res.gp;
+2512:                         subjectCount++;
+2513:                         if (isOpt) {
+2514:                             if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+2515:                         } else {
+2516:                             mainSubjectsGP += res.gp;
+2517:                             mainSubjectCount++;
+2518:                             if (res.gp === 0) hasFailed = true;
+2519:                         }
+2520:                     }
+2521: 
+2522:                     const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+2523:                                         (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+2524: 
+2525:                     const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+2526:                     const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+2527:                     const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+2528:                     const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+2529:                     const totDisplay = sub.hasMarks ? formatDigits(tot) : '—';
+2530:                     const gradeDisplay = sub.hasMarks ? res.grade : '—';
+2531:                     const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+2532: 
+2533:                     const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+2534:                     const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, currentLanguage === 'en');
+2535: 
+2536:                     html += `<tr>
+2537:                         <td class="subject-col">${subNameHtml}</td>
+2538:                         <td>${mcqDisplay}</td>
+2539:                         <td>${cqDisplay}</td>
+2540:                         <td class="${isPracCol ? 'bg-gray' : ''}">${prDisplay}</td>
+2541:                         <td>${totDisplay}</td>
+2542:                         <td style="font-weight: bold;">${totDisplay}</td>
+2543:                         <td style="font-weight: bold;">${gradeDisplay}</td>
+2544:                         <td style="font-weight: bold;">${gpDisplay}</td>
+2545:                     </tr>`;
+2546:                 }
+2547:             });
+2548: 
+2549:             tbody.innerHTML = html;
+2550: 
+2551:             renderGradingScaleLegend();
+2552:             if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
+2553:             const maxGP = getMaxScaleGP();
+2554:             const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+2555:             const boundedGpa = Math.min(maxGP, rawGpa);
+2556:             const zeroGpaStr = currentLanguage === 'en' ? '0.00' : '০.০০';
+2557:             const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
+2558:             const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
+2559: 
+2560:             const gtEl = document.getElementById('display-grand-total');
+2561:             if (gtEl) gtEl.innerText = hasAnyMarks ? formatDigits(grandTotal) : '—';
+2562:             const gpaEl = document.getElementById('display-gpa');
+2563:             if (gpaEl) gpaEl.innerText = finalGpaStr;
+2564:             const gradeEl = document.getElementById('display-final-grade');
+2565:             if (gradeEl) gradeEl.innerText = finalGrade;
+2566:             const rankEl = document.getElementById('display-rank-val');
+2567:             if (rankEl) rankEl.innerText = (student && student.roll ? formatDigits(student.roll) : formatDigits('1'));
+2568:         }
+2569: 
+2570:         // Helper to match exam names flexibly across routines, schedules, and types
+2571:         function isExamMatch(target, selected) {
+2572:             if (!target || !selected) return false;
+2573:             const t = String(target).trim().toLowerCase();
+2574:             const s = String(selected).trim().toLowerCase();
+2575:             if (t === s) return true;
+2576:             const stripYr = str => str.replace(/২০২[০-৯]|202[0-9]/g, '').trim();
+2577:             const tNoYr = stripYr(t);
+2578:             const sNoYr = stripYr(s);
+2579:             if (tNoYr && sNoYr) {
+2580:                 if (tNoYr === sNoYr) return true;

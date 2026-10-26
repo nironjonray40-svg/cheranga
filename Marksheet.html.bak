@@ -1,0 +1,3832 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('cms.html?login=required');
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মার্কশিট - আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alkatra:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            background-color: #525659;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 80px 0 25px 0;
+            font-family: 'Arial', 'Kalpurush', 'SolaimanLipi', 'SutonnyMJ', sans-serif;
+            color: #000;
+            line-height: 1.0;
+        }
+
+        /* Outer A4 Landscape Page Container */
+        .mark-sheet-container {
+            background-color: #fff;
+            width: 297mm;
+            height: 210mm;
+            min-height: 210mm;
+            max-width: 297mm;
+            padding: 0.8in 0.5in; /* Top/Bottom 0.8 in, Left/Right 0.5 in */
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
+        }
+
+        /* ভিতরের বর্ডার (১০ পিক্সেল সলিড কালো) */
+        .mark-sheet-border {
+            width: 100%;
+            height: 100%;
+            border: 10px solid #000;
+            padding: 4mm 8mm; /* বর্ডার থেকে ৮ মিমি ফাঁকা জায়গা */
+            box-sizing: border-box;
+            position: relative;
+            display: block; /* স্বাভাবিক ফ্লো যাতে লেখাগুলো উপরে ওঠে */
+        }
+
+        /* হেডার সেকশন */
+        .header-section {
+            position: relative;
+            width: 100%;
+            margin: 0 0 2px 0;
+            padding: 0;
+        }
+
+        .header-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 74%;
+        }
+
+        .school-name {
+            text-align: center;
+            font-size: 30px;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            line-height: 1.1;
+        }
+
+        .address {
+            text-align: center;
+            font-size: 16px; /* ১০% বৃদ্ধি করা হয়েছে */
+            font-weight: bold;
+            margin: 1px 0 2px 0;
+            padding: 0;
+            line-height: 1.1;
+        }
+
+        .logo {
+            width: 84px; /* আরো ৬% বৃদ্ধি করা হয়েছে (৭৯px থেকে ৮৪px) */
+            height: 84px;
+            border-radius: 50%;
+            border: 0px solid #003366;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12.5px;
+            font-weight: bold;
+            color: #003366;
+            margin: 2px 0;
+            background: radial-gradient(circle, #fff 40%, #cde0f5 80%, #30588c 100%);
+        }
+
+        .exam-badge {
+            background-color: #e3ebf3;
+            border: 1px solid #b3c5d6;
+            border-radius: 15px;
+            padding: 3px 26px; /* Left ও Right Side-এ প্যাডিং বৃদ্ধি করে প্রসারিত করা হয়েছে */
+            font-size: 16.7px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            line-height: 1.0;
+            margin: 1px 0 0 0;
+        }
+
+        .grading-scale {
+            position: absolute;
+            right: 0;
+            top: 0.5in;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.0;
+            margin: 0;
+            min-width: 1.95in; /* টেবিলটি ০.৫ ইঞ্চি বড় হয়ে বাম দিকে বিস্তৃত হয়েছে */
+        }
+
+        .grading-scale th, .grading-scale td {
+            border: 1px solid #000;
+            padding: 2px 10px;
+            line-height: 1.0;
+        }
+
+        /* শিক্ষার্থীর তথ্যের সেকশন: অর্ধ-বার্ষিক পরীক্ষা ২০২৫ এর ঠিক নিচেই উপরে তোলা */
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14.5px;
+            margin-top: 3px; /* ঠিক ব্যাজের নিচেই উপরে তোলা */
+            margin-bottom: 6px;
+            padding: 0;
+            line-height: 1.0;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            margin: 2px 0;
+            padding: 0;
+            line-height: 1.0;
+        }
+
+        .info-label {
+            width: 110px;
+            line-height: 1.0;
+        }
+
+        .branch-info {
+            margin-left: 120px;
+            line-height: 1.0;
+        }
+
+        /* মার্কস টেবিল */
+        .marks-table {
+            width: calc(100% - 1.62in);
+            margin: 4px 0.5in 6px 1.12in; /* Right সাইড থেকে আরো ০.৫ ইঞ্চি ছোট (০.৫ ইঞ্চি মার্জিন) */
+            border-collapse: collapse;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13.2px;
+            line-height: 1.0;
+        }
+
+        .marks-table th, .marks-table td {
+            border: 1px solid #000;
+            padding: 2.5px 3px;
+            line-height: 1.0;
+        }
+
+        .marks-table th {
+            padding: 5px 3px;
+            line-height: 1.0;
+        }
+
+        .subject-col {
+            text-align: left;
+            padding-left: 8px !important;
+            width: 32%;
+            line-height: 1.15;
+        }
+
+        .subject-marks-text {
+            font-size: 11px;
+            font-weight: 500;
+            color: #111;
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+
+        body.hide-subject-marks .subject-marks-text {
+            display: none !important;
+        }
+
+        body.hide-subject-marks .subject-col {
+            width: 25% !important;
+        }
+
+        .bg-gray {
+            background-color: #d1d1d1 !important;
+        }
+
+        /* নিচের সামারি টেবিল */
+        .bottom-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 4px;
+            margin-bottom: 6px;
+            line-height: 1.0;
+        }
+
+        .rank-table {
+            border-collapse: collapse;
+            width: 225px;
+            text-align: center;
+            font-weight: bold;
+            margin-left: 1.12in; /* উপরের মার্কস টেবিলের Left সাইডের সাথে সমানভাবে এলাইন করা হয়েছে */
+            margin-top: 10px;
+            line-height: 1.0;
+            font-family: 'Alkatra', 'Hind Siliguri', cursive, sans-serif;
+        }
+
+        .rank-table td {
+            border: 1px solid #000;
+            padding: 4px;
+            font-size: 16px; /* আরো ৫% বৃদ্ধি করা হয়েছে */
+            line-height: 1.0;
+            font-family: 'Alkatra', 'Hind Siliguri', cursive, sans-serif;
+            font-weight: 700;
+        }
+
+        .summary-table {
+            border-collapse: collapse;
+            width: 190px;
+            text-align: center;
+            font-weight: bold;
+            line-height: 1.0;
+            margin: 0 2.00in 0 0; /* Right সাইড থেকে Left সাইডে ২.০০ ইঞ্চি Move করা হয়েছে */
+        }
+
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 3px;
+            font-size: 13.8px;
+            line-height: 1.0;
+        }
+
+        /* স্বাক্ষর সেকশন - Fixed Position at Bottom */
+        .signatures {
+            position: absolute;
+            bottom: 4.5mm;
+            left: 8mm;
+            right: 8mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin: 0;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        .sig-col {
+            text-align: center;
+            min-width: 170px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sig-line {
+            border-top: 1.5px dashed #000000;
+            width: 170px;
+            margin-bottom: 5px;
+        }
+
+        .sig-label {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #000000;
+            line-height: 1.2;
+        }
+
+        /* Fixed Filter & Action Toolbar Styling */
+        .print-toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            padding: 10px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+            border-bottom: 1.5px solid #cbd5e1;
+            box-sizing: border-box;
+        }
+
+        .btn-back {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 25px;
+            padding: 7px 16px;
+            font-size: 13.5px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-back:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+
+        .btn-back:active {
+            transform: translateY(0);
+        }
+
+        .filter-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f1f5f9;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 20px;
+            padding: 4px 10px;
+        }
+
+        .filter-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #94a3b8;
+            border-radius: 14px;
+            padding: 4px 8px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select:hover, .filter-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .search-group {
+            position: relative;
+            background: #f8fafc;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .filter-search-input {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #94a3b8;
+            border-radius: 14px;
+            padding: 4px 28px 4px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+            width: 175px;
+            transition: all 0.25s ease;
+        }
+
+        .filter-search-input:focus {
+            width: 220px;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-clear-search {
+            position: absolute;
+            right: 6px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 4px;
+            border-radius: 50%;
+            transition: all 0.15s ease;
+        }
+
+        .btn-clear-search:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .search-suggestions-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 290px;
+            max-width: 350px;
+            max-height: 290px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+            z-index: 999999;
+            padding: 4px 0;
+        }
+
+        .search-suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s ease;
+            text-align: left;
+        }
+
+        .search-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-suggestion-item:hover, .search-suggestion-item.active {
+            background: #eff6ff;
+        }
+
+        .search-suggestion-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.25;
+            margin-bottom: 3px;
+        }
+
+        .search-suggestion-meta {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            font-size: 11.5px;
+            color: #64748b;
+        }
+
+        .search-suggestion-badge {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .search-suggestion-badge.roll {
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .search-no-result {
+            padding: 12px;
+            text-align: center;
+            font-size: 12.5px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+
+        .btn-print {
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            padding: 8px 18px;
+            font-size: 13.5px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-print:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-print:active {
+            transform: translateY(0);
+        }
+
+        /* Floating Print Button (Screen Only) */
+        .floating-print-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            color: #ffffff;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            z-index: 99999;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            outline: none;
+        }
+
+        .floating-print-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+            transform: scale(1.1) translateY(-3px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
+        }
+
+        .floating-print-btn:active {
+            transform: scale(0.95) translateY(0);
+        }
+
+        .floating-print-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke: #ffffff;
+            stroke-width: 2.2;
+            fill: none;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-print-btn:hover svg {
+            transform: scale(1.08);
+        }
+
+        .btn-create-all {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-create-all:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-create-all.active {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .batch-status-banner {
+            max-width: 297mm;
+            margin: 15px auto 5px auto;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            padding: 12px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 14.5px;
+            box-sizing: border-box;
+        }
+
+        .batch-status-banner .batch-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .batch-status-banner .badge-count {
+            background: #4f46e5;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .batch-status-banner .batch-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-batch-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-batch-print {
+            background: #10b981;
+            color: #fff;
+        }
+        .btn-batch-print:hover {
+            background: #059669;
+        }
+
+        .btn-batch-single {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        .btn-batch-single:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        @media print {
+            .no-print, .print-toolbar, .floating-print-btn, .batch-status-banner {
+                display: none !important;
+            }
+
+            html, body {
+                width: 297mm;
+                height: 210mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff;
+                line-height: 1.0;
+            }
+
+            body {
+                display: block;
+            }
+
+            .mark-sheet-container {
+                width: 297mm;
+                height: 210mm;
+                max-width: 297mm;
+                margin: 0 !important;
+                padding: 0.8in 0.5in !important;
+                box-shadow: none;
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+            }
+
+            .mark-sheet-container:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .mark-sheet-border {
+                width: 100%;
+                height: 100%;
+                border: 10px solid #000;
+                padding: 4mm 8mm !important;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Print Button (No Print) -->
+    <button type="button" class="floating-print-btn no-print" onclick="window.print()" title="মার্কশিট প্রিন্ট করুন (Ctrl + P)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+    </button>
+
+    <!-- Print & Filter Option Toolbar -->
+    <div class="print-toolbar no-print">
+        <!-- Back Button -->
+        <a href="index.html" class="btn-back" title="মূল ওয়েবসাইটে ফিরে যান (Back to Main Website)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back</span>
+        </a>
+
+        <!-- Exam Filter -->
+        <div class="filter-group" title="পরীক্ষা নির্বাচন করুন">
+            <label for="filter-exam" class="filter-label">
+                <span id="label-exam">পরীক্ষা:</span>
+            </label>
+            <select id="filter-exam" class="filter-select" onchange="updateMarksheetExam(this.value)">
+                <option value="অর্ধ-বার্ষিক পরীক্ষা ২০২৫">অর্ধ-বার্ষিক পরীক্ষা ২০২৫</option>
+                <option value="বার্ষিক পরীক্ষা ২০২৫">বার্ষিক পরীক্ষা ২০২৫</option>
+                <option value="প্রাক-নির্বাচনী পরীক্ষা ২০২৫">প্রাক-নির্বাচনী পরীক্ষা ২০২৫</option>
+                <option value="নির্বাচনী পরীক্ষা ২০২৫">নির্বাচনী পরীক্ষা ২০২৫</option>
+                <option value="১ম সাময়িক পরীক্ষা ২০২৫">১ম সাময়িক পরীক্ষা ২০২৫</option>
+                <option value="২য় সাময়িক পরীক্ষা ২০২৫">২য় সাময়িক পরীক্ষা ২০২৫</option>
+                <option value="মডেল টেস্ট ২০২৫">মডেল টেস্ট ২০২৫</option>
+            </select>
+        </div>
+
+        <!-- Class Filter -->
+        <div class="filter-group" title="শ্রেণি নির্বাচন করুন">
+            <label for="filter-class" class="filter-label">
+                <span id="label-class">শ্রেণি:</span>
+            </label>
+            <select id="filter-class" class="filter-select" onchange="updateMarksheetClass(this.value)">
+                <option value="Play">Play</option>
+                <option value="Nursery">Nursery</option>
+                <option value="KG">KG</option>
+                <option value="One">One</option>
+                <option value="Two">Two</option>
+                <option value="Three">Three</option>
+                <option value="Four">Four</option>
+                <option value="Five">Five</option>
+                <option value="Six">Six</option>
+                <option value="Seven">Seven</option>
+                <option value="Eight">Eight</option>
+                <option value="Nine">Nine</option>
+                <option value="Ten" selected>Ten</option>
+            </select>
+        </div>
+
+        <!-- Section Filter -->
+        <div class="filter-group" title="শাখা / গ্রুপ নির্বাচন করুন">
+            <label for="filter-section" class="filter-label">
+                <span id="label-section">শাখা:</span>
+            </label>
+            <select id="filter-section" class="filter-select" onchange="updateMarksheetSection(this.value)">
+                <option value="বিজ্ঞান">বিজ্ঞান</option>
+                <option value="মানবিক">মানবিক</option>
+                <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা</option>
+                <option value="ক">শাখা ক</option>
+                <option value="খ">শাখা খ</option>
+                <option value="গ">শাখা গ</option>
+            </select>
+        </div>
+
+        <!-- Student Search Filter -->
+        <div class="filter-group search-group" title="উক্ত শ্রেণির শিক্ষার্থীর রোল, নাম বা আইডি দিয়ে খুঁজুন">
+            <label for="filter-student-search" class="filter-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span id="label-search">খুঁজুন:</span>
+            </label>
+            <div class="search-input-wrapper">
+                <input type="text" id="filter-student-search" class="filter-search-input" placeholder="রোল / নাম / আইডি লিখুন..." autocomplete="off" oninput="handleStudentSearchInput(this.value)" onkeydown="handleStudentSearchKeydown(event)" onfocus="handleStudentSearchFocus()">
+                <button type="button" class="btn-clear-search" id="btn-clear-search" onclick="clearStudentSearch()" title="সার্চ মুছুন" style="display: none;">&times;</button>
+                <div id="search-suggestions-dropdown" class="search-suggestions-dropdown" style="display: none;"></div>
+            </div>
+        </div>
+
+
+        <!-- Language Switcher Option (বাংলা / English) -->
+        <div class="filter-group" title="ভাষা নির্বাচন করুন (Select Language)">
+            <label for="filter-language" class="filter-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <span id="label-language">ভাষা:</span>
+            </label>
+            <select id="filter-language" class="filter-select" onchange="switchLanguage(this.value)">
+                <option value="bn" selected>বাংলা</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <!-- Template Filter Option (Temp-01, Temp-02) -->
+        <div class="filter-group" title="মার্কশিট টেমপ্লেট নির্বাচন করুন">
+            <label for="template-filter" class="filter-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                <span id="label-template">Filter:</span>
+            </label>
+            <select id="template-filter" class="filter-select" onchange="switchTemplate(this.value)">
+                <option value="Temp-01" selected>Temp-01</option>
+                <option value="Temp-02">Temp-02</option>
+            </select>
+        </div>
+
+        <!-- Subject CQ/MCQ Marks Breakdown Visibility Filter -->
+        <div class="filter-group" title="বিষয়ের সাথে নির্ধারিত CQ, MCQ ও মোট মার্ক প্রদর্শন বা হাইড করুন">
+            <label for="filter-marks-breakdown" class="filter-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span id="label-marks-breakdown">মার্কস:</span>
+            </label>
+            <select id="filter-marks-breakdown" class="filter-select" onchange="toggleSubjectMarksBreakdown(this.value)">
+                <option value="show" selected>প্রদর্শন (Show)</option>
+                <option value="hide">লুকান (Hide)</option>
+            </select>
+        </div>
+
+        <!-- Create All Option Button -->
+        <button type="button" class="btn-create-all active" id="btn-create-all" onclick="toggleCreateAll()" title="উক্ত ক্লাস ও শাখার সকল শিক্ষার্থীর মার্কশীট তৈরি করুন">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span id="create-all-btn-text">সকল শিক্ষার্থী (All)</span>
+        </button>
+
+        <!-- Print Button -->
+        <button type="button" class="btn-print" onclick="window.print()" title="মার্কশিটটি প্রিন্ট বা PDF হিসেবে সেভ করুন">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span id="btn-print-text">প্রিন্ট (Print)</span>
+        </button>
+    </div>
+
+
+    <div class="mark-sheet-container" id="single-marksheet-container">
+        <div class="mark-sheet-border">
+        <!-- Header Section -->
+        <div class="header-section">
+            <table class="grading-scale" id="marksheet-grading-scale-table">
+                <tr>
+                    <th>Range</th>
+                    <th>Grade</th>
+                    <th>GPA</th>
+                </tr>
+                <tr><td>80-100</td><td>A+</td><td>5.00</td></tr>
+                <tr><td>70-79</td><td>A</td><td>4.00</td></tr>
+                <tr><td>60-69</td><td>A-</td><td>3.50</td></tr>
+                <tr><td>50-59</td><td>B</td><td>3.00</td></tr>
+                <tr><td>40-49</td><td>C</td><td>2.00</td></tr>
+                <tr><td>33-39</td><td>D</td><td>1.00</td></tr>
+            </table>
+
+            <div class="header-center">
+                <h1 class="school-name" id="display-school-name">আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়</h1>
+                <p class="address" id="display-school-address">মাথাভাঙ্গা, জলঢাকা, নীলফামারী।</p>
+                <div class="logo" id="display-school-logo">
+                    <img id="school-logo-img" src="school_logo.svg" alt="School Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: none;">
+                    <span id="school-logo-fallback">লোগো</span>
+                </div>
+                <div class="exam-badge" id="display-exam-name">অর্ধ-বার্ষিক পরীক্ষা ২০২৫</div>
+            </div>
+        </div>
+
+        <!-- Student Info Section -->
+        <div class="student-info">
+            <div style="flex: 1.1;">
+                <div class="info-row">
+                    <div class="info-label" id="label-student-name">শিক্ষার্থীর নাম</div>
+                    <div>: <span id="display-student-name">মো: আব্দুল্লাহ আল নোমান</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label" id="label-roll-no">রোল নং</div>
+                    <div>: <span id="display-roll-no">১</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label" id="label-class-name">শ্রেণি</div>
+                    <div>: <span id="display-class-name">দশম</span> <span class="branch-info" id="display-section-name" style="margin-left: 20px;">শাখা = বিজ্ঞান</span></div>
+                </div>
+            </div>
+            <div style="flex: 0.9; padding-left: 20px;">
+                <div class="info-row" id="row-student-religion">
+                    <div class="info-label" id="label-student-religion" style="width: 125px;">ধর্ম (Religion)</div>
+                    <div>: <span id="display-student-religion">ইসলাম</span></div>
+                </div>
+                <div class="info-row" id="row-optional-subject" style="display: none;">
+                    <div class="info-label" id="label-optional-subject" style="width: 125px;">ঐচ্ছিক বিষয় (৪র্থ)</div>
+                    <div>: <span id="display-optional-subject">উচ্চতর গণিত</span></div>
+                </div>
+                <div class="info-row" id="row-student-id">
+                    <div class="info-label" id="label-student-id" style="width: 125px;">শিক্ষার্থী আইডি</div>
+                    <div>: <span id="display-student-id">২৬১০০০১</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marks Table -->
+        <table class="marks-table">
+            <thead>
+                <tr>
+                    <th class="subject-col" id="th-header-sub">বিষয়</th>
+                    <th id="th-header-mcq">বহুনির্বাচনি</th>
+                    <th id="th-header-cq">লিখিত</th>
+                    <th id="th-header-prac">ব্যবহারিক</th>
+                    <th id="th-header-total">মোট</th>
+                    <th id="th-header-combined">সর্বমোট</th>
+                    <th id="th-header-grade">গ্রেড</th>
+                    <th id="th-header-point">পয়েন্ট</th>
+                </tr>
+            </thead>
+            <tbody id="marksheet-tbody">
+                <!-- Dynamic Subjects & Marks will be rendered here -->
+            </tbody>
+        </table>
+
+        <!-- Bottom Tables -->
+        <div class="bottom-section">
+            <table class="rank-table">
+                <tr>
+                    <td style="width: 50%;" id="td-label-rank">স্থান</td>
+                    <td style="width: 50%;" id="display-rank-val">১</td>
+                </tr>
+            </table>
+
+            <table class="summary-table">
+                <tr>
+                    <td style="width: 50%;" id="td-label-grand-total">সর্বমোট</td>
+                    <td style="width: 50%;" id="display-grand-total">৯৫৫</td>
+                </tr>
+                <tr>
+                    <td id="td-label-gpa">পয়েন্ট</td>
+                    <td id="display-gpa">৫.০০</td>
+                </tr>
+                <tr>
+                    <td id="td-label-grade">গ্রেড</td>
+                    <td id="display-final-grade">A+</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Signatures Section -->
+        <div class="signatures">
+            <div class="sig-col">
+                <div class="sig-line"></div>
+                <div class="sig-label" id="label-sig-guardian">অভিভাবকের স্বাক্ষর</div>
+            </div>
+            <div class="sig-col">
+                <div class="sig-line"></div>
+                <div class="sig-label" id="label-sig-head">প্রধান শিক্ষকের স্বাক্ষর</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Marksheets Container for "Creat All" (All Students) -->
+<div id="batch-marksheets-container" style="display: none;"></div>
+
+    <script>
+        function normalizeClassString(str) {
+            if (!str) return '10';
+            const s = String(str).toLowerCase().trim();
+            if (s.includes('দশম') || s.includes('ten') || /\b10\b/.test(s) || s === '10' || s === '10th' || s.includes('১০')) return '10';
+            if (s.includes('নবম') || s.includes('nine') || /\b9\b/.test(s) || s === '9' || s === '9th' || s.includes('৯')) return '9';
+            if (s.includes('অষ্টম') || s.includes('eight') || /\b8\b/.test(s) || s === '8' || s === '8th' || s.includes('৮')) return '8';
+            if (s.includes('সপ্তম') || s.includes('seven') || /\b7\b/.test(s) || s === '7' || s === '7th' || s.includes('৭')) return '7';
+            if (s.includes('ষষ্ঠ') || s.includes('six') || /\b6\b/.test(s) || s === '6' || s === '6th' || s.includes('৬')) return '6';
+            if (s.includes('পঞ্চম') || s.includes('five') || /\b5\b/.test(s) || s === '5' || s === '5th' || s.includes('৫')) return '5';
+            if (s.includes('চতুর্থ') || s.includes('four') || /\b4\b/.test(s) || s === '4' || s === '4th' || s.includes('৪')) return '4';
+            if (s.includes('তৃতীয়') || s.includes('তৃতীয়') || s.includes('three') || /\b3\b/.test(s) || s === '3' || s === '3rd' || s.includes('৩')) return '3';
+            if (s.includes('দ্বিতীয়') || s.includes('দ্বিতীয়') || s.includes('two') || /\b2\b/.test(s) || s === '2' || s === '2nd' || s.includes('২')) return '2';
+            if (s.includes('প্রথম') || s.includes('one') || /\b1\b/.test(s) || s === '1' || s === '1st' || s.includes('১')) return '1';
+            if (s.includes('কেজি') || s.includes('kg')) return 'kg';
+            if (s.includes('নার্সারি') || s.includes('nursery')) return 'nursery';
+            if (s.includes('প্লে') || s.includes('play')) return 'play';
+            return s;
+        }
+
+        function formatClassNameDisplay(c) {
+            if (!c) return '';
+            const norm = normalizeClassString(c);
+            const map = {
+                'play': 'Play',
+                'nursery': 'Nursery',
+                'kg': 'KG',
+                '1': 'One',
+                '2': 'Two',
+                '3': 'Three',
+                '4': 'Four',
+                '5': 'Five',
+                '6': 'Six',
+                '7': 'Seven',
+                '8': 'Eight',
+                '9': 'Nine',
+                '10': 'Ten'
+            };
+            if (map[norm]) return map[norm];
+            return c.replace(/^class\s*/i, '').replace(/শ্রেণি|শ্রেণী/g, '').trim() || c;
+        }
+
+        function sortClassesSequential(classes) {
+            const classOrderMap = {
+                'play': 1,
+                'nursery': 2,
+                'kg': 3,
+                '1': 4,
+                '2': 5,
+                '3': 6,
+                '4': 7,
+                '5': 8,
+                '6': 9,
+                '7': 10,
+                '8': 11,
+                '9': 12,
+                '10': 13
+            };
+            return Array.from(classes).sort((a, b) => {
+                const oa = classOrderMap[normalizeClassString(a)] || 99;
+                const ob = classOrderMap[normalizeClassString(b)] || 99;
+                return oa - ob;
+            });
+        }
+
+        function toBnDigits(n) {
+            if (n === null || n === undefined) return '';
+            const bn = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return String(n).replace(/[0-9]/g, d => bn[d]);
+        }
+
+        function toEnDigits(n) {
+            if (n === null || n === undefined) return '';
+            const en = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+            return String(n).replace(/[০-৯]/g, d => en[d]);
+        }
+
+// Bilingual Support System
+let currentLanguage = 'bn';
+try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam === 'en' || langParam === 'bn') {
+        currentLanguage = langParam;
+    } else {
+        currentLanguage = 'bn'; // Strict default on initial launch
+    }
+} catch(e) {
+    currentLanguage = 'bn';
+}
+window.currentLanguage = currentLanguage;
+
+function formatDigits(n) {
+    if (n === null || n === undefined || n === '') return '';
+    return currentLanguage === 'en' ? toEnDigits(n) : toBnDigits(n);
+}
+
+function switchLanguage(lang) {
+    currentLanguage = (lang === 'en') ? 'en' : 'bn';
+    try {
+        window.currentLanguage = currentLanguage;
+        localStorage.setItem('marksheet_language', currentLanguage);
+    } catch(e) {}
+    const sLang = document.getElementById('filter-language');
+    if (sLang && sLang.value !== currentLanguage) sLang.value = currentLanguage;
+    if (typeof updateLanguageUI === 'function') updateLanguageUI();
+    if (typeof updateLanguageUI1 === 'function') updateLanguageUI1();
+    syncCascadingFilters('language_switched');
+}
+
+const subjectTranslations = {
+    'bangla 1st paper': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'bangla 1st': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'bangla 2nd paper': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'bangla 2nd': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'bangla sahitya': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'bangla': { bn: 'বাংলা', en: 'Bangla' },
+    'বাংলা ১ম পত্র': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'বাংলা ২য় পত্র': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'বাংলা সাহিত্য': { bn: 'বাংলা ১ম পত্র', en: 'Bangla 1st Paper' },
+    'বাংলা ব্যাকরণ': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'বাংলা ভাষার ব্যাকরণ ও নির্মিতি': { bn: 'বাংলা ২য় পত্র', en: 'Bangla 2nd Paper' },
+    'বাংলা': { bn: 'বাংলা', en: 'Bangla' },
+    'english 1st paper': { bn: 'ইংরেজি ১ম পত্র', en: 'English 1st Paper' },
+    'english 1st': { bn: 'ইংরেজি ১ম পত্র', en: 'English 1st Paper' },
+    'english for today': { bn: 'English For Today', en: 'English For Today' },
+    'english 2nd paper': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'english 2nd': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'english grammar': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'english': { bn: 'ইংরেজি', en: 'English' },
+    'ইংরেজি ১ম পত্র': { bn: 'ইংরেজি ১ম পত্র', en: 'English 1st Paper' },
+    'ইংরেজি ২য় পত্র': { bn: 'ইংরেজি ২য় পত্র', en: 'English 2nd Paper' },
+    'ইংরেজি': { bn: 'ইংরেজি', en: 'English' },
+    'mathematics': { bn: 'গণিত', en: 'Mathematics' },
+    'math': { bn: 'গণিত', en: 'Mathematics' },
+    'general mathematics': { bn: 'সাধারণ গণিত', en: 'General Mathematics' },
+    'গণিত': { bn: 'গণিত', en: 'Mathematics' },
+    'সাধারণ গণিত': { bn: 'সাধারণ গণিত', en: 'General Mathematics' },
+    'science': { bn: 'বিজ্ঞান', en: 'Science' },
+    'general science': { bn: 'সাধারণ বিজ্ঞান', en: 'General Science' },
+    'বিজ্ঞান': { bn: 'বিজ্ঞান', en: 'Science' },
+    'সাধারণ বিজ্ঞান': { bn: 'সাধারণ বিজ্ঞান', en: 'General Science' },
+    'bangladesh and global studies': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'bangladesh & global studies': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'বাংলাদেশ ও বিশ্বপরিচয়': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'বাংলাদেশ ও বিশ্ব পরিচয়': { bn: 'বাংলাদেশ ও বিশ্বপরিচয়', en: 'Bangladesh & Global Studies' },
+    'islamic studies': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'islam and moral education': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'islam': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'ইসলাম ও নৈতিক শিক্ষা': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'ইসলাম': { bn: 'ইসলাম ও নৈতিক শিক্ষা', en: 'Islam & Moral Education' },
+    'hindu religion studies': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'hindu and moral education': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'hinduism studies': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'hindu': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'হিন্দুধর্ম ও নৈতিক শিক্ষা': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'হিন্দুধর্ম': { bn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা', en: 'Hindu & Moral Education' },
+    'buddhist and moral education': { bn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা', en: 'Buddhist & Moral Education' },
+    'বৌদ্ধধর্ম ও নৈতিক শিক্ষা': { bn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা', en: 'Buddhist & Moral Education' },
+    'christian and moral education': { bn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা', en: 'Christian & Moral Education' },
+    'খ্রিস্টধর্ম ও নৈতিক শিক্ষা': { bn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা', en: 'Christian & Moral Education' },
+    'information and communication technology': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'ict': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'তথ্য ও যোগাযোগ প্রযুক্তি (ict)': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'তথ্য ও যোগাযোগ প্রযুক্তি': { bn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', en: 'ICT' },
+    'physics': { bn: 'পদার্থবিজ্ঞান', en: 'Physics' },
+    'পদার্থবিজ্ঞান': { bn: 'পদার্থবিজ্ঞান', en: 'Physics' },
+    'পদার্থ': { bn: 'পদার্থবিজ্ঞান', en: 'Physics' },
+    'chemistry': { bn: 'রসায়ন', en: 'Chemistry' },
+    'রসায়ন': { bn: 'রসায়ন', en: 'Chemistry' },
+    'biology': { bn: 'জীববিজ্ঞান', en: 'Biology' },
+    'জীববিজ্ঞান': { bn: 'জীববিজ্ঞান', en: 'Biology' },
+    'higher mathematics': { bn: 'উচ্চতর গণিত', en: 'Higher Mathematics' },
+    'higher math': { bn: 'উচ্চতর গণিত', en: 'Higher Mathematics' },
+    'উচ্চতর গণিত': { bn: 'উচ্চতর গণিত', en: 'Higher Mathematics' },
+    'agriculture studies': { bn: 'কৃষি শিক্ষা', en: 'Agriculture Studies' },
+    'agriculture': { bn: 'কৃষি শিক্ষা', en: 'Agriculture Studies' },
+    'কৃষি শিক্ষা': { bn: 'কৃষি শিক্ষা', en: 'Agriculture Studies' },
+    'home science': { bn: 'গার্হস্থ্য বিজ্ঞান', en: 'Home Science' },
+    'গার্হস্থ্য বিজ্ঞান': { bn: 'গার্হস্থ্য বিজ্ঞান', en: 'Home Science' },
+    'accounting': { bn: 'হিসাববিজ্ঞান', en: 'Accounting' },
+    'হিসাববিজ্ঞান': { bn: 'হিসাববিজ্ঞান', en: 'Accounting' },
+    'business entrepreneurship': { bn: 'ব্যবসায় উদ্যোগ', en: 'Business Entrepreneurship' },
+    'ব্যবসায় উদ্যোগ': { bn: 'ব্যবসায় উদ্যোগ', en: 'Business Entrepreneurship' },
+    'ব্যবসায় উদ্যোগ': { bn: 'ব্যবসায় উদ্যোগ', en: 'Business Entrepreneurship' },
+    'finance and banking': { bn: 'ফিন্যান্স ও ব্যাংকিং', en: 'Finance & Banking' },
+    'finance & banking': { bn: 'ফিন্যান্স ও ব্যাংকিং', en: 'Finance & Banking' },
+    'ফিন্যান্স ও ব্যাংকিং': { bn: 'ফিন্যান্স ও ব্যাংকিং', en: 'Finance & Banking' },
+    'history of bangladesh and world civilization': { bn: 'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা', en: 'History of Bangladesh & World Civilization' },
+    'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা': { bn: 'বাংলাদেশের ইতিহাস ও বিশ্বসভ্যতা', en: 'History of Bangladesh & World Civilization' },
+    'history and social science': { bn: 'ইতিহাস ও সামাজিক বিজ্ঞান', en: 'History & Social Science' },
+    'ইতিহাস ও সামাজিক বিজ্ঞান': { bn: 'ইতিহাস ও সামাজিক বিজ্ঞান', en: 'History & Social Science' },
+    'civics and citizenship': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'civics': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'পৌরনীতি ও নাগরিকতা': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'পৌরনীতি': { bn: 'পৌরনীতি ও নাগরিকতা', en: 'Civics & Citizenship' },
+    'geography and environment': { bn: 'ভূগোল ও পরিবেশ', en: 'Geography & Environment' },
+    'ভূগোল ও পরিবেশ': { bn: 'ভূগোল ও পরিবেশ', en: 'Geography & Environment' },
+    'physical education': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education' },
+    'physical education and health': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education & Health' },
+    'শারীরিক শিক্ষা ও স্বাস্থ্য': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education & Health' },
+    'শারীরিক শিক্ষা': { bn: 'শারীরিক শিক্ষা ও স্বাস্থ্য', en: 'Physical Education' },
+    'arts and crafts': { bn: 'চারু ও কারুকলা', en: 'Arts & Crafts' },
+    'চারু ও কারুকলা': { bn: 'চারু ও কারুকলা', en: 'Arts & Crafts' },
+    'career education': { bn: 'ক্যারিয়ার শিক্ষা', en: 'Career Education' },
+    'ক্যারিয়ার শিক্ষা': { bn: 'ক্যারিয়ার শিক্ষা', en: 'Career Education' },
+    'কর্ম ও জীবনমুখী শিক্ষা': { bn: 'কর্ম ও জীবনমুখী শিক্ষা', en: 'Work & Life-Oriented Education' },
+    'work and life-oriented education': { bn: 'কর্ম ও জীবনমুখী শিক্ষা', en: 'Work & Life-Oriented Education' }
+};
+
+function getDisplaySubjectName(name) {
+    if (!name) return '';
+    const clean = String(name).trim();
+    const norm = clean.toLowerCase().replace(/[-_()]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (subjectTranslations[norm]) {
+        return currentLanguage === 'en' ? subjectTranslations[norm].en : subjectTranslations[norm].bn;
+    }
+    for (const key of Object.keys(subjectTranslations)) {
+        if (norm === key || norm.includes(key) || key.includes(norm)) {
+            return currentLanguage === 'en' ? subjectTranslations[key].en : subjectTranslations[key].bn;
+        }
+    }
+    if (currentLanguage === 'en') {
+        return toEnDigits(clean);
+    } else {
+        return (typeof getSubjectNameBangla === 'function' ? getSubjectNameBangla(clean) : clean) || clean;
+    }
+}
+
+function getEnglishExamName(examName) {
+    if (!examName) return '';
+    let name = String(examName).trim();
+    const map = [
+        [/অর্ধ-বার্ষিক\s*পরীক্ষা/gi, 'Half-Yearly Examination'],
+        [/বার্ষিক\s*পরীক্ষা/gi, 'Annual Examination'],
+        [/প্রাক-নির্বাচনী\s*পরীক্ষা/gi, 'Pre-Test Examination'],
+        [/নির্বাচনী\s*পরীক্ষা/gi, 'Test Examination'],
+        [/১ম\s*সাময়িক\s*পরীক্ষা/gi, '1st Terminal Examination'],
+        [/২য়\s*সাময়িক\s*পরীক্ষা/gi, '2nd Terminal Examination'],
+        [/মডেল\s*টেস্ট/gi, 'Model Test Examination'],
+        [/ক্লাস\s*টেষ্ট\s*পরীক্ষা/gi, 'Class Test Examination'],
+        [/টিউটোরিয়াল\s*পরীক্ষা/gi, 'Tutorial Examination'],
+        [/মাসিক\s*পরীক্ষা/gi, 'Monthly Examination'],
+        [/পরীক্ষা/gi, 'Examination']
+    ];
+    for (const [re, rep] of map) {
+        name = name.replace(re, rep);
+    }
+    name = toEnDigits(name);
+    return name;
+}
+
+function getDisplayExamName(examName) {
+    if (!examName) return '';
+    return currentLanguage === 'en' ? getEnglishExamName(examName) : examName;
+}
+
+function getEnglishClassName(cls) {
+    const norm = normalizeClassString(cls);
+    const map = {
+        'play': 'Play',
+        'nursery': 'Nursery',
+        'kg': 'KG',
+        '1': 'One',
+        '2': 'Two',
+        '3': 'Three',
+        '4': 'Four',
+        '5': 'Five',
+        '6': 'Six',
+        '7': 'Seven',
+        '8': 'Eight',
+        '9': 'Nine',
+        '10': 'Ten'
+    };
+    return map[norm] || cls || '';
+}
+
+function getBanglaClassName(cls) {
+    const norm = normalizeClassString(cls);
+    const map = {
+        'play': 'প্লে',
+        'nursery': 'নার্সারি',
+        'kg': 'কেজি',
+        '1': 'প্রথম',
+        '2': 'দ্বিতীয়',
+        '3': 'তৃতীয়',
+        '4': 'চতুর্থ',
+        '5': 'পঞ্চম',
+        '6': 'ষষ্ঠ',
+        '7': 'সপ্তম',
+        '8': 'অষ্টম',
+        '9': 'নবম',
+        '10': 'দশম'
+    };
+    return map[norm] || cls || '';
+}
+
+function getDisplayClassName(cls) {
+    return currentLanguage === 'en' ? getEnglishClassName(cls) : getBanglaClassName(cls);
+}
+
+function getEnglishSectionName(sec) {
+    if (!sec) return '';
+    const s = String(sec).trim().toLowerCase();
+    if (s.includes('বিজ্ঞান') || s === 'science') return 'Science';
+    if (s.includes('মানবিক') || s === 'humanities') return 'Humanities';
+    if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business')) return 'Business Studies';
+    if (s === 'ক' || s === 'a') return 'A';
+    if (s === 'খ' || s === 'b') return 'B';
+    if (s === 'গ' || s === 'c') return 'C';
+    if (s === 'ঘ' || s === 'd') return 'D';
+    return sec;
+}
+
+function getDisplaySectionName(sec) {
+    if (!sec) return '';
+    if (currentLanguage === 'en') {
+        return getEnglishSectionName(sec);
+    } else {
+        const s = String(sec).trim();
+        if (s.toLowerCase() === 'science') return 'বিজ্ঞান';
+        if (s.toLowerCase() === 'humanities') return 'মানবিক';
+        if (s.toLowerCase() === 'business' || s.toLowerCase() === 'commerce') return 'ব্যবসায় শিক্ষা';
+        return s;
+    }
+}
+
+        function updateLanguageUI() {
+            const isEn = (currentLanguage === 'en');
+            
+            // 1. Toolbar Labels
+            const lExam = document.getElementById('label-exam');
+            if (lExam) lExam.innerText = isEn ? 'Exam:' : 'পরীক্ষা:';
+            const lClass = document.getElementById('label-class');
+            if (lClass) lClass.innerText = isEn ? 'Class:' : 'শ্রেণি:';
+            const lSec = document.getElementById('label-section');
+            if (lSec) lSec.innerText = isEn ? 'Section:' : 'শাখা:';
+            const lSearch = document.getElementById('label-search');
+            if (lSearch) lSearch.innerText = isEn ? 'Search:' : 'খুঁজুন:';
+            const sInput = document.getElementById('filter-student-search');
+            if (sInput) sInput.placeholder = isEn ? 'Roll / Name / ID...' : 'রোল / নাম / আইডি লিখুন...';
+            const lLang = document.getElementById('label-language');
+            if (lLang) lLang.innerText = isEn ? 'Language:' : 'ভাষা:';
+            const sLang = document.getElementById('filter-language');
+            if (sLang) sLang.value = currentLanguage;
+            const lTemp = document.getElementById('label-template');
+            if (lTemp) lTemp.innerText = isEn ? 'Filter:' : 'Filter:';
+            const lBreakdown = document.getElementById('label-marks-breakdown');
+            if (lBreakdown) lBreakdown.innerText = isEn ? 'Marks:' : 'মার্কস:';
+            const sBreakdown = document.getElementById('filter-marks-breakdown');
+            if (sBreakdown) {
+                const optShow = sBreakdown.querySelector('option[value="show"]');
+                const optHide = sBreakdown.querySelector('option[value="hide"]');
+                if (optShow) optShow.innerText = isEn ? 'Show' : 'প্রদর্শন (Show)';
+                if (optHide) optHide.innerText = isEn ? 'Hide' : 'লুকান (Hide)';
+            }
+            const btnAllText = document.getElementById('create-all-btn-text');
+            if (btnAllText) {
+                if (isCreateAllMode) {
+                    btnAllText.innerText = isEn ? 'All Students' : 'সকল শিক্ষার্থী (All)';
+                } else {
+                    btnAllText.innerText = isEn ? 'Single Student' : 'একক শিক্ষার্থী (Single)';
+                }
+            }
+            const btnPrint = document.getElementById('btn-print-text');
+            if (btnPrint) btnPrint.innerText = isEn ? 'Print' : 'প্রিন্ট (Print)';
+
+            // 2. Student Info Labels
+            const lName = document.getElementById('label-student-name');
+            if (lName) lName.innerText = isEn ? 'Student Name' : 'শিক্ষার্থীর নাম';
+            const lRoll = document.getElementById('label-roll-no');
+            if (lRoll) lRoll.innerText = isEn ? 'Roll No' : 'রোল নং';
+            const lCls = document.getElementById('label-class-name');
+            if (lCls) lCls.innerText = isEn ? 'Class' : 'শ্রেণি';
+            const lRel = document.getElementById('label-student-religion');
+            if (lRel) lRel.innerText = isEn ? 'Religion' : 'ধর্ম (Religion)';
+            const lOpt = document.getElementById('label-optional-subject');
+            if (lOpt) lOpt.innerText = isEn ? 'Optional (4th)' : 'ঐচ্ছিক বিষয় (৪র্থ)';
+            const lId = document.getElementById('label-student-id');
+            if (lId) lId.innerText = isEn ? 'Student ID' : 'শিক্ষার্থী আইডি';
+
+            // 3. Marks Table Header Titles
+            const thSub = document.getElementById('th-header-sub');
+            if (thSub) thSub.innerText = isEn ? 'Subject' : 'বিষয়';
+            const thComb = document.getElementById('th-header-combined');
+            if (thComb) thComb.innerText = isEn ? 'Total' : 'সর্বমোট';
+            const thGrd = document.getElementById('th-header-grade');
+            if (thGrd) thGrd.innerText = isEn ? 'Grade' : 'গ্রেড';
+            const thPt = document.getElementById('th-header-point');
+            if (thPt) thPt.innerText = isEn ? 'GPA' : 'পয়েন্ট';
+
+            // 4. Summary & Rank Table Labels
+            const tdRank = document.getElementById('td-label-rank');
+            if (tdRank) tdRank.innerText = isEn ? 'Rank' : 'স্থান';
+            const tdGT = document.getElementById('td-label-grand-total');
+            if (tdGT) tdGT.innerText = isEn ? 'Total Marks' : 'সর্বমোট';
+            const tdGpa = document.getElementById('td-label-gpa');
+            if (tdGpa) tdGpa.innerText = isEn ? 'GPA' : 'পয়েন্ট';
+            const tdFinalGrd = document.getElementById('td-label-grade');
+            if (tdFinalGrd) tdFinalGrd.innerText = isEn ? 'Grade' : 'গ্রেড';
+
+            // 5. Signatures Labels
+            const sigG = document.getElementById('label-sig-guardian');
+            if (sigG) sigG.innerText = isEn ? "Guardian's Signature" : 'অভিভাবকের স্বাক্ষর';
+            const sigH = document.getElementById('label-sig-head');
+            if (sigH) sigH.innerText = isEn ? "Headmaster's Signature" : 'প্রধান শিক্ষকের স্বাক্ষর';
+        }
+
+
+        function normalizeSectionString(str) {
+            if (!str) return 'science';
+            const s = String(str).toLowerCase().trim();
+            if (s.includes('বিজ্ঞান') || s.includes('science') || s === 'a' || s === 'ক') return 'science';
+            if (s.includes('মানবিক') || s.includes('humanities') || s.includes('arts') || s === 'b' || s === 'খ') return 'humanities';
+            if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business') || s.includes('commerce') || s === 'c' || s === 'গ') return 'business';
+            return s;
+        }
+
+        const DEFAULT_GRADE_RULES = [
+            { id: "1", name: "A+", min: 80, max: 100, gp: 5.0 },
+            { id: "2", name: "A", min: 70, max: 79, gp: 4.0 },
+            { id: "3", name: "A-", min: 60, max: 69, gp: 3.5 },
+            { id: "4", name: "B", min: 50, max: 59, gp: 3.0 },
+            { id: "5", name: "C", min: 40, max: 49, gp: 2.0 },
+            { id: "6", name: "D", min: 33, max: 39, gp: 1.0 },
+            { id: "7", name: "F", min: 0, max: 32, gp: 0.0 }
+        ];
+
+        // Dynamic Grading Scale loader from "Marking System" (school_marking_system)
+        function loadMarkingSystem() {
+            try {
+                const raw = localStorage.getItem('school_marking_system');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed;
+                    }
+                }
+            } catch(e) {}
+            return DEFAULT_GRADE_RULES;
+        }
+
+        // Calculate Grade & GP dynamically based on Grading Scale (% Percentage Scale) & full marks
+        function calculateGradeAndGP(marks, fullMarks = 100) {
+            if (marks === null || marks === undefined || isNaN(marks)) {
+                return { grade: 'F', gp: 0.00 };
+            }
+            const fMarks = Number(fullMarks) > 0 ? Number(fullMarks) : 100;
+            const pct = (Number(marks) / fMarks) * 100;
+
+            const rules = loadMarkingSystem();
+            const sortedRules = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || sortedRules[sortedRules.length - 1] || { name: 'F', gp: 0.00 };
+
+            // Find matching rule based on customized percentage threshold
+            let match = sortedRules.find(r => pct >= parseFloat(r.min) && pct <= parseFloat(r.max));
+            if (!match) {
+                match = sortedRules.find(r => (pct + 0.001) >= parseFloat(r.min));
+            }
+            if (match) {
+                return { grade: match.name, gp: parseFloat(match.gp) || 0.00 };
+            }
+            return { grade: failRule.name, gp: parseFloat(failRule.gp) || 0.00 };
+        }
+
+        function getMaxScaleGP() {
+            const rules = loadMarkingSystem();
+            const gps = rules.map(r => parseFloat(r.gp) || 0);
+            return gps.length > 0 ? Math.max(...gps, 1.0) : 5.00;
+        }
+
+        function getFinalGradeFromGPA(gpa, isFailed) {
+            const rules = loadMarkingSystem();
+            const sortedRules = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0.0 };
+            if (isFailed || gpa <= 0) return failRule.name;
+
+            const sortedByGP = [...sortedRules].sort((a, b) => (parseFloat(b.gp) || 0) - (parseFloat(a.gp) || 0));
+            const matched = sortedByGP.find(r => (gpa + 0.001) >= parseFloat(r.gp));
+            return matched ? matched.name : failRule.name;
+        }
+
+        function renderGradingScaleLegend() {
+            const rules = loadMarkingSystem();
+            const sorted = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const table = document.getElementById('marksheet-grading-scale-table');
+            if (table) {
+                let rowsHtml = '<tr><th>Range</th><th>Grade</th><th>GPA</th></tr>';
+                sorted.filter(r => r.name !== 'F' && parseFloat(r.gp) > 0).forEach(r => {
+                    const minStr = formatDigits(r.min);
+                    const maxStr = formatDigits(r.max);
+                    const gpStr = formatDigits(parseFloat(r.gp || 0).toFixed(2));
+                    rowsHtml += `<tr><td>${minStr}-${maxStr}</td><td>${r.name}</td><td>${gpStr}</td></tr>`;
+                });
+                table.innerHTML = rowsHtml;
+            }
+        }
+
+        function getGradingScaleTableHTML() {
+            const rules = loadMarkingSystem();
+            const sorted = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const innerRows = sorted.filter(r => r.name !== 'F' && parseFloat(r.gp) > 0).map(r => {
+                const minStr = formatDigits(r.min);
+                const maxStr = formatDigits(r.max);
+                const gpStr = formatDigits(parseFloat(r.gp || 0).toFixed(2));
+                return `<tr><td>${minStr}-${maxStr}</td><td>${r.name}</td><td>${gpStr}</td></tr>`;
+            }).join('');
+            return `<table class="grading-scale"><tr><th>Range</th><th>Grade</th><th>GPA</th></tr>${innerRows}</table>`;
+        }
+
+        function getSubjectNameBangla(sub) {
+            if (!sub) return '';
+            if (typeof sub === 'string') sub = { name: sub };
+            if (sub.nameBn && sub.nameBn.trim()) {
+                const b = sub.nameBn.trim();
+                if (b === 'বাংলা ১ম পত্র' || b === 'বাংলা ১ম' || b.includes('বাংলা সাহিত্য')) return 'বাংলা সাহিত্য';
+                if (b === 'বাংলা ২য় পত্র' || b === 'বাংলা ২য়' || b.includes('ব্যাকরণ')) return 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি';
+                if (b === 'ইংরেজি ১ম পত্র' || b === 'ইংরেজি ১ম') return 'ইংরেজি ১ম পত্র';
+                if (b === 'ইংরেজি ২য় পত্র' || b === 'ইংরেজি ২য়') return 'ইংরেজি ২য় পত্র';
+                return b;
+            }
+
+            const raw = (sub.name || sub.subject || '').trim();
+            const short = (sub.shortName || '').trim().toLowerCase();
+            const cleanLower = raw.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+
+            const dictionary = {
+                'bangla sahitya': 'বাংলা সাহিত্য',
+                'bangla 1st': 'বাংলা সাহিত্য',
+                'bangla 1st paper': 'বাংলা সাহিত্য',
+                'bangla first paper': 'বাংলা সাহিত্য',
+                'bangla bhashar byakaran and nirmiti': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla bhashar byakaran o nirmiti': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla 2nd': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla 2nd paper': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla second paper': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'bangla grammar': 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি',
+                'english for today': 'ইংরেজি ১ম পত্র',
+                'english 1st': 'ইংরেজি ১ম পত্র',
+                'english 1st paper': 'ইংরেজি ১ম পত্র',
+                'english first paper': 'ইংরেজি ১ম পত্র',
+                'english grammar and composition': 'ইংরেজি ২য় পত্র',
+                'english 2nd': 'ইংরেজি ২য় পত্র',
+                'english 2nd paper': 'ইংরেজি ২য় পত্র',
+                'english second paper': 'ইংরেজি ২য় পত্র',
+                'english grammar': 'ইংরেজি ২য় পত্র',
+                'mathematics': 'গণিত',
+                'math': 'গণিত',
+                'general mathematics': 'সাধারণ গণিত',
+                'higher mathematics': 'উচ্চতর গণিত',
+                'higher math': 'উচ্চতর গণিত',
+                'general science': 'সাধারণ বিজ্ঞান',
+                'science': 'বিজ্ঞান',
+                'physics': 'পদার্থবিজ্ঞান',
+                'chemistry': 'রসায়ন',
+                'biology': 'জীববিজ্ঞান',
+                'bangladesh and global studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'bangladesh & global studies': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'bgs': 'বাংলাদেশ ও বিশ্বপরিচয়',
+                'information and communication technology': 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+                'information & communication technology': 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+                'ict': 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)',
+                'agriculture studies': 'কৃষি শিক্ষা',
+                'agricultural studies': 'কৃষি শিক্ষা',
+                'agriculture': 'কৃষি শিক্ষা',
+                'islamic studies': 'ইসলাম ও নৈতিক শিক্ষা',
+                'islam and moral education': 'ইসলাম ও নৈতিক শিক্ষা',
+                'islam & moral education': 'ইসলাম ও নৈতিক শিক্ষা',
+                'islam': 'ইসলাম ও নৈতিক শিক্ষা',
+                'hindu religion studies': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion and moral education': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu religion & moral education': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'hindu': 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                'christian religion and moral education': 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা',
+                'buddhist religion and moral education': 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা',
+                'home science': 'গার্হস্থ্য বিজ্ঞান',
+                'physical education and health': 'শারীরিক শিক্ষা ও স্বাস্থ্য',
+                'physical education': 'শারীরিক শিক্ষা ও স্বাস্থ্য',
+                'arts and crafts': 'চারু ও কারুকলা',
+                'fine arts': 'চারু ও কারুকলা',
+                'accounting': 'হিসাববিজ্ঞান',
+                'finance and banking': 'ফিন্যান্স ও ব্যাংকিং',
+                'finance & banking': 'ফিন্যান্স ও ব্যাংকিং',
+                'finance': 'ফিন্যান্স ও ব্যাংকিং',
+                'business entrepreneurship': 'ব্যবসায় উদ্যোগ',
+                'business studies': 'ব্যবসায় উদ্যোগ',
+                'geography and environment': 'ভূগোল ও পরিবেশ',
+                'geography & environment': 'ভূগোল ও পরিবেশ',
+                'geography': 'ভূগোল ও পরিবেশ',
+                'history of bangladesh and world civilization': 'ইতিহাস ও সামাজিক বিজ্ঞান',
+                'history': 'ইতিহাস ও সামাজিক বিজ্ঞান',
+                'civics and citizenship': 'পৌরনীতি ও নাগরিকতা',
+                'civics': 'পৌরনীতি ও নাগরিকতা',
+                'economics': 'অর্থনীতি'
+            };
+
+            if (short && dictionary[short]) return dictionary[short];
+            if (dictionary[cleanLower]) return dictionary[cleanLower];
+
+            for (let key in dictionary) {
+                if (cleanLower.includes(key)) {
+                    return dictionary[key];
+                }
+            }
+
+            return raw || 'বিষয়';
+        }
+
+        function getSubjectSortRank(sub) {
+            const raw = (typeof sub === 'string' ? sub : (sub.name || sub.subject || sub.rawName || sub.nameBn || '')).trim().toLowerCase();
+            const isOpt = typeof sub === 'object' && (sub.isOptional || sub.group === 'optional');
+            if (isOpt) return 999;
+
+            if (raw.includes('বাংলা সাহিত্য') || raw.includes('বাংলা ১ম') || raw.includes('bangla 1')) return 1;
+            if (raw.includes('বাংলা ভাষার ব্যাকরণ') || raw.includes('বাংলা ২য়') || raw.includes('bangla 2') || raw.includes('ব্যাকরণ')) return 2;
+            if (raw.includes('ইংরেজি ১ম') || raw.includes('english 1') || raw.includes('english for today')) return 3;
+            if (raw.includes('ইংরেজি ২য়') || raw.includes('english 2') || raw.includes('grammar')) return 4;
+            if (raw.includes('গণিত') || raw.includes('mathematics') || raw === 'math') return 5;
+            if (raw.includes('তথ্য ও যোগাযোগ') || raw.includes('ict') || raw.includes('আইসিটি')) return 6;
+            if (raw.includes('ইসলাম') || raw.includes('হিন্দু') || raw.includes('বৌদ্ধ') || raw.includes('খ্রিস্ট') || raw.includes('ধর্ম') || raw.includes('religion') || raw.includes('islam') || raw.includes('hindu')) return 7;
+            if (raw.includes('বাংলাদেশ ও বিশ্বপরিচয়') || raw.includes('bangladesh and global studies') || raw.includes('science') || raw.includes('বিজ্ঞান')) return 8;
+            if (raw.includes('পদার্থবিজ্ঞান') || raw.includes('physics') || raw.includes('পৌরনীতি') || raw.includes('civics') || raw.includes('হিসাববিজ্ঞান') || raw.includes('accounting')) return 9;
+            if (raw.includes('রসায়ন') || raw.includes('chemistry') || raw.includes('ইতিহাস') || raw.includes('history') || raw.includes('ব্যবসায়') || raw.includes('business')) return 10;
+            if (raw.includes('জীববিজ্ঞান') || raw.includes('biology') || raw.includes('ভূগোল') || raw.includes('geography') || raw.includes('ফিন্যান্স') || raw.includes('finance')) return 11;
+            if (raw.includes('অর্থনীতি') || raw.includes('economics') || raw.includes('চারু') || raw.includes('arts')) return 12;
+            if (raw.includes('শারীরিক') || raw.includes('physical')) return 13;
+            return 50;
+        }
+
+        function getStudentReligionInfo(student) {
+            const r = String(student?.religion || student?.religionBn || 'Islam').toLowerCase();
+            if (r.includes('hindu') || r.includes('হিন্দু') || r.includes('সনাতন')) {
+                return {
+                    name: 'Hindu Religion Studies',
+                    nameBn: 'হিন্দুধর্ম ও নৈতিক শিক্ষা',
+                    display: 'হিন্দু (সনাতন)',
+                    en: 'Hinduism'
+                };
+            } else if (r.includes('buddh') || r.includes('বৌদ্ধ')) {
+                return {
+                    name: 'Buddhist Religion Studies',
+                    nameBn: 'বৌদ্ধধর্ম ও নৈতিক শিক্ষা',
+                    display: 'বৌদ্ধ',
+                    en: 'Buddhism'
+                };
+            } else if (r.includes('christ') || r.includes('খ্রিস্ট') || r.includes('ঈসায়ী')) {
+                return {
+                    name: 'Christian Religion Studies',
+                    nameBn: 'খ্রিস্টধর্ম ও নৈতিক শিক্ষা',
+                    display: 'খ্রিস্টান',
+                    en: 'Christianity'
+                };
+            }
+            return {
+                name: 'Islamic Studies',
+                nameBn: 'ইসলাম ও নৈতিক শিক্ষা',
+                display: 'ইসলাম',
+                en: 'Islam'
+            };
+        }
+
+        function getStudentOptionalSubjectInfo(student, normS) {
+            let raw = student ? (student.optionalSubject || student.optional_subject || student.fourthSubject || student.optional || '') : '';
+            let optBn = '';
+            if (raw) {
+                optBn = getSubjectNameBangla(raw);
+            }
+            if (!optBn || optBn === 'বিষয়') {
+                if (normS === 'science') {
+                    optBn = 'উচ্চতর গণিত';
+                    raw = 'Higher Mathematics';
+                } else if (normS === 'humanities') {
+                    optBn = 'কৃষি শিক্ষা';
+                    raw = 'Agriculture Studies';
+                } else if (normS === 'business') {
+                    optBn = 'কৃষি শিক্ষা';
+                    raw = 'Agriculture Studies';
+                } else {
+                    optBn = 'কৃষি শিক্ষা';
+                    raw = 'Agriculture Studies';
+                }
+            }
+            return {
+                name: raw || optBn,
+                nameBn: optBn
+            };
+        }
+
+        // Helper to extract student marks for a given subject from school_student_marks (Exam List & Evaluations)
+        function getStudentMarksForSubject(student, subjectObj, selectedExam, savedMarks) {
+            if (!student || !savedMarks || typeof savedMarks !== 'object') {
+                return { mcq: '', cq: '', pr: '', total: null, isAbsent: false, hasMarks: false };
+            }
+            const stIds = [
+                student.id,
+                student.studentId,
+                student.regNo,
+                student.roll,
+                student.rollNo,
+                student.code
+            ].filter(Boolean).map(x => String(x).trim());
+
+            const schedIds = [];
+            if (subjectObj.scheduleId) schedIds.push(String(subjectObj.scheduleId).trim());
+            if (Array.isArray(subjectObj.scheduleIds)) {
+                subjectObj.scheduleIds.forEach(id => {
+                    if (id && !schedIds.includes(String(id).trim())) schedIds.push(String(id).trim());
+                });
+            }
+
+            const subCodes = [];
+            if (subjectObj.code) subCodes.push(String(subjectObj.code).trim());
+            const subNames = [
+                subjectObj.name,
+                subjectObj.rawName,
+                subjectObj.nameBn
+            ].filter(Boolean).map(x => String(x).trim());
+
+            let markRecord = null;
+
+            // 1. Check schedule-specific mark keys: marks_{stId}_{schedId}
+            for (const stId of stIds) {
+                for (const schId of schedIds) {
+                    const k = `marks_${stId}_${schId}`;
+                    if (savedMarks[k]) {
+                        markRecord = savedMarks[k];
+                        break;
+                    }
+                }
+                if (markRecord) break;
+            }
+
+            // 2. Check exam-name mark keys: marks_{stId}_{exam}
+            if (!markRecord && selectedExam) {
+                const examKeys = [selectedExam, selectedExam.trim()];
+                for (const stId of stIds) {
+                    for (const exKey of examKeys) {
+                        const k = `marks_${stId}_${exKey}`;
+                        if (savedMarks[k]) {
+                            markRecord = savedMarks[k];
+                            break;
+                        }
+                    }
+                    if (markRecord) break;
+                }
+            }
+
+            if (!markRecord) {
+                return { mcq: '', cq: '', pr: '', total: null, isAbsent: false, hasMarks: false };
+            }
+
+            if (typeof markRecord === 'string') {
+                const upper = markRecord.trim().toUpperCase();
+                if (upper === 'A' || upper === 'ABS') {
+                    return { mcq: 'A', cq: 'A', pr: 'A', total: 0, isAbsent: true, hasMarks: true };
+                }
+            }
+
+            let markData = null;
+            if (typeof markRecord === 'object' && markRecord !== null) {
+                for (const code of subCodes) {
+                    if (markRecord[code] !== undefined) {
+                        markData = markRecord[code];
+                        break;
+                    }
+                }
+                if (markData === null) {
+                    for (const name of subNames) {
+                        if (markRecord[name] !== undefined) {
+                            markData = markRecord[name];
+                            break;
+                        }
+                    }
+                }
+                if (markData === null) {
+                    const recKeys = Object.keys(markRecord);
+                    for (const rk of recKeys) {
+                        const rkLower = rk.toLowerCase().trim();
+                        for (const name of subNames) {
+                            const nLower = name.toLowerCase().trim();
+                            if (rkLower === nLower || rkLower.includes(nLower) || nLower.includes(rkLower)) {
+                                markData = markRecord[rk];
+                                break;
+                            }
+                        }
+                        if (markData !== null) break;
+                    }
+                }
+                if (markData === null) {
+                    const keys = Object.keys(markRecord).filter(k => k !== 'timestamp');
+                    if (keys.length === 1 && typeof markRecord[keys[0]] === 'object') {
+                        markData = markRecord[keys[0]];
+                    } else if (markRecord.mcq !== undefined || markRecord.cq !== undefined || markRecord.total !== undefined || markRecord.isAbsent !== undefined) {
+                        markData = markRecord;
+                    }
+                }
+            }
+
+            if (markData === null || markData === undefined) {
+                return { mcq: '', cq: '', pr: '', total: null, isAbsent: false, hasMarks: false };
+            }
+
+            let isAbsent = false;
+            let mcq = '';
+            let cq = '';
+            let pr = '';
+            let total = null;
+
+            if (typeof markData === 'object' && markData !== null) {
+                isAbsent = !!markData.isAbsent;
+                if (!isAbsent && (String(markData.cq).toUpperCase() === 'A' || String(markData.mcq).toUpperCase() === 'A' || String(markData.practical).toUpperCase() === 'A')) {
+                    isAbsent = true;
+                }
+
+                if (isAbsent) {
+                    return { mcq: 'A', cq: 'A', pr: 'A', total: 0, isAbsent: true, hasMarks: true };
+                }
+
+                if (markData.mcq !== undefined && markData.mcq !== null && markData.mcq !== '' && markData.mcq !== '-') {
+                    mcq = Number(markData.mcq);
+                }
+                if (markData.cq !== undefined && markData.cq !== null && markData.cq !== '' && markData.cq !== '-') {
+                    cq = Number(markData.cq);
+                }
+                if (markData.practical !== undefined && markData.practical !== null && markData.practical !== '' && markData.practical !== '-') {
+                    pr = Number(markData.practical);
+                }
+                if (markData.total !== undefined && markData.total !== null && markData.total !== '' && markData.total !== '-') {
+                    total = Number(markData.total);
+                } else if (mcq !== '' || cq !== '' || pr !== '') {
+                    total = (Number(mcq) || 0) + (Number(cq) || 0) + (Number(pr) || 0);
+                }
+            } else if (typeof markData === 'number' || (typeof markData === 'string' && markData.trim() !== '' && markData !== '-')) {
+                const str = markData.toString().trim().toUpperCase();
+                if (str === 'A' || str === 'ABS') {
+                    return { mcq: 'A', cq: 'A', pr: 'A', total: 0, isAbsent: true, hasMarks: true };
+                }
+                total = Number(markData) || 0;
+                cq = total;
+            }
+
+            const hasMarks = isAbsent || total !== null || mcq !== '' || cq !== '' || pr !== '';
+            return { mcq, cq, pr, total, isAbsent, hasMarks };
+        }
+
+        // Dynamic Subject Finder: Subject names are strictly taken from "Exam List" (school_exam_schedules) and update continuously
+        function getSubjectsForClass(selectedClass, selectedSection, selectedExam, student) {
+            const normC = normalizeClassString(selectedClass);
+            const normS = normalizeSectionString(selectedSection);
+            const isSecondary = ['9', '10'].includes(normC);
+            const isJunior = ['6', '7', '8'].includes(normC);
+            const isPrimary = ['play', 'nursery', 'kg', '1', '2', '3', '4', '5'].includes(normC);
+
+            const relInfo = getStudentReligionInfo(student);
+            const optInfo = getStudentOptionalSubjectInfo(student, normS);
+
+            let rawList = [];
+
+            let savedMarks = {};
+            try {
+                const rawSavedMarks = localStorage.getItem('school_student_marks');
+                if (rawSavedMarks) savedMarks = JSON.parse(rawSavedMarks);
+            } catch(e) {}
+
+            // 1. PRIMARY: Read subjects strictly created under this Exam Name in "Exam List" (school_exam_schedules)
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const schedules = JSON.parse(rawSchedules);
+                    if (Array.isArray(schedules) && schedules.length > 0) {
+                        const matchedSchedules = schedules.filter(sc => {
+                            if (!sc) return false;
+                            const matchExam = isExamMatch(sc.term || sc.examName, selectedExam);
+                            const matchClass = normalizeClassString(sc.className || sc.class) === normC;
+                            let matchSec = true;
+                            if (normS && sc.section && sc.section !== 'All' && sc.section !== '(প্রযোজ্য না)') {
+                                const scSecNorm = normalizeSectionString(sc.section);
+                                const scSecs = sc.section.toString().toLowerCase().split(',').map(x => x.trim());
+                                matchSec = scSecNorm === normS || scSecs.includes(normS) || scSecs.includes((selectedSection || '').toLowerCase().trim());
+                            }
+                            return matchExam && matchClass && matchSec;
+                        });
+
+                        if (matchedSchedules.length > 0) {
+                            const subjectGroups = new Map();
+                            matchedSchedules.forEach(sc => {
+                                // Exact subject name as created in Exam List!
+                                const exactSubName = (sc.subject || sc.subjectName || sc.name || '').trim();
+                                if (!exactSubName) return;
+
+                                // Filter out religion subjects that do not match student religion
+                                const normSub = exactSubName.toLowerCase();
+                                const isRelSub = normSub.includes('ইসলাম') || normSub.includes('islam') ||
+                                                 normSub.includes('হিন্দু') || normSub.includes('hindu') ||
+                                                 normSub.includes('বৌদ্ধ') || normSub.includes('buddhist') ||
+                                                 normSub.includes('খ্রিস্ট') || normSub.includes('christian') ||
+                                                 normSub.includes('ধর্ম') || normSub.includes('religion');
+                                if (isRelSub) {
+                                    const studentRel = String(student?.religion || '').toLowerCase();
+                                    const isIslamStudent = !studentRel || studentRel.includes('islam') || studentRel.includes('ইসলাম');
+                                    const isHinduStudent = studentRel.includes('hindu') || studentRel.includes('হিন্দু') || studentRel.includes('সনাতন');
+                                    const isBuddhStudent = studentRel.includes('buddh') || studentRel.includes('বৌদ্ধ');
+                                    const isChristStudent = studentRel.includes('christ') || studentRel.includes('খ্রিস্ট');
+
+                                    const isIslamSub = normSub.includes('islam') || normSub.includes('ইসলাম');
+                                    const isHinduSub = normSub.includes('hindu') || normSub.includes('হিন্দু');
+                                    const isBuddhSub = normSub.includes('buddh') || normSub.includes('বৌদ্ধ');
+                                    const isChristSub = normSub.includes('christ') || normSub.includes('খ্রিস্ট');
+
+                                    if ((isIslamSub && !isIslamStudent) || (isHinduSub && !isHinduStudent) || (isBuddhSub && !isBuddhStudent) || (isChristSub && !isChristStudent)) {
+                                        return;
+                                    }
+                                }
+
+                                const groupKey = exactSubName.toLowerCase();
+
+                                if (!subjectGroups.has(groupKey)) {
+                                    let subFull = parseInt(sc.totalMarks || sc.fullMarks) || 0;
+                        let subCqFull = null;
+                        let subMcqFull = null;
+                        let subPracFull = null;
+                        if (sc.examType) {
+                            try {
+                                const rawTypes = localStorage.getItem('school_exam_types');
+                                if (rawTypes) {
+                                    const exTypes = JSON.parse(rawTypes);
+                                    const exMatch = exTypes.find(t => isExamMatch(t.name, selectedExam));
+                                    if (exMatch && Array.isArray(exMatch.examTypes)) {
+                                        const stMatch = exMatch.examTypes.find(t => (t.typeName || '').trim().toLowerCase() === (sc.examType || '').trim().toLowerCase());
+                                        if (stMatch) {
+                                            if (stMatch.defaultCQ !== undefined && stMatch.defaultCQ !== null) subCqFull = Number(stMatch.defaultCQ);
+                                            if (stMatch.defaultMCQ !== undefined && stMatch.defaultMCQ !== null) subMcqFull = Number(stMatch.defaultMCQ);
+                                            if (stMatch.defaultPractical !== undefined && stMatch.defaultPractical !== null) subPracFull = Number(stMatch.defaultPractical);
+                                            subFull = (subCqFull || 0) + (subMcqFull || 0) + (subPracFull || 0);
+                                        }
+                                    }
+                                    if (subCqFull === null && exMatch) {
+                                        if (exMatch.defaultCQ !== undefined && exMatch.defaultCQ !== null) subCqFull = Number(exMatch.defaultCQ);
+                                        if (exMatch.defaultMCQ !== undefined && exMatch.defaultMCQ !== null) subMcqFull = Number(exMatch.defaultMCQ);
+                                        if (exMatch.defaultPractical !== undefined && exMatch.defaultPractical !== null) subPracFull = Number(exMatch.defaultPractical);
+                                    }
+                                }
+                            } catch(e) {}
+                        }
+
+                        const normSubName = exactSubName.toLowerCase();
+                        const isEngSub = normSubName.includes('english') || normSubName.includes('ইংরেজি');
+                        if (isEngSub) {
+                            if (subCqFull === null || subCqFull === undefined) subCqFull = subFull || 100;
+                            subMcqFull = 0;
+                            subPracFull = 0;
+                            if (!subFull) subFull = subCqFull;
+                        } else if (subCqFull === null || subMcqFull === null || subPracFull === null) {
+                            const curDist = getExamDistribution(selectedExam, selectedClass);
+                            if (subCqFull === null) subCqFull = curDist.cq;
+                            if (subMcqFull === null) subMcqFull = curDist.mcq;
+                            if (subPracFull === null) subPracFull = curDist.prac;
+                            if (!subFull && curDist.total) subFull = curDist.total;
+                        }
+                        if (!subFull) {
+                            subFull = (normSubName.includes('ict') || normSubName.includes('আইসিটি')) ? 50 : 100;
+                        }
+                                    subjectGroups.set(groupKey, {
+                                        schedule: sc,
+                                        scheduleIds: [sc.id],
+                                        name: exactSubName,
+                                        rawName: exactSubName,
+                                        nameBn: exactSubName,
+                                        code: sc.code || '',
+                                        fullMarks: subFull,
+                                        cqFull: subCqFull,
+                                        mcqFull: subMcqFull,
+                                        pracFull: subPracFull,
+                                        isOptional: !!sc.isOptional
+                                    });
+                                } else {
+                                    const grp = subjectGroups.get(groupKey);
+                                    if (sc.id && !grp.scheduleIds.includes(sc.id)) {
+                                        grp.scheduleIds.push(sc.id);
+                                    }
+                                    if (sc.hasMarks) {
+                                        grp.schedule = sc;
+                                        grp.scheduleId = sc.id;
+                                    }
+                                }
+                            });
+
+                            subjectGroups.forEach(grp => {
+                                const sc = grp.schedule;
+                                rawList.push({
+                                    scheduleId: grp.scheduleId || sc.id,
+                                    scheduleIds: grp.scheduleIds,
+                                    name: grp.name,
+                                    rawName: grp.rawName,
+                                    nameBn: grp.name,
+                                    code: grp.code,
+                                    fullMarks: grp.fullMarks,
+                                    cqFull: grp.cqFull,
+                                    mcqFull: grp.mcqFull,
+                                    pracFull: grp.pracFull,
+                                    isOptional: grp.isOptional
+                                });
+                            });
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Error reading exam schedules from Exam List:", e);
+            }
+
+            // 2. Secondary fallback: check school_subjects catalog if no schedule found for this exam
+            if (rawList.length === 0) {
+                try {
+                    const rawSubjectsMap = localStorage.getItem('school_subjects');
+                    if (rawSubjectsMap) {
+                        const subMap = JSON.parse(rawSubjectsMap);
+                        if (typeof subMap === 'object' && subMap !== null) {
+                            const classKeys = Object.keys(subMap);
+                            const matchedKey = classKeys.find(k => {
+                                const nk = normalizeClassString(k);
+                                return nk === normC || k.toLowerCase().trim() === (selectedClass || '').toLowerCase().trim();
+                            });
+                            if (matchedKey && Array.isArray(subMap[matchedKey]) && subMap[matchedKey].length > 0) {
+                                subMap[matchedKey].forEach(s => {
+                                    if (!s) return;
+                                    const sec = (s.section || 'All').toString().trim().toLowerCase();
+                                    const sBnName = getSubjectNameBangla(s);
+                                    const isRelSub = sBnName.includes('ইসলাম') || sBnName.includes('হিন্দু') || sBnName.includes('বৌদ্ধ') || sBnName.includes('খ্রিস্ট') || sBnName.includes('ধর্ম');
+                                    if (isRelSub && !sBnName.includes(relInfo.display) && !sBnName.includes('ধর্ম ও নৈতিক')) {
+                                        return;
+                                    }
+                                    if (sec === 'all' || sec === '' || sec.includes(normS) || normS.includes(sec)) {
+                                        rawList.push({
+                                            name: s.name || sBnName,
+                                            nameBn: isRelSub ? relInfo.nameBn : sBnName,
+                                            code: s.code || '',
+                                            fullMarks: s.fullMarks || 100,
+                                            isOptional: !!s.isOptional
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            // 3. Fallback standard curriculum subjects if none configured
+            if (rawList.length === 0) {
+                if (isPrimary) {
+                    rawList = [
+                        { name: 'বাংলা', nameBn: 'বাংলা', fullMarks: 100 },
+                        { name: 'ইংরেজি', nameBn: 'ইংরেজি', fullMarks: 100 },
+                        { name: 'গণিত', nameBn: 'গণিত', fullMarks: 100 },
+                        { name: 'পরিবেশ পরিচিতি / সাধারণ বিজ্ঞান', nameBn: 'পরিবেশ পরিচিতি / সাধারণ বিজ্ঞান', fullMarks: 100 },
+                        { name: relInfo.name, nameBn: relInfo.nameBn, fullMarks: 100 }
+                    ];
+                } else if (isJunior) {
+                    rawList = [
+                        { name: 'বাংলা সাহিত্য', nameBn: 'বাংলা সাহিত্য', fullMarks: 100 },
+                        { name: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', nameBn: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', fullMarks: 100 },
+                        { name: 'ইংরেজি ১ম পত্র', nameBn: 'ইংরেজি ১ম পত্র', fullMarks: 100 },
+                        { name: 'ইংরেজি ২য় পত্র', nameBn: 'ইংরেজি ২য় পত্র', fullMarks: 100 },
+                        { name: 'গণিত', nameBn: 'গণিত', fullMarks: 100 },
+                        { name: 'বিজ্ঞান', nameBn: 'বিজ্ঞান', fullMarks: 100 },
+                        { name: 'বাংলাদেশ ও বিশ্বপরিচয়', nameBn: 'বাংলাদেশ ও বিশ্বপরিচয়', fullMarks: 100 },
+                        { name: relInfo.name, nameBn: relInfo.nameBn, fullMarks: 100 },
+                        { name: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', nameBn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', fullMarks: 50 },
+                        { name: 'কৃষি শিক্ষা / গার্হস্থ্য বিজ্ঞান', nameBn: 'কৃষি শিক্ষা / গার্হস্থ্য বিজ্ঞান', fullMarks: 100 }
+                    ];
+                } else {
+                    const isSci = normS === 'science';
+                    const isHum = normS === 'humanities';
+                    rawList = [
+                        { name: 'বাংলা সাহিত্য', nameBn: 'বাংলা সাহিত্য', fullMarks: 100, group: 'compulsory' },
+                        { name: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', nameBn: 'বাংলা ভাষার ব্যাকরণ ও নির্মিতি', fullMarks: 100, group: 'compulsory' },
+                        { name: 'ইংরেজি ১ম পত্র', nameBn: 'ইংরেজি ১ম পত্র', fullMarks: 100, group: 'compulsory' },
+                        { name: 'ইংরেজি ২য় পত্র', nameBn: 'ইংরেজি ২য় পত্র', fullMarks: 100, group: 'compulsory' },
+                        { name: 'গণিত', nameBn: 'গণিত', fullMarks: 100, group: 'compulsory' },
+                        { name: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', nameBn: 'তথ্য ও যোগাযোগ প্রযুক্তি (ICT)', fullMarks: 50, group: 'compulsory' },
+                        { name: relInfo.name, nameBn: relInfo.nameBn, fullMarks: 100, group: 'compulsory' },
+                        { name: isSci ? 'বাংলাদেশ ও বিশ্বপরিচয়' : 'সাধারণ বিজ্ঞান', nameBn: isSci ? 'বাংলাদেশ ও বিশ্বপরিচয়' : 'সাধারণ বিজ্ঞান', fullMarks: 100, group: 'compulsory' }
+                    ];
+                    if (isSci) {
+                        rawList.push({ name: 'পদার্থবিজ্ঞান', nameBn: 'পদার্থবিজ্ঞান', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: 'রসায়ন', nameBn: 'রসায়ন', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: 'জীববিজ্ঞান', nameBn: 'জীববিজ্ঞান', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, fullMarks: 100, group: 'optional', isOptional: true });
+                    } else if (isHum) {
+                        rawList.push({ name: 'পৌরনীতি ও নাগরিকতা', nameBn: 'পৌরনীতি ও নাগরিকতা', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: 'ইতিহাস ও সামাজিক বিজ্ঞান', nameBn: 'ইতিহাস ও সামাজিক বিজ্ঞান', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: 'ভূগোল ও পরিবেশ', nameBn: 'ভূগোল ও পরিবেশ', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, fullMarks: 100, group: 'optional', isOptional: true });
+                    } else {
+                        rawList.push({ name: 'হিসাববিজ্ঞান', nameBn: 'হিসাববিজ্ঞান', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: 'ব্যবসায় উদ্যোগ', nameBn: 'ব্যবসায় উদ্যোগ', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: 'ফিন্যান্স ও ব্যাংকিং', nameBn: 'ফিন্যান্স ও ব্যাংকিং', fullMarks: 100, group: 'elective' });
+                        rawList.push({ name: optInfo.name, nameBn: optInfo.nameBn, fullMarks: 100, group: 'optional', isOptional: true });
+                    }
+                }
+            }
+
+            // Sort rawList strictly by curriculum hierarchy rank
+            rawList.sort((a, b) => getSubjectSortRank(a) - getSubjectSortRank(b));
+
+            // Extract real student marks from savedMarks for each subject in rawList
+            rawList.forEach(item => {
+                const markRes = getStudentMarksForSubject(student, item, selectedExam, savedMarks);
+                item.mcq = markRes.mcq;
+                item.cq = markRes.cq;
+                item.pr = markRes.pr;
+                item.total = markRes.total;
+                item.isAbsent = markRes.isAbsent;
+                item.hasMarks = markRes.hasMarks;
+
+                const normN = (item.name || '').toLowerCase();
+                const isEng = normN.includes('english') || normN.includes('ইংরেজি');
+                if (item.mcqFull === 0 || isEng) {
+                    item.mcq = '';
+                }
+                if (item.pracFull === 0 || isEng) {
+                    item.pr = '';
+                }
+            });
+
+            // Format rawList into structured marksheet rows (combining 1st & 2nd papers where applicable)
+            const rows = [];
+            const pairedIndices = new Set();
+
+            for (let i = 0; i < rawList.length; i++) {
+                if (pairedIndices.has(i)) continue;
+                const current = rawList[i];
+                const curName = (current.name || current.rawName || current.nameBn || current.subject || '').trim();
+                const curFull = parseInt(current.fullMarks || current.totalMarks) || (curName.toLowerCase().includes('ict') || curName.includes('আইসিটি') ? 50 : 100);
+
+                let isFirstPaper = false;
+                let pairIndex = -1;
+
+                const normCur = curName.toLowerCase();
+                const isBangla1 = normCur.includes('bangla 1') || normCur.includes('bangla 1st') || normCur.includes('বাংলা ১ম') || normCur.includes('বাংলা সাহিত্য');
+                const isEnglish1 = normCur.includes('english 1') || normCur.includes('english 1st') || normCur.includes('english for today') || normCur.includes('ইংরেজি ১ম');
+
+                if (isBangla1) {
+                    pairIndex = rawList.findIndex((item, idx) => {
+                        if (idx === i || pairedIndices.has(idx)) return false;
+                        const normP = (item.name || item.rawName || item.nameBn || item.subject || '').toLowerCase();
+                        return normP.includes('bangla 2') || normP.includes('bangla 2nd') || normP.includes('বাংলা ২য়') || normP.includes('ব্যাকরণ');
+                    });
+                    if (pairIndex !== -1) isFirstPaper = true;
+                } else if (isEnglish1) {
+                    pairIndex = rawList.findIndex((item, idx) => {
+                        if (idx === i || pairedIndices.has(idx)) return false;
+                        const normP = (item.name || item.rawName || item.nameBn || item.subject || '').toLowerCase();
+                        return normP.includes('english 2') || normP.includes('english 2nd') || normP.includes('grammar') || normP.includes('ইংরেজি ২য়');
+                    });
+                    if (pairIndex !== -1) isFirstPaper = true;
+                }
+
+                let groupType = current.group || (current.isOptional ? 'optional' : 'compulsory');
+                if (!current.group && (normCur.includes('chemistry') || normCur.includes('physics') || normCur.includes('biology') || normCur.includes('accounting') || normCur.includes('civics') || normCur.includes('history') || normCur.includes('geography') || normCur.includes('business') || normCur.includes('রসায়ন') || normCur.includes('পদার্থ') || normCur.includes('জীব') || normCur.includes('হিসাব') || normCur.includes('পৌরনীতি') || normCur.includes('ইতিহাস') || normCur.includes('ভূগোল') || normCur.includes('ব্যবসায়'))) {
+                    groupType = 'elective';
+                } else if (!current.group && (normCur.includes('higher') || normCur.includes('agri') || normCur.includes('উচ্চতর') || normCur.includes('কৃষি') || current.isOptional)) {
+                    groupType = 'optional';
+                }
+
+                if (isFirstPaper && pairIndex !== -1) {
+                    pairedIndices.add(i);
+                    pairedIndices.add(pairIndex);
+                    const pairItem = rawList[pairIndex];
+                    // Exact subject name from Exam List for Paper 2!
+                    const pairName = (pairItem.name || pairItem.rawName || pairItem.nameBn || pairItem.subject || '').trim();
+                    const pairFull = parseInt(pairItem.fullMarks || pairItem.totalMarks) || 100;
+
+                    rows.push({
+                        name: curName,
+                        fullMarks: curFull,
+                        cqFull: current.cqFull !== undefined ? current.cqFull : null,
+                        mcqFull: current.mcqFull !== undefined ? current.mcqFull : null,
+                        pracFull: current.pracFull !== undefined ? current.pracFull : null,
+                        mcq: current.mcq,
+                        cq: current.cq,
+                        pr: current.pr,
+                        total: current.total,
+                        hasMarks: current.hasMarks,
+                        isAbsent: current.isAbsent,
+                        isCombined: true,
+                        pairWith: pairName,
+                        pairFull: pairFull,
+                        pairCqFull: pairItem.cqFull !== undefined ? pairItem.cqFull : null,
+                        pairMcqFull: pairItem.mcqFull !== undefined ? pairItem.mcqFull : null,
+                        pairPracFull: pairItem.pracFull !== undefined ? pairItem.pracFull : null,
+                        pairMcq: pairItem.mcq,
+                        pairCq: pairItem.cq,
+                        pairPr: pairItem.pr,
+                        pairTotal: pairItem.total,
+                        pairHasMarks: pairItem.hasMarks,
+                        pairIsAbsent: pairItem.isAbsent,
+                        group: groupType,
+                        isOptional: false
+                    });
+                } else {
+                    pairedIndices.add(i);
+                    rows.push({
+                        name: curName,
+                        fullMarks: curFull,
+                        cqFull: current.cqFull !== undefined ? current.cqFull : null,
+                        mcqFull: current.mcqFull !== undefined ? current.mcqFull : null,
+                        pracFull: current.pracFull !== undefined ? current.pracFull : null,
+                        mcq: current.mcq,
+                        cq: current.cq,
+                        pr: current.pr,
+                        total: current.total,
+                        hasMarks: current.hasMarks,
+                        isAbsent: current.isAbsent,
+                        isCombined: false,
+                        group: groupType,
+                        isOptional: current.isOptional || groupType === 'optional'
+                    });
+                }
+            }
+
+            if (isSecondary) {
+                const optIdx = rows.findIndex(r => r.group === 'optional' || r.isOptional);
+                if (optIdx !== -1 && optIdx !== rows.length - 1) {
+                    const optRow = rows.splice(optIdx, 1)[0];
+                    rows.push(optRow);
+                }
+            }
+
+            return rows;
+        }
+
+        // Get Exam full marks breakdown (MCQ, Written/CQ, Practical, Total) from Exam List & Exam Types
+        function getExamDistribution(selectedExam, selectedClass) {
+            let cq = 70;
+            let mcq = 30;
+            let prac = 0;
+            let total = 100;
+
+            try {
+                const rawTypes = localStorage.getItem('school_exam_types');
+                if (rawTypes) {
+                    const types = JSON.parse(rawTypes);
+                    if (Array.isArray(types)) {
+                        const matchedExam = types.find(t => isExamMatch(t.name, selectedExam));
+                        if (matchedExam) {
+                            if (matchedExam.defaultCQ !== undefined && matchedExam.defaultCQ !== null) cq = Number(matchedExam.defaultCQ);
+                            if (matchedExam.defaultMCQ !== undefined && matchedExam.defaultMCQ !== null) mcq = Number(matchedExam.defaultMCQ);
+                            if (matchedExam.defaultPractical !== undefined && matchedExam.defaultPractical !== null) prac = Number(matchedExam.defaultPractical);
+                            total = cq + mcq + prac;
+
+                            // Check matched schedules to find the dominant subtype for this class
+                            const rawSchedules = localStorage.getItem('school_exam_schedules');
+                            if (rawSchedules) {
+                                const schedules = JSON.parse(rawSchedules);
+                                if (Array.isArray(schedules)) {
+                                    const normC = normalizeClassString(selectedClass);
+                                    const classSchedules = schedules.filter(sc => {
+                                        if (!sc) return false;
+                                        const mEx = isExamMatch(sc.term || sc.examName, selectedExam);
+                                        const mCls = !normC || normalizeClassString(sc.className || sc.class) === normC;
+                                        return mEx && mCls;
+                                    });
+
+                                    if (classSchedules.length > 0 && Array.isArray(matchedExam.examTypes) && matchedExam.examTypes.length > 0) {
+                                        const typeCounts = {};
+                                        classSchedules.forEach(sc => {
+                                            const et = sc.examType || sc.type;
+                                            if (et) typeCounts[et] = (typeCounts[et] || 0) + 1;
+                                        });
+                                        let bestType = null;
+                                        let maxCount = 0;
+                                        Object.keys(typeCounts).forEach(et => {
+                                            if (typeCounts[et] > maxCount) {
+                                                maxCount = typeCounts[et];
+                                                bestType = et;
+                                            }
+                                        });
+                                        if (bestType) {
+                                            const st = matchedExam.examTypes.find(t => (t.typeName || '').trim().toLowerCase() === bestType.trim().toLowerCase());
+                                            if (st) {
+                                                if (st.defaultCQ !== undefined) cq = Number(st.defaultCQ);
+                                                if (st.defaultMCQ !== undefined) mcq = Number(st.defaultMCQ);
+                                                if (st.defaultPractical !== undefined) prac = Number(st.defaultPractical);
+                                                total = cq + mcq + prac;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Error finding exam distribution:", e);
+            }
+
+            return { cq, mcq, prac, total };
+        }
+
+        // Helper: Get subject-specific full marks distribution (CQ, MCQ, Prac, Total)
+        function getSubjectFullMarksDistribution(subItem, selectedExam, selectedClass, isPaper2 = false) {
+            let cq = isPaper2 ? subItem.pairCqFull : subItem.cqFull;
+            let mcq = isPaper2 ? subItem.pairMcqFull : subItem.mcqFull;
+            let prac = isPaper2 ? (subItem.pairPracFull || 0) : (subItem.pracFull || 0);
+            let tot = isPaper2 ? subItem.pairFull : subItem.fullMarks;
+
+            const sName = (isPaper2 ? subItem.pairWith : subItem.name) || '';
+            const norm = sName.toLowerCase();
+            const isEng = norm.includes('english') || norm.includes('ইংরেজি');
+
+            if (cq === null || cq === undefined || mcq === null || mcq === undefined) {
+                const curDist = getExamDistribution(selectedExam, selectedClass);
+                if (isEng) {
+                    if (cq === null || cq === undefined) cq = tot || 50;
+                    if (mcq === null || mcq === undefined) mcq = 0;
+                    if (prac === null || prac === undefined) prac = 0;
+                } else {
+                    if (cq === null || cq === undefined) cq = curDist.cq;
+                    if (mcq === null || mcq === undefined) mcq = curDist.mcq;
+                    if (prac === null || prac === undefined) prac = curDist.prac;
+                }
+            }
+            if (!tot) {
+                tot = (Number(cq) || 0) + (Number(mcq) || 0) + (Number(prac) || 0);
+            }
+            return {
+                cq: Number(cq) || 0,
+                mcq: Number(mcq) || 0,
+                prac: Number(prac) || 0,
+                total: Number(tot) || 0,
+                isEng
+            };
+        }
+
+        // Helper: Format subject name with CQ, MCQ, and Total marks at the end
+        function formatSubjectWithMarks(displayName, dist, isEn) {
+            if (!dist) return displayName;
+
+            const parts = [];
+            parts.push(`CQ: ${formatDigits(dist.cq)}`);
+            parts.push(`MCQ: ${formatDigits(dist.mcq)}`);
+            if (dist.prac > 0) {
+                parts.push(isEn ? `Prac: ${formatDigits(dist.prac)}` : `ব্যবহারিক: ${formatDigits(dist.prac)}`);
+            }
+            parts.push(isEn ? `Total: ${formatDigits(dist.total)}` : `মোট: ${formatDigits(dist.total)}`);
+
+            const marksBadge = `<span class="subject-marks-text">(${parts.join(', ')})</span>`;
+            return `${displayName} ${marksBadge}`;
+        }
+
+        // Dynamically update the table header column titles with exam column labels
+        function updateTableHeaderMarks(exam, selectedClass) {
+            const thMcq = document.getElementById('th-header-mcq');
+            const thCq = document.getElementById('th-header-cq');
+            const thPrac = document.getElementById('th-header-prac');
+            const thTotal = document.getElementById('th-header-total');
+            const isEn = (currentLanguage === 'en');
+
+            if (thMcq) thMcq.innerText = isEn ? 'MCQ' : 'বহুনির্বাচনি';
+            if (thCq) thCq.innerText = isEn ? 'CQ' : 'লিখিত';
+            if (thPrac) thPrac.innerText = isEn ? 'Practical' : 'ব্যবহারিক';
+            if (thTotal) thTotal.innerText = isEn ? 'Total' : 'মোট';
+        }
+
+        // Toggle visibility of subject marks breakdown (CQ, MCQ, Total)
+        function toggleSubjectMarksBreakdown(val) {
+            const isHide = (val === 'hide');
+            try {
+                localStorage.setItem('marksheet_show_marks_breakdown', isHide ? 'hide' : 'show');
+            } catch(e) {}
+
+            const sel = document.getElementById('filter-marks-breakdown');
+            if (sel && sel.value !== val) sel.value = val;
+
+            if (isHide) {
+                document.body.classList.add('hide-subject-marks');
+            } else {
+                document.body.classList.remove('hide-subject-marks');
+            }
+        }
+
+        function initSubjectMarksBreakdownPreference() {
+            try {
+                const pref = localStorage.getItem('marksheet_show_marks_breakdown');
+                const sel = document.getElementById('filter-marks-breakdown');
+                if (pref === 'hide') {
+                    document.body.classList.add('hide-subject-marks');
+                    if (sel) sel.value = 'hide';
+                } else {
+                    document.body.classList.remove('hide-subject-marks');
+                    if (sel) sel.value = 'show';
+                }
+            } catch(e) {}
+        }
+        initSubjectMarksBreakdownPreference();
+
+        function renderMarksheetTable(selectedClass, selectedSection, student, exam) {
+            const tbody = document.getElementById('marksheet-tbody');
+            if (tbody) {
+                updateTableHeaderMarks(exam, selectedClass);
+            }
+            if (!tbody) return;
+
+            const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+            let html = '';
+            let grandTotal = 0;
+            let totalFullMarks = 0;
+            let totalGP = 0;
+            let subjectCount = 0;
+            let hasFailed = false;
+            let hasAnyMarks = false;
+
+            let mainSubjectsGP = 0;
+            let mainSubjectCount = 0;
+            let optionalBonusGP = 0;
+
+            subjects.forEach(sub => {
+                const isOpt = !!(sub.isOptional || sub.group === 'optional');
+                if (sub.isCombined) {
+                    const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
+                    const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+                    const m2 = sub.pairTotal !== null ? sub.pairTotal : ((parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPr) || 0));
+                    const combTotal = m1 + m2;
+                    const fullTotal = (sub.fullMarks || 100) + (sub.pairFull || 100);
+                    const res = hasPaperMarks ? calculateGradeAndGP(combTotal, fullTotal) : { grade: '—', gp: 0 };
+
+                    if (hasPaperMarks) {
+                        hasAnyMarks = true;
+                        grandTotal += combTotal;
+                        totalFullMarks += fullTotal;
+                        totalGP += res.gp;
+                        subjectCount++;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
+                    }
+
+                    const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                          (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+                    const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+                                          (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+
+                    const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+                    const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+                    const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+                    const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '—';
+
+                    const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
+                    const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
+                    const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
+                    const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '—';
+
+                    const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
+                    const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+                    const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+
+                    const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+
+                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, currentLanguage === 'en');
+                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, currentLanguage === 'en');
+
+                    html += `<tr>
+                        <td class="subject-col">${p1NameHtml}</td>
+                        <td>${p1McqDisplay}</td>
+                        <td>${p1CqDisplay}</td>
+                        <td>${p1PrDisplay}</td>
+                        <td>${p1TotDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combTotDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold;">${combGradeDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
+                    </tr>
+                    <tr>
+                        <td class="subject-col">${p2NameHtml}</td>
+                        <td>${p2McqDisplay}</td>
+                        <td>${p2CqDisplay}</td>
+                        <td>${p2PrDisplay}</td>
+                        <td>${p2TotDisplay}</td>
+                    </tr>`;
+                } else {
+                    const tot = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+                    const res = sub.hasMarks ? calculateGradeAndGP(tot, sub.fullMarks) : { grade: '—', gp: 0 };
+
+                    if (sub.hasMarks) {
+                        hasAnyMarks = true;
+                        grandTotal += tot;
+                        totalFullMarks += sub.fullMarks;
+                        totalGP += res.gp;
+                        subjectCount++;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
+                    }
+
+                    const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                        (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+
+                    const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+                    const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+                    const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+                    const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+                    const totDisplay = sub.hasMarks ? formatDigits(tot) : '—';
+                    const gradeDisplay = sub.hasMarks ? res.grade : '—';
+                    const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+
+                    const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, currentLanguage === 'en');
+
+                    html += `<tr>
+                        <td class="subject-col">${subNameHtml}</td>
+                        <td>${mcqDisplay}</td>
+                        <td>${cqDisplay}</td>
+                        <td class="${isPracCol ? 'bg-gray' : ''}">${prDisplay}</td>
+                        <td>${totDisplay}</td>
+                        <td style="font-weight: bold;">${totDisplay}</td>
+                        <td style="font-weight: bold;">${gradeDisplay}</td>
+                        <td style="font-weight: bold;">${gpDisplay}</td>
+                    </tr>`;
+                }
+            });
+
+            tbody.innerHTML = html;
+
+            renderGradingScaleLegend();
+            if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
+            const maxGP = getMaxScaleGP();
+            const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+            const boundedGpa = Math.min(maxGP, rawGpa);
+            const zeroGpaStr = currentLanguage === 'en' ? '0.00' : '০.০০';
+            const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
+            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
+
+            const gtEl = document.getElementById('display-grand-total');
+            if (gtEl) gtEl.innerText = hasAnyMarks ? formatDigits(grandTotal) : '—';
+            const gpaEl = document.getElementById('display-gpa');
+            if (gpaEl) gpaEl.innerText = finalGpaStr;
+            const gradeEl = document.getElementById('display-final-grade');
+            if (gradeEl) gradeEl.innerText = finalGrade;
+            const rankEl = document.getElementById('display-rank-val');
+            if (rankEl) rankEl.innerText = (student && student.roll ? formatDigits(student.roll) : formatDigits('1'));
+        }
+
+        // Helper to match exam names flexibly across routines, schedules, and types
+        function isExamMatch(target, selected) {
+            if (!target || !selected) return false;
+            const t = String(target).trim().toLowerCase();
+            const s = String(selected).trim().toLowerCase();
+            if (t === s) return true;
+            const stripYr = str => str.replace(/২০২[০-৯]|202[0-9]/g, '').trim();
+            const tNoYr = stripYr(t);
+            const sNoYr = stripYr(s);
+            if (tNoYr && sNoYr) {
+                if (tNoYr === sNoYr) return true;
+                if (tNoYr.includes(sNoYr) || sNoYr.includes(tNoYr)) return true;
+            }
+            return false;
+        }
+
+        // 1. Get all available Exams from "Exam List" (school_exam_schedules) that have an exam created with a subject
+        function getAllExams() {
+            const examList = [];
+            const seen = new Set();
+
+            function addExam(name) {
+                if (!name || typeof name !== 'string') return;
+                const clean = name.trim();
+                if (!clean) return;
+                const key = clean.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    examList.push(clean);
+                }
+            }
+
+            // "Exam List" (school_exam_schedules) এ যে Exam Name এর নামে Subject সহ Exam Create করা থাকবে, শুধুমাত্র সেই Exam Name-ই Marksheet সেকশনে দৃশ্যমান হবে
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const parsed = JSON.parse(rawSchedules);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && typeof s === 'object') {
+                                const examName = (s.term || s.examName || '').trim();
+                                const subject = (s.subject || s.subjectName || s.sub || '').trim();
+                                if (examName && subject) {
+                                    addExam(examName);
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            return examList;
+        }
+
+        // 2. Get Classes based strictly on Selected Exam Name ("Exam List" schedules with subject)
+        function getClassesForExam(examName) {
+            const classSet = new Set();
+
+            // 1. Check "Exam List" (school_exam_schedules) for schedules with a subject
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const parsed = JSON.parse(rawSchedules);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && typeof s === 'object') {
+                                const sExam = (s.term || s.examName || '').trim();
+                                const sSubject = (s.subject || s.subjectName || s.sub || '').trim();
+                                if (sExam && sSubject && (!examName || isExamMatch(sExam, examName))) {
+                                    const rawCls = s.class || s.className;
+                                    if (rawCls) {
+                                        String(rawCls).split(',').forEach(part => {
+                                            const fmt = formatClassNameDisplay(part.trim());
+                                            if (fmt) classSet.add(fmt);
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            // 2. Also include classes from routines if they match this created exam
+            try {
+                const rawRoutines = localStorage.getItem('school_exam_routines');
+                if (rawRoutines) {
+                    const parsed = JSON.parse(rawRoutines);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(r => {
+                            if (r) {
+                                const rExam = r.examName || r.term;
+                                if (!examName || isExamMatch(rExam, examName)) {
+                                    const rawCls = r.className || r.class;
+                                    if (rawCls) {
+                                        String(rawCls).split(',').forEach(part => {
+                                            const fmt = formatClassNameDisplay(part.trim());
+                                            if (fmt) classSet.add(fmt);
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            return sortClassesSequential(classSet);
+        }
+
+        // 3. Get Sections / Groups based on Selected Class (Cascading: Class -> Sections)
+        function getSectionsForClass(className, examName) {
+            const sectionSet = new Set();
+            const normClass = normalizeClassString(className);
+            const isSecondary = ['9', '10'].includes(normClass);
+
+            try {
+                const rawStudents = localStorage.getItem('school_students');
+                if (rawStudents) {
+                    const parsed = JSON.parse(rawStudents);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && normalizeClassString(s.class || s.className) === normClass) {
+                                if (isSecondary) {
+                                    if (s.group && s.group !== '(প্রযোজ্য না)') sectionSet.add(s.group.trim());
+                                    if (s.section && s.section !== '(প্রযোজ্য না)' && !['ক','খ','গ','A','B','C'].includes(s.section)) sectionSet.add(s.section.trim());
+                                } else {
+                                    if (s.section && s.section !== '(প্রযোজ্য না)') sectionSet.add(s.section.trim());
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const parsed = JSON.parse(rawSchedules);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && normalizeClassString(s.className || s.class) === normClass && s.section && s.section !== 'All' && s.section !== '(প্রযোজ্য না)') {
+                                sectionSet.add(s.section.trim());
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            if (sectionSet.size === 0) {
+                if (isSecondary) {
+                    ["বিজ্ঞান", "মানবিক", "ব্যবসায় শিক্ষা"].forEach(s => sectionSet.add(s));
+                } else {
+                    ["ক", "খ", "গ"].forEach(s => sectionSet.add(s));
+                }
+            }
+
+            return Array.from(sectionSet);
+        }
+
+        // Student Search State & Helpers
+        let currentSearchQuery = '';
+        let currentSelectedStudent = null;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+            });
+        }
+
+        function getAllStudentsList() {
+            let raw = localStorage.getItem('school_students');
+            let list = [];
+            if (raw) {
+                try { list = JSON.parse(raw); } catch(e) {}
+            }
+            if (Array.isArray(list) && list.length > 0) return list;
+            return [
+                { roll: '1', nameBn: 'মো: আব্দুল্লাহ আল নোমান', name: 'Md. Abdullah Al Noman', studentId: '2610001', class: 'Ten', section: 'বিজ্ঞান', religion: 'Islam', optionalSubject: 'Higher Mathematics' },
+                { roll: '2', nameBn: 'মোছা: ফাতেমা আক্তার', name: 'Mst. Fatema Akter', studentId: '2610002', class: 'Ten', section: 'বিজ্ঞান', religion: 'Islam', optionalSubject: 'Biology' },
+                { roll: '3', nameBn: 'সৌরভ কুমার রায়', name: 'Sourav Kumar Roy', studentId: '2610003', class: 'Ten', section: 'বিজ্ঞান', religion: 'Hindu', optionalSubject: 'Higher Mathematics' },
+                { roll: '4', nameBn: 'তানভীর হাসান', name: 'Tanvir Hasan', studentId: '2610004', class: 'Ten', section: 'বিজ্ঞান', religion: 'Islam', optionalSubject: 'Higher Mathematics' },
+                { roll: '5', nameBn: 'সাদিয়া জাহান', name: 'Sadia Jahan', studentId: '2610005', class: 'Ten', section: 'বিজ্ঞান', religion: 'Islam', optionalSubject: 'Higher Mathematics' },
+                { roll: '6', nameBn: 'প্রিয়াংকা সরকার', name: 'Priyanka Sarkar', studentId: '2610006', class: 'Ten', section: 'বিজ্ঞান', religion: 'Hindu', optionalSubject: 'Higher Mathematics' },
+                { roll: '7', nameBn: 'মেহেদী হাসান', name: 'Mehedi Hasan', studentId: '2610007', class: 'Ten', section: 'বিজ্ঞান', religion: 'Islam', optionalSubject: 'Higher Mathematics' },
+                { roll: '8', nameBn: 'সুমাইয়া জান্নাত', name: 'Sumaiya Jannat', studentId: '2610008', class: 'Ten', section: 'বিজ্ঞান', religion: 'Islam', optionalSubject: 'Higher Mathematics' }
+            ];
+        }
+
+                function getEffectiveStudentId(st, currentClass = '', rankNum = 1) {
+            if (!st) return '';
+            const reg = String(st.regNo || '').trim();
+            const sid = String(st.studentId || '').trim();
+
+            // 1. Valid registration / student number from database (e.g. 260091, 2606001, 2607001, 2608001)
+            if (reg && !reg.startsWith('178') && reg.length <= 12) {
+                return reg;
+            }
+
+            // 2. Full studentId (longer than 4 characters, e.g. 2606001, 2610001, 2026101001)
+            if (sid && sid.length > 4 && !sid.startsWith('178')) {
+                return sid;
+            }
+
+            // 3. Clean studentId (not internal timestamp uuid)
+            if (sid && !sid.startsWith('178') && !sid.includes('-')) {
+                return sid;
+            }
+
+            // 4. Standard school ID formula: '26' + 2-digit class code + 3-digit roll/rank
+            const normC = normalizeClassString(st.class || st.className || currentClass || '10');
+            const classCode = String(normC).padStart(2, '0');
+            const rollVal = st.roll || st.rollNo || rankNum || 1;
+            const rollDigits = String(toEnDigits(rollVal)).replace(/\D/g, '') || String(rankNum || 1);
+            const serial = String(rollDigits).padStart(3, '0');
+            return `26${classCode}${serial}`;
+        }
+
+        function matchesStudentQuery(student, query) {
+            if (!query) return true;
+            const cleanQ = query.trim().toLowerCase();
+            const cleanQEn = toEnDigits(cleanQ).replace(/^0+/, '');
+
+            const rollStr = String(student.roll || student.rollNo || '');
+            const rollEn = toEnDigits(rollStr).replace(/^0+/, '');
+
+            // Exact roll match or startsWith
+            if (cleanQEn && (rollEn === cleanQEn || rollEn.startsWith(cleanQEn))) return true;
+
+            // Student ID & Registration match
+            const effId = typeof getEffectiveStudentId === 'function' ? getEffectiveStudentId(student) : '';
+            const effIdEn = toEnDigits(effId);
+            const sidEn = toEnDigits(String(student.studentId || ''));
+            const regEn = toEnDigits(String(student.regNo || ''));
+            if (cleanQEn && (effIdEn.includes(cleanQEn) || sidEn.includes(cleanQEn) || regEn.includes(cleanQEn))) return true;
+
+            // Name match (Bangla & English)
+            const nameBn = (student.nameBn || '').toLowerCase();
+            const nameEn = (student.name || student.studentName || '').toLowerCase();
+            if (nameBn.includes(cleanQ) || nameEn.includes(cleanQ)) return true;
+
+            return false;
+        }
+
+        function handleStudentSearchInput(val) {
+            currentSearchQuery = (val || '').trim();
+            const clearBtn = document.getElementById('btn-clear-search');
+            if (clearBtn) clearBtn.style.display = currentSearchQuery ? 'inline-block' : 'none';
+
+            if (!currentSearchQuery) {
+                const dropdown = document.getElementById('search-suggestions-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+                currentSelectedStudent = null;
+                if (isCreateAllMode) {
+                    const selClass = document.getElementById('filter-class')?.value || 'Ten';
+                    const selSec = document.getElementById('filter-section')?.value || 'বিজ্ঞান';
+                    const selExam = document.getElementById('filter-exam')?.value || localStorage.getItem('school_marksheet_exam') || (typeof getAllExams === 'function' ? (getAllExams()[0] || 'বার্ষিক পরীক্ষা') : 'বার্ষিক পরীক্ষা');
+                    renderBatchMarksheets(selClass, selSec, selExam);
+                } else {
+                    syncCascadingFilters('search_cleared');
+                }
+                return;
+            }
+
+            renderSearchSuggestions(currentSearchQuery);
+
+            if (isCreateAllMode) {
+                const selClass = document.getElementById('filter-class')?.value || 'Ten';
+                const selSec = document.getElementById('filter-section')?.value || 'বিজ্ঞান';
+                const selExam = document.getElementById('filter-exam')?.value || localStorage.getItem('school_marksheet_exam') || (typeof getAllExams === 'function' ? (getAllExams()[0] || 'বার্ষিক পরীক্ষা') : 'বার্ষিক পরীক্ষা');
+                renderBatchMarksheets(selClass, selSec, selExam);
+            } else {
+                syncCascadingFilters('search_typing');
+            }
+        }
+
+        function renderSearchSuggestions(query) {
+            const dropdown = document.getElementById('search-suggestions-dropdown');
+            if (!dropdown) return;
+
+            if (!query) {
+                dropdown.style.display = 'none';
+                dropdown.innerHTML = '';
+                return;
+            }
+
+            const currentClass = document.getElementById('filter-class')?.value || localStorage.getItem('school_marksheet_class') || '';
+            const currentSection = document.getElementById('filter-section')?.value || localStorage.getItem('school_marksheet_section') || '';
+            const normC = normalizeClassString(currentClass);
+            const normS = normalizeSectionString(currentSection);
+
+            const allStudents = getAllStudentsList();
+            // নির্বাচন করা "শ্রেণি" এর নাম অনুসারে শুধুমাত্র উক্ত শ্রেণির শিক্ষার্থীদের ফিল্টার করা হচ্ছে
+            const classStudents = allStudents.filter(st => {
+                const sClass = normalizeClassString(st.class || st.className);
+                return sClass === normC;
+            });
+
+            const matches = classStudents.filter(st => matchesStudentQuery(st, query));
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = `<div class="search-no-result">${escapeHtml(currentClass)} শ্রেণিতে কোনো শিক্ষার্থী পাওয়া যায়নি</div>`;
+                dropdown.style.display = 'block';
+                window._currentSearchMatches = [];
+                return;
+            }
+
+            matches.sort((a, b) => {
+                const aS = normalizeSectionString(a.section || a.group || a.sectionName);
+                const bS = normalizeSectionString(b.section || b.group || b.sectionName);
+
+                const aSame = (aS === normS || !normS) ? 1 : 0;
+                const bSame = (bS === normS || !normS) ? 1 : 0;
+                if (aSame !== bSame) return bSame - aSame;
+
+                const aRoll = parseInt(toEnDigits(a.roll || 0), 10) || 0;
+                const bRoll = parseInt(toEnDigits(b.roll || 0), 10) || 0;
+                return aRoll - bRoll;
+            });
+
+            const topMatches = matches.slice(0, 10);
+            window._currentSearchMatches = topMatches;
+
+            let itemsHtml = topMatches.map((st, idx) => {
+                const name = escapeHtml(st.nameBn || st.name || 'শিক্ষার্থী');
+                const roll = toBnDigits(st.roll || st.rollNo || '');
+                const stClass = escapeHtml(st.class || st.className || currentClass);
+                const stSec = escapeHtml(st.section || st.group || st.sectionName || '—');
+                const stId = getEffectiveStudentId(st, currentClass, idx + 1);
+
+                return `
+                <div class="search-suggestion-item" onmousedown="selectSearchedStudentByIndex(${idx})">
+                    <div class="search-suggestion-name">${name}</div>
+                    <div class="search-suggestion-meta">
+                        <span class="search-suggestion-badge roll">রোল: ${roll}</span>
+                        <span class="search-suggestion-badge">শ্রেণি: ${stClass}</span>
+                        <span class="search-suggestion-badge">শাখা: ${stSec}</span>
+                        ${stId ? `<span class="search-suggestion-badge">ID: ${toBnDigits(stId)}</span>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+
+            dropdown.innerHTML = itemsHtml;
+            dropdown.style.display = 'block';
+        }
+
+        function selectSearchedStudentByIndex(idx) {
+            if (window._currentSearchMatches && window._currentSearchMatches[idx]) {
+                selectSearchedStudent(window._currentSearchMatches[idx]);
+            }
+        }
+
+        function selectSearchedStudent(student) {
+            currentSelectedStudent = student;
+            currentSearchQuery = '';
+
+            const input = document.getElementById('filter-student-search');
+            const clearBtn = document.getElementById('btn-clear-search');
+            const dropdown = document.getElementById('search-suggestions-dropdown');
+
+            const rollBn = toBnDigits(student.roll || student.rollNo || '১');
+            const name = student.nameBn || student.name || 'শিক্ষার্থী';
+            if (input) {
+                input.value = `[রোল ${rollBn}] ${name}`;
+            }
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+            if (dropdown) dropdown.style.display = 'none';
+
+            const stSec = student.section || student.group || student.sectionName;
+            if (stSec) {
+                localStorage.setItem('school_marksheet_section', stSec);
+                const secSelect = document.getElementById('filter-section');
+                if (secSelect) secSelect.value = stSec;
+            }
+
+            if (isCreateAllMode) {
+                isCreateAllMode = false;
+                const btn = document.getElementById('btn-create-all');
+                const btnText = document.getElementById('create-all-btn-text');
+                if (btn) {
+                    btn.classList.remove('active');
+                    if (btnText) btnText.innerText = 'একক শিক্ষার্থী (Single)';
+                }
+            }
+
+            syncCascadingFilters('student_searched');
+        }
+
+        function clearStudentSearch() {
+            currentSearchQuery = '';
+            currentSelectedStudent = null;
+
+            const input = document.getElementById('filter-student-search');
+            const clearBtn = document.getElementById('btn-clear-search');
+            const dropdown = document.getElementById('search-suggestions-dropdown');
+
+            if (input) input.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (dropdown) dropdown.style.display = 'none';
+
+            syncCascadingFilters('search_cleared');
+        }
+
+        function handleStudentSearchKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const dropdown = document.getElementById('search-suggestions-dropdown');
+                if (window._currentSearchMatches && window._currentSearchMatches.length > 0) {
+                    selectSearchedStudent(window._currentSearchMatches[0]);
+                } else {
+                    const query = (document.getElementById('filter-student-search')?.value || '').trim();
+                    if (query) {
+                        const currentClass = document.getElementById('filter-class')?.value || localStorage.getItem('school_marksheet_class') || '';
+                        const normC = normalizeClassString(currentClass);
+                        const all = getAllStudentsList();
+                        const classStudents = all.filter(st => normalizeClassString(st.class || st.className) === normC);
+                        const matched = classStudents.find(s => matchesStudentQuery(s, query));
+                        if (matched) {
+                            selectSearchedStudent(matched);
+                        }
+                    }
+                }
+                if (dropdown) dropdown.style.display = 'none';
+            } else if (e.key === 'Escape') {
+                const dropdown = document.getElementById('search-suggestions-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            }
+        }
+
+        function handleStudentSearchFocus() {
+            const input = document.getElementById('filter-student-search');
+            const query = input ? input.value.trim() : '';
+            if (query && !query.startsWith('[রোল')) {
+                renderSearchSuggestions(query);
+            }
+        }
+
+        // Close search suggestions on outside click
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.search-input-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                const dropdown = document.getElementById('search-suggestions-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            }
+        });
+
+
+        // Master Cascading Filter Function
+        function syncCascadingFilters(trigger = 'all') {
+            try {
+                const examSelect = document.getElementById('filter-exam');
+                const classSelect = document.getElementById('filter-class');
+                const sectionSelect = document.getElementById('filter-section');
+
+                const allExams = getAllExams();
+
+                // 1. Sync Exams from "Exam List" (Only exams with a subject created)
+                if (examSelect && (trigger === 'all' || trigger === 'exam_sync')) {
+                    const currentExam = examSelect.value || localStorage.getItem('school_marksheet_exam') || '';
+                    const currExamOpts = Array.from(examSelect.options).map(o => o.value);
+                    const isDiff = allExams.length !== currExamOpts.length || allExams.some((ex, i) => ex !== currExamOpts[i]);
+                    if (isDiff) {
+                        if (allExams.length > 0) {
+                            examSelect.innerHTML = allExams.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+                            const matchedOpt = allExams.find(ex => isExamMatch(ex, currentExam));
+                            if (matchedOpt) {
+                                examSelect.value = matchedOpt;
+                            } else {
+                                examSelect.selectedIndex = 0;
+                            }
+                        } else {
+                            examSelect.innerHTML = '<option value="">(কোনো পরীক্ষা পাওয়া যায়নি)</option>';
+                            examSelect.value = '';
+                        }
+                    }
+                }
+
+                const selectedExam = examSelect && examSelect.value ? examSelect.value : (allExams[0] || '');
+                localStorage.setItem('school_marksheet_exam', selectedExam);
+                const examBadge = document.getElementById('display-exam-name');
+                if (examBadge) examBadge.innerText = getDisplayExamName(selectedExam);
+
+                // 2. Sync Classes (Dependent on selectedExam)
+                if (classSelect && (trigger === 'all' || trigger === 'exam_sync' || trigger === 'exam_changed')) {
+                    const currentClass = classSelect.value || localStorage.getItem('school_marksheet_class') || '';
+                    const availableClasses = selectedExam ? getClassesForExam(selectedExam) : [];
+                    const currClassOpts = Array.from(classSelect.options).map(o => o.value);
+                    const isClassDiff = availableClasses.length !== currClassOpts.length || availableClasses.some((c, i) => c !== currClassOpts[i]);
+                    if (isClassDiff) {
+                        if (availableClasses.length > 0) {
+                            classSelect.innerHTML = availableClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+                            const matchedOpt = availableClasses.find(c => normalizeClassString(c) === normalizeClassString(currentClass));
+                            if (matchedOpt) {
+                                classSelect.value = matchedOpt;
+                            } else {
+                                classSelect.selectedIndex = 0;
+                            }
+                        } else {
+                            classSelect.innerHTML = '<option value="">(কোনো শ্রেণি পাওয়া যায়নি)</option>';
+                            classSelect.value = '';
+                        }
+                    }
+                }
+
+                const selectedClass = classSelect && classSelect.value ? classSelect.value : (localStorage.getItem('school_marksheet_class') || 'Ten');
+                localStorage.setItem('school_marksheet_class', selectedClass);
+                const classEl = document.getElementById('display-class-name');
+                if (classEl) classEl.innerText = formatClassNameDisplay(selectedClass);
+
+                // If currently searched/selected student is from a different class, clear it
+                if (currentSelectedStudent && normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className) !== normalizeClassString(selectedClass)) {
+                    currentSelectedStudent = null;
+                    currentSearchQuery = '';
+                    const searchInput = document.getElementById('filter-student-search');
+                    const clearBtn = document.getElementById('btn-clear-search');
+                    if (searchInput) searchInput.value = '';
+                    if (clearBtn) clearBtn.style.display = 'none';
+                }
+
+                // 3. Sync Sections (Dependent on selectedClass)
+                if (sectionSelect) {
+                    const currentSec = sectionSelect.value || localStorage.getItem('school_marksheet_section') || '';
+                    const availableSections = getSectionsForClass(selectedClass, selectedExam);
+                    const currSecOpts = Array.from(sectionSelect.options).map(o => o.value);
+                    const isSecDiff = availableSections.length !== currSecOpts.length || availableSections.some((s, i) => s !== currSecOpts[i]);
+                    if (isSecDiff) {
+                        sectionSelect.innerHTML = availableSections.map(s => `<option value="${s}">${s}</option>`).join('');
+                        if (currentSec && availableSections.includes(currentSec)) {
+                            sectionSelect.value = currentSec;
+                        } else if (availableSections.length > 0) {
+                            sectionSelect.selectedIndex = 0;
+                        }
+                    }
+                }
+
+                const selectedSection = sectionSelect && sectionSelect.value ? sectionSelect.value : (localStorage.getItem('school_marksheet_section') || 'বিজ্ঞান');
+                localStorage.setItem('school_marksheet_section', selectedSection);
+                const secEl = document.getElementById('display-section-name');
+                if (secEl) secEl.innerText = 'শাখা = ' + selectedSection;
+
+                // 4. Update Student Meta and Render Marksheet Table
+                const normClass = normalizeClassString(selectedClass);
+                const normSec = normalizeSectionString(selectedSection);
+
+                let rawStudents = localStorage.getItem('school_students');
+                let students = [];
+                if (rawStudents) {
+                    try { students = JSON.parse(rawStudents); } catch(e) {}
+                }
+
+                let matchedStudent = null;
+
+                // Priority 1: Specifically selected student from search (must match current class)
+                if (currentSelectedStudent) {
+                    const stNormC = normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className);
+                    if (stNormC === normClass) {
+                        matchedStudent = currentSelectedStudent;
+                    } else {
+                        currentSelectedStudent = null;
+                    }
+                }
+
+                if (!matchedStudent && currentSearchQuery) {
+                    // Priority 2: Student matching current search query within selected class only
+                    const classSecStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
+                    matchedStudent = classSecStudents.find(s => matchesStudentQuery(s, currentSearchQuery));
+                    if (!matchedStudent) {
+                        const allSts = getAllStudentsList();
+                        matchedStudent = allSts.find(s => {
+                            const stC = normalizeClassString(s.class || s.className);
+                            return stC === normClass && matchesStudentQuery(s, currentSearchQuery);
+                        });
+                    }
+                }
+
+                if (!matchedStudent && Array.isArray(students) && students.length > 0) {
+                    matchedStudent = students.find(s => {
+                        const sClass = normalizeClassString(s.class || s.className);
+                        const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
+                        return sClass === normClass && (sSec === normSec || !normSec);
+                    });
+
+                    if (!matchedStudent) {
+                        matchedStudent = students.find(s => {
+                            const sClass = normalizeClassString(s.class || s.className);
+                            return sClass === normClass;
+                        });
+                    }
+
+                    if (!matchedStudent && students.length > 0) {
+                        matchedStudent = students[0];
+                    }
+                }
+
+                const effectiveClass = (matchedStudent && (matchedStudent.class || matchedStudent.className)) ? (matchedStudent.class || matchedStudent.className) : selectedClass;
+                const effectiveSec = (matchedStudent && (matchedStudent.section || matchedStudent.group || matchedStudent.sectionName)) ? (matchedStudent.section || matchedStudent.group || matchedStudent.sectionName) : selectedSection;
+                const effectiveNormClass = normalizeClassString(effectiveClass);
+                const effectiveNormSec = normalizeSectionString(effectiveSec);
+
+                const isEn = (currentLanguage === 'en');
+                let studentName = 'মো: আব্দুল্লাহ আল নোমান';
+                if (matchedStudent) {
+                    studentName = isEn && matchedStudent.nameEn ? matchedStudent.nameEn : (matchedStudent.nameBn || matchedStudent.name || matchedStudent.studentName || (isEn ? 'Student Name' : 'মো: আব্দুল্লাহ আল নোমান'));
+                } else if (isEn) {
+                    studentName = 'MD. ABDULLAH AL NOMAN';
+                }
+
+                const rollNo = matchedStudent ? (matchedStudent.roll || matchedStudent.rollNo || '1') : '1';
+                const studentId = getEffectiveStudentId(matchedStudent, effectiveClass, rollNo);
+
+                const nameEl = document.getElementById('display-student-name');
+                if (nameEl && nameEl.innerText !== studentName) nameEl.innerText = studentName;
+                const rollEl = document.getElementById('display-roll-no');
+                if (rollEl) rollEl.innerText = formatDigits(rollNo);
+                const idEl = document.getElementById('display-student-id');
+                if (idEl) idEl.innerText = formatDigits(studentId);
+
+                const classDisplay = getDisplayClassName(effectiveClass);
+                if (classEl) classEl.innerText = classDisplay;
+
+                const secDisplay = isEn ? 'Section = ' + getEnglishSectionName(effectiveSec) : 'শাখা = ' + effectiveSec;
+                if (secEl) secEl.innerText = secDisplay;
+
+                if (examBadge) examBadge.innerText = getDisplayExamName(selectedExam);
+
+                const isSecondary = ['9', '10'].includes(effectiveNormClass);
+                const relInfo = getStudentReligionInfo(matchedStudent);
+                const optInfo = getStudentOptionalSubjectInfo(matchedStudent, effectiveNormSec);
+
+                const relEl = document.getElementById('display-student-religion');
+                if (relEl) relEl.innerText = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+
+                const optRow = document.getElementById('row-optional-subject');
+                const optEl = document.getElementById('display-optional-subject');
+                if (optRow) {
+                    if (isSecondary) {
+                        optRow.style.display = 'flex';
+                        if (optEl) optEl.innerText = isEn ? optInfo.name : optInfo.nameBn;
+                    } else {
+                        optRow.style.display = 'none';
+                    }
+                }
+
+                updateTableHeaderMarks(selectedExam, selectedClass);
+
+                if (isCreateAllMode) {
+                    renderBatchMarksheets(selectedClass, selectedSection, selectedExam);
+                } else {
+                    const batchContainer = document.getElementById('batch-marksheets-container');
+                    const singleContainer = document.getElementById('single-marksheet-container');
+                    if (batchContainer) batchContainer.style.display = 'none';
+                    if (singleContainer) singleContainer.style.display = 'block';
+                    renderMarksheetTable(effectiveClass, effectiveSec, matchedStudent || { roll: rollNo }, selectedExam);
+                }
+            } catch(e) {
+                console.error("Error in syncCascadingFilters:", e);
+            }
+        }
+
+        let isCreateAllMode = true;
+
+        function toggleCreateAll() {
+            isCreateAllMode = !isCreateAllMode;
+            const btn = document.getElementById('btn-create-all');
+            const btnText = document.getElementById('create-all-btn-text');
+            if (btn) {
+                if (isCreateAllMode) {
+                    btn.classList.add('active');
+                    if (btnText) btnText.innerText = 'সকল শিক্ষার্থী (All)';
+                } else {
+                    btn.classList.remove('active');
+                    if (btnText) btnText.innerText = 'একক শিক্ষার্থী (Single)';
+                }
+            }
+            syncCascadingFilters('mode_toggled');
+        }
+
+        function getAllStudentsForClassAndSection(selectedClass, selectedSection) {
+            const normC = normalizeClassString(selectedClass);
+            const normS = normalizeSectionString(selectedSection);
+            const isSci = normS === 'science';
+
+            let rawStudents = localStorage.getItem('school_students');
+            let students = [];
+            if (rawStudents) {
+                try { students = JSON.parse(rawStudents); } catch(e) {}
+            }
+
+            let filtered = [];
+            if (Array.isArray(students) && students.length > 0) {
+                filtered = students.filter(s => {
+                    const sClass = normalizeClassString(s.class || s.className);
+                    const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
+                    return sClass === normC && (sSec === normS || !normS);
+                });
+            }
+
+            if (filtered.length > 0) {
+                filtered.sort((a, b) => (parseInt(a.roll || 0) || 0) - (parseInt(b.roll || 0) || 0));
+                return filtered;
+            }
+
+            // Fallback cohort if none present in storage
+            const fallbackCohort = [
+                { roll: '1', nameBn: 'মো: আব্দুল্লাহ আল নোমান', name: 'Md. Abdullah Al Noman', studentId: '2610001', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '2', nameBn: 'মোছা: ফাতেমা আক্তার', name: 'Mst. Fatema Akter', studentId: '2610002', religion: 'Islam', optionalSubject: isSci ? 'Biology' : 'Agriculture Studies' },
+                { roll: '3', nameBn: 'সৌরভ কুমার রায়', name: 'Sourav Kumar Roy', studentId: '2610003', religion: 'Hindu', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '4', nameBn: 'তানভীর হাসান', name: 'Tanvir Hasan', studentId: '2610004', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '5', nameBn: 'সাদিয়া জাহান', name: 'Sadia Jahan', studentId: '2610005', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '6', nameBn: 'প্রিয়াংকা সরকার', name: 'Priyanka Sarkar', studentId: '2610006', religion: 'Hindu', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '7', nameBn: 'মেহেদী হাসান', name: 'Mehedi Hasan', studentId: '2610007', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '8', nameBn: 'সুমাইয়া জান্নাত', name: 'Sumaiya Jannat', studentId: '2610008', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' }
+            ];
+
+            return fallbackCohort;
+        }
+
+        function generateMarksheetCardHTML(student, selectedClass, selectedSection, exam, rankNum) {
+            const isEn = (currentLanguage === 'en');
+            const examDist = getExamDistribution(exam, selectedClass);
+            const normClass = normalizeClassString(selectedClass);
+            const normSec = normalizeSectionString(selectedSection);
+            const isSecondary = ['9', '10'].includes(normClass);
+            const relInfo = getStudentReligionInfo(student);
+            const optInfo = getStudentOptionalSubjectInfo(student, normSec);
+
+            const studentName = student ? (isEn && student.nameEn ? student.nameEn : (student.nameBn || student.name || (isEn ? 'Student' : 'শিক্ষার্থী'))) : (isEn ? 'Student' : 'শিক্ষার্থী');
+            const rollNo = student ? (student.roll || student.rollNo || rankNum) : rankNum;
+            const studentId = getEffectiveStudentId(student, selectedClass, rankNum);
+            const displayCls = getDisplayClassName(selectedClass);
+            const displaySec = isEn ? getEnglishSectionName(selectedSection) : (selectedSection || 'ক');
+            const examBadgeTitle = getDisplayExamName(exam);
+            const displayRel = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+            const displayOpt = isEn ? optInfo.name : optInfo.nameBn;
+
+            let rawSettings = localStorage.getItem('school_settings');
+            let settings = {};
+            if (rawSettings) { try { settings = JSON.parse(rawSettings); } catch(e) {} }
+            const schoolName = settings.schoolSubtitle || settings.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়";
+            const addressText = settings.schoolAddress || "মাথাভাঙ্গা, জলঢাকা, নীলফামারী।";
+            const customLogo = localStorage.getItem('school_logo') || (settings && settings.schoolLogo) || 'school_logo.svg';
+
+            const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+
+            let tableHtml = '';
+            let grandTotal = 0;
+            let totalFullMarks = 0;
+            let totalGP = 0;
+            let subjectCount = 0;
+            let hasFailed = false;
+            let hasAnyMarks = false;
+
+            let mainSubjectsGP = 0;
+            let mainSubjectCount = 0;
+            let optionalBonusGP = 0;
+
+            subjects.forEach(sub => {
+                const isOpt = !!(sub.isOptional || sub.group === 'optional');
+                if (sub.isCombined) {
+                    const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
+                    const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+                    const m2 = sub.pairTotal !== null ? sub.pairTotal : ((parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPr) || 0));
+                    const combTotal = m1 + m2;
+                    const fullTotal = (sub.fullMarks || 100) + (sub.pairFull || 100);
+                    const res = hasPaperMarks ? calculateGradeAndGP(combTotal, fullTotal) : { grade: '—', gp: 0 };
+
+                    if (hasPaperMarks) {
+                        hasAnyMarks = true;
+                        grandTotal += combTotal;
+                        totalFullMarks += fullTotal;
+                        totalGP += res.gp;
+                        subjectCount++;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
+                    }
+
+                    const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                          (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+                    const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+                                          (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+
+                    const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+                    const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+                    const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+                    const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '—';
+
+                    const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
+                    const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
+                    const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
+                    const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '—';
+
+                    const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
+                    const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+                    const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+
+                    const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+
+                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+
+                    tableHtml += `<tr>
+                        <td class="subject-col">${p1NameHtml}</td>
+                        <td>${p1McqDisplay}</td>
+                        <td>${p1CqDisplay}</td>
+                        <td>${p1PrDisplay}</td>
+                        <td>${p1TotDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combTotDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold;">${combGradeDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
+                    </tr>
+                    <tr>
+                        <td class="subject-col">${p2NameHtml}</td>
+                        <td>${p2McqDisplay}</td>
+                        <td>${p2CqDisplay}</td>
+                        <td>${p2PrDisplay}</td>
+                        <td>${p2TotDisplay}</td>
+                    </tr>`;
+                } else {
+                    const tot = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+                    const res = sub.hasMarks ? calculateGradeAndGP(tot, sub.fullMarks) : { grade: '—', gp: 0 };
+
+                    if (sub.hasMarks) {
+                        hasAnyMarks = true;
+                        grandTotal += tot;
+                        totalFullMarks += sub.fullMarks;
+                        totalGP += res.gp;
+                        subjectCount++;
+                        if (isOpt) {
+                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+                        } else {
+                            mainSubjectsGP += res.gp;
+                            mainSubjectCount++;
+                            if (res.gp === 0) hasFailed = true;
+                        }
+                    }
+
+                    const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                        (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+
+                    const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+                    const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+                    const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+                    const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+                    const totDisplay = sub.hasMarks ? formatDigits(tot) : '—';
+                    const gradeDisplay = sub.hasMarks ? res.grade : '—';
+                    const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+
+                    const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+
+                    tableHtml += `<tr>
+                        <td class="subject-col">${subNameHtml}</td>
+                        <td>${mcqDisplay}</td>
+                        <td>${cqDisplay}</td>
+                        <td>${prDisplay}</td>
+                        <td>${totDisplay}</td>
+                        <td style="font-weight: bold; background: #f8fafc;">${totDisplay}</td>
+                        <td style="font-weight: bold;">${gradeDisplay}</td>
+                        <td style="font-weight: bold; background: #f8fafc;">${gpDisplay}</td>
+                    </tr>`;
+                }
+            });
+
+            if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
+            const maxGP = getMaxScaleGP();
+            const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+            const boundedGpa = Math.min(maxGP, rawGpa);
+            const zeroGpaStr = isEn ? '0.00' : '০.০০';
+            const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
+            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
+            const rankStr = formatDigits(rankNum);
+
+            return `
+            <div class="mark-sheet-container" style="margin-bottom: 25px;">
+                <div class="mark-sheet-border">
+                    <!-- Header Section -->
+                    <div class="header-section">
+                        ${getGradingScaleTableHTML()}
+
+                        <div class="header-center">
+                            <h1 class="school-name">${schoolName}</h1>
+                            <p class="address">${addressText}</p>
+                            <div class="logo">
+                                <img src="${customLogo}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;">
+                            </div>
+                            <div class="exam-badge">${examBadgeTitle}</div>
+                        </div>
+                    </div>
+
+                    <!-- Student Info Section -->
+                    <div class="student-info">
+                        <div style="flex: 1.1;">
+                            <div class="info-row">
+                                <div class="info-label">${isEn ? "Student Name" : "শিক্ষার্থীর নাম"}</div>
+                                <div>: <span>${studentName}</span></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">${isEn ? "Roll No" : "রোল নং"}</div>
+                                <div>: <span>${formatDigits(rollNo)}</span></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">${isEn ? "Class" : "শ্রেণি"}</div>
+                                <div>: <span>${displayCls}</span> <span class="branch-info" style="margin-left: 20px;">${isEn ? "Section = " + displaySec : "শাখা = " + displaySec}</span></div>
+                            </div>
+                        </div>
+                        <div style="flex: 0.9; padding-left: 20px;">
+                            <div class="info-row">
+                                <div class="info-label" style="width: 125px;">${isEn ? "Religion" : "ধর্ম (Religion)"}</div>
+                                <div>: <span>${displayRel}</span></div>
+                            </div>
+                            ${isSecondary ? `
+                            <div class="info-row">
+                                <div class="info-label" style="width: 125px;">${isEn ? "Optional (4th)" : "ঐচ্ছিক বিষয় (৪র্থ)"}</div>
+                                <div>: <span>${displayOpt}</span></div>
+                            </div>` : ''}
+                            <div class="info-row">
+                                <div class="info-label" style="width: 125px;">${isEn ? "Student ID" : "শিক্ষার্থী আইডি"}</div>
+                                <div>: <span>${formatDigits(studentId)}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marks Table -->
+                    <table class="marks-table">
+                        <thead>
+                            <tr>
+                                <th class="subject-col">${isEn ? "Subject" : "বিষয়"}</th>
+                                <th>${isEn ? "MCQ" : "বহুনির্বাচনি"}</th>
+                                <th>${isEn ? "CQ" : "লিখিত"}</th>
+                                <th>${isEn ? "Practical" : "ব্যবহারিক"}</th>
+                                <th>${isEn ? "Total" : "মোট"}</th>
+                                <th>${isEn ? "Total" : "সর্বমোট"}</th>
+                                <th>${isEn ? "Grade" : "গ্রেড"}</th>
+                                <th>${isEn ? "GPA" : "পয়েন্ট"}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableHtml}
+                        </tbody>
+                    </table>
+
+                    <!-- Bottom Tables -->
+                    <div class="bottom-section">
+                        <table class="rank-table">
+                            <tr>
+                                <td style="width: 50%;">${isEn ? "Rank" : "স্থান"}</td>
+                                <td style="width: 50%;">${rankStr}</td>
+                            </tr>
+                        </table>
+
+                        <table class="summary-table">
+                            <tr>
+                                <td style="width: 50%;">${isEn ? "Total Marks" : "সর্বমোট"}</td>
+                                <td style="width: 50%;">${hasAnyMarks ? formatDigits(grandTotal) : '—'}</td>
+                            </tr>
+                            <tr>
+                                <td>${isEn ? "GPA" : "পয়েন্ট"}</td>
+                                <td>${finalGpaStr}</td>
+                            </tr>
+                            <tr>
+                                <td>${isEn ? "Grade" : "গ্রেড"}</td>
+                                <td>${finalGrade}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Signatures Section -->
+                    <div class="signatures">
+                        <div class="sig-col">
+                            <div class="sig-line"></div>
+                            <div class="sig-label">${isEn ? "Guardian's Signature" : "অভিভাবকের স্বাক্ষর"}</div>
+                        </div>
+                        <div class="sig-col">
+                            <div class="sig-line"></div>
+                            <div class="sig-label">${isEn ? "Headmaster's Signature" : "প্রধান শিক্ষকের স্বাক্ষর"}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderBatchMarksheets(selectedClass, selectedSection, exam) {
+            const batchContainer = document.getElementById('batch-marksheets-container');
+            const singleContainer = document.getElementById('single-marksheet-container');
+            if (!batchContainer) return;
+
+            const allStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
+            const isFiltered = Boolean(currentSearchQuery);
+            const students = isFiltered
+                ? allStudents.filter(st => matchesStudentQuery(st, currentSearchQuery))
+                : allStudents;
+
+            if (students.length === 0) {
+                batchContainer.innerHTML = `
+                <div class="batch-status-banner no-print" style="flex-direction: column; text-align: center; padding: 25px 20px; gap: 12px; justify-content: center; margin: 20px auto;">
+                    <div style="font-size: 16px; font-weight: 700; color: #f87171;">
+                        "${escapeHtml(currentSearchQuery)}" এর সাথে কোনো শিক্ষার্থীর মার্কশীট পাওয়া যায়নি!
+                    </div>
+                    <div style="font-size: 13px; color: #cbd5e1;">
+                        রোল নম্বর, শিক্ষার্থীর নাম অথবা আইডি পুনরায় যাচাই করুন।
+                    </div>
+                    <button type="button" class="btn-batch-action btn-batch-single" onclick="clearStudentSearch()" style="background: #3b82f6; color: #fff; margin-top: 5px; padding: 6px 16px;">
+                        সকল শিক্ষার্থীর মার্কশীট প্রদর্শন করুন
+                    </button>
+                </div>`;
+                batchContainer.style.display = 'block';
+                if (singleContainer) singleContainer.style.display = 'none';
+                return;
+            }
+
+            let html = `
+            <div class="batch-status-banner no-print">
+                <div class="batch-info">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>শ্রেণি: <strong>${selectedClass}</strong> | শাখা: <strong>${selectedSection}</strong> | পরীক্ষা: <strong>${exam}</strong></span>
+                    <span class="badge-count">মোট ${toBnDigits(students.length)} জন শিক্ষার্থী${isFiltered ? ' (অনুসন্ধান)' : ''}</span>
+                </div>
+                <div class="batch-actions">
+                    ${isFiltered ? `
+                    <button type="button" class="btn-batch-action btn-batch-single" onclick="clearStudentSearch()" title="সার্চ মুছুন এবং সকল শিক্ষার্থী দেখুন">
+                        <span>সকল শিক্ষার্থী</span>
+                    </button>` : ''}
+                    <button type="button" class="btn-batch-action btn-batch-print" onclick="window.print()" title="প্রদর্শিত সকল শিক্ষার্থীর মার্কশীট প্রিন্ট করুন">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        <span>Print ${isFiltered ? 'Filtered' : 'All'}</span>
+                    </button>
+                    <button type="button" class="btn-batch-action btn-batch-single" onclick="toggleCreateAll()" title="একক শিক্ষার্থী ভিউতে ফিরে যান">
+                        <span>Single View</span>
+                    </button>
+                </div>
+            </div>`;
+
+            students.forEach((st, idx) => {
+                html += generateMarksheetCardHTML(st, selectedClass, selectedSection, exam, idx + 1);
+            });
+
+            batchContainer.innerHTML = html;
+            batchContainer.style.display = 'block';
+            if (singleContainer) singleContainer.style.display = 'none';
+        }
+
+        function updateMarksheetExam(val) {
+            localStorage.setItem('school_marksheet_exam', val);
+            syncCascadingFilters('exam_changed');
+        }
+
+        function updateMarksheetClass(val) {
+            localStorage.setItem('school_marksheet_class', val);
+            if (currentSelectedStudent && normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className) !== normalizeClassString(val)) {
+                currentSelectedStudent = null;
+                currentSearchQuery = '';
+                const input = document.getElementById('filter-student-search');
+                const clearBtn = document.getElementById('btn-clear-search');
+                if (input) input.value = '';
+                if (clearBtn) clearBtn.style.display = 'none';
+            }
+            syncCascadingFilters('class_changed');
+        }
+
+        function updateMarksheetSection(val) {
+            localStorage.setItem('school_marksheet_section', val);
+            if (currentSelectedStudent && normalizeSectionString(currentSelectedStudent.section || currentSelectedStudent.group) !== normalizeSectionString(val)) {
+                currentSelectedStudent = null;
+                currentSearchQuery = '';
+                const input = document.getElementById('filter-student-search');
+                const clearBtn = document.getElementById('btn-clear-search');
+                if (input) input.value = '';
+                if (clearBtn) clearBtn.style.display = 'none';
+            }
+            syncCascadingFilters('section_changed');
+        }
+
+        function switchTemplate(val) {
+            let extra = isCreateAllMode ? '?mode=all' : '?mode=single';
+            const roll = currentSelectedStudent ? (currentSelectedStudent.roll || currentSelectedStudent.rollNo) : '';
+            if (roll) {
+                extra += '&roll=' + encodeURIComponent(toEnDigits(roll));
+            }
+            if (currentLanguage) {
+                extra += '&lang=' + encodeURIComponent(currentLanguage);
+            }
+            if (val === 'Temp-01') {
+                window.location.href = 'Marksheet.html' + extra;
+            } else if (val === 'Temp-02') {
+                window.location.href = 'Marksheet1.html' + extra;
+            }
+        }
+
+        // Dynamically sync School Header Information from main website settings
+        function syncSchoolHeaderInfo() {
+            try {
+                let rawSettings = localStorage.getItem('school_settings');
+                let settings = {};
+                if (rawSettings) {
+                    try { settings = JSON.parse(rawSettings); } catch(e) {}
+                }
+                const customLogo = localStorage.getItem('school_logo') || (settings && settings.schoolLogo);
+
+                // Update School Name
+                const schoolName = settings.schoolSubtitle || settings.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়";
+                const nameEl = document.getElementById('display-school-name');
+                if (nameEl && nameEl.innerText !== schoolName) {
+                    nameEl.innerText = schoolName;
+                }
+
+                // Update School Address
+                let addressText = settings.schoolAddress || "মাথাভাঙ্গা, জলঢাকা, নীলফামারী।";
+                const addrEl = document.getElementById('display-school-address');
+                if (addrEl && addrEl.innerText !== addressText) {
+                    addrEl.innerText = addressText;
+                }
+
+                // Update School Logo
+                const logoImg = document.getElementById('school-logo-img');
+                const logoFallback = document.getElementById('school-logo-fallback');
+                if (logoImg) {
+                    const targetLogo = customLogo || 'school_logo.svg';
+                    if (logoImg.getAttribute('src') !== targetLogo) {
+                        logoImg.src = targetLogo;
+                    }
+                    logoImg.style.display = 'block';
+                    if (logoFallback) logoFallback.style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Error syncing school header from website settings:", e);
+            }
+        }
+
+        // Background live sync from website server database (/api/db)
+        function syncLiveExamData() {
+            if (window._lastExamApiFetch && (Date.now() - window._lastExamApiFetch < 3000)) return;
+            window._lastExamApiFetch = Date.now();
+            fetch('/api/db?keys=school_exam_schedules,school_student_marks,school_students,school_subjects,school_classes,school_exam_types,school_exam_routines,school_omr_exams,school_marking_system,school_settings,school_logo')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        let hasChanged = false;
+                        ['school_exam_schedules', 'school_student_marks', 'school_students', 'school_subjects', 'school_classes', 'school_exam_types', 'school_exam_routines', 'school_omr_exams', 'school_marking_system'].forEach(k => {
+                            if (data[k]) {
+                                const strVal = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
+                                if (localStorage.getItem(k) !== strVal) {
+                                    localStorage.setItem(k, strVal);
+                                    hasChanged = true;
+                                }
+                            }
+                        });
+                        if (data.school_settings) {
+                            const strVal = typeof data.school_settings === 'string' ? data.school_settings : JSON.stringify(data.school_settings);
+                            if (localStorage.getItem('school_settings') !== strVal) {
+                                localStorage.setItem('school_settings', strVal);
+                                if (typeof syncSchoolHeaderInfo === 'function') syncSchoolHeaderInfo();
+                            }
+                        }
+                        if (data.school_logo && typeof data.school_logo === 'string') {
+                            if (localStorage.getItem('school_logo') !== data.school_logo) {
+                                localStorage.setItem('school_logo', data.school_logo);
+                                if (typeof syncSchoolHeaderInfo === 'function') syncSchoolHeaderInfo();
+                            }
+                        }
+                        if (hasChanged) {
+                            syncCascadingFilters('exam_sync');
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // Continuous Live Sync of Filter Options from Exam Portal
+        function syncFiltersFromExamPortal() {
+            syncLiveExamData();
+            syncCascadingFilters('exam_sync');
+        }
+
+        // Initialize saved filters & header on load
+        window.addEventListener('DOMContentLoaded', function() {
+            initSubjectMarksBreakdownPreference();
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramRoll = urlParams.get('roll') || urlParams.get('search') || urlParams.get('id');
+
+            if (urlParams.get('exam')) localStorage.setItem('school_marksheet_exam', urlParams.get('exam'));
+            if (urlParams.get('class')) localStorage.setItem('school_marksheet_class', urlParams.get('class'));
+            if (urlParams.get('section')) localStorage.setItem('school_marksheet_section', urlParams.get('section'));
+
+            if (paramRoll) {
+                isCreateAllMode = false;
+                const selClass = urlParams.get('class') || localStorage.getItem('school_marksheet_class') || 'Ten';
+                const normC = normalizeClassString(selClass);
+                const all = getAllStudentsList();
+                const found = all.find(s => {
+                    const stC = normalizeClassString(s.class || s.className);
+                    return (!normC || stC === normC) && matchesStudentQuery(s, paramRoll);
+                });
+                if (found) {
+                    currentSelectedStudent = found;
+                    const input = document.getElementById('filter-student-search');
+                    const clearBtn = document.getElementById('btn-clear-search');
+                    if (input) input.value = currentLanguage === 'en' ? `[Roll ${formatDigits(found.roll || '1')}] ${found.nameEn || found.nameBn || found.name || 'Student'}` : `[রোল ${toBnDigits(found.roll || '১')}] ${found.nameBn || found.name || 'শিক্ষার্থী'}`;
+                    if (clearBtn) clearBtn.style.display = 'inline-block';
+                    if (found.class) localStorage.setItem('school_marksheet_class', found.class);
+                    if (found.section) localStorage.setItem('school_marksheet_section', found.section);
+                }
+            } else if (urlParams.get('mode') === 'single') {
+                isCreateAllMode = false;
+            } else {
+                isCreateAllMode = true;
+            }
+
+            const btn = document.getElementById('btn-create-all');
+            const btnText = document.getElementById('create-all-btn-text');
+            if (btn) {
+                if (isCreateAllMode) {
+                    btn.classList.add('active');
+                    if (btnText) btnText.innerText = 'সকল শিক্ষার্থী (All)';
+                } else {
+                    btn.classList.remove('active');
+                    if (btnText) btnText.innerText = 'একক শিক্ষার্থী (Single)';
+                }
+            }
+
+            syncSchoolHeaderInfo();
+            updateLanguageUI();
+            syncCascadingFilters('all');
+        });
+
+        // Listen for live changes from Exam Portal & main website settings across tabs and database sync
+        window.addEventListener('storage', function(e) {
+            if (!e.key || e.key === 'school_settings' || e.key === 'school_logo') {
+                syncSchoolHeaderInfo();
+            }
+            if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sections' || e.key === 'school_groups' || e.key === 'school_students' || e.key === 'school_subjects' || e.key === 'school_marking_system') {
+                syncCascadingFilters('all');
+            }
+        });
+        window.addEventListener('dbSynced', function() {
+            syncSchoolHeaderInfo();
+            syncCascadingFilters('all');
+        });
+
+        // Continuous heartbeat sync every 2.5 seconds
+        setInterval(function() {
+            syncSchoolHeaderInfo();
+            syncLiveExamData();
+            syncCascadingFilters('exam_sync');
+        }, 2500);
+    </script>
+</body>
+</html>

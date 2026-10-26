@@ -1,0 +1,68 @@
+=== normalizeSectionString ===
+function normalizeSectionString(str) {
+            if (!str) return 'science';
+            const s = String(str).toLowerCase().trim();
+            if (s.includes('বিজ্ঞান') || s.includes('science') || s === 'a' || s === 'ক') return 'science';
+            if (s.includes('মানবিক') || s.includes('humanities') || s.includes('arts') || s === 'b' || s === 'খ') return 'humanities';
+            if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business') || s.includes('commerce') || s === 'c' || s === 'গ') return 'business';
+            return s;
+        }
+
+        const DEFAULT_GRADE_RULES = [
+            { id: "1", name: "A+", min: 80, max: 100, gp: 5.0 },
+            { id: "2", name: "A", min: 70, max: 79, gp: 4.0 },
+            { id: "3", name: "A-", min: 60, max: 69, gp: 3.5 
+
+=== getAllStudentsForClassAndSection ===
+function getAllStudentsForClassAndSection(selectedClass, selectedSection) {
+            const normC = normalizeClassString(selectedClass);
+            const normS = normalizeSectionString(selectedSection);
+            const isSci = normS === 'science';
+
+            let rawStudents = localStorage.getItem('school_students');
+            let students = [];
+            if (rawStudents) {
+                try { students = JSON.parse(rawStudents); } catch(e) {}
+            }
+
+            let filtered = [];
+            if (Array.isArray(students) && students.length > 0) {
+                filtered = students.filter(s => {
+                    const sClass = normalizeClassString(s.class || s.className);
+                    const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
+  
+
+=== getSectionsForClass ===
+function getSectionsForClass(className, examName) {
+            const sectionSet = new Set();
+            const normClass = normalizeClassString(className);
+            const isSecondary = ['9', '10'].includes(normClass);
+
+            try {
+                const rawStudents = localStorage.getItem('school_students');
+                if (rawStudents) {
+                    const parsed = JSON.parse(rawStudents);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && normalizeClassString(s.class || s.className) === normClass) {
+                                if (isSecondary) {
+                                    if (s.group && s.group !== '(প্রযোজ্য না)') sectionSet.add(s.group.trim());
+                              
+
+=== updateMarksheetSection ===
+function updateMarksheetSection(val) {
+            localStorage.setItem('school_marksheet_section', val);
+            if (currentSelectedStudent && normalizeSectionString(currentSelectedStudent.section || currentSelectedStudent.group) !== normalizeSectionString(val)) {
+                currentSelectedStudent = null;
+                currentSearchQuery = '';
+                const input = document.getElementById('filter-student-search');
+                const clearBtn = document.getElementById('btn-clear-search');
+                if (input) input.value = '';
+                if (clearBtn) clearBtn.style.display = 'none';
+            }
+            syncCascadingFilters('section_changed');
+        }
+
+        function switchTemplate(val) {
+            let extra = isCreateAllMode ? '?mode=all' : '?m
+

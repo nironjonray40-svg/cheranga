@@ -1,0 +1,302 @@
+Starts at line 3019
+3019:         function syncCascadingFilters(trigger = 'all') {
+3020:             try {
+3021:                 const examSelect = document.getElementById('filter-exam');
+3022:                 const classSelect = document.getElementById('filter-class');
+3023:                 const sectionSelect = document.getElementById('filter-section');
+3024: 
+3025:                 const allExams = getAllExams();
+3026: 
+3027:                 // 1. Sync Exams from "Exam List" (Only exams with a subject created)
+3028:                 if (examSelect && (trigger === 'all' || trigger === 'exam_sync')) {
+3029:                     const currentExam = examSelect.value || localStorage.getItem('school_marksheet_exam') || '';
+3030:                     const currExamOpts = Array.from(examSelect.options).map(o => o.value);
+3031:                     const isDiff = allExams.length !== currExamOpts.length || allExams.some((ex, i) => ex !== currExamOpts[i]);
+3032:                     if (isDiff) {
+3033:                         if (allExams.length > 0) {
+3034:                             examSelect.innerHTML = allExams.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+3035:                             const matchedOpt = allExams.find(ex => isExamMatch(ex, currentExam));
+3036:                             if (matchedOpt) {
+3037:                                 examSelect.value = matchedOpt;
+3038:                             } else {
+3039:                                 examSelect.selectedIndex = 0;
+3040:                             }
+3041:                         } else {
+3042:                             examSelect.innerHTML = '<option value="">(কোনো পরীক্ষা পাওয়া যায়নি)</option>';
+3043:                             examSelect.value = '';
+3044:                         }
+3045:                     }
+3046:                 }
+3047: 
+3048:                 const selectedExam = examSelect && examSelect.value ? examSelect.value : (allExams[0] || '');
+3049:                 localStorage.setItem('school_marksheet_exam', selectedExam);
+3050:                 const examBadge = document.getElementById('display-exam-name');
+3051:                 if (examBadge) examBadge.innerText = getDisplayExamName(selectedExam);
+3052: 
+3053:                 // 2. Sync Classes (Dependent on selectedExam)
+3054:                 if (classSelect && (trigger === 'all' || trigger === 'exam_sync' || trigger === 'exam_changed')) {
+3055:                     const currentClass = classSelect.value || localStorage.getItem('school_marksheet_class') || '';
+3056:                     const availableClasses = selectedExam ? getClassesForExam(selectedExam) : [];
+3057:                     const currClassOpts = Array.from(classSelect.options).map(o => o.value);
+3058:                     const isClassDiff = availableClasses.length !== currClassOpts.length || availableClasses.some((c, i) => c !== currClassOpts[i]);
+3059:                     if (isClassDiff) {
+3060:                         if (availableClasses.length > 0) {
+3061:                             classSelect.innerHTML = availableClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+3062:                             const matchedOpt = availableClasses.find(c => normalizeClassString(c) === normalizeClassString(currentClass));
+3063:                             if (matchedOpt) {
+3064:                                 classSelect.value = matchedOpt;
+3065:                             } else {
+3066:                                 classSelect.selectedIndex = 0;
+3067:                             }
+3068:                         } else {
+3069:                             classSelect.innerHTML = '<option value="">(কোনো শ্রেণি পাওয়া যায়নি)</option>';
+3070:                             classSelect.value = '';
+3071:                         }
+3072:                     }
+3073:                 }
+3074: 
+3075:                 const selectedClass = classSelect && classSelect.value ? classSelect.value : (localStorage.getItem('school_marksheet_class') || 'Ten');
+3076:                 localStorage.setItem('school_marksheet_class', selectedClass);
+3077:                 const classEl = document.getElementById('display-class-name');
+3078:                 if (classEl) classEl.innerText = formatClassNameDisplay(selectedClass);
+3079: 
+3080:                 // If currently searched/selected student is from a different class, clear it
+3081:                 if (currentSelectedStudent && normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className) !== normalizeClassString(selectedClass)) {
+3082:                     currentSelectedStudent = null;
+3083:                     currentSearchQuery = '';
+3084:                     const searchInput = document.getElementById('filter-student-search');
+3085:                     const clearBtn = document.getElementById('btn-clear-search');
+3086:                     if (searchInput) searchInput.value = '';
+3087:                     if (clearBtn) clearBtn.style.display = 'none';
+3088:                 }
+3089: 
+3090:                 // 3. Sync Sections (Dependent on selectedClass)
+3091:                 if (sectionSelect) {
+3092:                     const currentSec = sectionSelect.value || localStorage.getItem('school_marksheet_section') || '';
+3093:                     const availableSections = getSectionsForClass(selectedClass, selectedExam);
+3094:                     const currSecOpts = Array.from(sectionSelect.options).map(o => o.value);
+3095:                     const isSecDiff = availableSections.length !== currSecOpts.length || availableSections.some((s, i) => s !== currSecOpts[i]);
+3096:                     if (isSecDiff) {
+3097:                         sectionSelect.innerHTML = availableSections.map(s => `<option value="${s}">${s}</option>`).join('');
+3098:                         if (currentSec && availableSections.includes(currentSec)) {
+3099:                             sectionSelect.value = currentSec;
+3100:                         } else if (availableSections.length > 0) {
+3101:                             sectionSelect.selectedIndex = 0;
+3102:                         }
+3103:                     }
+3104:                 }
+3105: 
+3106:                 const selectedSection = sectionSelect && sectionSelect.value ? sectionSelect.value : (localStorage.getItem('school_marksheet_section') || 'বিজ্ঞান');
+3107:                 localStorage.setItem('school_marksheet_section', selectedSection);
+3108:                 const secEl = document.getElementById('display-section-name');
+3109:                 if (secEl) secEl.innerText = 'শাখা = ' + selectedSection;
+3110: 
+3111:                 // 4. Update Student Meta and Render Marksheet Table
+3112:                 const normClass = normalizeClassString(selectedClass);
+3113:                 const normSec = normalizeSectionString(selectedSection);
+3114: 
+3115:                 let rawStudents = localStorage.getItem('school_students');
+3116:                 let students = [];
+3117:                 if (rawStudents) {
+3118:                     try { students = JSON.parse(rawStudents); } catch(e) {}
+3119:                 }
+3120: 
+3121:                 let matchedStudent = null;
+3122: 
+3123:                 // Priority 1: Specifically selected student from search (must match current class)
+3124:                 if (currentSelectedStudent) {
+3125:                     const stNormC = normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className);
+3126:                     if (stNormC === normClass) {
+3127:                         matchedStudent = currentSelectedStudent;
+3128:                     } else {
+3129:                         currentSelectedStudent = null;
+3130:                     }
+3131:                 }
+3132: 
+3133:                 if (!matchedStudent && currentSearchQuery) {
+3134:                     // Priority 2: Student matching current search query within selected class only
+3135:                     const classSecStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
+3136:                     matchedStudent = classSecStudents.find(s => matchesStudentQuery(s, currentSearchQuery));
+3137:                     if (!matchedStudent) {
+3138:                         const allSts = getAllStudentsList();
+3139:                         matchedStudent = allSts.find(s => {
+3140:                             const stC = normalizeClassString(s.class || s.className);
+3141:                             return stC === normClass && matchesStudentQuery(s, currentSearchQuery);
+3142:                         });
+3143:                     }
+3144:                 }
+3145: 
+3146:                 if (!matchedStudent && Array.isArray(students) && students.length > 0) {
+3147:                     matchedStudent = students.find(s => {
+3148:                         const sClass = normalizeClassString(s.class || s.className);
+3149:                         const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
+3150:                         return sClass === normClass && (sSec === normSec || !normSec);
+3151:                     });
+3152: 
+3153:                     if (!matchedStudent) {
+3154:                         matchedStudent = students.find(s => {
+3155:                             const sClass = normalizeClassString(s.class || s.className);
+3156:                             return sClass === normClass;
+3157:                         });
+3158:                     }
+3159: 
+3160:                     if (!matchedStudent && students.length > 0) {
+3161:                         matchedStudent = students[0];
+3162:                     }
+3163:                 }
+3164: 
+3165:                 const effectiveClass = (matchedStudent && (matchedStudent.class || matchedStudent.className)) ? (matchedStudent.class || matchedStudent.className) : selectedClass;
+3166:                 const effectiveSec = (matchedStudent && (matchedStudent.section || matchedStudent.group || matchedStudent.sectionName)) ? (matchedStudent.section || matchedStudent.group || matchedStudent.sectionName) : selectedSection;
+3167:                 const effectiveNormClass = normalizeClassString(effectiveClass);
+3168:                 const effectiveNormSec = normalizeSectionString(effectiveSec);
+3169: 
+3170:                 const isEn = (currentLanguage === 'en');
+3171:                 let studentName = 'মো: আব্দুল্লাহ আল নোমান';
+3172:                 if (matchedStudent) {
+3173:                     studentName = isEn && matchedStudent.nameEn ? matchedStudent.nameEn : (matchedStudent.nameBn || matchedStudent.name || matchedStudent.studentName || (isEn ? 'Student Name' : 'মো: আব্দুল্লাহ আল নোমান'));
+3174:                 } else if (isEn) {
+3175:                     studentName = 'MD. ABDULLAH AL NOMAN';
+3176:                 }
+3177: 
+3178:                 const rollNo = matchedStudent ? (matchedStudent.roll || matchedStudent.rollNo || '1') : '1';
+3179:                 const studentId = getEffectiveStudentId(matchedStudent, effectiveClass, rollNo);
+3180: 
+3181:                 const nameEl = document.getElementById('display-student-name');
+3182:                 if (nameEl && nameEl.innerText !== studentName) nameEl.innerText = studentName;
+3183:                 const rollEl = document.getElementById('display-roll-no');
+3184:                 if (rollEl) rollEl.innerText = formatDigits(rollNo);
+3185:                 const idEl = document.getElementById('display-student-id');
+3186:                 if (idEl) idEl.innerText = formatDigits(studentId);
+3187: 
+3188:                 const classDisplay = getDisplayClassName(effectiveClass);
+3189:                 if (classEl) classEl.innerText = classDisplay;
+3190: 
+3191:                 const secDisplay = isEn ? 'Section = ' + getEnglishSectionName(effectiveSec) : 'শাখা = ' + effectiveSec;
+3192:                 if (secEl) secEl.innerText = secDisplay;
+3193: 
+3194:                 if (examBadge) examBadge.innerText = getDisplayExamName(selectedExam);
+3195: 
+3196:                 const isSecondary = ['9', '10'].includes(effectiveNormClass);
+3197:                 const relInfo = getStudentReligionInfo(matchedStudent);
+3198:                 const optInfo = getStudentOptionalSubjectInfo(matchedStudent, effectiveNormSec);
+3199: 
+3200:                 const relEl = document.getElementById('display-student-religion');
+3201:                 if (relEl) relEl.innerText = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+3202: 
+3203:                 const optRow = document.getElementById('row-optional-subject');
+3204:                 const optEl = document.getElementById('display-optional-subject');
+3205:                 if (optRow) {
+3206:                     if (isSecondary) {
+3207:                         optRow.style.display = 'flex';
+3208:                         if (optEl) optEl.innerText = isEn ? optInfo.name : optInfo.nameBn;
+3209:                     } else {
+3210:                         optRow.style.display = 'none';
+3211:                     }
+3212:                 }
+3213: 
+3214:                 updateTableHeaderMarks(selectedExam, selectedClass);
+3215: 
+3216:                 if (isCreateAllMode) {
+3217:                     renderBatchMarksheets(selectedClass, selectedSection, selectedExam);
+3218:                 } else {
+3219:                     const batchContainer = document.getElementById('batch-marksheets-container');
+3220:                     const singleContainer = document.getElementById('single-marksheet-container');
+3221:                     if (batchContainer) batchContainer.style.display = 'none';
+3222:                     if (singleContainer) singleContainer.style.display = 'block';
+3223:                     renderMarksheetTable(effectiveClass, effectiveSec, matchedStudent || { roll: rollNo }, selectedExam);
+3224:                 }
+3225:             } catch(e) {
+3226:                 console.error("Error in syncCascadingFilters:", e);
+3227:             }
+3228:         }
+3229: 
+3230:         let isCreateAllMode = true;
+3231: 
+3232:         function toggleCreateAll() {
+3233:             isCreateAllMode = !isCreateAllMode;
+3234:             const btn = document.getElementById('btn-create-all');
+3235:             const btnText = document.getElementById('create-all-btn-text');
+3236:             if (btn) {
+3237:                 if (isCreateAllMode) {
+3238:                     btn.classList.add('active');
+3239:                     if (btnText) btnText.innerText = 'সকল শিক্ষার্থী (All)';
+3240:                 } else {
+3241:                     btn.classList.remove('active');
+3242:                     if (btnText) btnText.innerText = 'একক শিক্ষার্থী (Single)';
+3243:                 }
+3244:             }
+3245:             syncCascadingFilters('mode_toggled');
+3246:         }
+3247: 
+3248:         function getAllStudentsForClassAndSection(selectedClass, selectedSection) {
+3249:             const normC = normalizeClassString(selectedClass);
+3250:             const normS = normalizeSectionString(selectedSection);
+3251:             const isSci = normS === 'science';
+3252: 
+3253:             let rawStudents = localStorage.getItem('school_students');
+3254:             let students = [];
+3255:             if (rawStudents) {
+3256:                 try { students = JSON.parse(rawStudents); } catch(e) {}
+3257:             }
+3258: 
+3259:             let filtered = [];
+3260:             if (Array.isArray(students) && students.length > 0) {
+3261:                 filtered = students.filter(s => {
+3262:                     const sClass = normalizeClassString(s.class || s.className);
+3263:                     const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
+3264:                     return sClass === normC && (sSec === normS || !normS);
+3265:                 });
+3266:             }
+3267: 
+3268:             if (filtered.length > 0) {
+3269:                 filtered.sort((a, b) => (parseInt(a.roll || 0) || 0) - (parseInt(b.roll || 0) || 0));
+3270:                 return filtered;
+3271:             }
+3272: 
+3273:             // Fallback cohort if none present in storage
+3274:             const fallbackCohort = [
+3275:                 { roll: '1', nameBn: 'মো: আব্দুল্লাহ আল নোমান', name: 'Md. Abdullah Al Noman', studentId: '2610001', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+3276:                 { roll: '2', nameBn: 'মোছা: ফাতেমা আক্তার', name: 'Mst. Fatema Akter', studentId: '2610002', religion: 'Islam', optionalSubject: isSci ? 'Biology' : 'Agriculture Studies' },
+3277:                 { roll: '3', nameBn: 'সৌরভ কুমার রায়', name: 'Sourav Kumar Roy', studentId: '2610003', religion: 'Hindu', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+3278:                 { roll: '4', nameBn: 'তানভীর হাসান', name: 'Tanvir Hasan', studentId: '2610004', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+3279:                 { roll: '5', nameBn: 'সাদিয়া জাহান', name: 'Sadia Jahan', studentId: '2610005', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+3280:                 { roll: '6', nameBn: 'প্রিয়াংকা সরকার', name: 'Priyanka Sarkar', studentId: '2610006', religion: 'Hindu', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+3281:                 { roll: '7', nameBn: 'মেহেদী হাসান', name: 'Mehedi Hasan', studentId: '2610007', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+3282:                 { roll: '8', nameBn: 'সুমাইয়া জান্নাত', name: 'Sumaiya Jannat', studentId: '2610008', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' }
+3283:             ];
+3284: 
+3285:             return fallbackCohort;
+3286:         }
+3287: 
+3288:         function generateMarksheetCardHTML(student, selectedClass, selectedSection, exam, rankNum) {
+3289:             const isEn = (currentLanguage === 'en');
+3290:             const examDist = getExamDistribution(exam, selectedClass);
+3291:             const normClass = normalizeClassString(selectedClass);
+3292:             const normSec = normalizeSectionString(selectedSection);
+3293:             const isSecondary = ['9', '10'].includes(normClass);
+3294:             const relInfo = getStudentReligionInfo(student);
+3295:             const optInfo = getStudentOptionalSubjectInfo(student, normSec);
+3296: 
+3297:             const studentName = student ? (isEn && student.nameEn ? student.nameEn : (student.nameBn || student.name || (isEn ? 'Student' : 'শিক্ষার্থী'))) : (isEn ? 'Student' : 'শিক্ষার্থী');
+3298:             const rollNo = student ? (student.roll || student.rollNo || rankNum) : rankNum;
+3299:             const studentId = getEffectiveStudentId(student, selectedClass, rankNum);
+3300:             const displayCls = getDisplayClassName(selectedClass);
+3301:             const displaySec = isEn ? getEnglishSectionName(selectedSection) : (selectedSection || 'ক');
+3302:             const examBadgeTitle = getDisplayExamName(exam);
+3303:             const displayRel = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+3304:             const displayOpt = isEn ? optInfo.name : optInfo.nameBn;
+3305: 
+3306:             let rawSettings = localStorage.getItem('school_settings');
+3307:             let settings = {};
+3308:             if (rawSettings) { try { settings = JSON.parse(rawSettings); } catch(e) {} }
+3309:             const schoolName = settings.schoolSubtitle || settings.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়";
+3310:             const addressText = settings.schoolAddress || "মাথাভাঙ্গা, জলঢাকা, নীলফামারী।";
+3311:             const customLogo = localStorage.getItem('school_logo') || (settings && settings.schoolLogo) || 'school_logo.svg';
+3312: 
+3313:             const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+3314: 
+3315:             let tableHtml = '';
+3316:             let grandTotal = 0;
+3317:             let totalFullMarks = 0;
+3318:             let totalGP = 0;
+3319:             let subjectCount = 0;

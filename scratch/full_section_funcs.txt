@@ -1,0 +1,341 @@
+=== getSectionsForClass ===
+function getSectionsForClass(className, examName) {
+            const sectionSet = new Set();
+            const normClass = normalizeClassString(className);
+            const isSecondary = ['9', '10'].includes(normClass);
+
+            try {
+                const rawStudents = localStorage.getItem('school_students');
+                if (rawStudents) {
+                    const parsed = JSON.parse(rawStudents);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && normalizeClassString(s.class || s.className) === normClass) {
+                                if (isSecondary) {
+                                    if (s.group && s.group !== '(প্রযোজ্য না)') sectionSet.add(s.group.trim());
+                                    if (s.section && s.section !== '(প্রযোজ্য না)' && !['ক','খ','গ','A','B','C'].includes(s.section)) sectionSet.add(s.section.trim());
+                                } else {
+                                    if (s.section && s.section !== '(প্রযোজ্য না)') sectionSet.add(s.section.trim());
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const parsed = JSON.parse(rawSchedules);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (s && normalizeClassString(s.className || s.class) === normClass && s.section && s.section !== 'All' && s.section !== '(প্রযোজ্য না)') {
+                                sectionSet.add(s.section.trim());
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            if (sectionSet.size === 0) {
+                if (isSecondary) {
+                    ["বিজ্ঞান", "মানবিক", "ব্যবসায় শিক্ষা"].forEach(s => sectionSet.add(s));
+                } else {
+                    ["ক", "খ", "গ"].forEach(s => sectionSet.add(s));
+                }
+            }
+
+            return Array.from(sectionSet);
+        }
+
+        let currentSearchQuery = '';
+        let currentSelectedStudent = null;
+
+
+=== normalizeSectionString ===
+function normalizeSectionString(str) {
+            if (!str) return 'science';
+            const s = String(str).toLowerCase().trim();
+            if (s.includes('বিজ্ঞান') || s.includes('science') || s === 'a' || s === 'ক') return 'science';
+            if (s.includes('মানবিক') || s.includes('humanities') || s.includes('arts') || s === 'b' || s === 'খ') return 'humanities';
+            if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business') || s.includes('commerce') || s === 'c' || s === 'গ') return 'business';
+            return s;
+        }
+
+        const DEFAULT_GRADE_RULES = [
+            { id: "1", name: "A+", min: 80, max: 100, gp: 5.0 },
+            { id: "2", name: "A", min: 70, max: 79, gp: 4.0 },
+            { id: "3", name: "A-", min: 60, max: 69, gp: 3.5 },
+            { id: "4", name: "B", min: 50, max: 59, gp: 3.0 },
+            { id: "5", name: "C", min: 40, max: 49, gp: 2.0 },
+            { id: "6", name: "D", min: 33, max: 39, gp: 1.0 },
+            { id: "7", name: "F", min: 0, max: 32, gp: 0.0 }
+        ];
+
+        // Dynamic Grading Scale loader from "Marking System" (school_marking_system) - strictly aligned with Tabulation Sheet
+
+=== getAllStudentsForClassAndSection ===
+function getAllStudentsForClassAndSection(selectedClass, selectedSection) {
+            const normC = normalizeClassString(selectedClass);
+            const normS = normalizeSectionString(selectedSection);
+            const isSci = normS === 'science';
+
+            let rawStudents = localStorage.getItem('school_students');
+            let students = [];
+            if (rawStudents) {
+                try { students = JSON.parse(rawStudents); } catch(e) {}
+            }
+
+            let filtered = [];
+            if (Array.isArray(students) && students.length > 0) {
+                filtered = students.filter(s => {
+                    const sClass = normalizeClassString(s.class || s.className);
+                    const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
+                    return sClass === normC && (sSec === normS || !normS);
+                });
+            }
+
+            if (filtered.length > 0) {
+                filtered.sort((a, b) => (parseInt(a.roll || 0) || 0) - (parseInt(b.roll || 0) || 0));
+                return filtered;
+            }
+
+            // Fallback cohort if none present in storage
+            const fallbackCohort = [
+                { roll: '1', nameBn: 'মো: আব্দুল্লাহ আল নোমান', name: 'Md. Abdullah Al Noman', studentId: '2610001', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '2', nameBn: 'মোছা: ফাতেমা আক্তার', name: 'Mst. Fatema Akter', studentId: '2610002', religion: 'Islam', optionalSubject: isSci ? 'Biology' : 'Agriculture Studies' },
+                { roll: '3', nameBn: 'সৌরভ কুমার রায়', name: 'Sourav Kumar Roy', studentId: '2610003', religion: 'Hindu', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '4', nameBn: 'তানভীর হাসান', name: 'Tanvir Hasan', studentId: '2610004', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '5', nameBn: 'সাদিয়া জাহান', name: 'Sadia Jahan', studentId: '2610005', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '6', nameBn: 'প্রিয়াংকা সরকার', name: 'Priyanka Sarkar', studentId: '2610006', religion: 'Hindu', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '7', nameBn: 'মেহেদী হাসান', name: 'Mehedi Hasan', studentId: '2610007', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' },
+                { roll: '8', nameBn: 'সুমাইয়া জান্নাত', name: 'Sumaiya Jannat', studentId: '2610008', religion: 'Islam', optionalSubject: isSci ? 'Higher Mathematics' : 'Agriculture Studies' }
+            ];
+
+            return fallbackCohort;
+        }
+
+
+=== generateMarksheetCardHTML ===
+function generateMarksheetCardHTML(student, selectedClass, selectedSection, exam, rankNum) {
+            const isEn = (currentLanguage === 'en');
+            const normClass = normalizeClassString(selectedClass);
+            const normSec = normalizeSectionString(selectedSection);
+            const isSecondary = ['9', '10'].includes(normClass);
+            const relInfo = getStudentReligionInfo(student);
+            const optInfo = getStudentOptionalSubjectInfo(student, normSec);
+
+            const studentName = student ? (isEn && student.nameEn ? student.nameEn : (student.nameBn || student.name || (isEn ? 'Student' : 'শিক্ষার্থী'))) : (isEn ? 'Student' : 'শিক্ষার্থী');
+            const rollNo = student ? (student.roll || student.rollNo || rankNum) : rankNum;
+            const studentId = getEffectiveStudentId(student, selectedClass, rankNum);
+            const displayCls = getDisplayClassName(selectedClass);
+            const displaySec = isEn ? getEnglishSectionName(selectedSection) : (selectedSection || 'ক');
+            const examBadgeTitle = getDisplayExamName(exam);
+            const displayRel = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+            const displayOpt = isEn ? optInfo.name : optInfo.nameBn;
+
+            let rawSettings = localStorage.getItem('school_settings');
+            let settings = {};
+            if (rawSettings) { try { settings = JSON.parse(rawSettings); } catch(e) {} }
+            const schoolName = settings.schoolSubtitle || settings.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাতীর্থ উচ্চ বিদ্যালয়";
+            const addressText = settings.schoolAddress || "মাথাভাঙ্গা, জলঢাকা, নীলফামারী।";
+            const customLogo = localStorage.getItem('school_logo') || (settings && settings.schoolLogo) || 'school_logo.svg';
+
+            const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+            const summary = calculateOverallMarksheetSummary(subjects, exam, selectedClass);
+
+            let tableHtml = '';
+
+            summary.evaluatedSubjects.forEach(({ sub, res, isOpt }) => {
+                if (sub.isCombined) {
+                    const hasPaperMarks = res.hasMarks;
+                    const m1 = res.p1Total;
+                    const m2 = res.p2Total;
+                    const combTotal = res.total;
+
+                    const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                          (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+                    const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+                                          (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+
+                    const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+                    const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+                    const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+                    const p1TotDisplay = (hasPaperMarks && m1 !== null) ? formatDigits(m1) : '—';
+
+                    const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
+                    const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
+                    const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
+                    const p2TotDisplay = (hasPaperMarks && m2 !== null) ? formatDigits(m2) : '—';
+
+                    const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
+                    const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+                    const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+
+                    const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+
+                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+
+                    tableHtml += `<tr>
+                        <td class="subject-col">${p1NameHtml}</td>
+                        <td>${p1McqDisplay}</td>
+                        <td>${p1CqDisplay}</td>
+                        <td>${p1PrDisplay}</td>
+                        <td>${p1TotDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combTotDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold;">${combGradeDisplay}</td>
+                        <td rowspan="2" style="font-weight: bold; background: #f8fafc;">${combGpDisplay}</td>
+                    </tr>
+                    <tr>
+                        <td class="subject-col">${p2NameHtml}</td>
+                        <td>${p2McqDisplay}</td>
+                        <td>${p2CqDisplay}</td>
+                        <td>${p2PrDisplay}</td>
+                        <td>${p2TotDisplay}</td>
+                    </tr>`;
+                } else {
+                    const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+                                        (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+
+                    const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+                    const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
+                    const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
+                    const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
+                    const totDisplay = res.hasMarks ? formatDigits(res.total) : '—';
+                    const gradeDisplay = res.hasMarks ? res.grade : '—';
+                    const gpDisplay = res.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+
+                    const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+
+                    tableHtml += `<tr>
+                        <td class="subject-col">${subNameHtml}</td>
+                        <td>${mcqDisplay}</td>
+                        <td>${cqDisplay}</td>
+                        <td>${prDisplay}</td>
+                        <td>${totDisplay}</td>
+                        <td style="font-weight: bold; background: #f8fafc;">${totDisplay}</td>
+                        <td style="font-weight: bold;">${gradeDisplay}</td>
+                        <td style="font-weight: bold; background: #f8fafc;">${gpDisplay}</td>
+                    </tr>`;
+                }
+            });
+
+            const zeroGpaStr = isEn ? '0.00' : '০.০০';
+            const finalGpaStr = summary.hasAnyMarks ? ((summary.hasFailed || summary.hasAnyAbsent) ? zeroGpaStr : formatDigits(summary.finalGPA.toFixed(2))) : '—';
+            const finalGrade = summary.hasAnyMarks ? (summary.hasAnyAbsent ? 'A' : (summary.hasFailed ? (summary.failRule.name || 'F') : summary.finalGradeName)) : '—';
+            const grandTotalDisplay = summary.hasAnyMarks ? formatDigits(summary.grandTotal) : '—';
+            const rankStr = formatDigits(rankNum);
+
+            return `
+            <div class="mark-sheet-container" style="margin-bottom: 25px;">
+                <div class="mark-sheet-border">
+                    <!-- Header Section -->
+                    <div class="header-section">
+                        ${getGradingScaleTableHTML()}
+
+                        <div class="header-center">
+                            <h1 class="school-name">${schoolName}</h1>
+                            <p class="address">${addressText}</p>
+                            <div class="logo">
+                                <img src="${customLogo}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;">
+                            </div>
+                            <div class="exam-badge">${examBadgeTitle}</div>
+                        </div>
+                    </div>
+
+                    <!-- Student Info Section -->
+                    <div class="student-info">
+                        <div style="flex: 1.1;">
+                            <div class="info-row">
+                                <div class="info-label">${isEn ? "Student Name" : "শিক্ষার্থীর নাম"}</div>
+                                <div>: <span>${studentName}</span></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">${isEn ? "Roll No" : "রোল নং"}</div>
+                                <div>: <span>${formatDigits(rollNo)}</span></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">${isEn ? "Class" : "শ্রেণি"}</div>
+                                <div>: <span>${displayCls}</span> <span class="branch-info" style="margin-left: 20px;">${isEn ? "Section = " + displaySec : "শাখা = " + displaySec}</span></div>
+                            </div>
+                        </div>
+                        <div style="flex: 0.9; padding-left: 20px;">
+                            <div class="info-row">
+                                <div class="info-label" style="width: 125px;">${isEn ? "Religion" : "ধর্ম (Religion)"}</div>
+                                <div>: <span>${displayRel}</span></div>
+                            </div>
+                            ${isSecondary ? `
+                            <div class="info-row">
+                                <div class="info-label" style="width: 125px;">${isEn ? "Optional (4th)" : "ঐচ্ছিক বিষয় (৪র্থ)"}</div>
+                                <div>: <span>${displayOpt}</span></div>
+                            </div>` : ''}
+                            <div class="info-row">
+                                <div class="info-label" style="width: 125px;">${isEn ? "Student ID" : "শিক্ষার্থী আইডি"}</div>
+                                <div>: <span>${formatDigits(studentId)}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marks Table -->
+                    <table class="marks-table">
+                        <thead>
+                            <tr>
+                                <th class="subject-col">${isEn ? "Subject" : "বিষয়"}</th>
+                                <th>${isEn ? "MCQ" : "বহুনির্বাচনি"}</th>
+                                <th>${isEn ? "CQ" : "লিখিত"}</th>
+                                <th>${isEn ? "Practical" : "ব্যবহারিক"}</th>
+                                <th>${isEn ? "Total" : "মোট"}</th>
+                                <th>${isEn ? "Total" : "সর্বমোট"}</th>
+                                <th>${isEn ? "Grade" : "গ্রেড"}</th>
+                                <th>${isEn ? "GPA" : "পয়েন্ট"}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableHtml}
+                        </tbody>
+                    </table>
+
+                    <!-- Bottom Tables -->
+                    <div class="bottom-section">
+                        <table class="rank-table">
+                            <tr>
+                                <td style="width: 50%;">${isEn ? "Rank" : "স্থান"}</td>
+                                <td style="width: 50%;">${rankStr}</td>
+                            </tr>
+                        </table>
+
+                        <table class="summary-table">
+                            <tr>
+                                <td style="width: 50%;">${isEn ? "Total Marks" : "সর্বমোট"}</td>
+                                <td style="width: 50%;">${grandTotalDisplay}</td>
+                            </tr>
+                            <tr>
+                                <td>${isEn ? "GPA" : "পয়েন্ট"}</td>
+                                <td>${finalGpaStr}</td>
+                            </tr>
+                            <tr>
+                                <td>${isEn ? "Grade" : "গ্রেড"}</td>
+                                <td>${finalGrade}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Signatures Section -->
+                    <div class="signatures">
+                        <div class="sig-col">
+                            <div class="sig-line"></div>
+                            <div class="sig-label">${isEn ? "Guardian's Signature" : "অভিভাবকের স্বাক্ষর"}</div>
+                        </div>
+                        <div class="sig-col">
+                            <div class="sig-line"></div>
+                            <div class="sig-label">${isEn ? "Headmaster's Signature" : "প্রধান শিক্ষকের স্বাক্ষর"}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+

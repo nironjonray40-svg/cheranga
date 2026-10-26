@@ -1444,41 +1444,112 @@ function getDisplaySectionName(sec) {
             { id: "7", name: "F", min: 0, max: 32, gp: 0.0 }
         ];
 
-        // Dynamic Grading Scale loader from "Marking System" (school_marking_system)
+        // Dynamic Grading Scale loader from "Marking System" (school_marking_system) - strictly aligned with Tabulation Sheet
         function loadMarkingSystem() {
+            let rules = null;
             try {
-                const raw = localStorage.getItem('school_marking_system');
+                const str = localStorage.getItem('school_marking_system');
+                if (str) rules = JSON.parse(str);
+            } catch (e) { }
+            if (!Array.isArray(rules) || rules.length === 0) {
+                try {
+                    localStorage.setItem('school_marking_system', JSON.stringify(DEFAULT_GRADE_RULES));
+                } catch (e) { }
+                return DEFAULT_GRADE_RULES.map(r => ({ ...r }));
+            }
+            return rules.map(r => ({
+                id: r.id || '',
+                name: (r.name || '').trim(),
+                min: parseFloat(r.min) || 0,
+                max: parseFloat(r.max) || 0,
+                gp: parseFloat(r.gp) || 0
+            })).sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+        }
+
+        // Get Pass Mark Percentage dynamically from Exam Types (school_exam_types) - strictly aligned with Tabulation Sheet
+        function getExamPassMarkPercent(examName) {
+            try {
+                const raw = localStorage.getItem('school_exam_types');
                 if (raw) {
-                    const parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        return parsed;
+                    const exTypes = JSON.parse(raw);
+                    if (Array.isArray(exTypes)) {
+                        const matched = exTypes.find(t => isExamMatch(t.name, examName));
+                        if (matched && matched.passMarkPercent !== undefined && !isNaN(matched.passMarkPercent)) {
+                            return Number(matched.passMarkPercent);
+                        }
                     }
                 }
-            } catch(e) {}
-            return DEFAULT_GRADE_RULES;
+            } catch (e) { }
+            return 33;
+        }
+
+        // Component-wise pass check - strictly aligned with Tabulation Sheet
+        function checkComponentPass(mark, fullMarks, passPct = 33) {
+            if (!fullMarks || fullMarks <= 0) return true; // Component not attached
+            if (mark === null || mark === undefined || isNaN(mark)) return false; // Absent / missing
+            const minPass = Math.round(fullMarks * (passPct / 100));
+            return (mark >= minPass) || ((mark / fullMarks) * 100 >= passPct);
+        }
+
+        // Helper to check if a mark represents Absent - strictly aligned with Tabulation Sheet
+        function isAbsentValue(v) {
+            if (v === null || v === undefined) return false;
+            const str = String(v).trim().toUpperCase();
+            return str === 'A' || str === 'ABS';
+        }
+
+        // Grade for Percentage - strictly aligned with Tabulation Sheet
+        function getGradeForPercentage(pct, passMarkPercent = null) {
+            if (isNaN(pct) || pct === null) {
+                return { name: '-', gp: 0.0 };
+            }
+            const rules = loadMarkingSystem();
+            const sortedRules = (Array.isArray(rules) && rules.length > 0 ? [...rules] : [...DEFAULT_GRADE_RULES]).sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
+            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || sortedRules[sortedRules.length - 1] || { name: "F", gp: 0.0 };
+            const passingRules = sortedRules.filter(r => parseFloat(r.gp) > 0 && r.name !== 'F');
+            const minPassingPct = (passMarkPercent !== null && !isNaN(passMarkPercent))
+                ? passMarkPercent
+                : (passingRules.length > 0 ? Math.min(...passingRules.map(r => r.min)) : 33);
+
+            if (pct < minPassingPct) {
+                return { name: failRule.name, gp: parseFloat(failRule.gp) || 0.0 };
+            }
+
+            let match = sortedRules.find(r => pct >= parseFloat(r.min) && pct <= parseFloat(r.max));
+            if (!match) {
+                match = sortedRules.find(r => (pct + 0.001) >= parseFloat(r.min));
+            }
+            if (match && parseFloat(match.gp) > 0 && match.name !== 'F') {
+                return { name: match.name, gp: parseFloat(match.gp) };
+            }
+            return { name: failRule.name, gp: parseFloat(failRule.gp) || 0.0 };
+        }
+
+        // Grade for GPA - strictly aligned with Tabulation Sheet
+        function getGradeForGPA(gpa) {
+            const rules = loadMarkingSystem();
+            const sortedRules = (Array.isArray(rules) && rules.length > 0 ? [...rules] : [...DEFAULT_GRADE_RULES]).sort((a, b) => (parseFloat(b.gp) || 0) - (parseFloat(a.gp) || 0));
+            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || sortedRules[sortedRules.length - 1] || { name: "F", gp: 0.0 };
+            const passingRules = sortedRules.filter(r => parseFloat(r.gp) > 0 && r.name !== 'F');
+            const minPassingGP = passingRules.length > 0 ? Math.min(...passingRules.map(r => r.gp)) : 1.0;
+
+            if (isNaN(gpa) || gpa < minPassingGP) {
+                return failRule.name;
+            }
+
+            let match = sortedRules.find(r => (gpa + 0.001) >= parseFloat(r.gp));
+            return match ? match.name : failRule.name;
         }
 
         // Calculate Grade & GP dynamically based on Grading Scale (% Percentage Scale) & full marks
-        function calculateGradeAndGP(marks, fullMarks = 100) {
+        function calculateGradeAndGP(marks, fullMarks = 100, passMarkPercent = null) {
             if (marks === null || marks === undefined || isNaN(marks)) {
                 return { grade: 'F', gp: 0.00 };
             }
             const fMarks = Number(fullMarks) > 0 ? Number(fullMarks) : 100;
             const pct = (Number(marks) / fMarks) * 100;
-
-            const rules = loadMarkingSystem();
-            const sortedRules = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
-            const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || sortedRules[sortedRules.length - 1] || { name: 'F', gp: 0.00 };
-
-            // Find matching rule based on customized percentage threshold
-            let match = sortedRules.find(r => pct >= parseFloat(r.min) && pct <= parseFloat(r.max));
-            if (!match) {
-                match = sortedRules.find(r => (pct + 0.001) >= parseFloat(r.min));
-            }
-            if (match) {
-                return { grade: match.name, gp: parseFloat(match.gp) || 0.00 };
-            }
-            return { grade: failRule.name, gp: parseFloat(failRule.gp) || 0.00 };
+            const res = getGradeForPercentage(pct, passMarkPercent);
+            return { grade: res.name, gp: res.gp };
         }
 
         function getMaxScaleGP() {
@@ -1492,10 +1563,208 @@ function getDisplaySectionName(sec) {
             const sortedRules = [...rules].sort((a, b) => (parseFloat(b.min) || 0) - (parseFloat(a.min) || 0));
             const failRule = sortedRules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0.0 };
             if (isFailed || gpa <= 0) return failRule.name;
+            return getGradeForGPA(gpa);
+        }
 
-            const sortedByGP = [...sortedRules].sort((a, b) => (parseFloat(b.gp) || 0) - (parseFloat(a.gp) || 0));
-            const matched = sortedByGP.find(r => (gpa + 0.001) >= parseFloat(r.gp));
-            return matched ? matched.name : failRule.name;
+        // Evaluate single or combined subject according to Tabulation Sheet component-pass & absent policy
+        function evaluateSubjectRow(sub, exam, selectedClass, passPct, failRule) {
+            if (sub.isCombined) {
+                const hasMarks = !!(sub.hasMarks || sub.pairHasMarks);
+                if (!hasMarks) {
+                    return { hasMarks: false, grade: '—', gp: 0.0, isAbsent: false, isFail: false, total: null, fullMarks: 0, p1Total: null, p2Total: null };
+                }
+
+                const isAbsent = !!(sub.isAbsent || sub.pairIsAbsent || isAbsentValue(sub.mcq) || isAbsentValue(sub.cq) || isAbsentValue(sub.pr) || isAbsentValue(sub.pairMcq) || isAbsentValue(sub.pairCq) || isAbsentValue(sub.pairPr));
+
+                const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+
+                const p1Full = p1Dist.total || sub.fullMarks || 100;
+                const p2Full = p2Dist.total || sub.pairFull || 100;
+                const combFull = p1Full + p2Full;
+
+                const p1Mcq = isAbsentValue(sub.mcq) ? 0 : ((sub.mcq !== '' && sub.mcq !== null && !isNaN(sub.mcq)) ? Number(sub.mcq) : 0);
+                const p1Cq = isAbsentValue(sub.cq) ? 0 : ((sub.cq !== '' && sub.cq !== null && !isNaN(sub.cq)) ? Number(sub.cq) : 0);
+                const p1Pr = isAbsentValue(sub.pr) ? 0 : ((sub.pr !== '' && sub.pr !== null && !isNaN(sub.pr)) ? Number(sub.pr) : 0);
+                const p1Tot = (sub.total !== null && !isNaN(sub.total)) ? Number(sub.total) : (p1Mcq + p1Cq + p1Pr);
+
+                const p2Mcq = isAbsentValue(sub.pairMcq) ? 0 : ((sub.pairMcq !== '' && sub.pairMcq !== null && !isNaN(sub.pairMcq)) ? Number(sub.pairMcq) : 0);
+                const p2Cq = isAbsentValue(sub.pairCq) ? 0 : ((sub.pairCq !== '' && sub.pairCq !== null && !isNaN(sub.pairCq)) ? Number(sub.pairCq) : 0);
+                const p2Pr = isAbsentValue(sub.pairPr) ? 0 : ((sub.pairPr !== '' && sub.pairPr !== null && !isNaN(sub.pairPr)) ? Number(sub.pairPr) : 0);
+                const p2Tot = (sub.pairTotal !== null && !isNaN(sub.pairTotal)) ? Number(sub.pairTotal) : (p2Mcq + p2Cq + p2Pr);
+
+                const combTotal = p1Tot + p2Tot;
+                const combMcqFull = (p1Dist.mcq || 0) + (p2Dist.mcq || 0);
+                const combCqFull = (p1Dist.cq || 0) + (p2Dist.cq || 0);
+                const combPracFull = (p1Dist.prac || 0) + (p2Dist.prac || 0);
+
+                const totalMcq = p1Mcq + p2Mcq;
+                const totalCq = p1Cq + p2Cq;
+                const totalPr = p1Pr + p2Pr;
+
+                const mcqPass = (combMcqFull <= 0) || checkComponentPass(totalMcq, combMcqFull, passPct);
+                const cqPass = (combCqFull <= 0) || checkComponentPass(totalCq, combCqFull, passPct);
+                const pracPass = (combPracFull <= 0) || checkComponentPass(totalPr, combPracFull, passPct);
+                const pct = combFull > 0 ? (combTotal / combFull) * 100 : 0;
+
+                const overallPass = !isAbsent && mcqPass && cqPass && pracPass && (pct >= passPct);
+
+                if (isAbsent) {
+                    return { hasMarks: true, grade: 'A', gp: 0.0, isAbsent: true, isFail: false, total: combTotal, fullMarks: combFull, p1Total: p1Tot, p2Total: p2Tot };
+                } else if (!overallPass) {
+                    return { hasMarks: true, grade: failRule.name || 'F', gp: 0.0, isAbsent: false, isFail: true, total: combTotal, fullMarks: combFull, p1Total: p1Tot, p2Total: p2Tot };
+                } else {
+                    const gr = getGradeForPercentage(pct, passPct);
+                    return { hasMarks: true, grade: gr.name, gp: gr.gp, isAbsent: false, isFail: false, total: combTotal, fullMarks: combFull, p1Total: p1Tot, p2Total: p2Tot };
+                }
+            } else {
+                const hasMarks = !!(sub.hasMarks || sub.total !== null || sub.mcq !== '' || sub.cq !== '' || sub.pr !== '');
+                if (!hasMarks) {
+                    return { hasMarks: false, grade: '—', gp: 0.0, isAbsent: false, isFail: false, total: null, fullMarks: sub.fullMarks || 100 };
+                }
+
+                const isAbsent = !!(sub.isAbsent || isAbsentValue(sub.mcq) || isAbsentValue(sub.cq) || isAbsentValue(sub.pr));
+
+                const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+                const fullMarks = dist.total || sub.fullMarks || 100;
+                const mcqFull = dist.mcq || 0;
+                const cqFull = dist.cq || 0;
+                const pracFull = dist.prac || 0;
+
+                const mcqVal = isAbsentValue(sub.mcq) ? 0 : ((sub.mcq !== '' && sub.mcq !== null && !isNaN(sub.mcq)) ? Number(sub.mcq) : 0);
+                const cqVal = isAbsentValue(sub.cq) ? 0 : ((sub.cq !== '' && sub.cq !== null && !isNaN(sub.cq)) ? Number(sub.cq) : 0);
+                const prVal = isAbsentValue(sub.pr) ? 0 : ((sub.pr !== '' && sub.pr !== null && !isNaN(sub.pr)) ? Number(sub.pr) : 0);
+                const tot = (sub.total !== null && !isNaN(sub.total)) ? Number(sub.total) : (mcqVal + cqVal + prVal);
+
+                const mcqPass = (mcqFull <= 0) || checkComponentPass(mcqVal, mcqFull, passPct);
+                const cqPass = (cqFull <= 0) || checkComponentPass(cqVal, cqFull, passPct);
+                const pracPass = (pracFull <= 0) || checkComponentPass(prVal, pracFull, passPct);
+                const pct = fullMarks > 0 ? (tot / fullMarks) * 100 : 0;
+
+                const overallPass = !isAbsent && mcqPass && cqPass && pracPass && (pct >= passPct);
+
+                if (isAbsent) {
+                    return { hasMarks: true, grade: 'A', gp: 0.0, isAbsent: true, isFail: false, total: tot, fullMarks: fullMarks };
+                } else if (!overallPass) {
+                    return { hasMarks: true, grade: failRule.name || 'F', gp: 0.0, isAbsent: false, isFail: true, total: tot, fullMarks: fullMarks };
+                } else {
+                    const gr = getGradeForPercentage(pct, passPct);
+                    return { hasMarks: true, grade: gr.name, gp: gr.gp, isAbsent: false, isFail: false, total: tot, fullMarks: fullMarks };
+                }
+            }
+        }
+
+        // Calculate Overall Marksheet Summary strictly aligned with Tabulation Sheet policy
+        function calculateOverallMarksheetSummary(subjects, exam, selectedClass) {
+            const rules = loadMarkingSystem();
+            const failRule = rules.find(r => parseFloat(r.gp) === 0 || r.name === 'F') || { name: 'F', gp: 0.0 };
+            const passPct = getExamPassMarkPercent(exam);
+            const maxScaleGP = Math.max(...rules.map(r => parseFloat(r.gp) || 0), 1.0);
+
+            // Find minimum percentage for GP 2.00 (defaults to 40) from active scale
+            const ruleFor2GP = rules.find(r => parseFloat(r.gp) === 2.00) || { min: 40 };
+            const optBaseDeductPct = parseFloat(ruleFor2GP.min) || 40;
+
+            let currentGPACalcMethod = 'gpa';
+            try {
+                currentGPACalcMethod = localStorage.getItem('tabulation_gpa_method') || 'gpa';
+            } catch (e) { }
+
+            let grandTotal = 0;
+            let totalFullMarks = 0;
+            let mainSubjectsGP = 0;
+            let mainSubjectCount = 0;
+            let mainSubjectsFullMarks = 0;
+            let optionalBonusGP = 0;
+            let optionalBonusMarks = 0;
+            let failsCount = 0;
+            let hasAnyAbsent = false;
+            let hasAnyMarks = false;
+
+            const evaluatedSubjects = subjects.map(sub => {
+                const res = evaluateSubjectRow(sub, exam, selectedClass, passPct, failRule);
+                const isOpt = !!(sub.isOptional || sub.group === 'optional');
+
+                if (res.hasMarks) {
+                    hasAnyMarks = true;
+                    totalFullMarks += res.fullMarks;
+
+                    if (isOpt) {
+                        const optFull = res.fullMarks || 100;
+                        const optBaseDeductMarks = (optBaseDeductPct / 100) * optFull;
+                        if (!res.isAbsent) {
+                            if (res.gp > 2.00) {
+                                optionalBonusGP += (res.gp - 2.00);
+                            }
+                            if (res.total > optBaseDeductMarks) {
+                                optionalBonusMarks += (res.total - optBaseDeductMarks);
+                            }
+                        } else {
+                            hasAnyAbsent = true;
+                        }
+                    } else {
+                        mainSubjectsGP += res.gp;
+                        mainSubjectCount++;
+                        mainSubjectsFullMarks += (res.fullMarks || 100);
+                        grandTotal += res.total;
+
+                        if (res.isAbsent) {
+                            hasAnyAbsent = true;
+                            failsCount++;
+                        } else if (res.isFail || res.gp === 0) {
+                            failsCount++;
+                        }
+                    }
+                }
+                return { sub, res, isOpt };
+            });
+
+            // Grand Total includes active main subjects total + Optional bonus marks above 2.00 threshold
+            grandTotal += optionalBonusMarks;
+
+            const hasFailed = failsCount > 0;
+            let finalGPA = 0.00;
+            let finalGradeName = hasAnyAbsent ? 'A' : (hasFailed ? (failRule.name || 'F') : '—');
+
+            if (hasAnyMarks && mainSubjectCount > 0) {
+                if (hasAnyAbsent) {
+                    finalGPA = 0.00;
+                    finalGradeName = 'A';
+                } else if (hasFailed) {
+                    finalGPA = 0.00;
+                    finalGradeName = failRule.name || 'F';
+                } else {
+                    if (currentGPACalcMethod === 'total') {
+                        const totalMax = mainSubjectsFullMarks > 0 ? mainSubjectsFullMarks : (mainSubjectCount * 100);
+                        const pct = totalMax > 0 ? (grandTotal / totalMax) * 100 : 0;
+                        const totalGradeInfo = getGradeForPercentage(pct, passPct);
+                        finalGPA = totalGradeInfo.gp;
+                        finalGradeName = totalGradeInfo.name;
+                    } else {
+                        const rawFinalGPA = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+                        finalGPA = Math.min(maxScaleGP, rawFinalGPA);
+                        finalGradeName = getGradeForGPA(finalGPA);
+                    }
+                }
+            }
+
+            return {
+                evaluatedSubjects,
+                grandTotal,
+                totalFullMarks,
+                mainSubjectsGP,
+                optionalBonusGP,
+                optionalBonusMarks,
+                mainSubjectCount,
+                failsCount,
+                hasAnyAbsent,
+                hasFailed,
+                hasAnyMarks,
+                finalGPA,
+                finalGradeName,
+                passPct,
+                failRule
+            };
         }
 
         function renderGradingScaleLegend() {
@@ -2421,42 +2690,17 @@ function getDisplaySectionName(sec) {
             if (!tbody) return;
 
             const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
-            let html = '';
-            let grandTotal = 0;
-            let totalFullMarks = 0;
-            let totalGP = 0;
-            let subjectCount = 0;
-            let hasFailed = false;
-            let hasAnyMarks = false;
+            const summary = calculateOverallMarksheetSummary(subjects, exam, selectedClass);
 
-            let mainSubjectsGP = 0;
-            let mainSubjectCount = 0;
-            let optionalBonusGP = 0;
+            let tableHtml = '';
+            const isEn = (currentLanguage === 'en');
 
-            subjects.forEach(sub => {
-                const isOpt = !!(sub.isOptional || sub.group === 'optional');
+            summary.evaluatedSubjects.forEach(({ sub, res, isOpt }) => {
                 if (sub.isCombined) {
-                    const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
-                    const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
-                    const m2 = sub.pairTotal !== null ? sub.pairTotal : ((parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPr) || 0));
-                    const combTotal = m1 + m2;
-                    const fullTotal = (sub.fullMarks || 100) + (sub.pairFull || 100);
-                    const res = hasPaperMarks ? calculateGradeAndGP(combTotal, fullTotal) : { grade: '—', gp: 0 };
-
-                    if (hasPaperMarks) {
-                        hasAnyMarks = true;
-                        grandTotal += combTotal;
-                        totalFullMarks += fullTotal;
-                        totalGP += res.gp;
-                        subjectCount++;
-                        if (isOpt) {
-                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
-                        } else {
-                            mainSubjectsGP += res.gp;
-                            mainSubjectCount++;
-                            if (res.gp === 0) hasFailed = true;
-                        }
-                    }
+                    const hasPaperMarks = res.hasMarks;
+                    const m1 = res.p1Total;
+                    const m2 = res.p2Total;
+                    const combTotal = res.total;
 
                     const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
                                           (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
@@ -2466,12 +2710,12 @@ function getDisplaySectionName(sec) {
                     const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
                     const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
                     const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
-                    const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '—';
+                    const p1TotDisplay = (hasPaperMarks && m1 !== null) ? formatDigits(m1) : '—';
 
                     const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
                     const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
                     const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
-                    const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '—';
+                    const p2TotDisplay = (hasPaperMarks && m2 !== null) ? formatDigits(m2) : '—';
 
                     const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
                     const combGradeDisplay = hasPaperMarks ? res.grade : '—';
@@ -2480,10 +2724,10 @@ function getDisplaySectionName(sec) {
                     const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
                     const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
 
-                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, currentLanguage === 'en');
-                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, currentLanguage === 'en');
+                    const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+                    const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
 
-                    html += `<tr>
+                    tableHtml += `<tr>
                         <td class="subject-col">${p1NameHtml}</td>
                         <td>${p1McqDisplay}</td>
                         <td>${p1CqDisplay}</td>
@@ -2501,24 +2745,6 @@ function getDisplaySectionName(sec) {
                         <td>${p2TotDisplay}</td>
                     </tr>`;
                 } else {
-                    const tot = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
-                    const res = sub.hasMarks ? calculateGradeAndGP(tot, sub.fullMarks) : { grade: '—', gp: 0 };
-
-                    if (sub.hasMarks) {
-                        hasAnyMarks = true;
-                        grandTotal += tot;
-                        totalFullMarks += sub.fullMarks;
-                        totalGP += res.gp;
-                        subjectCount++;
-                        if (isOpt) {
-                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
-                        } else {
-                            mainSubjectsGP += res.gp;
-                            mainSubjectCount++;
-                            if (res.gp === 0) hasFailed = true;
-                        }
-                    }
-
                     const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
                                         (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
 
@@ -2526,45 +2752,43 @@ function getDisplaySectionName(sec) {
                     const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
                     const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
                     const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
-                    const totDisplay = sub.hasMarks ? formatDigits(tot) : '—';
-                    const gradeDisplay = sub.hasMarks ? res.grade : '—';
-                    const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+                    const totDisplay = res.hasMarks ? formatDigits(res.total) : '—';
+                    const gradeDisplay = res.hasMarks ? res.grade : '—';
+                    const gpDisplay = res.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
 
                     const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
-                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, currentLanguage === 'en');
+                    const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
 
-                    html += `<tr>
+                    tableHtml += `<tr>
                         <td class="subject-col">${subNameHtml}</td>
                         <td>${mcqDisplay}</td>
                         <td>${cqDisplay}</td>
                         <td class="${isPracCol ? 'bg-gray' : ''}">${prDisplay}</td>
                         <td>${totDisplay}</td>
-                        <td style="font-weight: bold;">${totDisplay}</td>
+                        <td style="font-weight: bold; background: #f8fafc;">${totDisplay}</td>
                         <td style="font-weight: bold;">${gradeDisplay}</td>
-                        <td style="font-weight: bold;">${gpDisplay}</td>
+                        <td style="font-weight: bold; background: #f8fafc;">${gpDisplay}</td>
                     </tr>`;
                 }
             });
 
-            tbody.innerHTML = html;
-
+            tbody.innerHTML = tableHtml;
             renderGradingScaleLegend();
-            if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
-            const maxGP = getMaxScaleGP();
-            const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
-            const boundedGpa = Math.min(maxGP, rawGpa);
-            const zeroGpaStr = currentLanguage === 'en' ? '0.00' : '০.০০';
-            const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
-            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
+
+            const zeroGpaStr = isEn ? '0.00' : '০.০০';
+            const finalGpaStr = summary.hasAnyMarks ? ((summary.hasFailed || summary.hasAnyAbsent) ? zeroGpaStr : formatDigits(summary.finalGPA.toFixed(2))) : '—';
+            const finalGrade = summary.hasAnyMarks ? (summary.hasAnyAbsent ? 'A' : (summary.hasFailed ? (summary.failRule.name || 'F') : summary.finalGradeName)) : '—';
+            const grandTotalDisplay = summary.hasAnyMarks ? formatDigits(summary.grandTotal) : '—';
+            const rollNo = student ? (student.roll || student.rollNo || '1') : '1';
 
             const gtEl = document.getElementById('display-grand-total');
-            if (gtEl) gtEl.innerText = hasAnyMarks ? formatDigits(grandTotal) : '—';
+            if (gtEl) gtEl.innerText = grandTotalDisplay;
             const gpaEl = document.getElementById('display-gpa');
             if (gpaEl) gpaEl.innerText = finalGpaStr;
             const gradeEl = document.getElementById('display-final-grade');
             if (gradeEl) gradeEl.innerText = finalGrade;
             const rankEl = document.getElementById('display-rank-val');
-            if (rankEl) rankEl.innerText = (student && student.roll ? formatDigits(student.roll) : formatDigits('1'));
+            if (rankEl) rankEl.innerText = formatDigits(rollNo);
         }
 
         // Helper to match exam names flexibly across routines, schedules, and types
@@ -2583,7 +2807,7 @@ function getDisplaySectionName(sec) {
             return false;
         }
 
-        // 1. Get all available Exams from "Exam List" (school_exam_schedules) that have an exam created with a subject
+        // 1. Get all available Exams from "Exam List" (school_exam_schedules) - continuously updated
         function getAllExams() {
             const examList = [];
             const seen = new Set();
@@ -2599,7 +2823,7 @@ function getDisplaySectionName(sec) {
                 }
             }
 
-            // "Exam List" (school_exam_schedules) এ যে Exam Name এর নামে Subject সহ Exam Create করা থাকবে, শুধুমাত্র সেই Exam Name-ই Marksheet সেকশনে দৃশ্যমান হবে
+            // PRIMARY: Read strictly from "Exam List" (school_exam_schedules)
             try {
                 const rawSchedules = localStorage.getItem('school_exam_schedules');
                 if (rawSchedules) {
@@ -2608,8 +2832,7 @@ function getDisplaySectionName(sec) {
                         parsed.forEach(s => {
                             if (s && typeof s === 'object') {
                                 const examName = (s.term || s.examName || '').trim();
-                                const subject = (s.subject || s.subjectName || s.sub || '').trim();
-                                if (examName && subject) {
+                                if (examName) {
                                     addExam(examName);
                                 }
                             }
@@ -2618,14 +2841,49 @@ function getDisplaySectionName(sec) {
                 }
             } catch(e) {}
 
+            // SECONDARY: school_exam_types
+            try {
+                const rawTypes = localStorage.getItem('school_exam_types');
+                if (rawTypes) {
+                    const parsed = JSON.parse(rawTypes);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(t => {
+                            const name = typeof t === 'string' ? t : (t && t.name ? t.name : '');
+                            if (name) addExam(name);
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            // TERTIARY: school_exam_routines
+            try {
+                const rawRoutines = localStorage.getItem('school_exam_routines');
+                if (rawRoutines) {
+                    const parsed = JSON.parse(rawRoutines);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(r => {
+                            if (r) {
+                                const name = (r.examName || r.term || '').trim();
+                                if (name) addExam(name);
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            // Default fallbacks if no schedules exist yet
+            if (examList.length === 0) {
+                ['অর্ধ-বার্ষিক পরীক্ষা ২০২৫', 'বার্ষিক পরীক্ষা ২০২৫', 'প্রাক-নির্বাচনী পরীক্ষা ২০২৫', 'নির্বাচনী পরীক্ষা ২০২৫'].forEach(addExam);
+            }
+
             return examList;
         }
 
-        // 2. Get Classes based strictly on Selected Exam Name ("Exam List" schedules with subject)
+        // 2. Get Classes based on Selected Exam Name ("Exam List" schedules) - continuously updated
         function getClassesForExam(examName) {
             const classSet = new Set();
 
-            // 1. Check "Exam List" (school_exam_schedules) for schedules with a subject
+            // 1. PRIMARY: Check "Exam List" (school_exam_schedules) for schedules created under this exam
             try {
                 const rawSchedules = localStorage.getItem('school_exam_schedules');
                 if (rawSchedules) {
@@ -2634,8 +2892,7 @@ function getDisplaySectionName(sec) {
                         parsed.forEach(s => {
                             if (s && typeof s === 'object') {
                                 const sExam = (s.term || s.examName || '').trim();
-                                const sSubject = (s.subject || s.subjectName || s.sub || '').trim();
-                                if (sExam && sSubject && (!examName || isExamMatch(sExam, examName))) {
+                                if (sExam && (!examName || isExamMatch(sExam, examName))) {
                                     const rawCls = s.class || s.className;
                                     if (rawCls) {
                                         String(rawCls).split(',').forEach(part => {
@@ -2650,7 +2907,7 @@ function getDisplaySectionName(sec) {
                 }
             } catch(e) {}
 
-            // 2. Also include classes from routines if they match this created exam
+            // 2. SECONDARY: Check routines matching this exam
             try {
                 const rawRoutines = localStorage.getItem('school_exam_routines');
                 if (rawRoutines) {
@@ -2658,7 +2915,7 @@ function getDisplaySectionName(sec) {
                     if (Array.isArray(parsed)) {
                         parsed.forEach(r => {
                             if (r) {
-                                const rExam = r.examName || r.term;
+                                const rExam = (r.examName || r.term || '').trim();
                                 if (!examName || isExamMatch(rExam, examName)) {
                                     const rawCls = r.className || r.class;
                                     if (rawCls) {
@@ -2674,6 +2931,27 @@ function getDisplaySectionName(sec) {
                 }
             } catch(e) {}
 
+            // 3. Fallback: If no schedules match this specific exam, load active classes
+            if (classSet.size === 0) {
+                try {
+                    const rawClasses = localStorage.getItem('school_classes');
+                    if (rawClasses) {
+                        const parsed = JSON.parse(rawClasses);
+                        if (Array.isArray(parsed)) {
+                            parsed.forEach(c => {
+                                const cName = typeof c === 'string' ? c : (c && (c.name || c.className) ? (c.name || c.className) : '');
+                                const fmt = formatClassNameDisplay(cName);
+                                if (fmt) classSet.add(fmt);
+                            });
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            if (classSet.size === 0) {
+                ['Play', 'Nursery', 'KG', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'].forEach(c => classSet.add(c));
+            }
+
             return sortClassesSequential(classSet);
         }
 
@@ -2683,6 +2961,34 @@ function getDisplaySectionName(sec) {
             const normClass = normalizeClassString(className);
             const isSecondary = ['9', '10'].includes(normClass);
 
+            // 1. From Exam Schedules (Exam List)
+            try {
+                const rawSchedules = localStorage.getItem('school_exam_schedules');
+                if (rawSchedules) {
+                    const parsed = JSON.parse(rawSchedules);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(s => {
+                            if (!s) return;
+                            const sClass = normalizeClassString(s.className || s.class);
+                            if (normClass && sClass !== normClass) return;
+                            const term = s.term || s.examName || '';
+                            if (examName && examName !== 'all' && typeof isExamMatch === 'function' && !isExamMatch(term, examName)) return;
+
+                            const rawSec = s.section || '';
+                            if (rawSec && rawSec !== 'All' && rawSec !== '(প্রযোজ্য না)') {
+                                String(rawSec).split(',').forEach(part => {
+                                    const clean = part.trim();
+                                    if (clean && clean !== 'All' && clean !== '(প্রযোজ্য না)') {
+                                        sectionSet.add(clean);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch(e) {}
+
+            // 2. From Students Directory
             try {
                 const rawStudents = localStorage.getItem('school_students');
                 if (rawStudents) {
@@ -2691,25 +2997,26 @@ function getDisplaySectionName(sec) {
                         parsed.forEach(s => {
                             if (s && normalizeClassString(s.class || s.className) === normClass) {
                                 if (isSecondary) {
-                                    if (s.group && s.group !== '(প্রযোজ্য না)') sectionSet.add(s.group.trim());
-                                    if (s.section && s.section !== '(প্রযোজ্য না)' && !['ক','খ','গ','A','B','C'].includes(s.section)) sectionSet.add(s.section.trim());
+                                    if (s.group && s.group !== '(প্রযোজ্য না)') {
+                                        String(s.group).split(',').forEach(g => {
+                                            const clean = g.trim();
+                                            if (clean && clean !== '(প্রযোজ্য না)') sectionSet.add(clean);
+                                        });
+                                    }
+                                    if (s.section && s.section !== '(প্রযোজ্য না)' && !['ক','খ','গ','A','B','C','D'].includes(s.section)) {
+                                        String(s.section).split(',').forEach(sec => {
+                                            const clean = sec.trim();
+                                            if (clean && clean !== '(প্রযোজ্য না)') sectionSet.add(clean);
+                                        });
+                                    }
                                 } else {
-                                    if (s.section && s.section !== '(প্রযোজ্য না)') sectionSet.add(s.section.trim());
+                                    if (s.section && s.section !== '(প্রযোজ্য না)') {
+                                        String(s.section).split(',').forEach(sec => {
+                                            const clean = sec.trim();
+                                            if (clean && clean !== '(প্রযোজ্য না)') sectionSet.add(clean);
+                                        });
+                                    }
                                 }
-                            }
-                        });
-                    }
-                }
-            } catch(e) {}
-
-            try {
-                const rawSchedules = localStorage.getItem('school_exam_schedules');
-                if (rawSchedules) {
-                    const parsed = JSON.parse(rawSchedules);
-                    if (Array.isArray(parsed)) {
-                        parsed.forEach(s => {
-                            if (s && normalizeClassString(s.className || s.class) === normClass && s.section && s.section !== 'All' && s.section !== '(প্রযোজ্য না)') {
-                                sectionSet.add(s.section.trim());
                             }
                         });
                     }
@@ -2724,10 +3031,17 @@ function getDisplaySectionName(sec) {
                 }
             }
 
-            return Array.from(sectionSet);
+            const order = ['A', 'B', 'C', 'D', 'E', 'F', 'ক', 'খ', 'গ', 'ঘ', 'বিজ্ঞান', 'মানবিক', 'ব্যবসায় শিক্ষা'];
+            return Array.from(sectionSet).sort((a, b) => {
+                const ia = order.indexOf(a);
+                const ib = order.indexOf(b);
+                if (ia !== -1 && ib !== -1) return ia - ib;
+                if (ia !== -1) return -1;
+                if (ib !== -1) return 1;
+                return a.localeCompare(b);
+            });
         }
 
-        // Student Search State & Helpers
         let currentSearchQuery = '';
         let currentSelectedStudent = null;
 
@@ -3016,6 +3330,7 @@ function getDisplaySectionName(sec) {
 
 
         // Master Cascading Filter Function
+
         function syncCascadingFilters(trigger = 'all') {
             try {
                 const examSelect = document.getElementById('filter-exam');
@@ -3024,24 +3339,28 @@ function getDisplaySectionName(sec) {
 
                 const allExams = getAllExams();
 
-                // 1. Sync Exams from "Exam List" (Only exams with a subject created)
-                if (examSelect && (trigger === 'all' || trigger === 'exam_sync')) {
+                // 1. Sync Exams continuously from "Exam List" (school_exam_schedules)
+                if (examSelect) {
                     const currentExam = examSelect.value || localStorage.getItem('school_marksheet_exam') || '';
                     const currExamOpts = Array.from(examSelect.options).map(o => o.value);
                     const isDiff = allExams.length !== currExamOpts.length || allExams.some((ex, i) => ex !== currExamOpts[i]);
                     if (isDiff) {
                         if (allExams.length > 0) {
-                            examSelect.innerHTML = allExams.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+                            examSelect.innerHTML = allExams.map(ex => `<option value="${escapeHtml(ex)}">${escapeHtml(getDisplayExamName(ex))}</option>`).join('');
                             const matchedOpt = allExams.find(ex => isExamMatch(ex, currentExam));
                             if (matchedOpt) {
                                 examSelect.value = matchedOpt;
                             } else {
+                                examSelect.value = allExams[0];
                                 examSelect.selectedIndex = 0;
                             }
                         } else {
                             examSelect.innerHTML = '<option value="">(কোনো পরীক্ষা পাওয়া যায়নি)</option>';
                             examSelect.value = '';
                         }
+                    } else if (currentExam && examSelect.value !== currentExam) {
+                        const matchedOpt = allExams.find(ex => isExamMatch(ex, currentExam));
+                        if (matchedOpt) examSelect.value = matchedOpt;
                     }
                 }
 
@@ -3050,32 +3369,36 @@ function getDisplaySectionName(sec) {
                 const examBadge = document.getElementById('display-exam-name');
                 if (examBadge) examBadge.innerText = getDisplayExamName(selectedExam);
 
-                // 2. Sync Classes (Dependent on selectedExam)
-                if (classSelect && (trigger === 'all' || trigger === 'exam_sync' || trigger === 'exam_changed')) {
+                // 2. Sync Classes continuously according to selected Exam ("Exam List" schedules)
+                if (classSelect) {
                     const currentClass = classSelect.value || localStorage.getItem('school_marksheet_class') || '';
-                    const availableClasses = selectedExam ? getClassesForExam(selectedExam) : [];
+                    const availableClasses = selectedExam ? getClassesForExam(selectedExam) : getClassesForExam('');
                     const currClassOpts = Array.from(classSelect.options).map(o => o.value);
                     const isClassDiff = availableClasses.length !== currClassOpts.length || availableClasses.some((c, i) => c !== currClassOpts[i]);
-                    if (isClassDiff) {
+                    if (isClassDiff || trigger === 'exam_changed' || trigger === 'exam_sync') {
                         if (availableClasses.length > 0) {
-                            classSelect.innerHTML = availableClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+                            classSelect.innerHTML = availableClasses.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(getDisplayClassName(c))}</option>`).join('');
                             const matchedOpt = availableClasses.find(c => normalizeClassString(c) === normalizeClassString(currentClass));
                             if (matchedOpt) {
                                 classSelect.value = matchedOpt;
                             } else {
+                                classSelect.value = availableClasses[0];
                                 classSelect.selectedIndex = 0;
                             }
                         } else {
                             classSelect.innerHTML = '<option value="">(কোনো শ্রেণি পাওয়া যায়নি)</option>';
                             classSelect.value = '';
                         }
+                    } else if (currentClass && classSelect.value !== currentClass) {
+                        const matchedOpt = availableClasses.find(c => normalizeClassString(c) === normalizeClassString(currentClass));
+                        if (matchedOpt) classSelect.value = matchedOpt;
                     }
                 }
 
                 const selectedClass = classSelect && classSelect.value ? classSelect.value : (localStorage.getItem('school_marksheet_class') || 'Ten');
                 localStorage.setItem('school_marksheet_class', selectedClass);
                 const classEl = document.getElementById('display-class-name');
-                if (classEl) classEl.innerText = formatClassNameDisplay(selectedClass);
+                if (classEl) classEl.innerText = getDisplayClassName(selectedClass);
 
                 // If currently searched/selected student is from a different class, clear it
                 if (currentSelectedStudent && normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className) !== normalizeClassString(selectedClass)) {
@@ -3087,28 +3410,30 @@ function getDisplaySectionName(sec) {
                     if (clearBtn) clearBtn.style.display = 'none';
                 }
 
-                // 3. Sync Sections (Dependent on selectedClass)
+                // 3. Sync Sections (Dependent on selectedClass & selectedExam)
                 if (sectionSelect) {
                     const currentSec = sectionSelect.value || localStorage.getItem('school_marksheet_section') || '';
                     const availableSections = getSectionsForClass(selectedClass, selectedExam);
                     const currSecOpts = Array.from(sectionSelect.options).map(o => o.value);
                     const isSecDiff = availableSections.length !== currSecOpts.length || availableSections.some((s, i) => s !== currSecOpts[i]);
-                    if (isSecDiff) {
-                        sectionSelect.innerHTML = availableSections.map(s => `<option value="${s}">${s}</option>`).join('');
+                    if (isSecDiff || trigger === 'class_changed') {
+                        sectionSelect.innerHTML = availableSections.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(getDisplaySectionName(s))}</option>`).join('');
                         if (currentSec && availableSections.includes(currentSec)) {
                             sectionSelect.value = currentSec;
                         } else if (availableSections.length > 0) {
                             sectionSelect.selectedIndex = 0;
                         }
+                    } else if (currentSec && sectionSelect.value !== currentSec) {
+                        if (availableSections.includes(currentSec)) sectionSelect.value = currentSec;
                     }
                 }
 
                 const selectedSection = sectionSelect && sectionSelect.value ? sectionSelect.value : (localStorage.getItem('school_marksheet_section') || 'বিজ্ঞান');
                 localStorage.setItem('school_marksheet_section', selectedSection);
                 const secEl = document.getElementById('display-section-name');
-                if (secEl) secEl.innerText = 'শাখা = ' + selectedSection;
+                if (secEl) secEl.innerText = (currentLanguage === 'en' ? 'Section = ' : 'শাখা = ') + getDisplaySectionName(selectedSection);
 
-                // 4. Update Student Meta and Render Marksheet Table
+                // 4. Update Student Meta and Render
                 const normClass = normalizeClassString(selectedClass);
                 const normSec = normalizeSectionString(selectedSection);
 
@@ -3119,8 +3444,6 @@ function getDisplaySectionName(sec) {
                 }
 
                 let matchedStudent = null;
-
-                // Priority 1: Specifically selected student from search (must match current class)
                 if (currentSelectedStudent) {
                     const stNormC = normalizeClassString(currentSelectedStudent.class || currentSelectedStudent.className);
                     if (stNormC === normClass) {
@@ -3131,7 +3454,6 @@ function getDisplaySectionName(sec) {
                 }
 
                 if (!matchedStudent && currentSearchQuery) {
-                    // Priority 2: Student matching current search query within selected class only
                     const classSecStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
                     matchedStudent = classSecStudents.find(s => matchesStudentQuery(s, currentSearchQuery));
                     if (!matchedStudent) {
@@ -3168,11 +3490,9 @@ function getDisplaySectionName(sec) {
                 const effectiveNormSec = normalizeSectionString(effectiveSec);
 
                 const isEn = (currentLanguage === 'en');
-                let studentName = 'মো: আব্দুল্লাহ আল নোমান';
+                let studentName = isEn ? 'MD. ABDULLAH AL NOMAN' : 'মো: আব্দুল্লাহ আল নোমান';
                 if (matchedStudent) {
-                    studentName = isEn && matchedStudent.nameEn ? matchedStudent.nameEn : (matchedStudent.nameBn || matchedStudent.name || matchedStudent.studentName || (isEn ? 'Student Name' : 'মো: আব্দুল্লাহ আল নোমান'));
-                } else if (isEn) {
-                    studentName = 'MD. ABDULLAH AL NOMAN';
+                    studentName = isEn && matchedStudent.nameEn ? matchedStudent.nameEn : (matchedStudent.nameBn || matchedStudent.name || matchedStudent.studentName || studentName);
                 }
 
                 const rollNo = matchedStudent ? (matchedStudent.roll || matchedStudent.rollNo || '1') : '1';
@@ -3184,14 +3504,13 @@ function getDisplaySectionName(sec) {
                 if (rollEl) rollEl.innerText = formatDigits(rollNo);
                 const idEl = document.getElementById('display-student-id');
                 if (idEl) idEl.innerText = formatDigits(studentId);
-
-                const classDisplay = getDisplayClassName(effectiveClass);
-                if (classEl) classEl.innerText = classDisplay;
-
-                const secDisplay = isEn ? 'Section = ' + getEnglishSectionName(effectiveSec) : 'শাখা = ' + effectiveSec;
-                if (secEl) secEl.innerText = secDisplay;
-
-                if (examBadge) examBadge.innerText = getDisplayExamName(selectedExam);
+                if (secEl) {
+                    let singleSecDisplay = effectiveSec;
+                    if (singleSecDisplay && singleSecDisplay.includes(',')) {
+                        singleSecDisplay = singleSecDisplay.split(',')[0].trim();
+                    }
+                    secEl.innerText = (currentLanguage === 'en' ? 'Section = ' : 'শাখা = ') + (isEn ? getEnglishSectionName(singleSecDisplay) : getDisplaySectionName(singleSecDisplay));
+                }
 
                 const isSecondary = ['9', '10'].includes(effectiveNormClass);
                 const relInfo = getStudentReligionInfo(matchedStudent);
@@ -3236,10 +3555,10 @@ function getDisplaySectionName(sec) {
             if (btn) {
                 if (isCreateAllMode) {
                     btn.classList.add('active');
-                    if (btnText) btnText.innerText = 'সকল শিক্ষার্থী (All)';
+                    if (btnText) btnText.innerText = currentLanguage === 'en' ? 'All Students' : 'সকল শিক্ষার্থী (All)';
                 } else {
                     btn.classList.remove('active');
-                    if (btnText) btnText.innerText = 'একক শিক্ষার্থী (Single)';
+                    if (btnText) btnText.innerText = currentLanguage === 'en' ? 'Single Student' : 'একক শিক্ষার্থী (Single)';
                 }
             }
             syncCascadingFilters('mode_toggled');
@@ -3256,12 +3575,22 @@ function getDisplaySectionName(sec) {
                 try { students = JSON.parse(rawStudents); } catch(e) {}
             }
 
+            const isMultiSec = !selectedSection || selectedSection === 'All' || selectedSection.includes(',');
+            const allowedSecNorms = (isMultiSec && selectedSection && selectedSection.includes(','))
+                ? selectedSection.split(',').map(p => normalizeSectionString(p.trim()))
+                : null;
+
             let filtered = [];
             if (Array.isArray(students) && students.length > 0) {
                 filtered = students.filter(s => {
                     const sClass = normalizeClassString(s.class || s.className);
+                    if (sClass !== normC) return false;
+                    if (isMultiSec && !allowedSecNorms) return true;
                     const sSec = normalizeSectionString(s.section || s.group || s.sectionName);
-                    return sClass === normC && (sSec === normS || !normS);
+                    if (allowedSecNorms) {
+                        return allowedSecNorms.includes(sSec);
+                    }
+                    return sSec === normS || !normS;
                 });
             }
 
@@ -3287,7 +3616,6 @@ function getDisplaySectionName(sec) {
 
         function generateMarksheetCardHTML(student, selectedClass, selectedSection, exam, rankNum) {
             const isEn = (currentLanguage === 'en');
-            const examDist = getExamDistribution(exam, selectedClass);
             const normClass = normalizeClassString(selectedClass);
             const normSec = normalizeSectionString(selectedSection);
             const isSecondary = ['9', '10'].includes(normClass);
@@ -3297,8 +3625,23 @@ function getDisplaySectionName(sec) {
             const studentName = student ? (isEn && student.nameEn ? student.nameEn : (student.nameBn || student.name || (isEn ? 'Student' : 'শিক্ষার্থী'))) : (isEn ? 'Student' : 'শিক্ষার্থী');
             const rollNo = student ? (student.roll || student.rollNo || rankNum) : rankNum;
             const studentId = getEffectiveStudentId(student, selectedClass, rankNum);
+            const studentSec = (student && (student.section || student.group || student.sectionName))
+                ? String(student.section || student.group || student.sectionName).trim()
+                : '';
+
+            let effectiveCardSec = '';
+            if (studentSec && studentSec !== 'All' && studentSec !== '(প্রযোজ্য না)') {
+                effectiveCardSec = studentSec;
+            } else if (selectedSection && !selectedSection.includes(',') && selectedSection !== 'All') {
+                effectiveCardSec = selectedSection;
+            } else if (selectedSection && selectedSection.includes(',')) {
+                effectiveCardSec = selectedSection.split(',')[0].trim();
+            } else {
+                effectiveCardSec = isSecondary ? 'বিজ্ঞান' : 'ক';
+            }
+
             const displayCls = getDisplayClassName(selectedClass);
-            const displaySec = isEn ? getEnglishSectionName(selectedSection) : (selectedSection || 'ক');
+            const displaySec = isEn ? getEnglishSectionName(effectiveCardSec) : getDisplaySectionName(effectiveCardSec);
             const examBadgeTitle = getDisplayExamName(exam);
             const displayRel = isEn ? (relInfo.en || 'Islam') : relInfo.display;
             const displayOpt = isEn ? optInfo.name : optInfo.nameBn;
@@ -3311,43 +3654,16 @@ function getDisplaySectionName(sec) {
             const customLogo = localStorage.getItem('school_logo') || (settings && settings.schoolLogo) || 'school_logo.svg';
 
             const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+            const summary = calculateOverallMarksheetSummary(subjects, exam, selectedClass);
 
             let tableHtml = '';
-            let grandTotal = 0;
-            let totalFullMarks = 0;
-            let totalGP = 0;
-            let subjectCount = 0;
-            let hasFailed = false;
-            let hasAnyMarks = false;
 
-            let mainSubjectsGP = 0;
-            let mainSubjectCount = 0;
-            let optionalBonusGP = 0;
-
-            subjects.forEach(sub => {
-                const isOpt = !!(sub.isOptional || sub.group === 'optional');
+            summary.evaluatedSubjects.forEach(({ sub, res, isOpt }) => {
                 if (sub.isCombined) {
-                    const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
-                    const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
-                    const m2 = sub.pairTotal !== null ? sub.pairTotal : ((parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPr) || 0));
-                    const combTotal = m1 + m2;
-                    const fullTotal = (sub.fullMarks || 100) + (sub.pairFull || 100);
-                    const res = hasPaperMarks ? calculateGradeAndGP(combTotal, fullTotal) : { grade: '—', gp: 0 };
-
-                    if (hasPaperMarks) {
-                        hasAnyMarks = true;
-                        grandTotal += combTotal;
-                        totalFullMarks += fullTotal;
-                        totalGP += res.gp;
-                        subjectCount++;
-                        if (isOpt) {
-                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
-                        } else {
-                            mainSubjectsGP += res.gp;
-                            mainSubjectCount++;
-                            if (res.gp === 0) hasFailed = true;
-                        }
-                    }
+                    const hasPaperMarks = res.hasMarks;
+                    const m1 = res.p1Total;
+                    const m2 = res.p2Total;
+                    const combTotal = res.total;
 
                     const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
                                           (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
@@ -3357,12 +3673,12 @@ function getDisplaySectionName(sec) {
                     const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
                     const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
                     const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
-                    const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '—';
+                    const p1TotDisplay = (hasPaperMarks && m1 !== null) ? formatDigits(m1) : '—';
 
                     const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '—');
                     const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '—';
                     const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '—');
-                    const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '—';
+                    const p2TotDisplay = (hasPaperMarks && m2 !== null) ? formatDigits(m2) : '—';
 
                     const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '—';
                     const combGradeDisplay = hasPaperMarks ? res.grade : '—';
@@ -3392,24 +3708,6 @@ function getDisplaySectionName(sec) {
                         <td>${p2TotDisplay}</td>
                     </tr>`;
                 } else {
-                    const tot = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
-                    const res = sub.hasMarks ? calculateGradeAndGP(tot, sub.fullMarks) : { grade: '—', gp: 0 };
-
-                    if (sub.hasMarks) {
-                        hasAnyMarks = true;
-                        grandTotal += tot;
-                        totalFullMarks += sub.fullMarks;
-                        totalGP += res.gp;
-                        subjectCount++;
-                        if (isOpt) {
-                            if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
-                        } else {
-                            mainSubjectsGP += res.gp;
-                            mainSubjectCount++;
-                            if (res.gp === 0) hasFailed = true;
-                        }
-                    }
-
                     const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
                                         (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
 
@@ -3417,9 +3715,9 @@ function getDisplaySectionName(sec) {
                     const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '—');
                     const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '—';
                     const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '—');
-                    const totDisplay = sub.hasMarks ? formatDigits(tot) : '—';
-                    const gradeDisplay = sub.hasMarks ? res.grade : '—';
-                    const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
+                    const totDisplay = res.hasMarks ? formatDigits(res.total) : '—';
+                    const gradeDisplay = res.hasMarks ? res.grade : '—';
+                    const gpDisplay = res.hasMarks ? formatDigits(res.gp.toFixed(2)) : '—';
 
                     const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
                     const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
@@ -3437,13 +3735,10 @@ function getDisplaySectionName(sec) {
                 }
             });
 
-            if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
-            const maxGP = getMaxScaleGP();
-            const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
-            const boundedGpa = Math.min(maxGP, rawGpa);
             const zeroGpaStr = isEn ? '0.00' : '০.০০';
-            const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
-            const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
+            const finalGpaStr = summary.hasAnyMarks ? ((summary.hasFailed || summary.hasAnyAbsent) ? zeroGpaStr : formatDigits(summary.finalGPA.toFixed(2))) : '—';
+            const finalGrade = summary.hasAnyMarks ? (summary.hasAnyAbsent ? 'A' : (summary.hasFailed ? (summary.failRule.name || 'F') : summary.finalGradeName)) : '—';
+            const grandTotalDisplay = summary.hasAnyMarks ? formatDigits(summary.grandTotal) : '—';
             const rankStr = formatDigits(rankNum);
 
             return `
@@ -3527,7 +3822,7 @@ function getDisplaySectionName(sec) {
                         <table class="summary-table">
                             <tr>
                                 <td style="width: 50%;">${isEn ? "Total Marks" : "সর্বমোট"}</td>
-                                <td style="width: 50%;">${hasAnyMarks ? formatDigits(grandTotal) : '—'}</td>
+                                <td style="width: 50%;">${grandTotalDisplay}</td>
                             </tr>
                             <tr>
                                 <td>${isEn ? "GPA" : "পয়েন্ট"}</td>
@@ -3812,7 +4107,7 @@ function getDisplaySectionName(sec) {
             if (!e.key || e.key === 'school_settings' || e.key === 'school_logo') {
                 syncSchoolHeaderInfo();
             }
-            if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sections' || e.key === 'school_groups' || e.key === 'school_students' || e.key === 'school_subjects' || e.key === 'school_marking_system') {
+            if (!e.key || e.key.startsWith('school_exam_') || e.key === 'school_student_marks' || e.key === 'school_classes' || e.key === 'school_sections' || e.key === 'school_groups' || e.key === 'school_students' || e.key === 'school_subjects' || e.key === 'school_marking_system' || e.key === 'tabulation_gpa_method') {
                 syncCascadingFilters('all');
             }
         });

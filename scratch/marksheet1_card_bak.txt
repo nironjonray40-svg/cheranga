@@ -1,0 +1,350 @@
+3471: 
+3472:     return fallbackCohort;
+3473: }
+3474: 
+3475: function generateMarksheet1CardHTML(student, selectedClass, selectedSection, exam, rankNum) {
+3476:     const isEn = (currentLanguage === 'en');
+3477:     const examDist = getExamDistribution(exam, selectedClass);
+3478:     const normClass = normalizeClassString(selectedClass);
+3479:     const normSec = normalizeSectionString(selectedSection);
+3480:     const isSecondary = ['9', '10'].includes(normClass);
+3481:     const relInfo = getStudentReligionInfo(student);
+3482:     const optInfo = getStudentOptionalSubjectInfo(student, normSec);
+3483: 
+3484:     const studentName = student ? (isEn && student.nameEn ? student.nameEn : (student.nameBn || student.name || (isEn ? 'Student' : 'শিক্ষার্থী'))) : (isEn ? 'Student' : 'শিক্ষার্থী');
+3485:     const rollNo = student ? (student.roll || student.rollNo || rankNum) : rankNum;
+3486:     const studentId = getEffectiveStudentId(student, selectedClass, rankNum);
+3487:     const displayCls = getDisplayClassName(selectedClass);
+3488:     const displaySec = isEn ? getEnglishSectionName(selectedSection) : (selectedSection || 'বিজ্ঞান');
+3489:     const displayExam = getDisplayExamName(exam);
+3490:     const displayRel = isEn ? (relInfo.en || 'Islam') : relInfo.display;
+3491:     const displayOpt = isEn ? optInfo.name : optInfo.nameBn;
+3492: 
+3493:     let rawSettings = localStorage.getItem('school_settings');
+3494:     let settings = {};
+3495:     if (rawSettings) { try { settings = JSON.parse(rawSettings); } catch(e) {} }
+3496:     const schoolName = settings.schoolSubtitle || settings.schoolName || "আলহাজ্ব মোবারক হোসেন অনির্বাণ বিদ্যাপীঠ উচ্চ বিদ্যালয়";
+3497:     let addressText = settings.schoolAddress || "মাথাভাঙ্গা, জলঢাকা, নীলফামারী।";
+3498:     const extraParts = [];
+3499:     if (settings.schoolEIIN || settings.eiin) extraParts.push("ইআইআইএন: " + (settings.schoolEIIN || settings.eiin));
+3500:     else extraParts.push("ইআইআইএন: ১২৭৫৪৩");
+3501:     if (settings.schoolCode || settings.code) extraParts.push("কোড: " + (settings.schoolCode || settings.code));
+3502:     else extraParts.push("কোড: ৫৬১২");
+3503:     const fullSubtitle = addressText + " | " + extraParts.join(" | ");
+3504: 
+3505:     const customLogo = localStorage.getItem('school_logo') || (settings && settings.schoolLogo) || 'school_logo.svg';
+3506:     let logoPosStyle = '';
+3507:     const savedPos = localStorage.getItem('marksheet_logo_pos_v2');
+3508:     if (savedPos) {
+3509:         try {
+3510:             const { left, top } = JSON.parse(savedPos);
+3511:             if (left !== undefined && top !== undefined) {
+3512:                 logoPosStyle = ` style="left: ${left}px; top: ${top}px;"`;
+3513:             }
+3514:         } catch(e) {}
+3515:     }
+3516: 
+3517:     const subjects = getSubjectsForClass(selectedClass, selectedSection, exam, student);
+3518: 
+3519:     let tableHtml = '';
+3520:     let grandTotal = 0;
+3521:     let totalFullMarks = 0;
+3522:     let totalGP = 0;
+3523:     let subjectCount = 0;
+3524:     let hasFailed = false;
+3525:     let hasAnyMarks = false;
+3526: 
+3527:     let hasCompulsoryHeader = false;
+3528:     let hasElectiveHeader = false;
+3529:     let hasOptionalHeader = false;
+3530: 
+3531:     let mainSubjectsGP = 0;
+3532:     let mainSubjectCount = 0;
+3533:     let optionalBonusGP = 0;
+3534: 
+3535:     subjects.forEach(sub => {
+3536:         const isOpt = !!(sub.isOptional || sub.group === 'optional');
+3537:         if (!hasCompulsoryHeader && (!sub.group || sub.group === 'compulsory')) {
+3538:             tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "1. Compulsory Subjects" : "১. আবশ্যিক ও সাধারণ বিষয়াবলী (Compulsory Subjects)"}</td></tr>`;
+3539:             hasCompulsoryHeader = true;
+3540:         } else if (!hasElectiveHeader && sub.group === 'elective') {
+3541:             tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "2. Elective Subjects" : "২. নৈর্বাচনিক বিষয়াবলী (Elective Subjects)"}</td></tr>`;
+3542:             hasElectiveHeader = true;
+3543:         } else if (!hasOptionalHeader && sub.group === 'optional') {
+3544:             tableHtml += `<tr class="group-header-row"><td colspan="8">${isEn ? "3. Optional Subject (4th)" : "৩. অতিরিক্ত / ৪র্থ বিষয় (Optional Subject)"}</td></tr>`;
+3545:             hasOptionalHeader = true;
+3546:         }
+3547: 
+3548:         if (sub.isCombined) {
+3549:             const hasPaperMarks = sub.hasMarks || sub.pairHasMarks;
+3550:             const m1 = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+3551:             const m2 = sub.pairTotal !== null ? sub.pairTotal : ((parseInt(sub.pairMcq) || 0) + (parseInt(sub.pairCq) || 0) + (parseInt(sub.pairPr) || 0));
+3552:             const combTotal = m1 + m2;
+3553:             const fullTotal = (sub.fullMarks || 100) + (sub.pairFull || 100);
+3554:             const res = hasPaperMarks ? calculateGradeAndGP(combTotal, fullTotal) : { grade: '—', gp: 0 };
+3555: 
+3556:             if (hasPaperMarks) {
+3557:                 hasAnyMarks = true;
+3558:                 grandTotal += combTotal;
+3559:                 totalFullMarks += fullTotal;
+3560:                 totalGP += res.gp;
+3561:                 subjectCount++;
+3562:                 if (isOpt) {
+3563:                     if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+3564:                 } else {
+3565:                     mainSubjectsGP += res.gp;
+3566:                     mainSubjectCount++;
+3567:                     if (res.gp === 0) hasFailed = true;
+3568:                 }
+3569:             }
+3570: 
+3571:             const isP1NoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+3572:                                           (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+3573:                     const isP2NoMcqPrac = (sub.pairMcqFull === 0 && sub.pairPracFull === 0) || 
+3574:                                           (sub.pairWith.toLowerCase().includes('english') || sub.pairWith.includes('ইংরেজি'));
+3575: 
+3576:                     const p1McqDisplay = (isP1NoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+3577:                     const p1CqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+3578:                     const p1PrDisplay = (isP1NoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+3579:                     const p1TotDisplay = sub.hasMarks ? formatDigits(m1) : '<span class="blank-field">—</span>';
+3580: 
+3581:                     const p2McqDisplay = (isP2NoMcqPrac || sub.pairMcqFull === 0) ? '-' : (sub.pairMcq !== '' ? (sub.pairMcq === 'A' ? 'A' : formatDigits(sub.pairMcq)) : '<span class="blank-field">—</span>');
+3582:                     const p2CqDisplay = sub.pairCq !== '' ? (sub.pairCq === 'A' ? 'A' : formatDigits(sub.pairCq)) : '<span class="blank-field">—</span>';
+3583:                     const p2PrDisplay = (isP2NoMcqPrac || sub.pairPracFull === 0) ? '-' : (sub.pairPr !== '' ? (sub.pairPr === 'A' ? 'A' : formatDigits(sub.pairPr)) : '<span class="blank-field">—</span>');
+3584:                     const p2TotDisplay = sub.pairHasMarks ? formatDigits(m2) : '<span class="blank-field">—</span>';
+3585: 
+3586:             const combTotDisplay = hasPaperMarks ? formatDigits(combTotal) : '<span class="blank-field">—</span>';
+3587:             const combGradeDisplay = hasPaperMarks ? res.grade : '—';
+3588:             const combGpDisplay = hasPaperMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+3589: 
+3590:             const p1Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+3591:             const p2Dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, true);
+3592:             const p1NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), p1Dist, isEn);
+3593:             const p2NameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.pairWith), p2Dist, isEn);
+3594: 
+3595:             tableHtml += `<tr>
+3596:                 <td class="sub-name">${p1NameHtml}</td>
+3597:                 <td>${p1McqDisplay}</td>
+3598:                 <td>${p1CqDisplay}</td>
+3599:                 <td>${p1PrDisplay}</td>
+3600:                 <td>${p1TotDisplay}</td>
+3601:                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combTotDisplay}</td>
+3602:                 <td rowspan="2" style="font-weight:800; color:#000000;">${combGradeDisplay}</td>
+3603:                 <td rowspan="2" style="background:#f0fdfa; font-weight:700;">${combGpDisplay}</td>
+3604:             </tr>
+3605:             <tr>
+3606:                 <td class="sub-name">${p2NameHtml}</td>
+3607:                 <td>${p2McqDisplay}</td>
+3608:                 <td>${p2CqDisplay}</td>
+3609:                 <td>${p2PrDisplay}</td>
+3610:                 <td>${p2TotDisplay}</td>
+3611:             </tr>`;
+3612:         } else {
+3613:             const tot = sub.total !== null ? sub.total : ((parseInt(sub.mcq) || 0) + (parseInt(sub.cq) || 0) + (parseInt(sub.pr) || 0));
+3614:             const res = sub.hasMarks ? calculateGradeAndGP(tot, sub.fullMarks) : { grade: '—', gp: 0 };
+3615: 
+3616:             if (sub.hasMarks) {
+3617:                 hasAnyMarks = true;
+3618:                 grandTotal += tot;
+3619:                 totalFullMarks += sub.fullMarks;
+3620:                 totalGP += res.gp;
+3621:                 subjectCount++;
+3622:                 if (isOpt) {
+3623:                     if (res.gp > 2.00) optionalBonusGP += (res.gp - 2.00);
+3624:                 } else {
+3625:                     mainSubjectsGP += res.gp;
+3626:                     mainSubjectCount++;
+3627:                     if (res.gp === 0) hasFailed = true;
+3628:                 }
+3629:             }
+3630: 
+3631:             const isOptional = sub.group === 'optional';
+3632:             const isNoMcqPrac = (sub.mcqFull === 0 && sub.pracFull === 0) || 
+3633:                                         (sub.name.toLowerCase().includes('english') || sub.name.includes('ইংরেজি'));
+3634: 
+3635:                     const isPracCol = sub.pr !== '' && !isNoMcqPrac && sub.pracFull !== 0;
+3636:                     const mcqDisplay = (isNoMcqPrac || sub.mcqFull === 0) ? '-' : (sub.mcq !== '' ? (sub.mcq === 'A' ? 'A' : formatDigits(sub.mcq)) : '<span class="blank-field">—</span>');
+3637:                     const cqDisplay = sub.cq !== '' ? (sub.cq === 'A' ? 'A' : formatDigits(sub.cq)) : '<span class="blank-field">—</span>';
+3638:                     const prDisplay = (isNoMcqPrac || sub.pracFull === 0) ? '-' : (sub.pr !== '' ? (sub.pr === 'A' ? 'A' : formatDigits(sub.pr)) : '<span class="blank-field">—</span>');
+3639:                     const totDisplay = sub.hasMarks ? formatDigits(tot) : '<span class="blank-field">—</span>';
+3640:             const gradeDisplay = sub.hasMarks ? res.grade : '—';
+3641:             const gpDisplay = sub.hasMarks ? formatDigits(res.gp.toFixed(2)) : '<span class="blank-field">—</span>';
+3642: 
+3643:             const dist = getSubjectFullMarksDistribution(sub, exam, selectedClass, false);
+3644:             const subNameHtml = formatSubjectWithMarks(getDisplaySubjectName(sub.name), dist, isEn);
+3645: 
+3646:             tableHtml += `<tr style="${isOptional ? 'background:#f0fdf4;' : ''}">
+3647:                 <td class="sub-name">${subNameHtml}</td>
+3648:                 <td>${mcqDisplay}</td>
+3649:                 <td>${cqDisplay}</td>
+3650:                 <td>${prDisplay}</td>
+3651:                 <td>${totDisplay}</td>
+3652:                 <td>${totDisplay}</td>
+3653:                 <td style="font-weight:800; color:#000000;">${gradeDisplay}</td>
+3654:                 <td>${gpDisplay}</td>
+3655:             </tr>`;
+3656:         }
+3657:     });
+3658: 
+3659:     renderGradingScaleLegend1();
+3660:     if (mainSubjectCount === 0) mainSubjectCount = subjectCount || 1;
+3661:     const maxGP = getMaxScaleGP();
+3662:     const rawGpa = (mainSubjectsGP + optionalBonusGP) / mainSubjectCount;
+3663:     const boundedGpa = Math.min(maxGP, rawGpa);
+3664:     const zeroGpaStr = isEn ? '0.00' : '০.০০';
+3665:     const finalGpaStr = hasAnyMarks ? (hasFailed ? zeroGpaStr : formatDigits(boundedGpa.toFixed(2))) : '—';
+3666:     const finalGrade = hasAnyMarks ? (hasFailed ? 'F' : getFinalGradeFromGPA(boundedGpa, false)) : '—';
+3667:     const rankStr = formatDigits(rankNum);
+3668: 
+3669:     return `
+3670:     <div class="certificate-sheet" style="margin-bottom: 25px;">
+3671:         <div class="inner-border">
+3672:             
+3673:             <!-- Header Section -->
+3674:             <div class="institution-header">
+3675:                 <div class="header-logo-box">
+3676:                     <img src="${customLogo}" alt="School Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='school_logo.svg'">
+3677:                 </div>
+3678:                 <div class="header-text-box">
+3679:                     <div class="inst-title-bn"${schoolName.length > 40 ? ' style="font-size: 19.5px;"' : ''}>${schoolName}</div>
+3680:                     <div class="inst-subtitle">${fullSubtitle}</div>
+3681:                     <div>
+3682:                         <span class="report-pill-title">${displayExam}</span>
+3683:                     </div>
+3684:                 </div>
+3685:                 <div class="header-right-spacer" aria-hidden="true"></div>
+3686:             </div>
+3687: 
+3688:             <!-- Student Meta & Grading Scale -->
+3689:             <div class="header-meta-row">
+3690:                 <div class="student-profile-cell">
+3691:                     <div class="profile-card">
+3692:                         <table class="profile-grid">
+3693:                             <tr>
+3694:                                 <td class="p-label" style="font-size: 15.1px; font-weight: 800;">${isEn ? "Student Name" : "শিক্ষার্থীর নাম"}</td>
+3695:                                 <td class="p-colon" style="font-size: 15.1px; font-weight: 800;">:</td>
+3696:                                 <td class="p-val" colspan="4" style="font-size: 15.6px; font-weight: 800;">${studentName}</td>
+3697:                             </tr>
+3698:                             <tr>
+3699:                                 <td class="p-label">${isEn ? "Class" : "শ্রেণি"}</td>
+3700:                                 <td class="p-colon">:</td>
+3701:                                 <td class="p-val" style="width: 25%;">${displayCls}</td>
+3702:                                 <td class="p-label" style="padding-left: 15px;">${isEn ? "Section / Group" : "শাখা / গ্রুপ"}</td>
+3703:                                 <td class="p-colon">:</td>
+3704:                                 <td class="p-val">${displaySec}</td>
+3705:                             </tr>
+3706:                             <tr>
+3707:                                 <td class="p-label">${isEn ? "ID / Reg" : "আইডি / রেজি"}</td>
+3708:                                 <td class="p-colon">:</td>
+3709:                                 <td class="p-val">${formatDigits(studentId)}</td>
+3710:                                 <td class="p-label" style="padding-left: 15px;">${isEn ? "Roll No" : "রোল নং"}</td>
+3711:                                 <td class="p-colon">:</td>
+3712:                                 <td class="p-val">${formatDigits(String(rollNo).padStart(2, '0'))}</td>
+3713:                             </tr>
+3714:                             <tr>
+3715:                                 <td class="p-label">${isEn ? "Religion" : "ধর্ম (Religion)"}</td>
+3716:                                 <td class="p-colon">:</td>
+3717:                                 <td class="p-val">${displayRel}</td>
+3718:                                 ${isSecondary ? `
+3719:                                 <td class="p-label" style="padding-left: 15px;">${isEn ? "Optional Subject" : "ঐচ্ছিক বিষয়"}</td>
+3720:                                 <td class="p-colon">:</td>
+3721:                                 <td class="p-val">${displayOpt}</td>
+3722:                                 ` : `
+3723:                                 <td class="p-label" style="padding-left: 15px; visibility: hidden;">—</td>
+3724:                                 <td class="p-colon" style="visibility: hidden;">:</td>
+3725:                                 <td class="p-val" style="visibility: hidden;">—</td>
+3726:                                 `}
+3727:                             </tr>
+3728:                         </table>
+3729:                     </div>
+3730:                 </div>
+3731: 
+3732:                 <div class="grading-legend-cell">
+3733:                     <div class="legend-card">
+3734:                         <div class="legend-title">${isEn ? "Grading Scale" : "গ্রেডিং নির্দেশিকা (Grading Scale)"}</div>
+3735:                         <table class="legend-table">
+3736:                             <thead>
+3737:                                 <tr>
+3738:                                     <th>${isEn ? "Marks Range" : "নম্বর সীমা"}</th>
+3739:                                     <th>${isEn ? "Grade" : "গ্রেড"}</th>
+3740:                                     <th>${isEn ? "GPA" : "পয়েন্ট"}</th>
+3741:                                 </tr>
+3742:                             </thead>
+3743:                             <tbody>
+3744:                                 ${getGradingScaleLegendRowsHTML1()}
+3745:                             </tbody>
+3746:                         </table>
+3747:                     </div>
+3748:                 </div>
+3749:             </div>
+3750: 
+3751:             <!-- Academic Evaluation Table -->
+3752:             <table class="transcript-table">
+3753:                 <thead>
+3754:                     <tr>
+3755:                         <th rowspan="2" id="th-header-sub-1" style="width: 35%;">${isEn ? "Subjects" : "পাঠ্য বিষয়সমূহ"}</th>
+3756:                         <th colspan="3" id="th-header-obtained-1" style="width: 25%;">${isEn ? "Marks Obtained" : "প্রাপ্ত নম্বর"}</th>
+3757:                         <th rowspan="2" style="width: 9%;">${isEn ? "Total" : "মোট নম্বর"}</th>
+3758:                         <th rowspan="2" id="th-header-combined-1" style="width: 11%;">${isEn ? "Grand Total" : "সর্বমোট"}</th>
+3759:                         <th rowspan="2" id="th-header-grade-1" style="width: 9%;">${isEn ? "Letter Grade" : "লেটার গ্রেড"}</th>
+3760:                         <th rowspan="2" id="th-header-gp-1" style="width: 11%;">${isEn ? "Grade Point (GP)" : "গ্রেড পয়েন্ট (GP)"}</th>
+3761:                     </tr>
+3762:                     <tr>
+3763:                         <th style="width: 8%;">${isEn ? "MCQ" : "বহুনির্বাচনি"}</th>
+3764:                         <th style="width: 8.5%;">${isEn ? "CQ" : "লিখিত"}</th>
+3765:                         <th style="width: 8.5%;">${isEn ? "Prac." : "ব্যবহারিক"}</th>
+3766:                     </tr>
+3767:                 </thead>
+3768:                 <tbody>
+3769:                     ${tableHtml}
+3770:                 </tbody>
+3771:             </table>
+3772: 
+3773:             <!-- Result KPI Badges -->
+3774:             <div class="kpi-row">
+3775:                 <div class="kpi-card">
+3776:                     <div class="kpi-label">${isEn ? "Total Marks Obtained" : "সর্বমোট প্রাপ্ত নম্বর"}</div>
+3777:                     <div class="kpi-value">${hasAnyMarks ? (formatDigits(grandTotal) + ' / ' + formatDigits(totalFullMarks)) : '—'}</div>
+3778:                 </div>
+3779:                 <div class="kpi-card" style="margin-left: 8px;">
+3780:                     <div class="kpi-label">${isEn ? "GPA" : "জিপিএ (GPA)"}</div>
+3781:                     <div class="kpi-value" style="color: #000000; font-weight:800;">${finalGpaStr}</div>
+3782:                 </div>
+3783:                 <div class="kpi-card" style="margin-left: 8px;">
+3784:                     <div class="kpi-label">${isEn ? "Final Grade" : "চূড়ান্ত গ্রেড"}</div>
+3785:                     <div class="kpi-value" style="color: #000000; font-weight:800;">${finalGrade}</div>
+3786:                 </div>
+3787:                 <div class="kpi-card" style="margin-left: 8px;">
+3788:                     <div class="kpi-label">${isEn ? "Merit Position" : "মেধাক্রম (Merit Position)"}</div>
+3789:                     <div class="kpi-value">${rankStr}</div>
+3790:                 </div>
+3791:             </div>
+3792: 
+3793:             <!-- Signatures -->
+3794:             <div class="signature-grid">
+3795:                 <div class="sig-col">
+3796:                     <div class="sig-space"></div>
+3797:                     <div class="sig-border">${isEn ? "Guardian's Signature" : "অভিভাবকের স্বাক্ষর"}</div>
+3798:                 </div>
+3799:                 <div class="sig-col">
+3800:                     <div class="sig-space"></div>
+3801:                     <div class="sig-border">${isEn ? "Class Teacher's Signature" : "শ্রেণি শিক্ষকের স্বাক্ষর"}</div>
+3802:                 </div>
+3803:                 <div class="sig-col">
+3804:                     <div class="sig-space"></div>
+3805:                     <div class="sig-border">${isEn ? "Head Teacher's Signature & Seal" : "প্রধান শিক্ষকের স্বাক্ষর ও সিল"}</div>
+3806:                 </div>
+3807:             </div>
+3808: 
+3809:         </div>
+3810: 
+3811: 
+3812:     </div>`;
+3813: }
+3814: 
+3815: function renderBatchMarksheets1(selectedClass, selectedSection, exam) {
+3816:     const batchContainer = document.getElementById('batch-marksheets-container');
+3817:     const singleContainer = document.getElementById('single-certificate-sheet');
+3818:     if (!batchContainer) return;
+3819: 
+3820:     const allStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
