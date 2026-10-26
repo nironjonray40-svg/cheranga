@@ -800,6 +800,7 @@
                 <span id="label-section">শাখা:</span>
             </label>
             <select id="filter-section" class="filter-select" onchange="updateMarksheetSection(this.value)">
+                <option value="All">সকল শাখা (All)</option>
                 <option value="বিজ্ঞান">বিজ্ঞান</option>
                 <option value="মানবিক">মানবিক</option>
                 <option value="ব্যবসায় শিক্ষা">ব্যবসায় শিক্ষা</option>
@@ -1320,6 +1321,7 @@ function getDisplayClassName(cls) {
 function getEnglishSectionName(sec) {
     if (!sec) return '';
     const s = String(sec).trim().toLowerCase();
+    if (s === 'all' || s === 'সকল শাখা') return 'All Sections';
     if (s.includes('বিজ্ঞান') || s === 'science') return 'Science';
     if (s.includes('মানবিক') || s === 'humanities') return 'Humanities';
     if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business')) return 'Business Studies';
@@ -1336,6 +1338,7 @@ function getDisplaySectionName(sec) {
         return getEnglishSectionName(sec);
     } else {
         const s = String(sec).trim();
+        if (s.toLowerCase() === 'all' || s === 'সকল শাখা') return 'সকল শাখা (All)';
         if (s.toLowerCase() === 'science') return 'বিজ্ঞান';
         if (s.toLowerCase() === 'humanities') return 'মানবিক';
         if (s.toLowerCase() === 'business' || s.toLowerCase() === 'commerce') return 'ব্যবসায় শিক্ষা';
@@ -1428,6 +1431,7 @@ function getDisplaySectionName(sec) {
         function normalizeSectionString(str) {
             if (!str) return 'science';
             const s = String(str).toLowerCase().trim();
+            if (s === 'all' || s === 'সকল শাখা') return 'all';
             if (s.includes('বিজ্ঞান') || s.includes('science') || s === 'a' || s === 'ক') return 'science';
             if (s.includes('মানবিক') || s.includes('humanities') || s.includes('arts') || s === 'b' || s === 'খ') return 'humanities';
             if (s.includes('ব্যবসায়') || s.includes('ব্যবসায়') || s.includes('business') || s.includes('commerce') || s === 'c' || s === 'গ') return 'business';
@@ -2133,7 +2137,12 @@ function getDisplaySectionName(sec) {
         // Dynamic Subject Finder: Subject names are strictly taken from "Exam List" (school_exam_schedules) and update continuously
         function getSubjectsForClass(selectedClass, selectedSection, selectedExam, student) {
             const normC = normalizeClassString(selectedClass);
-            const normS = normalizeSectionString(selectedSection);
+            const effSec = (student && (student.section || student.group || student.sectionName))
+                ? (student.section || student.group || student.sectionName)
+                : selectedSection;
+            const normS = (selectedSection === 'All' || selectedSection === 'সকল শাখা')
+                ? (effSec && effSec !== 'All' ? normalizeSectionString(effSec) : '')
+                : normalizeSectionString(effSec || selectedSection);
             const isSecondary = ['9', '10'].includes(normC);
             const isJunior = ['6', '7', '8'].includes(normC);
             const isPrimary = ['play', 'nursery', 'kg', '1', '2', '3', '4', '5'].includes(normC);
@@ -3032,7 +3041,7 @@ function getDisplaySectionName(sec) {
             }
 
             const order = ['A', 'B', 'C', 'D', 'E', 'F', 'ক', 'খ', 'গ', 'ঘ', 'বিজ্ঞান', 'মানবিক', 'ব্যবসায় শিক্ষা'];
-            return Array.from(sectionSet).sort((a, b) => {
+            const sorted = Array.from(sectionSet).filter(s => s !== 'All' && s !== 'সকল শাখা').sort((a, b) => {
                 const ia = order.indexOf(a);
                 const ib = order.indexOf(b);
                 if (ia !== -1 && ib !== -1) return ia - ib;
@@ -3040,6 +3049,7 @@ function getDisplaySectionName(sec) {
                 if (ib !== -1) return 1;
                 return a.localeCompare(b);
             });
+            return ['All', ...sorted];
         }
 
         let currentSearchQuery = '';
@@ -3854,6 +3864,7 @@ function getDisplaySectionName(sec) {
             const batchContainer = document.getElementById('batch-marksheets-container');
             const singleContainer = document.getElementById('single-marksheet-container');
             if (!batchContainer) return;
+            const isEn = (currentLanguage === 'en');
 
             const allStudents = getAllStudentsForClassAndSection(selectedClass, selectedSection);
             const isFiltered = Boolean(currentSearchQuery);
@@ -3902,7 +3913,7 @@ function getDisplaySectionName(sec) {
                             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                             <rect x="6" y="14" width="12" height="8"></rect>
                         </svg>
-                        <span>Print ${isFiltered ? 'Filtered' : 'All'}</span>
+                        <span>${isEn ? "Print / Download (PDF)" : "একসাথে প্রিন্ট / PDF ডাউনলোড"}</span>
                     </button>
                     <button type="button" class="btn-batch-action btn-batch-single" onclick="toggleCreateAll()" title="একক শিক্ষার্থী ভিউতে ফিরে যান">
                         <span>Single View</span>
@@ -3939,7 +3950,14 @@ function getDisplaySectionName(sec) {
 
         function updateMarksheetSection(val) {
             localStorage.setItem('school_marksheet_section', val);
-            if (currentSelectedStudent && normalizeSectionString(currentSelectedStudent.section || currentSelectedStudent.group) !== normalizeSectionString(val)) {
+            if (val === 'All') {
+                isCreateAllMode = true;
+                const btn = document.getElementById('btn-create-all');
+                const btnText = document.getElementById('create-all-btn-text');
+                if (btn) btn.classList.add('active');
+                if (btnText) btnText.innerText = currentLanguage === 'en' ? 'All Students' : 'সকল শিক্ষার্থী (All)';
+            }
+            if (val !== 'All' && currentSelectedStudent && normalizeSectionString(currentSelectedStudent.section || currentSelectedStudent.group) !== normalizeSectionString(val)) {
                 currentSelectedStudent = null;
                 currentSearchQuery = '';
                 const input = document.getElementById('filter-student-search');
@@ -4116,12 +4134,37 @@ function getDisplaySectionName(sec) {
             syncCascadingFilters('all');
         });
 
-        // Continuous heartbeat sync every 2.5 seconds
+        let lastKnownMarkingSystemJson = '';
+        try { lastKnownMarkingSystemJson = localStorage.getItem('school_marking_system') || ''; } catch(e){}
+
+        function checkAndSyncMarkingSystem() {
+            const currentMarkingSystem = localStorage.getItem('school_marking_system') || '';
+            if (currentMarkingSystem !== lastKnownMarkingSystemJson) {
+                lastKnownMarkingSystemJson = currentMarkingSystem;
+                if (typeof renderGradingScaleLegend === 'function') renderGradingScaleLegend();
+                if (typeof renderGradingScaleLegend1 === 'function') renderGradingScaleLegend1();
+                syncCascadingFilters('marking_system_changed');
+            }
+        }
+
+        window.addEventListener('focus', function() {
+            checkAndSyncMarkingSystem();
+            syncLiveExamData();
+        });
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                checkAndSyncMarkingSystem();
+                syncLiveExamData();
+            }
+        });
+
+        // Continuous heartbeat sync every 2 seconds
         setInterval(function() {
             syncSchoolHeaderInfo();
             syncLiveExamData();
+            checkAndSyncMarkingSystem();
             syncCascadingFilters('exam_sync');
-        }, 2500);
+        }, 2000);
     </script>
 </body>
 </html>
