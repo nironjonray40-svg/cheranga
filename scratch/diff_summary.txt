@@ -1,0 +1,300 @@
+--- 
++++ 
+@@ -1,4 +1,5 @@
+ <!DOCTYPE html>
+ <html lang="bn">
++
+ <head>
+     <script>
+@@ -85,5 +86,6 @@
+         }
+ 
+-        th, td {
++        th,
++        td {
+             padding: 3.6px 2.1px;
+             background-clip: padding-box;
+@@ -307,5 +309,5 @@
+         }
+ 
+-    
++
+ 
+         /* Print Control Panel */
+@@ -627,5 +629,5 @@
+         }
+ 
+-    
++
+ 
+ 
+@@ -771,5 +773,5 @@
+         }
+ 
+-        
++
+ 
+         .back-btn {
+@@ -799,5 +801,5 @@
+             transition: all 0.2s ease-in-out;
+ 
+-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
++            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+ 
+         }
+@@ -851,5 +853,6 @@
+         }
+ 
+-        .signature-item-left, .signature-item-right {
++        .signature-item-left,
++        .signature-item-right {
+ 
+             text-align: center;
+@@ -1066,6 +1069,13 @@
+ 
+         @keyframes modalFadeIn {
+-            from { opacity: 0; transform: scale(0.95); }
+-            to { opacity: 1; transform: scale(1); }
++            from {
++                opacity: 0;
++                transform: scale(0.95);
++            }
++
++            to {
++                opacity: 1;
++                transform: scale(1);
++            }
+         }
+ 
+@@ -1172,4 +1182,5 @@
+ 
+         @media print {
++
+             .grading-modal-backdrop,
+             .grand-total-info-btn {
+@@ -1177,6 +1188,5 @@
+             }
+         }
+-    
+-</style>
++    </style>
+ 
+ </head>
+@@ -1186,9 +1196,15 @@
+ 
+ 
+-        <div class="fixed-action-group">
++    <div class="fixed-action-group">
+ 
+         <button class="print-btn" onclick="window.print()">
+ 
+-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
++            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
++                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
++                style="margin-right: 6px; vertical-align: middle;">
++                <path d="M6 9V2h12v7"></path>
++                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
++                <rect x="6" y="14" width="12" height="8"></rect>
++            </svg>
+ 
+             Print
+@@ -1196,7 +1212,13 @@
+         </button>
+ 
+-        <a href="result-portal.html" onclick="if(window.history.length > 1){ window.history.back(); return false; }" class="back-btn" title="Go Back">
+-
+-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
++        <a href="result-portal.html" onclick="if(window.history.length > 1){ window.history.back(); return false; }"
++            class="back-btn" title="Go Back">
++
++            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
++                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
++                style="vertical-align: middle; margin-right: 4px;">
++                <line x1="19" y1="12" x2="5" y2="12"></line>
++                <polyline points="12 19 5 12 12 5"></polyline>
++            </svg>
+ 
+             <span>Back</span>
+@@ -1326,5 +1348,7 @@
+                 </div>
+                 <div class="control-group">
+-                    <button type="button" class="font-btn" onclick="openGradingSystemModal()" style="background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:bold; display:inline-flex; align-items:center; gap:5px; cursor:pointer; padding:6px 14px;" title="View Active Grading System & Scale Thresholds">
++                    <button type="button" class="font-btn" onclick="openGradingSystemModal()"
++                        style="background:#f0fdf4; border-color:#86efac; color:#15803d; font-weight:bold; display:inline-flex; align-items:center; gap:5px; cursor:pointer; padding:6px 14px;"
++                        title="View Active Grading System & Scale Thresholds">
+                         <span>📊</span>
+                         <span>গ্রেডিং স্কেল</span>
+@@ -1340,9 +1364,11 @@
+ 
+     <!-- Grading System & Scale Thresholds Preview Modal -->
+-    <div id="grading-system-modal" class="grading-modal-backdrop" style="display:none;" onclick="if(event.target === this) closeGradingSystemModal()">
++    <div id="grading-system-modal" class="grading-modal-backdrop" style="display:none;"
++        onclick="if(event.target === this) closeGradingSystemModal()">
+         <div class="grading-modal-content">
+             <div class="grading-modal-header">
+                 <div>
+-                    <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
++                    <h3
++                        style="margin:0; font-size:1.25rem; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                         <span>📊 Grading System & Scale Thresholds</span>
+                     </h3>
+@@ -1351,5 +1377,6 @@
+                     </p>
+                 </div>
+-                <button type="button" onclick="closeGradingSystemModal()" class="grading-modal-close" title="Close">&times;</button>
++                <button type="button" onclick="closeGradingSystemModal()" class="grading-modal-close"
++                    title="Close">&times;</button>
+             </div>
+             <div class="grading-modal-body">
+@@ -1357,10 +1384,14 @@
+                     <!-- Dynamically generated from loadMarkingSystem() -->
+                 </div>
+-                <div style="margin-top:16px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:0.84rem; color:#475569; line-height:1.5;">
+-                    📌 <b>নীতিমালা:</b> যেকোনো পূর্ণমানের পরীক্ষা হোক না কেন, প্রাপ্ত নম্বর শতকরা শতাংশে <b>(%)</b> রূপান্তরিত হয়ে এই স্কেল অনুযায়ী লেটার গ্রেড ও গ্রেড পয়েন্ট গণনা করা হয়। কম্পালসরি যেকোনো বিষয়ে ফেল থাকলে চূড়ান্ত ফলাফল ফেল গণ্য হয় এবং অপশনাল বিষয়ে ২.০০ এর অতিরিক্ত পয়েন্ট মূল জিপিএ-তে যুক্ত হয়।
++                <div
++                    style="margin-top:16px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:0.84rem; color:#475569; line-height:1.5;">
++                    📌 <b>নীতিমালা:</b> যেকোনো পূর্ণমানের পরীক্ষা হোক না কেন, প্রাপ্ত নম্বর শতকরা শতাংশে <b>(%)</b>
++                    রূপান্তরিত হয়ে এই স্কেল অনুযায়ী লেটার গ্রেড ও গ্রেড পয়েন্ট গণনা করা হয়। কম্পালসরি যেকোনো বিষয়ে ফেল
++                    থাকলে চূড়ান্ত ফলাফল ফেল গণ্য হয় এবং অপশনাল বিষয়ে ২.০০ এর অতিরিক্ত পয়েন্ট মূল জিপিএ-তে যুক্ত হয়।
+                 </div>
+             </div>
+             <div class="grading-modal-footer">
+-                <a href="exam-portal.html?view=marking-system" class="grading-modal-btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
++                <a href="exam-portal.html?view=marking-system" class="grading-modal-btn-primary"
++                    style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                     <span>⚙️ Exam Portal-এ স্কেল এডিট করুন</span>
+                 </a>
+@@ -1373,9 +1404,12 @@
+ 
+     <!-- Grand Total (সর্বমোট) Policy Modal -->
+-    <div id="grand-total-policy-modal" class="grading-modal-backdrop" style="display:none;" onclick="if(event.target === this) closeGrandTotalPolicyModal()">
++    <div id="grand-total-policy-modal" class="grading-modal-backdrop" style="display:none;"
++        onclick="if(event.target === this) closeGrandTotalPolicyModal()">
+         <div class="grading-modal-content" style="max-width: 630px;">
+-            <div class="grading-modal-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #ffffff;">
++            <div class="grading-modal-header"
++                style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #ffffff;">
+                 <div>
+-                    <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:8px;">
++                    <h3
++                        style="margin:0; font-size:1.25rem; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:8px;">
+                         <span>ℹ️ সর্বমোট নম্বর তৈরির নীতিমালা</span>
+                     </h3>
+@@ -1384,15 +1418,20 @@
+                     </p>
+                 </div>
+-                <button type="button" onclick="closeGrandTotalPolicyModal()" class="grading-modal-close" style="color:#ffffff;" title="Close">&times;</button>
++                <button type="button" onclick="closeGrandTotalPolicyModal()" class="grading-modal-close"
++                    style="color:#ffffff;" title="Close">&times;</button>
+             </div>
+             <div class="grading-modal-body" style="padding: 20px; line-height: 1.6;">
+-                
++
+                 <!-- Formula Box -->
+-                <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:10px; padding:14px 18px; margin-bottom:18px;">
+-                    <div style="font-size:0.88rem; font-weight:800; color:#1e40af; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
++                <div
++                    style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:10px; padding:14px 18px; margin-bottom:18px;">
++                    <div
++                        style="font-size:0.88rem; font-weight:800; color:#1e40af; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                         <span>📐 সর্বমোট নম্বর গণনার মূল সূত্র:</span>
+                     </div>
+-                    <div style="font-size:1.02rem; font-weight:800; color:#0f172a; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; text-align:center;">
+-                        সর্বমোট = মূল ৯টি বিষয়ের মোট নম্বর + <span style="color:#2563eb; font-weight:800;">(অপশনাল বিষয়ের নম্বর − ৪০)</span>
++                    <div
++                        style="font-size:1.02rem; font-weight:800; color:#0f172a; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; text-align:center;">
++                        সর্বমোট = মূল ৯টি বিষয়ের মোট নম্বর + <span style="color:#2563eb; font-weight:800;">(অপশনাল
++                            বিষয়ের নম্বর − ৪০)</span>
+                     </div>
+                 </div>
+@@ -1400,14 +1439,19 @@
+                 <!-- Explanation Points -->
+                 <div style="font-size:0.9rem; color:#1e293b; margin-bottom:16px;">
+-                    <h4 style="margin:0 0 8px 0; font-size:0.95rem; font-weight:800; color:#0f172a;">📌 বিস্তারিত নিয়মাবলী:</h4>
++                    <h4 style="margin:0 0 8px 0; font-size:0.95rem; font-weight:800; color:#0f172a;">📌 বিস্তারিত
++                        নিয়মাবলী:</h4>
+                     <ul style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px;">
+                         <li>
+-                            <b>অপশনাল বিষয়ের ২.০০ (C গ্রেড) সমতুল্য নম্বর বাদ:</b> অপশনাল (৪র্থ) বিষয়ের ক্ষেত্রে ২.০০ গ্রেড পয়েন্টের ন্যূনতম নম্বর হলো <b>৪০ নম্বর</b>। তাই প্রথম ৪০ নম্বর বাদ দিয়ে শুধুমাত্র অতিরিক্ত নম্বর সর্বমোট নম্বরে যোগ করা হয়।
++                            <b>অপশনাল বিষয়ের ২.০০ (C গ্রেড) সমতুল্য নম্বর বাদ:</b> অপশনাল (৪র্থ) বিষয়ের ক্ষেত্রে ২.০০
++                            গ্রেড পয়েন্টের ন্যূনতম নম্বর হলো <b>৪০ নম্বর</b>। তাই প্রথম ৪০ নম্বর বাদ দিয়ে শুধুমাত্র
++                            অতিরিক্ত নম্বর সর্বমোট নম্বরে যোগ করা হয়।
+                         </li>
+                         <li>
+-                            <b>৪০ বা তার কম পেলে:</b> অপশনাল বিষয়ে কোনো শিক্ষার্থী ৪০ বা তার কম নম্বর পেলে সর্বমোট নম্বরে <b>০ নম্বর</b> যোগ হবে (কোনো নম্বর বাদ বা বিয়োগ হবে না)।
++                            <b>৪০ বা তার কম পেলে:</b> অপশনাল বিষয়ে কোনো শিক্ষার্থী ৪০ বা তার কম নম্বর পেলে সর্বমোট
++                            নম্বরে <b>০ নম্বর</b> যোগ হবে (কোনো নম্বর বাদ বা বিয়োগ হবে না)।
+                         </li>
+                         <li>
+-                            <b>ফেল বিষয়ের ক্ষেত্রে:</b> কোনো শিক্ষার্থী মূল কোনো বিষয়ে ফেল করলে ফলাফল ফেল গণ্য হবে; তবে অপশনাল বিষয়ে ফেল করলেও চূড়ান্ত ফলাফল ফেল হবে না।
++                            <b>ফেল বিষয়ের ক্ষেত্রে:</b> কোনো শিক্ষার্থী মূল কোনো বিষয়ে ফেল করলে ফলাফল ফেল গণ্য হবে; তবে
++                            অপশনাল বিষয়ে ফেল করলেও চূড়ান্ত ফলাফল ফেল হবে না।
+                         </li>
+                     </ul>
+@@ -1416,6 +1460,8 @@
+                 <!-- Example Table -->
+                 <div style="margin-top:16px;">
+-                    <h4 style="margin:0 0 8px 0; font-size:0.92rem; font-weight:800; color:#0f172a;">📊 হিসাবের উদাহরণ:</h4>
+-                    <table style="width:100%; border-collapse:collapse; font-size:0.86rem; text-align:center; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden;">
++                    <h4 style="margin:0 0 8px 0; font-size:0.92rem; font-weight:800; color:#0f172a;">📊 হিসাবের উদাহরণ:
++                    </h4>
++                    <table
++                        style="width:100%; border-collapse:collapse; font-size:0.86rem; text-align:center; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden;">
+                         <thead>
+                             <tr style="background:#f1f5f9; color:#0f172a; font-weight:800;">
+@@ -1424,5 +1470,6 @@
+                                 <th style="padding:7px; border:1px solid #cbd5e1;">অপশনাল নম্বর</th>
+                                 <th style="padding:7px; border:1px solid #cbd5e1;">অতিরিক্ত যোগ (Opt − ৪০)</th>
+-                                <th style="padding:7px; border:1px solid #cbd5e1; background:#ecfdf5; color:#15803d;">চূড়ান্ত সর্বমোট</th>
++                                <th style="padding:7px; border:1px solid #cbd5e1; background:#ecfdf5; color:#15803d;">
++                                    চূড়ান্ত সর্বমোট</th>
+                             </tr>
+                         </thead>
+@@ -1432,6 +1479,9 @@
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৯৫০</td>
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৯১</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#2563eb;">+ ৫১</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">১০০১</td>
++                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#2563eb;">+ ৫১
++                                </td>
++                                <td
++                                    style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">
++                                    ১০০১</td>
+                             </tr>
+                             <tr>
+@@ -1439,6 +1489,9 @@
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৮০৭</td>
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৭৮</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#2563eb;">+ ৩৮</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">৮৪৫</td>
++                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#2563eb;">+ ৩৮
++                                </td>
++                                <td
++                                    style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">
++                                    ৮৪৫</td>
+                             </tr>
+                             <tr>
+@@ -1446,6 +1499,9 @@
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৭২৩</td>
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৭১</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#2563eb;">+ ৩১</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">৭৫৪</td>
++                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#2563eb;">+ ৩১
++                                </td>
++                                <td
++                                    style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">
++                                    ৭৫৪</td>
+                             </tr>
+                             <tr>
+@@ -1453,6 +1509,9 @@
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৭০০</td>
+                                 <td style="padding:7px; border:1px solid #cbd5e1;">৩৫</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#64748b;">+ ০</td>
+-                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">৭০০</td>
++                                <td style="padding:7px; border:1px solid #cbd5e1; font-weight:700; color:#64748b;">+ ০
++                                </td>
++                                <td
++                                    style="padding:7px; border:1px solid #cbd5e1; font-weight:800; color:#15803d; background:#f0fdf4;">
++                                    ৭০০</td>
+                             </tr>
+                         </tbody>

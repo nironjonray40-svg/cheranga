@@ -1,0 +1,159 @@
+1360: 📌 <b>নীতিমালা:</b> যেকোনো পূর্ণমানের পরীক্ষা হোক না কেন, প্রাপ্ত নম্বর শতকরা শতাংশে <b>(%)</b> রূপান্তরিত হয়ে এই স্কেল অনুযায়ী লেটার গ্রেড ও
+1396: সর্বমোট = মূল ৯টি বিষয়ের মোট নম্বর + <span style="color:#2563eb; font-weight:800;">(অপশনাল বিষয়ের নম্বর − ৪০)</span>
+1405: <b>অপশনাল বিষয়ের ২.০০ (C গ্রেড) সমতুল্য নম্বর বাদ:</b> অপশনাল (৪র্থ) বিষয়ের ক্ষেত্রে ২.০০ গ্রেড পয়েন্টের ন্যূনতম নম্বর হলো <b>৪০ নম্বর</b>। 
+1408: <b>৪০ বা তার কম পেলে:</b> অপশনাল বিষয়ে কোনো শিক্ষার্থী ৪০ বা তার কম নম্বর পেলে সর্বমোট নম্বরে <b>০ নম্বর</b> যোগ হবে (কোনো নম্বর বাদ বা বিয়ো
+1411: <b>ফেল বিষয়ের ক্ষেত্রে:</b> কোনো শিক্ষার্থী মূল কোনো বিষয়ে ফেল করলে ফলাফল ফেল গণ্য হবে; তবে অপশনাল বিষয়ে ফেল করলেও চূড়ান্ত ফলাফল ফেল হবে না।
+1424: <th style="padding:7px; border:1px solid #cbd5e1;">অপশনাল নম্বর</th>
+1471: <!-- GPA Without Optional (জিপিএ - অপশনাল বিষয় ছাড়া) Policy Modal -->
+1477: <span>ℹ️ জিপিএ (অপশনাল বিষয় ছাড়া) তৈরির নীতিমালা</span>
+1480: GPA Without 4th Subject Policy (মাধ্যমিক শিক্ষা বোর্ড ও স্কুল গ্রেডিং নীতিমালা)
+1490: <span>📐 জিপিএ (অপশনাল ছাড়া) গণনার মূল সূত্র:</span>
+1493: জিপিএ (অপশনাল ছাড়া) = <span style="color:#0f766e; font-weight:800;">মূল ৯টি বিষয়ের মোট গ্রেড পয়েন্ট (GP) ÷ ৯</span>
+1505: <b>অপশনাল পয়েন্ট সম্পূর্ণ বাদ:</b> এই কলামে ৪র্থ/ঐচ্ছিক (যেমন: কৃষি বা উচ্চতর গণিত) বিষয়ের কোনো পয়েন্ট বা বোনাস পয়েন্ট অন্তর্ভুক্ত হয় না। এট
+1508: <b>যেকোনো মূল বিষয়ে ফেল থাকলে:</b> কোনো শিক্ষার্থী যদি মূল ৯টি বিষয়ের কোনো একটিতেও ফেল করে (গ্রেড F বা GP ০.০০), তবে তার জিপিএ (অপশনাল ছাড়া)
+1521: <th style="padding:7px; border:1px solid #cbd5e1; background:#f0fdfa; color:#0f766e;">জিপিএ (অপশনাল ছাড়া)</th>
+1522: <th style="padding:7px; border:1px solid #cbd5e1;">৪র্থ বিষয় বোনাস</th>
+1590: চূড়ান্ত জিপিএ = <span style="color:#15803d; font-weight:800;">[ মূল ৯ বিষয়ের GP যোগফল + (৪র্থ বিষয়ের GP − ২.০০) ] ÷ ৯</span>
+1599: <b>৪র্থ/অপশনাল বিষয়ের অতিরিক্ত গ্রেড পয়েন্ট (GP):</b> অপশনাল বিষয়ে ২.০০ (C গ্রেড) এর অতিরিক্ত প্রাপ্ত পয়েন্ট মূল বিষয়ের মোট পয়েন্টের সাথে যু
+1602: <b>অপশনালে ২.০০ বা তার কম পেলে:</b> অপশনাল বিষয়ে ২.০০ বা তার কম পয়েন্ট (কিংবা ফেল) করলে কোনো বোনাস পয়েন্ট যোগ হবে না (০ বোনাস পয়েন্ট)।
+1621: <th style="padding:7px; border:1px solid #cbd5e1;">৪র্থ বিষয় GP</th>
+1699: <span style="background: #ecfdf5; color: #065f46; padding: 4px 8px; border-radius: 6px;">৩. মূল GP + অপশনাল বোনাস</span>
+1803: <b style="color: #15803d;">🟢 ২. ৪র্থ/ঐচ্ছিক বিষয়ের সুবিধা:</b> অপশনাল বিষয়ে ২.০০ এর অতিরিক্ত প্রাপ্ত পয়েন্ট মূল বিষয়ের মোট পয়েন্টের সাথে যুক
+1806: <b style="color: #0f172a;">⚖️ ৩. সর্বোচ্চ স্কেল সিলিং (Cap at 5.00):</b> অপশনাল পয়েন্ট যুক্ত হয়ে গড় পয়েন্ট ৫.০০ এর বেশি হলেও (যেমন: ৫.১১) চূ
+1822: <div style="color: #475569;">মূল ৯টি বিষয়ে A+ (৪৫ GP) + অপশনালে A+ (বোনাস ৩ GP) = ৪৮ ÷ ৯ = ৫.০০ ➔ <b style="color: #16a34a;">A+ গ্রেড (৫.০০)
+1825: <div style="font-weight: 800; color: #2563eb; margin-bottom: 4px;">কেস ২: অপশনাল সহায়তায় A+</div>
+1826: <div style="color: #475569;">মূল বিষয়ে গড় ৪.৭৮ (৪৩ GP) + অপশনাল বোনাস ৩ GP = ৪৬ ÷ ৯ = ৫.১১ (ক্যাপ) ➔ <b style="color: #16a34a;">A+ গ্রেড (৫.
+1937: <td style="padding: 7px; border: 1px solid #cbd5e1; font-weight: 800; color: #7e22ce; background: #faf5ff;">৪র্থ</td>
+2070: <th colspan="6" class="bg-peach" data-subj="agri">কৃষি/উচ্চতর</th>
+2079: <span class="gpa-no-opt-text">জিপিএ<br>(অপশনাল বিষয় ছাড়া)</span><button type="button" class="grand-total-info-btn" onclick="openGpaNoOptPoli
+2160: <th rowspan="2" class="v-text-cell bg-peach" data-col-type="mcq" data-subj="agri"><div class="v-text-inner">বহুনির্বাচনি</div></th>
+2161: <th rowspan="2" class="v-text-cell bg-peach" data-col-type="written" data-subj="agri"><div class="v-text-inner">লিখিত</div></th>
+2162: <th rowspan="2" class="v-text-cell bg-peach" data-col-type="practical" data-subj="agri"><div class="v-text-inner">ব্যবহারিক</div></th>
+2163: <th rowspan="2" class="v-text-cell bg-peach" data-col-type="total" data-subj="agri"><div class="v-text-inner">মোট</div></th>
+2164: <th rowspan="3" class="v-text bg-blue" data-subj="agri" data-col-type="grade">গ্রেড</th>
+2165: <th rowspan="3" class="v-text bg-peach" data-subj="agri" data-col-type="point">পয়েন্ট</th>
+2227: <th class="bg-peach" data-subj="agri" data-fullmark="mcq">২৫</th>
+2228: <th class="bg-peach" data-subj="agri" data-fullmark="written">৫০</th>
+2229: <th class="bg-peach" data-col-type="practical" data-subj="agri" data-fullmark="practical">২৫</th>
+2230: <th class="bg-peach" data-subj="agri" data-fullmark="total">১০০</th> <!-- Agriculture Total -->
+3735: "জিপিএ\n(অপশনাল বিষয় ছাড়া)": "GPA\n(w/o Optional)",
+3737: "জিপিএ (অপশনাল বিষয় ছাড়া)": "GPA (w/o Optional)",
+3745: "কৃষি/উচ্চতর": "Agri/Higher",
+3747: "কৃষি/উচ্চতর গণিত": "Higher Math / Agri",
+3801: "agri": "কৃষি/উচ্চতর"
+3833: "agri": "কৃ/উ"
+3869: "agri": "Agri/Higher"
+3901: "agri": "AGR/HM"
+4011: 'higher mathematics': 'উচ্চতর গণিত',
+4012: 'higher math': 'উচ্চতর গণিত',
+4029: 'agriculture studies': 'কৃষি শিক্ষা',
+4030: 'agriculture': 'কৃষি শিক্ষা',
+4031: 'agri': 'কৃষি শিক্ষা'
+4046: // 1. Try to find match in classSubjects from school_subjects
+4068: isOptional: !!found.isOptional,
+4081: { regex: /higher.*math|উচ্চতর.*গণিত/i, name: 'Higher Mathematics', nameBn: 'উচ্চতর গণিত', shortEn: 'H.MATH', shortBn: 'উ/গণিত', code: '505',
+4091: { regex: /agri|কৃষি/i, name: 'Agriculture Studies', nameBn: 'কৃষি শিক্ষা', shortEn: 'AGRI', shortBn: 'কৃষি', code: '109', isOptional: true }
+4106: isOptional: !!item.isOptional,
+4121: isOptional: false,
+4132: subjectsMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+4159: if (val === 'four' || val === '4' || val === '৪র্থ' || val.includes('four') || val.includes('4')) return 'Four';
+4175: // Baseline class subjects from school_subjects
+4198: if (isOpt !== undefined) res.isOptional = !!isOpt;
+4212: addExamSub(s.subject || s.subjectName, s.code || s.subjectCode, s.isOptional, s.section);
+4270: "ict": "-", "agri": "-"
+4276: "ict": "তথ্য ও যোগাযোগ প্রযুক্তি", "agri": isSeniorClass ? "কৃষি/উচ্চতর" : "কৃষি শিক্ষা"
+4283: "ict": "-", "agri": "-"
+4289: "ict": "আইসিটি", "agri": isSeniorClass ? "কৃ/উ" : "কৃষি"
+4298: "ict": "-", "agri": "-"
+4304: "ict": "ICT", "agri": isSeniorClass ? "Agri/Higher" : "Agriculture"
+4311: "ict": "-", "agri": "-"
+4317: "ict": "ICT", "agri": isSeniorClass ? "AGR/HM" : "AGRI"
+4331: let hasAgri = false;
+4333: let agriSub = null;
+4376: // Combined 4th / Optional Subject check (Higher Math + Agriculture mixed in single column)
+4377: if (code === '505' || code === '109' || s.isOptional || /higher.*math|agri|উচ্চতর.*গণিত|কৃষি/i.test(comb)) {
+4384: if (code === '109' || /agri|কৃষি/i.test(comb)) {
+4385: hasAgri = true;
+4386: agriSub = s;
+4399: } else if ((code === '105' || /math|গণিত/i.test(comb)) && !/higher|উচ্চতর/i.test(comb) && !s.isOptional) {
+4489: // Assign combined Higher Math / Agriculture to 'agri' slot dynamically from All Subject
+4490: if (hasHigherMath || hasAgri) {
+4491: slotAssignments['agri'] = higherMathSub || agriSub;
+4494: activeClassSlotMap[mc] = 'agri';
+4495: if (higherMathSub.name) activeClassSlotMap[higherMathSub.name.trim().toLowerCase()] = 'agri';
+4496: if (higherMathSub.nameBn) activeClassSlotMap[higherMathSub.nameBn.trim().toLowerCase()] = 'agri';
+4498: if (agriSub) {
+4499: const ac = (agriSub.code || '109').toString().trim();
+4500: activeClassSlotMap[ac] = 'agri';
+4501: if (agriSub.name) activeClassSlotMap[agriSub.name.trim().toLowerCase()] = 'agri';
+4502: if (agriSub.nameBn) activeClassSlotMap[agriSub.nameBn.trim().toLowerCase()] = 'agri';
+4506: let optEn = isSeniorClass ? "Agri/Higher" : "Agriculture";
+4508: let optShortEn = isSeniorClass ? "AGR/HM" : "AGRI";
+4510: if (hasHigherMath && hasAgri && higherMathSub && agriSub) {
+4512: const aBn = (agriSub.nameBn || agriSub.name || '').trim();
+4514: const aEn = (agriSub.name || '').trim();
+4516: const aShort = (agriSub.shortBn || agriSub.shortName || '').trim();
+4521: const cleanAEn = aEn.replace(/ Studies| Agriculture/gi, '').trim() || aEn;
+4536: optEn = aEn || mEn || (isSeniorClass ? "Agri/Higher" : "Agriculture");
+4547: const singleOpt = higherMathSub || agriSub;
+4550: optEn = (singleOpt.name || singleOpt.nameBn || '').trim() || (isSeniorClass ? "Agri/Higher" : "Agriculture");
+4552: optShortEn = (singleOpt.shortEn || singleOpt.shortName || singleOpt.name || '').trim() || (isSeniorClass ? "AGR/HM" : "AGRI");
+4556: dynamicSubjectMap.bn.full['agri'] = optBn;
+4557: dynamicSubjectMap.en.full['agri'] = optEn;
+4558: dynamicSubjectMap.bn.short['agri'] = optShortBn;
+4559: dynamicSubjectMap.en.short['agri'] = optShortEn;
+4567: const candidateSlots = isSeniorClass ? ['chem', 'phys', 'bio', 'bgs', 'agri'] : ['chem', 'bgs', 'agri'];
+4614: agri: dynamicSubjectMap.bn.full['agri'] !== '-' && dynamicSubjectMap.bn.full['agri'] !== ''
+4720: } else if (translationMap["জিপিএ\n(অপশনাল বিষয় ছাড়া)"]) {
+4721: gpaNoOptSpan.innerHTML = translationMap["জিপিএ\n(অপশনাল বিষয় ছাড়া)"].replace(/\n/g, '<br>');
+4727: gpaNoOptSpan.innerHTML = 'জিপিএ<br>(অপশনাল বিষয় ছাড়া)';
+5155: const distAgri = getSubjectMarksDistribution('agri', curClass, curExam);
+5159: : { chem: distChem.practical > 0, phys: distPhys.practical > 0, bio: distBio.practical > 0, agri: distAgri.practical > 0 };
+5507: // 10. Agriculture / Higher Math (Optional Subject)
+5510: const optPrac = pracStatus.agri ? getCellFloat(58) : 0;
+5512: if (!isNaN(optMCQ) || !isNaN(optWri) || (pracStatus.agri && !isNaN(optPrac))) {
+5513: optTotal = (isNaN(optMCQ) ? 0 : optMCQ) + (isNaN(optWri) ? 0 : optWri) + (pracStatus.agri && !isNaN(optPrac) ? optPrac : 0);
+5516: const optFull = distAgri.total || 100;
+5518: const optAbsent = isCellAbsent(56) || isCellAbsent(57) || (pracStatus.agri && isCellAbsent(58)) || isCellAbsent(59);
+5523: const optMCQFull = distAgri.mcq || 0;
+5524: const optCQFull = distAgri.cq || 0;
+5525: const optPracFull = (pracStatus.agri && distAgri.practical) ? distAgri.practical : 0;
+5560: const isOptActive = isSubjectSlotActive('agri');
+5584: // Optional bonus: extra GP above 2.00 and extra marks above 2.00 threshold
+5585: const optionalBonusGP = (isOptActive && !isNaN(optTotal) && !optAbsent && optInfo.name !== '-' && optInfo.gp > 2.00) ? (optInfo.gp - 2.00) :
+5586: const optionalBonusMarks = (isOptActive && !isNaN(optTotal) && !optAbsent && optTotal > optBaseDeductMarks) ? (optTotal - optBaseDeductMarks
+5588: // Grand Total (Cell 62): Sum of active main subjects + Optional extra marks above 2.00 (above 40 marks)
+5602: computedGrandTotal += optionalBonusMarks;
+5633: const rawFinalGPA = (mainGPSum + optionalBonusGP) / mainSubCount;
+5828: // --- GPA Without Optional (জিপিএ - অপশনাল বিষয় ছাড়া) Policy Modal Helpers ---
+5930: if (['109', '126', '505'].includes(code) || /agri|কৃষি|higher.*math|উচ্চতর/i.test(sName)) return 'agri';
+5959: agri: isSeniorClass ? { cq: 50, mcq: 25, practical: 25 } : { cq: 70, mcq: 30, practical: 0 }
+6036: const slots = ['bangla1', 'bangla2', 'english1', 'english2', 'math', 'bgs', 'chem', 'phys', 'bio', 'rel', 'ict', 'agri'];
+6135: const dAgri = getSubjectMarksDistribution('agri', cls, exam);
+6142: agri: (!isSpecific || dAgri.hasSchedule) && dAgri.practical > 0
+6182: if (['chem', 'phys', 'bio', 'agri'].includes(k)) {
+6192: const slots = ['bangla', 'english', 'math', 'bgs', 'chem', 'phys', 'bio', 'rel', 'ict', 'agri'];
+6195: const pracStatus = (typeof getSubjectPracticalStatus === 'function') ? getSubjectPracticalStatus() : { chem: false, phys: false, bio: false,
+6224: : { chem: false, phys: false, bio: false, agri: false };
+6226: const slots = ['bangla', 'english', 'math', 'bgs', 'chem', 'phys', 'bio', 'rel', 'ict', 'agri'];
+6313: // General subjects (math, bgs, chem, phys, bio, rel, ict, agri)
+6341: agri: [56, 57, 58, 59, 60, 61]
+6354: { idxs: [59], gradeIdx: 60, pointIdx: 61, subj: 'agri' }
+6383: } else if (['chem', 'phys', 'bio', 'agri'].includes(k)) {
+6438: if (base === 'four' || base === '4' || base === '৪র্থ' || base.includes('four') || base.includes('4')) return 'four';
+6706: "One": "১ম", "Two": "২য়", "Three": "৩য়", "Four": "৪র্থ", "Five": "৫ম",
+6720: "One": "1st", "Two": "2nd", "Three": "3rd", "Four": "4th", "Five": "5th",
+7547: { indices: [56, 57, 58, 59, 60, 61], gradeIdx: 60, gpIdx: 61 }          // Agriculture
+7618: if (val === 'four' || val === '4' || val === '৪র্থ' || val.includes('four') || val.includes('4')) return 'four';
+7924: subjectsMap = JSON.parse(localStorage.getItem('school_subjects') || '{}');
+7936: if (val === 'four' || val === '4' || val === '৪র্থ' || val.includes('four') || val.includes('4')) return 'four';
+8140: case 'agri':
+8143: if (pracStatus.agri) {
+8172: "One": "১ম", "Two": "২য়", "Three": "৩য়", "Four": "৪র্থ", "Five": "৫ম",
+8179: "One": "1st", "Two": "2nd", "Three": "3rd", "Four": "4th", "Five": "5th",
+8309: if (!e.key || e.key === 'school_classes' || e.key === 'school_subjects' || e.key === 'school_marking_system' || e.key === 'school_exam_sched
+8315: window.addEventListener('school_subjects_synced', refreshTabulationSheetData);
+8332: lastKnownSubjectsJson = localStorage.getItem('school_subjects') || '';
+8343: fetch('/api/db?keys=school_exam_schedules,school_exam_types,school_exam_routines,school_omr_exams,school_classes,school_students,school_sett
+8348: ['school_exam_schedules', 'school_exam_types', 'school_exam_routines', 'school_omr_exams', 'school_classes', 'school_students', 'school_stud
+8372: const currentSubjectsJson = localStorage.getItem('school_subjects') || '';

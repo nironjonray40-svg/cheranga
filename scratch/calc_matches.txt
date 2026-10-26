@@ -1,0 +1,32 @@
+2123: <th colspan="6" class="bg-peach" data-subj="agri" id="opt-subject-col-header" style="white-space: nowrap;"><span class="
+2216: <th rowspan="2" class="v-text-cell bg-peach" data-col-type="total" data-subj="agri"><div class="v-text-inner">মোট</div><
+2283: <th class="bg-peach" data-subj="agri" data-fullmark="total">১০০</th> <!-- Agriculture Total -->
+4176: const hasAg = optionalSubs.some(s => /agri|কৃষি/i.test((s.name || '') + ' ' + (s.nameBn || '')));
+4259: { regex: /agri|কৃষি/i, name: 'Agriculture Studies', nameBn: 'কৃষি শিক্ষা', shortEn: 'AGRI', shortBn: 'কৃষি', code: '109'
+4544: // Combined 4th / Optional Subject check (Higher Math + Agriculture mixed in single column)
+4545: if (code === '505' || code === '109' || s.isOptional || /higher.*math|agri|উচ্চতর.*গণিত|কৃষি/i.test(comb)) {
+4674: let optEn = isSeniorClass ? "Agri/Higher" : "Agriculture";
+4676: let optShortEn = isSeniorClass ? "AGR/HM" : "AGRI";
+4704: optEn = aEn || mEn || (isSeniorClass ? "Agri/Higher" : "Agriculture");
+4715: const singleOpt = higherMathSub || agriSub;
+4718: optEn = (singleOpt.name || singleOpt.nameBn || '').trim() || (isSeniorClass ? "Agri/Higher" : "Agriculture");
+4720: optShortEn = (singleOpt.shortEn || singleOpt.shortName || singleOpt.name || '').trim() || (isSeniorClass ? "AGR/HM" : "A
+4724: dynamicSubjectMap.bn.full['agri'] = optBn;
+4725: dynamicSubjectMap.en.full['agri'] = optEn;
+4726: dynamicSubjectMap.bn.short['agri'] = optShortBn;
+4727: dynamicSubjectMap.en.short['agri'] = optShortEn;
+5675: // 10. Agriculture / Higher Math (Optional Subject)
+5678: const optPrac = pracStatus.agri ? getCellFloat(58) : 0;
+5680: if (!isNaN(optMCQ) || !isNaN(optWri) || (pracStatus.agri && !isNaN(optPrac))) {
+5681: optTotal = (isNaN(optMCQ) ? 0 : optMCQ) + (isNaN(optWri) ? 0 : optWri) + (pracStatus.agri && !isNaN(optPrac) ? optPrac :
+5684: const optFull = distAgri.total || 100;
+5686: const optAbsent = isCellAbsent(56) || isCellAbsent(57) || (pracStatus.agri && isCellAbsent(58)) || isCellAbsent(59);
+5691: const optMCQFull = distAgri.mcq || 0;
+5692: const optCQFull = distAgri.cq || 0;
+5693: const optPracFull = (pracStatus.agri && distAgri.practical) ? distAgri.practical : 0;
+5728: const isOptActive = isSubjectSlotActive('agri');
+5752: // Optional bonus: extra GP above 2.00 and extra marks above 2.00 threshold
+5753: const optionalBonusGP = (isOptActive && !isNaN(optTotal) && !optAbsent && optInfo.name !== '-' && optInfo.gp > 2.00) ? (
+5754: const optionalBonusMarks = (isOptActive && !isNaN(optTotal) && !optAbsent && optTotal > optBaseDeductMarks) ? (optTotal 
+5770: computedGrandTotal += optionalBonusMarks;
+5801: const rawFinalGPA = (mainGPSum + optionalBonusGP) / mainSubCount;
