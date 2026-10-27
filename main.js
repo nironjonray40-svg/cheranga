@@ -4,7 +4,7 @@
         const rawPath = window.location.pathname.toLowerCase();
         let cleanName = rawPath.substring(rawPath.lastIndexOf('/') + 1);
         if (cleanName.endsWith('.html')) cleanName = cleanName.slice(0, -5);
-        
+
         // Allowed public pages
         const publicPages = ['cms', 'teachers', 'contact', ''];
         const isPublic = publicPages.includes(cleanName) || rawPath === '/' || rawPath === '';
@@ -196,35 +196,35 @@ const PERMISSION_CATEGORIES = [
 const ROLE_DEFAULT_PRESETS = {
     admin: ALL_PERMISSIONS.map(p => p.id),
     teacher: [
-        'dashboard_view', 'live_chat', 
+        'dashboard_view', 'live_chat',
         'student_view', 'student_add', 'student_edit', 'student_promote', 'student_idcard',
-        'seat_print', 'seat_attendance', 
-        'exam_routine', 'exam_marks', 'exam_admit', 'exam_tabulation', 
-        'result_publish', 'result_marksheet', 
+        'seat_print', 'seat_attendance',
+        'exam_routine', 'exam_marks', 'exam_admit', 'exam_tabulation',
+        'result_publish', 'result_marksheet',
         'notice_publish'
     ],
     accountant: [
-        'dashboard_view', 'live_chat', 
-        'student_view', 
-        'fees_collect', 'fees_receipt', 'fees_reports', 'fees_structure', 
+        'dashboard_view', 'live_chat',
+        'student_view',
+        'fees_collect', 'fees_receipt', 'fees_reports', 'fees_structure',
         'notice_publish'
     ],
     exam_incharge: [
-        'dashboard_view', 'live_chat', 
-        'student_view', 
-        'exam_routine', 'exam_marks', 'exam_admit', 'exam_tabulation', 
-        'result_publish', 'result_marksheet', 'result_analytics', 
+        'dashboard_view', 'live_chat',
+        'student_view',
+        'exam_routine', 'exam_marks', 'exam_admit', 'exam_tabulation',
+        'result_publish', 'result_marksheet', 'result_analytics',
         'notice_publish'
     ],
     seat_incharge: [
-        'dashboard_view', 'live_chat', 
-        'student_view', 
+        'dashboard_view', 'live_chat',
+        'student_view',
         'seat_generate', 'seat_print', 'seat_attendance', 'seat_topsheet',
         'notice_publish'
     ],
     staff: [
-        'dashboard_view', 'live_chat', 
-        'staff_view', 'student_view', 
+        'dashboard_view', 'live_chat',
+        'staff_view', 'student_view',
         'notice_publish'
     ],
     custom: []
@@ -259,16 +259,16 @@ function isHeadmasterDesignation(designation) {
     if (des.includes('সহকারী') || des.includes('সহ:') || des.includes('উপাধ্যক্ষ') || des.includes('assistant') || des.includes('asst') || des.includes('vice') || des.includes('deputy')) {
         return false;
     }
-    return des.includes('প্রধান শিক্ষক') || 
-           des.includes('প্রধান শিক্ষিকা') ||
-           des.includes('headmaster') || 
-           des.includes('head master') || 
-           des.includes('headteacher') || 
-           des.includes('head teacher') || 
-           des.includes('principal') || 
-           des.includes('অধ্যক্ষ') || 
-           des.includes('সুপারিনটেনডেন্ট') || 
-           des.includes('superintendent');
+    return des.includes('প্রধান শিক্ষক') ||
+        des.includes('প্রধান শিক্ষিকা') ||
+        des.includes('headmaster') ||
+        des.includes('head master') ||
+        des.includes('headteacher') ||
+        des.includes('head teacher') ||
+        des.includes('principal') ||
+        des.includes('অধ্যক্ষ') ||
+        des.includes('সুপারিনটেনডেন্ট') ||
+        des.includes('superintendent');
 }
 window.isHeadmasterDesignation = isHeadmasterDesignation;
 
@@ -333,30 +333,30 @@ function getFixedAdminUser() {
     let hmName = 'শাহ মোঃ রোকনুজ্জামান চৌধুরী';
     let hmPhone = 'admin';
     let hmPhoto = '';
-    
+
     try {
         const settings = JSON.parse(localStorage.getItem('school_settings') || '{}');
         const staffList = JSON.parse(localStorage.getItem('school_staff') || '[]');
         const hm = staffList.find(s => isHeadmasterDesignation(s.designation || s.designationBn));
-        
+
         if (settings.headmasterName && settings.headmasterName.trim()) {
             hmName = settings.headmasterName.trim();
         } else if (hm && (hm.nameBn || hm.name)) {
             hmName = (hm.nameBn || hm.name).trim();
         }
-        
+
         if (settings.headmasterPhone && settings.headmasterPhone.trim()) {
             hmPhone = settings.headmasterPhone.trim();
         } else if (hm && hm.mobile) {
             hmPhone = hm.mobile.trim();
         }
-        
+
         if (settings.headmasterPhoto) {
             hmPhoto = settings.headmasterPhoto;
         } else if (hm && hm.photo) {
             hmPhoto = hm.photo;
         }
-    } catch(e) {}
+    } catch (e) { }
 
     const allPermIds = window.ALL_PERMISSIONS ? window.ALL_PERMISSIONS.map(p => p.id) : [];
 
@@ -412,7 +412,7 @@ function getActiveUserPermissions() {
                 return perms;
             }
         }
-    } catch(e) {}
+    } catch (e) { }
 
     // 2. Check stored session permissions
     try {
@@ -420,7 +420,7 @@ function getActiveUserPermissions() {
         if (Array.isArray(stored) && stored.length > 0) {
             return stored;
         }
-    } catch(e) {}
+    } catch (e) { }
 
     // 3. Fallback to role presets
     const presets = window.ROLE_DEFAULT_PRESETS || {};
@@ -569,7 +569,7 @@ function applyUserPermissionsUI() {
                     subLi.style.display = 'none';
                     return;
                 }
-                
+
                 let requiredPerms = null;
                 for (const [pattern, perms] of Object.entries(LINK_PERMISSIONS)) {
                     if (href.includes(pattern) || pattern.includes(href)) {
@@ -1096,7 +1096,7 @@ function attachGlobalSubviewGuards() {
     // 1. Advance Portal Switcher Guard
     if (typeof window.switchAdvanceView === 'function' && !window.switchAdvanceView.__guarded) {
         const originalSwitch = window.switchAdvanceView;
-        window.switchAdvanceView = function(viewName) {
+        window.switchAdvanceView = function (viewName) {
             const check = checkResourceAccessPermission('advance.html?view=' + viewName);
             if (!check.allowed) {
                 const subview = document.getElementById('subview-' + viewName) || document.querySelector('.portal-container') || document.getElementById('advance');
@@ -1111,7 +1111,7 @@ function attachGlobalSubviewGuards() {
     // 2. Student Portal Switcher Guard
     if (typeof window.switchPortalView === 'function' && !window.switchPortalView.__guarded) {
         const originalSwitch = window.switchPortalView;
-        window.switchPortalView = function(viewName) {
+        window.switchPortalView = function (viewName) {
             const check = checkResourceAccessPermission('student-portal.html?view=' + viewName);
             if (!check.allowed) {
                 const subview = document.getElementById('subview-' + viewName) || document.querySelector('.portal-container');
@@ -1126,7 +1126,7 @@ function attachGlobalSubviewGuards() {
     // 3. Seat Plan Switcher Guard
     if (typeof window.switchSeatTab === 'function' && !window.switchSeatTab.__guarded) {
         const originalSwitch = window.switchSeatTab;
-        window.switchSeatTab = function(tabName, updateHistory) {
+        window.switchSeatTab = function (tabName, updateHistory) {
             const check = checkResourceAccessPermission('seat-plan.html?view=' + tabName);
             if (!check.allowed) {
                 const subview = document.getElementById('subview-' + tabName) || document.querySelector('.seat-portal-container');
@@ -1141,7 +1141,7 @@ function attachGlobalSubviewGuards() {
     // 4. Exam Portal Switcher Guard
     if (typeof window.switchExamView === 'function' && !window.switchExamView.__guarded) {
         const originalSwitch = window.switchExamView;
-        window.switchExamView = function(viewName) {
+        window.switchExamView = function (viewName) {
             const check = checkResourceAccessPermission('exam-portal.html?view=' + viewName);
             if (!check.allowed) {
                 const subview = document.getElementById('subview-' + viewName) || document.querySelector('.portal-container');
@@ -1179,6 +1179,7 @@ const INITIAL_SYNC_KEYS = [
     'school_important_links',
     'school_logo',
     'school_exam_schedules',
+    'school_omr_exams',
     'school_exam_routines',
     'school_shift_times',
     'school_buildings',
@@ -1220,8 +1221,8 @@ function isSyncableKey(key) {
     if (!key || typeof key !== 'string') return false;
     // Client-local session and device keys must NEVER be overwritten by shared DB sync
     const sessionKeys = [
-        'isLoggedIn', 'currentUser', 'school_user_name', 'school_user_role', 
-        'school_user_role_key', 'school_user_mobile', 'school_user_id', 
+        'isLoggedIn', 'currentUser', 'school_user_name', 'school_user_role',
+        'school_user_role_key', 'school_user_mobile', 'school_user_id',
         'school_user_photo', 'school_user_permissions', '__school_user_login_time',
         '__school_session_id', '__school_device_mac', 'school_user_district'
     ];
@@ -1767,7 +1768,7 @@ localStorage.setItem = function (key, value) {
         if (dbBroadcast) {
             try {
                 dbBroadcast.postMessage({ type: 'set', key, value, ver: Date.now() });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // Queue for server persistence
@@ -1787,7 +1788,7 @@ localStorage.removeItem = function (key) {
         if (dbBroadcast) {
             try {
                 dbBroadcast.postMessage({ type: 'delete', key });
-            } catch (e) {}
+            } catch (e) { }
         }
 
         pendingDeleteSet.add(key);
@@ -1802,7 +1803,7 @@ localStorage.clear = function () {
         if (dbBroadcast) {
             try {
                 dbBroadcast.postMessage({ type: 'clear' });
-            } catch (e) {}
+            } catch (e) { }
         }
         SYNC_KEYS_SET.forEach(key => {
             originalSetItem.call(localStorage, `__sync_pending_del_${key}`, 'true');
@@ -1952,7 +1953,7 @@ function openNoticePdf(pdfData, title) {
             }
             const blob = new Blob([ab], { type: mimeType });
             const blobUrl = URL.createObjectURL(blob);
-            
+
             const newTab = window.open(blobUrl, '_blank');
             if (!newTab) {
                 const a = document.createElement('a');
@@ -2695,8 +2696,8 @@ window.addEventListener('storage', (e) => {
             if (m.addedNodes && m.addedNodes.length > 0) {
                 for (const node of m.addedNodes) {
                     if (node.nodeType === 1 && (
-                        node.tagName === 'TR' || 
-                        node.classList?.contains('action-icon-btn') || 
+                        node.tagName === 'TR' ||
+                        node.classList?.contains('action-icon-btn') ||
                         node.classList?.contains('action-icons-wrapper') ||
                         node.querySelector?.('.action-icon-btn, [data-perm], .btn-add-staff, .btn-add-student, .btn-fee-collect, .btn-exam-marks, .btn-publish-notice')
                     )) {
@@ -2860,7 +2861,7 @@ function performUserLogout() {
         localStorage.removeItem('school_user_permissions');
         localStorage.removeItem('school_user_role_key');
         localStorage.removeItem('__school_user_login_time');
-        
+
         if (typeof updateLoginButtonState === 'function') {
             updateLoginButtonState();
         }
@@ -4006,17 +4007,17 @@ function openGlobalMyProfileModal(event) {
     let staffList = [];
     try {
         staffList = JSON.parse(localStorage.getItem('school_staff') || '[]');
-    } catch(e) {}
+    } catch (e) { }
 
     let users = [];
     try {
         users = JSON.parse(localStorage.getItem('school_users') || '[]');
-    } catch(e) {}
+    } catch (e) { }
 
     let settings = {};
     try {
         settings = JSON.parse(localStorage.getItem('school_settings') || '{}');
-    } catch(e) {}
+    } catch (e) { }
 
     const cleanMob = userMobile.replace(/[^0-9]/g, '');
     let matchedStaff = staffList.find(s => {
@@ -4164,7 +4165,7 @@ function openGlobalMyProfileModal(event) {
         } else {
             const categories = window.PERMISSION_CATEGORIES || [];
             const allPermsList = window.ALL_PERMISSIONS || [];
-            
+
             let catBadges = '';
             categories.forEach(cat => {
                 const catPerms = allPermsList.filter(p => p.category === cat.id);
@@ -4250,7 +4251,7 @@ function handleProfilePhotoUpload(event) {
     }
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         const base64Data = e.target.result;
         const photoVal = document.getElementById('my-prof-photo-val');
         const photoPreview = document.getElementById('my-prof-photo-preview');
@@ -4309,17 +4310,17 @@ function saveGlobalMyProfile(event) {
     let staffList = [];
     try {
         staffList = JSON.parse(localStorage.getItem('school_staff') || '[]');
-    } catch(e) {}
+    } catch (e) { }
 
     let users = [];
     try {
         users = JSON.parse(localStorage.getItem('school_users') || '[]');
-    } catch(e) {}
+    } catch (e) { }
 
     let settings = {};
     try {
         settings = JSON.parse(localStorage.getItem('school_settings') || '{}');
-    } catch(e) {}
+    } catch (e) { }
 
     const cleanPrevMob = prevUserMobile.replace(/[^0-9]/g, '');
 
@@ -4355,9 +4356,9 @@ function saveGlobalMyProfile(event) {
             lastLocalWrites['school_staff'] = Date.now();
         }
         try {
-            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_settings', value: JSON.stringify(settings) }) }).catch(() => {});
-            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_staff', value: JSON.stringify(staffList) }) }).catch(() => {});
-        } catch(e) {}
+            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_settings', value: JSON.stringify(settings) }) }).catch(() => { });
+            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_staff', value: JSON.stringify(staffList) }) }).catch(() => { });
+        } catch (e) { }
     } else {
         // Update staff record
         const staffIdx = staffList.findIndex(s => {
@@ -4407,9 +4408,9 @@ function saveGlobalMyProfile(event) {
             lastLocalWrites['school_users'] = Date.now();
         }
         try {
-            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_staff', value: JSON.stringify(staffList) }) }).catch(() => {});
-            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_users', value: JSON.stringify(users) }) }).catch(() => {});
-        } catch(e) {}
+            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_staff', value: JSON.stringify(staffList) }) }).catch(() => { });
+            fetch('/api/db/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'school_users', value: JSON.stringify(users) }) }).catch(() => { });
+        } catch (e) { }
     }
 
     // Update active session
@@ -4547,12 +4548,12 @@ function submitGlobalChangePassword(event) {
     let users = [];
     try {
         users = JSON.parse(localStorage.getItem('school_users') || '[]');
-    } catch(e) {}
+    } catch (e) { }
 
     let settings = {};
     try {
         settings = JSON.parse(localStorage.getItem('school_settings') || '{}');
-    } catch(e) {}
+    } catch (e) { }
 
     const cleanMob = userMobile.replace(/[^0-9]/g, '');
 
@@ -4578,8 +4579,8 @@ function submitGlobalChangePassword(event) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key: 'school_settings', value: JSON.stringify(settings) })
-            }).catch(() => {});
-        } catch(e) {}
+            }).catch(() => { });
+        } catch (e) { }
     } else {
         const userIdx = users.findIndex(u => {
             const uMob = (u.mobile || '').replace(/[^0-9]/g, '');
@@ -4629,8 +4630,8 @@ function submitGlobalChangePassword(event) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key: 'school_users', value: JSON.stringify(users) })
-            }).catch(() => {});
-        } catch(e) {}
+            }).catch(() => { });
+        } catch (e) { }
     }
 
     if (succEl) {
@@ -5071,7 +5072,7 @@ window.addEventListener('storage', (e) => {
         return localStorage.getItem('school_user_district') || 'নীলফামারী (জলঢাকা)';
     }
 
-    window.sendSchoolHeartbeat = function() {
+    window.sendSchoolHeartbeat = function () {
         const payload = {
             session_id: getSessionId(),
             user_name: getUserName(),
@@ -5099,22 +5100,22 @@ window.addEventListener('storage', (e) => {
                 }
                 window.dispatchEvent(new CustomEvent('school_active_users_updated', { detail: data }));
             }
-        }).catch(() => {});
+        }).catch(() => { });
     };
 
-    window.sendSchoolLogout = function(callback) {
+    window.sendSchoolLogout = function (callback) {
         const sid = localStorage.getItem('__school_session_id') || ('sid_' + (window.__CURRENT_DEVICE_IP || '127.0.0.1'));
         fetch('/api/heartbeat/logout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sid })
-        }).catch(() => {}).finally(() => {
+        }).catch(() => { }).finally(() => {
             sessionStorage.removeItem('__school_session_joined_at');
             if (typeof callback === 'function') callback();
         });
     };
 
-    window.logUserActivity = function(module, action, details) {
+    window.logUserActivity = function (module, action, details) {
         const payload = {
             user_name: getUserName(),
             role: getUserRole(),
@@ -5135,7 +5136,7 @@ window.addEventListener('storage', (e) => {
             if (r.ok) {
                 window.dispatchEvent(new CustomEvent('school_activity_logged', { detail: payload }));
             }
-        }).catch(() => {});
+        }).catch(() => { });
     };
 
     // Send immediately on load and interval every 12 seconds

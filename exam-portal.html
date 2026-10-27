@@ -3685,24 +3685,24 @@
                                         style="color: #334155; font-weight: 700; margin-bottom: 0; font-size: 1rem; display: flex; align-items: center; gap: 6px;">
                                         Exam Name:
                                     </label>
-                                    <div style="display: none !important; align-items: center; gap: 6px;">
-                                        <button type="button" onclick="navigateExamView('exam-names')"
-                                            style="background: #faf5ff; border: 1.5px solid #d8b4fe; color: #7e22ce; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;"
-                                            title="Exam Names সাব অপশনে গিয়ে বিস্তারিত পরিচালনা করুন">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                            <span>Exam Names সাব অপশন</span>
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <button type="button" onclick="openExamNameCreateModal()"
+                                            style="background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;"
+                                            title="নতুন পরীক্ষার নাম তৈরি ও মূল ডাটাবেজে স্থায়ীভাবে সংরক্ষণ করুন">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            <span>+ নতুন নাম</span>
                                         </button>
                                         <button type="button" onclick="openExamNameUpdateModal()"
-                                            style="background: #eff6ff; border: 1.5px solid #93c5fd; color: #1d4ed8; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;"
+                                            style="background: #eff6ff; border: 1.5px solid #93c5fd; color: #1d4ed8; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;"
                                             title="বর্তমানে নির্বাচিত পরীক্ষার নাম পরিবর্তন বা আপডেট করুন">
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                             <span>আপডেট</span>
                                         </button>
-                                        <button type="button" onclick="openExamNameCreateModal()"
-                                            style="background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;"
-                                            title="নতুন পরীক্ষার নাম তৈরি করুন">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                            <span>নতুন নাম</span>
+                                        <button type="button" onclick="deleteCurrentScheduleExamName()"
+                                            style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease;"
+                                            title="নির্বাচিত পরীক্ষার নাম এবং এর সাথে সম্পর্কিত সকল তথ্য মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলুন">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                            <span>নাম মুছুন</span>
                                         </button>
                                     </div>
                                 </div>
@@ -3797,7 +3797,9 @@
                                             No:</label>
                                         <input type="text" id="schedule-sl-no" class="form-control"
                                             placeholder="Enter Exam No"
+                                            oninput="validateScheduleSlNoLive()"
                                             style="background: #f8fafc; color: #0f172a; border: 1.5px solid #cbd5e1; font-weight: 600; font-size: 1rem; margin-bottom: 0; width: 100%; padding: 9px 13px; border-radius: 8px;">
+                                        <div id="schedule-slno-validation-msg" style="display:none; font-size:0.8rem; font-weight:700; color:#dc2626; margin-top:4px;"></div>
                                     </div>
 
                                     <!-- Live Distribution Preview -->
@@ -7155,6 +7157,147 @@
         var toBengaliNumber = window.toBengaliNumber;
         var toEnglishDigits = window.toEnglishDigits;
 
+        // --- DIRECT SQLITE DATABASE PERSISTENCE ENGINE ---
+        window.saveToDatabaseDirect = async function(key, value) {
+            if (!key) return false;
+            const strVal = typeof value === 'string' ? value : JSON.stringify(value);
+            try {
+                localStorage.setItem(key, strVal);
+            } catch (e) { }
+            if (window.lastLocalWrites) {
+                window.lastLocalWrites[key] = Date.now();
+            }
+            try {
+                const res = await fetch('/api/db/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, value: strVal })
+                });
+                if (res.ok) {
+                    window.dispatchEvent(new CustomEvent('dbSynced', { detail: { key } }));
+                    window.dispatchEvent(new Event('storage'));
+                    return true;
+                }
+            } catch (e) {
+                console.warn(`[DB Direct Save Fallback] Failed saving ${key}:`, e);
+            }
+            try {
+                const fallbackRes = await fetch('/api/db/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, value: strVal })
+                });
+                if (fallbackRes.ok) {
+                    window.dispatchEvent(new CustomEvent('dbSynced', { detail: { key } }));
+                    window.dispatchEvent(new Event('storage'));
+                    return true;
+                }
+            } catch (e) { }
+            return false;
+        };
+
+        window.saveBulkToDatabaseDirect = async function(itemsObj) {
+            if (!itemsObj || typeof itemsObj !== 'object') return false;
+            const dataPayload = {};
+            for (const [k, v] of Object.entries(itemsObj)) {
+                const strVal = typeof v === 'string' ? v : JSON.stringify(v);
+                dataPayload[k] = strVal;
+                try {
+                    localStorage.setItem(k, strVal);
+                } catch (e) { }
+                if (window.lastLocalWrites) {
+                    window.lastLocalWrites[k] = Date.now();
+                }
+            }
+            try {
+                const res = await fetch('/api/db/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: dataPayload })
+                });
+                if (res.ok) {
+                    window.dispatchEvent(new CustomEvent('dbSynced', { detail: { keys: Object.keys(itemsObj) } }));
+                    window.dispatchEvent(new Event('storage'));
+                    return true;
+                }
+            } catch (e) {
+                console.warn("[DB Direct Bulk-Save Fallback]:", e);
+            }
+            try {
+                const fallbackRes = await fetch('/api/db/bulk-save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: dataPayload })
+                });
+                if (fallbackRes.ok) {
+                    window.dispatchEvent(new CustomEvent('dbSynced', { detail: { keys: Object.keys(itemsObj) } }));
+                    window.dispatchEvent(new Event('storage'));
+                    return true;
+                }
+            } catch (e) { }
+            return false;
+        };
+
+        window.deleteFromDatabaseDirect = async function(key) {
+            if (!key) return false;
+            try {
+                localStorage.removeItem(key);
+            } catch (e) { }
+            if (window.lastLocalWrites) {
+                window.lastLocalWrites[key] = Date.now();
+            }
+            try {
+                const res = await fetch('/api/db/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key })
+                });
+                if (res.ok) {
+                    window.dispatchEvent(new CustomEvent('dbSynced', { detail: { deletedKey: key } }));
+                    window.dispatchEvent(new Event('storage'));
+                    return true;
+                }
+            } catch (e) {
+                console.warn(`[DB Direct Delete Fallback] Failed deleting ${key}:`, e);
+            }
+            return false;
+        };
+        var saveToDatabaseDirect = window.saveToDatabaseDirect;
+        var saveBulkToDatabaseDirect = window.saveBulkToDatabaseDirect;
+        var deleteFromDatabaseDirect = window.deleteFromDatabaseDirect;
+
+        window.persistExamTypesSync = async function (types) {
+            try {
+                if (!types) return;
+                const typesStr = typeof types === 'string' ? types : JSON.stringify(types);
+                localStorage.setItem('school_exam_types', typesStr);
+                if (typeof window.saveToDatabaseDirect === 'function') {
+                    await window.saveToDatabaseDirect('school_exam_types', typesStr);
+                }
+                window.dispatchEvent(new CustomEvent('school_exam_types_synced'));
+                window.dispatchEvent(new Event('storage'));
+            } catch (e) {
+                console.error("Error syncing exam types to database:", e);
+            }
+        };
+        var persistExamTypesSync = window.persistExamTypesSync;
+
+        window.persistMarkingSystemSync = async function (rules) {
+            try {
+                if (!rules) return;
+                const rulesStr = typeof rules === 'string' ? rules : JSON.stringify(rules);
+                localStorage.setItem('school_marking_system', rulesStr);
+                if (typeof window.saveToDatabaseDirect === 'function') {
+                    await window.saveToDatabaseDirect('school_marking_system', rulesStr);
+                }
+                window.dispatchEvent(new CustomEvent('school_marking_system_synced'));
+                window.dispatchEvent(new Event('storage'));
+            } catch (e) {
+                console.error("Error syncing marking system to database:", e);
+            }
+        };
+        var persistMarkingSystemSync = window.persistMarkingSystemSync;
+
         // --- PAGINATION & FILTERS FOR EXAM LIST ---
         let currentSchedulePage = 1;
         let scheduleRowsPerPage = 20;
@@ -7610,6 +7753,101 @@
             }
         }
 
+        window.validateScheduleSlNoLive = function () {
+            const classVal = document.getElementById('schedule-class')?.value;
+            const subjectVal = document.getElementById('schedule-subject')?.value;
+            const slNoInput = document.getElementById('schedule-sl-no');
+            const msgEl = document.getElementById('schedule-slno-validation-msg');
+            const editId = document.getElementById('schedule-edit-id')?.value;
+            if (!slNoInput) return true;
+
+            const slNoVal = toEnglishDigits(slNoInput.value || '').trim();
+            if (!classVal || !subjectVal || !slNoVal) {
+                slNoInput.style.borderColor = '#cbd5e1';
+                slNoInput.style.backgroundColor = '#f8fafc';
+                if (msgEl) msgEl.style.display = 'none';
+                return true;
+            }
+
+            const cleanClass = classVal.trim().toLowerCase();
+            const cleanSub = subjectVal.trim().toLowerCase();
+            const schedules = loadSchedules();
+
+            const isDuplicate = schedules.some(s => {
+                if (editId && String(s.id) === String(editId)) return false;
+                const sClass = (s.class || '').trim().toLowerCase();
+                const sSub = (s.subject || '').trim().toLowerCase();
+                const sSl = toEnglishDigits(s.slNo || '').trim();
+                return sClass === cleanClass && sSub === cleanSub && sSl === slNoVal;
+            });
+
+            if (isDuplicate) {
+                slNoInput.style.borderColor = '#dc2626';
+                slNoInput.style.backgroundColor = '#fef2f2';
+                if (msgEl) {
+                    msgEl.textContent = `⚠️ Class "${classVal}" ও বিষয় "${subjectVal}"-এ Exam No "${slNoVal}" ইতিমধ্যে বিদ্যমান! একই Class, বিষয় ও Exam No একাধিক হতে পারবে না।`;
+                    msgEl.style.display = 'block';
+                }
+                return false;
+            } else {
+                slNoInput.style.borderColor = '#10b981';
+                slNoInput.style.backgroundColor = '#f0fdf4';
+                if (msgEl) msgEl.style.display = 'none';
+                return true;
+            }
+        };
+
+        window.validateBulkRowSlNoLive = function (inputEl) {
+            if (!inputEl) return true;
+            const row = inputEl.closest('tr');
+            if (!row) return true;
+            const subName = row.getAttribute('data-subname');
+            const classVal = document.getElementById('schedule-class')?.value;
+            const slNo = toEnglishDigits(inputEl.value || '').trim();
+
+            if (!classVal || !subName || !slNo) {
+                inputEl.style.borderColor = '#cbd5e1';
+                inputEl.style.backgroundColor = '#ffffff';
+                inputEl.title = '';
+                return true;
+            }
+
+            const cleanClass = classVal.trim().toLowerCase();
+            const cleanSub = subName.trim().toLowerCase();
+            const schedules = loadSchedules();
+
+            const dupInDb = schedules.some(s =>
+                (s.class || '').trim().toLowerCase() === cleanClass &&
+                (s.subject || '').trim().toLowerCase() === cleanSub &&
+                toEnglishDigits(s.slNo || '').trim() === slNo
+            );
+
+            let dupInTable = false;
+            const allRows = document.querySelectorAll('#bulk-subjects-table-tbody tr');
+            allRows.forEach(r => {
+                if (r !== row) {
+                    const rSub = (r.getAttribute('data-subname') || '').trim().toLowerCase();
+                    const rSl = toEnglishDigits(r.querySelector('.bulk-row-slno')?.value || '').trim();
+                    const rCb = r.querySelector('input[name="bulk-sub-check"]');
+                    if (rCb && rCb.checked && rSub === cleanSub && rSl === slNo) {
+                        dupInTable = true;
+                    }
+                }
+            });
+
+            if (dupInDb || dupInTable) {
+                inputEl.style.borderColor = '#dc2626';
+                inputEl.style.backgroundColor = '#fef2f2';
+                inputEl.title = `⚠️ Class "${classVal}" ও বিষয় "${subName}"-এ Exam No "${slNo}" ইতিমধ্যে বিদ্যমান!`;
+                return false;
+            } else {
+                inputEl.style.borderColor = '#10b981';
+                inputEl.style.backgroundColor = '#f0fdf4';
+                inputEl.title = 'অনন্য Exam No (Valid)';
+                return true;
+            }
+        };
+
         function autoCalculateScheduleExamNo() {
             if (typeof updateScheduleDistLivePreview === 'function') {
                 updateScheduleDistLivePreview();
@@ -7618,28 +7856,31 @@
             if (editId) return;
 
             const classVal = document.getElementById('schedule-class')?.value;
-            const examVal = document.getElementById('schedule-exam-name')?.value;
-            const typeVal = document.getElementById('schedule-exam-type')?.value;
             const subjectVal = document.getElementById('schedule-subject')?.value;
 
-            if (!classVal || !examVal || !subjectVal) {
+            if (!classVal || !subjectVal) {
                 const slNoInput = document.getElementById('schedule-sl-no');
                 if (slNoInput) slNoInput.value = "";
                 return;
             }
 
             const schedules = loadSchedules();
+            const cleanClass = (classVal || '').trim().toLowerCase();
+            const cleanSubject = (subjectVal || '').trim().toLowerCase();
 
-            // Count existing schedules matching this Class, Subject, Exam Name and Type (if set)
-            const count = schedules.filter(s =>
-                s.class === classVal &&
-                s.term === examVal &&
-                (!typeVal || !s.examType || s.examType === typeVal) &&
-                s.subject === subjectVal
-            ).length;
+            // Find all existing Exam Nos (slNo) for this Class & Subject to prevent duplicate Exam No
+            const existingSlNos = schedules
+                .filter(s => (s.class || '').trim().toLowerCase() === cleanClass && (s.subject || '').trim().toLowerCase() === cleanSubject)
+                .map(s => parseInt(toEnglishDigits(s.slNo || '0'), 10))
+                .filter(n => !isNaN(n));
+
+            let nextExamNo = 1;
+            if (existingSlNos.length > 0) {
+                nextExamNo = Math.max(...existingSlNos) + 1;
+            }
 
             const slNoInput = document.getElementById('schedule-sl-no');
-            if (slNoInput) slNoInput.value = count + 1;
+            if (slNoInput) slNoInput.value = nextExamNo;
         }
 
         // --- UTILITY JSON PARSE ---
@@ -8334,14 +8575,15 @@
                 const dist = getSubjectDistribution(subCode, config, s.name);
                 const distTotal = dist.cq + dist.mcq + dist.practical;
 
-                // Auto calculate exam no for this subject
-                const existingCount = schedules.filter(sch =>
-                    sch.class === classVal &&
-                    sch.term === examVal &&
-                    (!examTypeVal || !sch.examType || sch.examType === examTypeVal) &&
-                    sch.subject === s.name
-                ).length;
-                const calculatedExamNo = existingCount + 1;
+                // Auto calculate exam no for this subject (ensuring uniqueness across same Class & Subject)
+                const cleanClassForCalc = (classVal || '').trim().toLowerCase();
+                const cleanSubForCalc = (s.name || '').trim().toLowerCase();
+                const existingSlNos = schedules
+                    .filter(sch => (sch.class || '').trim().toLowerCase() === cleanClassForCalc &&
+                                   (sch.subject || '').trim().toLowerCase() === cleanSubForCalc)
+                    .map(sch => parseInt(toEnglishDigits(sch.slNo || '0'), 10))
+                    .filter(n => !isNaN(n));
+                const calculatedExamNo = existingSlNos.length > 0 ? (Math.max(...existingSlNos) + 1) : 1;
 
                 html += `
                     <tr style="transition:all 0.15s ease;" class="bulk-subject-row" data-subname="${s.name}" data-subcode="${subCode}">
@@ -8366,6 +8608,7 @@
                         </td>
                         <td style="text-align:center; vertical-align:middle;">
                             <input type="text" class="form-control bulk-row-slno" value="${calculatedExamNo}"
+                                oninput="validateBulkRowSlNoLive(this)"
                                 style="background:#ffffff; color:#0f172a; border:1.5px solid #cbd5e1; font-weight:700; font-size:0.9rem; padding:6px 6px; border-radius:6px; text-align:center; width:60px; margin:0 auto;">
                         </td>
                         <td style="text-align:center; vertical-align:middle;">
@@ -8568,21 +8811,38 @@
             }
 
             let schedules = loadSchedules();
-            schedules.push(...newSchedules);
-            const schedulesStr = JSON.stringify(schedules);
-            localStorage.setItem('school_exam_schedules', schedulesStr);
-            if (termName) {
-                localStorage.setItem('school_active_exam_filter', termName);
+
+            // Strict Duplicate Validation: No duplicate (Class, Subject, Exam No)
+            const cleanClassName = (className || '').trim().toLowerCase();
+            const seenInBatch = new Set();
+
+            for (const sch of newSchedules) {
+                const cleanSub = (sch.subject || '').trim().toLowerCase();
+                const cleanSl = toEnglishDigits(sch.slNo || '').trim();
+                const batchKey = `${cleanClassName}__${cleanSub}__${cleanSl}`;
+
+                if (seenInBatch.has(batchKey)) {
+                    alert(`⚠️ নির্বাচিত বিষয়গুলোর মধ্যে "${sch.subject}" বিষয়ের জন্য Exam No "${sch.slNo}" একাধিকবার দেওয়া হয়েছে!\n\nExam List-এ একই Class, একই বিষয় এবং একই Exam No একাধিক হতে পারবে না।`);
+                    return;
+                }
+                seenInBatch.add(batchKey);
+
+                const duplicateInDb = schedules.find(s => 
+                    (s.class || '').trim().toLowerCase() === cleanClassName &&
+                    (s.subject || '').trim().toLowerCase() === cleanSub &&
+                    toEnglishDigits(s.slNo || '').trim() === cleanSl
+                );
+                if (duplicateInDb) {
+                    alert(`⚠️ Class: "${className}", বিষয়: "${sch.subject}" এবং Exam No: "${sch.slNo}" দিয়ে ইতিমধ্যে একটি শিডিউল তালিকায় বিদ্যমান রয়েছে!\n\nExam List-এ একই Class, একই বিষয় এবং একই Exam No একাধিক Exam Creat করা যাবে না। অনুগ্রহ করে ভিন্ন Exam No নির্ধারণ করুন।`);
+                    return;
+                }
             }
-            try {
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_exam_schedules', value: schedulesStr })
-                }).catch(() => { });
-                window.dispatchEvent(new CustomEvent('dbSynced'));
-                window.dispatchEvent(new Event('storage'));
-            } catch (e) { }
+            schedules.push(...newSchedules);
+            
+            saveBulkToDatabaseDirect({
+                school_exam_schedules: schedules,
+                school_active_exam_filter: termName || ''
+            });
 
             resetScheduleForm();
             populateAllScheduleFilters();
@@ -8590,7 +8850,7 @@
             renderDashboardRoutineSummary();
             toggleCreateScheduleForm();
 
-            alert(`সফলভাবে ${className}-এর ${newSchedules.length} টি বিষয়ের পরীক্ষার শিডিউল যুক্ত হয়েছে!`);
+            alert(`সফলভাবে ${className}-এর ${newSchedules.length} টি বিষয়ের পরীক্ষার শিডিউল মূল ডাটাবেজে স্থায়ীভাবে যুক্ত হয়েছে!`);
         }
 
         function parseDateString(dateStr) {
@@ -8809,6 +9069,39 @@
             }
 
             let schedules = loadSchedules();
+
+            // Strict Duplicate Validation: No duplicate (Class, Subject, Exam No)
+            const cleanClassName = (className || '').trim().toLowerCase();
+            const cleanSubject = (subject || '').trim().toLowerCase();
+            const cleanSlNo = toEnglishDigits(slNo || '').trim();
+
+            if (!cleanSlNo) {
+                alert("অনুগ্রহ করে Exam No লিখুন (Please enter Exam No)!");
+                const slInput = document.getElementById('schedule-sl-no');
+                if (slInput) slInput.focus();
+                return;
+            }
+
+            const duplicateSchedule = schedules.find(s => {
+                if (editId && String(s.id) === String(editId)) return false;
+                const sClass = (s.class || '').trim().toLowerCase();
+                const sSubject = (s.subject || '').trim().toLowerCase();
+                const sSlNo = toEnglishDigits(s.slNo || '').trim();
+                return sClass === cleanClassName && sSubject === cleanSubject && sSlNo === cleanSlNo;
+            });
+
+            if (duplicateSchedule) {
+                alert(`⚠️ একই Class: "${className}", একই বিষয়: "${subject}" এবং একই Exam No: "${slNo}" দিয়ে ইতিমধ্যে একটি শিডিউল তালিকায় বিদ্যমান রয়েছে!\n\nExam List-এ একই Class, একই বিষয় এবং একই Exam No একাধিক Exam Creat করা যাবে না। অনুগ্রহ করে ভিন্ন Exam No নির্ধারণ করুন।`);
+                const slInput = document.getElementById('schedule-sl-no');
+                if (slInput) {
+                    slInput.focus();
+                    slInput.select();
+                }
+                if (typeof window.validateScheduleSlNoLive === 'function') {
+                    window.validateScheduleSlNoLive();
+                }
+                return;
+            }
             if (editId) {
                 const idx = schedules.findIndex(s => s.id === editId);
                 if (idx !== -1) {
@@ -8845,20 +9138,10 @@
                 schedules.push(newSchedule);
                 alert("Exam Schedule Routine added successfully!");
             }
-            const schedulesStr = JSON.stringify(schedules);
-            localStorage.setItem('school_exam_schedules', schedulesStr);
-            if (termName) {
-                localStorage.setItem('school_active_exam_filter', termName);
-            }
-            try {
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_exam_schedules', value: schedulesStr })
-                }).catch(() => { });
-                window.dispatchEvent(new CustomEvent('dbSynced'));
-                window.dispatchEvent(new Event('storage'));
-            } catch (e) { }
+            saveBulkToDatabaseDirect({
+                school_exam_schedules: schedules,
+                school_active_exam_filter: termName || ''
+            });
 
             resetScheduleForm();
             populateAllScheduleFilters();
@@ -8867,24 +9150,57 @@
             toggleCreateScheduleForm();
         }
 
-        function deleteExamSchedule(id) {
-            if (!confirm("Are you sure you want to delete this schedule?")) return;
+        async function deleteExamSchedule(id) {
+            if (!confirm("Are you sure you want to delete this schedule? (এই পরীক্ষার শিডিউল এবং এর সাথে যুক্ত তথ্য মুছে ফেলা হলে তা মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে যাবে)")) return;
             const schedules = loadSchedules();
-            const filtered = schedules.filter(s => s.id !== id);
-            const filteredStr = JSON.stringify(filtered);
-            localStorage.setItem('school_exam_schedules', filteredStr);
-            try {
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_exam_schedules', value: filteredStr })
-                }).catch(() => { });
-                window.dispatchEvent(new CustomEvent('dbSynced'));
-                window.dispatchEvent(new Event('storage'));
-            } catch (e) { }
+            const targetSchedule = schedules.find(s => String(s.id) === String(id));
+            const filtered = schedules.filter(s => String(s.id) !== String(id));
+
+            // Clean up related marks from school_student_marks
+            let savedMarks = loadStudentMarks();
+            let marksChanged = false;
+            if (savedMarks && typeof savedMarks === 'object') {
+                const markPrefix = `_${id}`;
+                Object.keys(savedMarks).forEach(k => {
+                    if (k.endsWith(markPrefix) || k === `timestamp_${id}`) {
+                        delete savedMarks[k];
+                        marksChanged = true;
+                    }
+                });
+            }
+
+            // Clean up related OMR exam from school_omr_exams if exists
+            let omrExams = safeJsonParse('school_omr_exams', []);
+            let omrChanged = false;
+            const beforeLen = omrExams.length;
+            omrExams = omrExams.filter(x => String(x.id) !== String(id) && String(x.scheduleId) !== String(id));
+            if (omrExams.length !== beforeLen) {
+                omrChanged = true;
+            }
+
+            const dbBulk = {
+                school_exam_schedules: filtered
+            };
+            if (marksChanged) dbBulk.school_student_marks = savedMarks;
+            if (omrChanged) {
+                dbBulk.school_omr_exams = omrExams;
+                try {
+                    fetch('/api/exams', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(omrExams)
+                    }).catch(() => { });
+                } catch (e) { }
+            }
+
+            await saveBulkToDatabaseDirect(dbBulk);
+
             populateAllScheduleFilters();
             renderScheduleList();
             renderDashboardRoutineSummary();
+            if (typeof showExamToast === 'function') {
+                showExamToast('পরীক্ষার শিডিউল ও সংশ্লিষ্ট সকল তথ্য মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে!', true);
+            }
         }
 
         function resetScheduleForm() {
@@ -10033,7 +10349,7 @@ function openExamMarksEntryModal(scheduleId) {
             document.getElementById('stat-avg-mark').innerText = nonAbsentExaminees > 0 ? (totalSum / nonAbsentExaminees).toFixed(1) : "0.0";
         }
 
-        function saveExamMarksModal() {
+        async function saveExamMarksModal() {
             if (!activeExamScheduleId) return;
 
             const schedules = loadSchedules();
@@ -10208,33 +10524,17 @@ function openExamMarksEntryModal(scheduleId) {
             localStorage.setItem('school_student_marks', marksJson);
             localStorage.setItem('school_exam_schedules', schedulesJson);
 
-            // PERMANENT STORAGE TO SERVER & SQLITE DATABASE
+            // DIRECT PERMANENT STORAGE TO SQLITE DATABASE & SERVER
             try {
-                fetch('/api/db/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        data: {
-                            school_student_marks: marksJson,
-                            school_exam_schedules: schedulesJson,
-                            school_active_exam_filter: sch.term || ''
-                        }
-                    })
-                }).catch(() => { });
-
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_student_marks', value: marksJson })
-                }).catch(() => { });
-
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_exam_schedules', value: schedulesJson })
-                }).catch(() => { });
+                if (typeof window.saveBulkToDatabaseDirect === 'function') {
+                    await window.saveBulkToDatabaseDirect({
+                        school_student_marks: marksJson,
+                        school_exam_schedules: schedulesJson,
+                        school_active_exam_filter: sch.term || ''
+                    });
+                }
             } catch (e) {
-                console.error("Error saving marks to server:", e);
+                console.error("Error saving marks to database directly:", e);
             }
 
             showExamToast(`Saved exam marks for ${countSaved} students permanently!`, true);
@@ -12467,7 +12767,7 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function saveBulkMarkingSystem() {
+        async function saveBulkMarkingSystem() {
             const rows = document.querySelectorAll('#grade-rules-rows .bulk-grade-row');
             if (!rows || rows.length === 0) {
                 alert("At least one grade rule must exist!");
@@ -12534,13 +12834,16 @@ function openExamMarksEntryModal(scheduleId) {
             updatedRules.sort((a, b) => b.min - a.min);
 
             localStorage.setItem('school_marking_system', JSON.stringify(updatedRules));
+            if (typeof window.persistMarkingSystemSync === 'function') {
+                await window.persistMarkingSystemSync(updatedRules);
+            }
             isMarkingSystemTableEditMode = false;
             resetGradeRuleForm();
             renderMarkingSystem();
-            alert("Grading scale updated and saved successfully! (গ্রেডিং স্কেল সফলভাবে সংরক্ষিত হয়েছে)");
+            alert("Grading scale updated and saved to main database successfully! (গ্রেডিং স্কেল মূল ডাটাবেজে স্থায়ীভাবে সংরক্ষিত হয়েছে)");
         }
 
-        function saveGradeRule(event) {
+        async function saveGradeRule(event) {
             event.preventDefault();
             const id = document.getElementById('grade-rule-id').value;
             const name = document.getElementById('grade-name').value.trim();
@@ -12592,9 +12895,12 @@ function openExamMarksEntryModal(scheduleId) {
             rules.sort((a, b) => b.min - a.min);
 
             localStorage.setItem('school_marking_system', JSON.stringify(rules));
+            if (typeof window.persistMarkingSystemSync === 'function') {
+                await window.persistMarkingSystemSync(rules);
+            }
             resetGradeRuleForm();
             renderMarkingSystem();
-            alert(`Grade rule "${name}" saved successfully!`);
+            alert(`Grade rule "${name}" saved to main database successfully!`);
         }
 
         function editGradeRule(id) {
@@ -12629,7 +12935,7 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function deleteGradeRule(id) {
+        async function deleteGradeRule(id) {
             const rules = loadMarkingSystem();
             const targetRule = rules.find(r => r.id === id);
             const targetName = targetRule ? targetRule.name : 'this rule';
@@ -12643,12 +12949,15 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             localStorage.setItem('school_marking_system', JSON.stringify(filtered));
+            if (typeof window.persistMarkingSystemSync === 'function') {
+                await window.persistMarkingSystemSync(filtered);
+            }
             if (editingGradeRuleId === id) {
                 resetGradeRuleForm();
             } else {
                 renderMarkingSystem();
             }
-            alert(`Grade rule "${targetName}" deleted successfully!`);
+            alert(`Grade rule "${targetName}" permanently deleted from database! (মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে)`);
         }
 
         function resetGradeRuleForm() {
@@ -12671,7 +12980,7 @@ function openExamMarksEntryModal(scheduleId) {
             renderMarkingSystem();
         }
 
-        function applyGradingPreset(presetKey) {
+        async function applyGradingPreset(presetKey) {
             const preset = GRADING_PRESETS[presetKey];
             if (!preset) return;
 
@@ -12685,17 +12994,23 @@ function openExamMarksEntryModal(scheduleId) {
             if (!confirm(`Apply the "${name}" preset scale? This will replace the current grading scale.`)) return;
 
             localStorage.setItem('school_marking_system', JSON.stringify(preset));
+            if (typeof window.persistMarkingSystemSync === 'function') {
+                await window.persistMarkingSystemSync(preset);
+            }
             resetGradeRuleForm();
             renderMarkingSystem();
-            alert(`Applied "${name}" preset successfully!`);
+            alert(`Applied "${name}" preset and saved to database successfully!`);
         }
 
-        function resetMarkingSystemToDefault() {
+        async function resetMarkingSystemToDefault() {
             if (!confirm("Are you sure you want to restore standard grading thresholds? This will overwrite your current changes.")) return;
             localStorage.setItem('school_marking_system', JSON.stringify(DEFAULT_GRADE_RULES));
+            if (typeof window.persistMarkingSystemSync === 'function') {
+                await window.persistMarkingSystemSync(DEFAULT_GRADE_RULES);
+            }
             resetGradeRuleForm();
             renderMarkingSystem();
-            alert("Grading scale restored to defaults!");
+            alert("Grading scale restored to defaults and saved to database!");
         }
 
         // --- SUBVIEW 4: ALL SUBJECT CONTROLLERS ---
@@ -12946,22 +13261,18 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function persistAcademicSubjectsSync(subjectsMap) {
+        async function persistAcademicSubjectsSync(subjectsMap) {
             try {
                 if (!subjectsMap) return;
                 const subStr = typeof subjectsMap === 'string' ? subjectsMap : JSON.stringify(subjectsMap);
                 localStorage.setItem('school_subjects', subStr);
                 localStorage.setItem('school_subjects_fixed', 'true');
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_subjects', value: subStr })
-                }).catch(() => { });
-                fetch('/api/db/set', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: 'school_subjects_fixed', value: 'true' })
-                }).catch(() => { });
+                if (typeof window.saveBulkToDatabaseDirect === 'function') {
+                    await window.saveBulkToDatabaseDirect({
+                        school_subjects: subStr,
+                        school_subjects_fixed: 'true'
+                    });
+                }
                 window.dispatchEvent(new CustomEvent('school_subjects_synced'));
                 window.dispatchEvent(new Event('storage'));
             } catch (e) {
@@ -13190,15 +13501,15 @@ function openExamMarksEntryModal(scheduleId) {
             if (modal) modal.classList.remove('active');
         }
 
-        function deleteSubject(classVal, code) {
-            if (!confirm("Are you sure you want to delete this subject?")) return;
+        async function deleteSubject(classVal, code) {
+            if (!confirm("আপনি কি নিশ্চিত যে এই বিষয়টি মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলতে চান? (Are you sure you want to permanently delete this subject from database?)")) return;
             const subjectsMap = loadSubjects();
             const classSubjects = subjectsMap[classVal] || [];
 
             const filtered = classSubjects.filter(s => s.code !== code);
             subjectsMap[classVal] = filtered;
 
-            persistAcademicSubjectsSync(subjectsMap);
+            await persistAcademicSubjectsSync(subjectsMap);
 
             // If the subject currently being edited is deleted, reset the form
             const editClass = document.getElementById('subject-edit-class').value;
@@ -13208,6 +13519,9 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             renderSubjectList();
+            if (typeof showExamToast === 'function') {
+                showExamToast("বিষয়টি মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে।", true);
+            }
         }
 
         function editSubject(classVal, code) {
@@ -13980,6 +14294,9 @@ function openExamMarksEntryModal(scheduleId) {
 
             normalizeExamTypeObject(exam);
             localStorage.setItem('school_exam_types', JSON.stringify(types));
+            if (typeof window.persistExamTypesSync === 'function') {
+                window.persistExamTypesSync(types);
+            }
 
             renderExamTypes();
             populateExamDropdowns();
@@ -14018,6 +14335,9 @@ function openExamMarksEntryModal(scheduleId) {
             exam.examTypes = exam.examTypes.filter(s => s.id !== subTypeId);
             normalizeExamTypeObject(exam);
             localStorage.setItem('school_exam_types', JSON.stringify(types));
+            if (typeof window.persistExamTypesSync === 'function') {
+                window.persistExamTypesSync(types);
+            }
 
             renderExamTypes();
             populateExamDropdowns();
@@ -14032,26 +14352,12 @@ function openExamMarksEntryModal(scheduleId) {
             if (curModalExamD && typeof renderExamSubTypesInModal === 'function') renderExamSubTypesInModal(curModalExamD);
         }
 
-        function deleteExamNameFull(examId, event) {
+        async function deleteExamNameFull(examId, event) {
             if (event) event.stopPropagation();
             let types = loadExamTypes();
             const exam = types.find(x => x.id === examId);
-            const examName = exam ? exam.name : 'পরীক্ষা';
-
-            if (!confirm(`"${examName}" এবং এর অন্তর্ভুক্ত সকল Exam Type মুছে ফেলা হবে। আপনি কি নিশ্চিত?`)) {
-                return;
-            }
-
-            types = types.filter(t => t.id !== examId);
-            expandedExamTypeIds.delete(examId);
-            localStorage.setItem('school_exam_types', JSON.stringify(types));
-
-            renderExamTypes();
-            populateExamDropdowns();
-            populateScheduleExamTypesDropdown();
-            if (typeof renderScheduleList === 'function') renderScheduleList();
-            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
-            if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+            if (!exam) return;
+            await deleteExamNameFromList(exam.name);
         }
 
         function renderExamTypes() {
@@ -14522,7 +14828,7 @@ function openExamMarksEntryModal(scheduleId) {
             document.getElementById('exam-type-modal').classList.add('active');
         }
 
-        function saveExamType(event) {
+        async function saveExamType(event) {
             event.preventDefault();
             const nameSelect = document.getElementById('exam-type-name');
             const examName = nameSelect ? nameSelect.value.trim() : '';
@@ -14636,7 +14942,10 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             localStorage.setItem('school_exam_types', JSON.stringify(types));
-            alert(`✅ "${examName}" পরীক্ষার অধীনে "${typeName}" ধরনটি সফলভাবে সংরক্ষিত হয়েছে!`);
+            if (typeof window.persistExamTypesSync === 'function') {
+                await window.persistExamTypesSync(types);
+            }
+            alert(`✅ "${examName}" পরীক্ষার অধীনে "${typeName}" ধরনটি মূল ডাটাবেজে স্থায়ীভাবে সংরক্ষিত হয়েছে!`);
             closeExamTypeModal();
             renderExamTypes();
             populateExamDropdowns();
@@ -14674,8 +14983,14 @@ function openExamMarksEntryModal(scheduleId) {
                 return;
             }
             localStorage.removeItem('school_exam_types');
+            if (typeof window.deleteFromDatabaseDirect === 'function') {
+                window.deleteFromDatabaseDirect('school_exam_types');
+            }
             expandedExamTypeIds.clear();
-            loadExamTypes();
+            const defaultExamTypes = loadExamTypes();
+            if (typeof window.persistExamTypesSync === 'function') {
+                window.persistExamTypesSync(defaultExamTypes);
+            }
             renderExamTypes();
             populateExamDropdowns();
             populateScheduleExamTypesDropdown();
@@ -14726,7 +15041,7 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function saveCustomExamName(event) {
+        async function saveCustomExamName(event) {
             event.preventDefault();
             const nameInput = document.getElementById('custom-exam-name');
             const name = nameInput ? nameInput.value.trim() : '';
@@ -14787,6 +15102,9 @@ function openExamMarksEntryModal(scheduleId) {
 
             types.push(newExam);
             localStorage.setItem('school_exam_types', JSON.stringify(types));
+            if (typeof window.persistExamTypesSync === 'function') {
+                await window.persistExamTypesSync(types);
+            }
 
             // Expand the newly created exam in master-detail table
             if (typeof expandedExamTypeIds !== 'undefined') {
@@ -14807,7 +15125,7 @@ function openExamMarksEntryModal(scheduleId) {
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
             if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
 
-            alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে তৈরি হয়েছে! এখন প্রয়োজন অনুসারে এর অধীনে আরও Exam Type যুক্ত করতে পারেন।`);
+            alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে তৈরি হয়েছে এবং মূল ডাটাবেজে স্থায়ীভাবে সংরক্ষণ করা হয়েছে!`);
         }
 
         // --- EXAM NAME UPDATE & MANAGEMENT CONTROLLERS ---
@@ -14878,23 +15196,124 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function deleteExamNameFromList(examName) {
-            if (!examName) return;
-            if (!confirm(`আপনি কি নিশ্চিত যে "${examName}" পরীক্ষার নামটি মুছে ফেলতে চান?`)) {
+        window.deleteCurrentScheduleExamName = async function () {
+            const el = document.getElementById('schedule-exam-name');
+            const examName = el ? el.value : '';
+            if (!examName || examName.startsWith('__ACTION_')) {
+                alert("অনুগ্রহ করে প্রথমে মুছে ফেলার জন্য একটি পরীক্ষার নাম নির্বাচন করুন!");
                 return;
             }
+            await deleteExamNameFromList(examName);
+        };
+
+        async function deleteExamNameFromList(examName) {
+            if (!examName) return;
+            const cleanName = examName.trim();
+            if (!confirm(`⚠️ আপনি কি নিশ্চিত যে "${cleanName}" পরীক্ষাটি এবং এর অধীনে এন্ট্রি করা শিক্ষার্থীর মার্ক সহ সকল তথ্য মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলতে চান?\n\nএটি মুছে ফেললে মূল ডাটাবেজ (school.db) থেকে:\n১. "${cleanName}" পরীক্ষার নাম স্থায়ীভাবে মুছে যাবে।\n২. এই পরীক্ষায় এন্ট্রি করা সকল শিক্ষার্থীর সকল বিষয়ের মার্ক (Marks) চিরতরে মুছে যাবে।\n৩. Exam List-এ থাকা এই পরীক্ষার সকল শিডিউল স্থায়ীভাবে মুছে যাবে।\n৪. এই পরীক্ষার সকল ওএমআর (OMR) ফলাফল সম্পূর্ণ মুছে যাবে।`)) {
+                return;
+            }
+
             let types = loadExamTypes();
-            const filtered = types.filter(t => t.name.toLowerCase() !== examName.toLowerCase());
-            if (filtered.length === 0) {
+            const filteredTypes = types.filter(t => t.name.toLowerCase() !== cleanName.toLowerCase());
+            if (filteredTypes.length === 0) {
                 alert("তালিকায় অন্তত একটি পরীক্ষার নাম থাকতে হবে, সব মুছে ফেলা যাবে না!");
                 return;
             }
-            localStorage.setItem('school_exam_types', JSON.stringify(filtered));
+
+            // 1. Cascade delete schedules for this exam name
+            let schedules = loadSchedules();
+            const deletedScheduleIds = new Set();
+            const remainingSchedules = schedules.filter(s => {
+                const matchTerm = (s.term || '').trim().toLowerCase() === cleanName.toLowerCase();
+                const matchExamName = (s.examName || '').trim().toLowerCase() === cleanName.toLowerCase();
+                if (matchTerm || matchExamName) {
+                    deletedScheduleIds.add(String(s.id));
+                    return false;
+                }
+                return true;
+            });
+
+            // 2. Cascade delete student marks for this exam and its deleted schedules
+            let savedMarks = loadStudentMarks();
+            let marksChanged = false;
+            if (savedMarks && typeof savedMarks === 'object') {
+                const termSuffix = `_${cleanName.toLowerCase()}`;
+                Object.keys(savedMarks).forEach(k => {
+                    const kLower = k.toLowerCase();
+                    if (kLower.endsWith(termSuffix) || kLower === `marks_${cleanName.toLowerCase()}`) {
+                        delete savedMarks[k];
+                        marksChanged = true;
+                    }
+                    deletedScheduleIds.forEach(schId => {
+                        if (k.endsWith(`_${schId}`) || k === `timestamp_${schId}`) {
+                            delete savedMarks[k];
+                            marksChanged = true;
+                        }
+                    });
+                });
+            }
+
+            // 3. Cascade delete OMR exams for this exam name
+            let omrExams = safeJsonParse('school_omr_exams', []);
+            const beforeOmrLen = omrExams.length;
+            omrExams = omrExams.filter(x => {
+                const xName = (x.examName || '').trim().toLowerCase();
+                const xTerm = (x.term || '').trim().toLowerCase();
+                const xId = String(x.id);
+                const xSchId = String(x.scheduleId || '');
+                if (xName === cleanName.toLowerCase() || xTerm === cleanName.toLowerCase() || deletedScheduleIds.has(xId) || deletedScheduleIds.has(xSchId)) {
+                    return false;
+                }
+                return true;
+            });
+            const omrChanged = (omrExams.length !== beforeOmrLen);
+
+            // 4. Update localStorage
+            localStorage.setItem('school_exam_types', JSON.stringify(filteredTypes));
+            localStorage.setItem('school_exam_schedules', JSON.stringify(remainingSchedules));
+            if (marksChanged) localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
+            if (omrChanged) localStorage.setItem('school_omr_exams', JSON.stringify(omrExams));
+
+            const curFilter = localStorage.getItem('school_active_exam_filter');
+            if (curFilter && curFilter.trim().toLowerCase() === cleanName.toLowerCase()) {
+                localStorage.removeItem('school_active_exam_filter');
+            }
+
+            // 5. DIRECT BULK PERMANENT PERSISTENCE TO SQLITE DATABASE (school.db)
+            const dbBulk = {
+                school_exam_types: filteredTypes,
+                school_exam_schedules: remainingSchedules
+            };
+            if (marksChanged) dbBulk.school_student_marks = savedMarks;
+            if (omrChanged) {
+                dbBulk.school_omr_exams = omrExams;
+                try {
+                    fetch('/api/exams', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(omrExams)
+                    }).catch(() => { });
+                } catch (e) { }
+            }
+            if (typeof window.saveBulkToDatabaseDirect === 'function') {
+                await window.saveBulkToDatabaseDirect(dbBulk);
+            }
+
+            // 6. Refresh UI
             renderExamNamesListInUpdateModal();
             populateExamDropdowns();
+            populateScheduleExamTypesDropdown();
             renderExamTypes();
             if (typeof renderScheduleList === 'function') renderScheduleList();
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
+            if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+            if (typeof renderExamNamesSubView === 'function') renderExamNamesSubView();
+
+            if (typeof showExamToast === 'function') {
+                showExamToast(`"${cleanName}" পরীক্ষা এবং এতে এন্ট্রি করা শিক্ষার্থীর মার্ক সহ সকল তথ্য মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে!`, true);
+            } else {
+                alert(`✅ "${cleanName}" পরীক্ষা এবং এতে এন্ট্রি করা শিক্ষার্থীর মার্ক সহ সকল তথ্য মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে!`);
+            }
         }
 
         function renderExamNamesListInUpdateModal() {
@@ -14938,7 +15357,7 @@ function openExamMarksEntryModal(scheduleId) {
             tbody.innerHTML = html;
         }
 
-        function saveUpdatedExamName(event) {
+        async function saveUpdatedExamName(event) {
             if (event) event.preventDefault();
             const oldInput = document.getElementById('modal-update-exam-name-old');
             const nameInput = document.getElementById('modal-update-exam-name-input');
@@ -14998,6 +15417,9 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             localStorage.setItem('school_exam_types', JSON.stringify(types));
+            if (typeof window.persistExamTypesSync === 'function') {
+                await window.persistExamTypesSync(types);
+            }
 
             // Sync with existing schedules if requested
             if (syncCheckbox && syncCheckbox.checked && oldName && oldName.toLowerCase() !== newName.toLowerCase()) {
@@ -15422,7 +15844,7 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function saveUpdatedExamNameFromSubview(event) {
+        async function saveUpdatedExamNameFromSubview(event) {
             if (event) event.preventDefault();
             const selectTarget = document.getElementById('subview-exam-name-select-target');
             const input = document.getElementById('subview-exam-name-input');
@@ -15479,6 +15901,9 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             localStorage.setItem('school_exam_types', JSON.stringify(types));
+            if (typeof window.persistExamTypesSync === 'function') {
+                await window.persistExamTypesSync(types);
+            }
 
             // Sync with existing schedules if requested
             if (syncCheckbox && syncCheckbox.checked && oldName && oldName.toLowerCase() !== newName.toLowerCase()) {
@@ -15532,7 +15957,7 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function saveNewExamNameFromSubview() {
+        async function saveNewExamNameFromSubview() {
             const input = document.getElementById('subview-exam-name-input');
             const name = input ? input.value.trim() : '';
 
@@ -15593,6 +16018,9 @@ function openExamMarksEntryModal(scheduleId) {
 
             types.push(newExam);
             localStorage.setItem('school_exam_types', JSON.stringify(types));
+            if (typeof window.persistExamTypesSync === 'function') {
+                await window.persistExamTypesSync(types);
+            }
 
             populateExamDropdowns();
             const schedSelect = document.getElementById('schedule-exam-name');
@@ -15612,23 +16040,10 @@ function openExamMarksEntryModal(scheduleId) {
             alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে যুক্ত হয়েছে!`);
         }
 
-        function deleteExamNameInSubview(examName) {
+        async function deleteExamNameInSubview(examName) {
             if (!examName) return;
-            if (!confirm(`আপনি কি নিশ্চিত যে "${examName}" পরীক্ষার নামটি মুছে ফেলতে চান?`)) {
-                return;
-            }
-            let types = loadExamTypes();
-            const filtered = types.filter(t => t.name.toLowerCase() !== examName.toLowerCase());
-            if (filtered.length === 0) {
-                alert("তালিকায় অন্তত একটি পরীক্ষার নাম থাকতে হবে, সব মুছে ফেলা যাবে না!");
-                return;
-            }
-            localStorage.setItem('school_exam_types', JSON.stringify(filtered));
+            await deleteExamNameFromList(examName);
             renderExamNamesSubView();
-            populateExamDropdowns();
-            renderExamTypes();
-            if (typeof renderScheduleList === 'function') renderScheduleList();
-            if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
         }
 
         function filterExamNamesInSubview() {
@@ -16101,6 +16516,34 @@ function openExamMarksEntryModal(scheduleId) {
                 if (data.school_students && !localStorage.getItem('school_students')) {
                     const str = typeof data.school_students === 'string' ? data.school_students : JSON.stringify(data.school_students);
                     localStorage.setItem('school_students', str);
+                    hasChanged = true;
+                }
+
+                // 4. Sync school_subjects if local is missing or empty
+                if (data.school_subjects && !localStorage.getItem('school_subjects')) {
+                    const subStr = typeof data.school_subjects === 'string' ? data.school_subjects : JSON.stringify(data.school_subjects);
+                    localStorage.setItem('school_subjects', subStr);
+                    hasChanged = true;
+                }
+
+                // 5. Sync school_exam_types if local is missing or empty
+                if (data.school_exam_types && !localStorage.getItem('school_exam_types')) {
+                    const typesStr = typeof data.school_exam_types === 'string' ? data.school_exam_types : JSON.stringify(data.school_exam_types);
+                    localStorage.setItem('school_exam_types', typesStr);
+                    hasChanged = true;
+                }
+
+                // 6. Sync school_marking_system if local is missing or empty
+                if (data.school_marking_system && !localStorage.getItem('school_marking_system')) {
+                    const rulesStr = typeof data.school_marking_system === 'string' ? data.school_marking_system : JSON.stringify(data.school_marking_system);
+                    localStorage.setItem('school_marking_system', rulesStr);
+                    hasChanged = true;
+                }
+
+                // 7. Sync school_omr_exams if local is missing or empty
+                if (data.school_omr_exams && !localStorage.getItem('school_omr_exams')) {
+                    const omrStr = typeof data.school_omr_exams === 'string' ? data.school_omr_exams : JSON.stringify(data.school_omr_exams);
+                    localStorage.setItem('school_omr_exams', omrStr);
                     hasChanged = true;
                 }
 
@@ -18234,13 +18677,38 @@ function openExamMarksEntryModal(scheduleId) {
                 document.getElementById('statPassRate').textContent = `${toBengaliNumber(passRate)}%`;
             }
 
-            // Delete a student from the table
-            window.deleteStudent = function (index) {
-                if (confirm('আপনি কি নিশ্চিতভাবে এই শিক্ষার্থীর ওএমআর তথ্য মুছে ফেলতে চান?')) {
+            // Delete a student from the table and sync to database if imported exam is active
+            window.deleteStudent = async function (index) {
+                if (index < 0 || index >= state.students.length) return;
+                const student = state.students[index];
+                const studentName = student ? (student.name || student.id || 'শিক্ষার্থী') : 'শিক্ষার্থী';
+                if (confirm(`আপনি কি নিশ্চিতভাবে "${studentName}" এর ওএমআর তথ্য মূল ডাটাবেজ থেকে মুছে ফেলতে চান?`)) {
                     state.students.splice(index, 1);
                     renderResultsTable();
                     updateStatistics();
-                    showToast('শিক্ষার্থীর তথ্য সফলভাবে মুছে ফেলা হয়েছে', 'info');
+
+                    // If an active imported exam is loaded, update it in school_omr_exams directly in SQLite database
+                    if (state.importedExamInfo && state.importedExamInfo.id) {
+                        const schId = String(state.importedExamInfo.id);
+                        let omrExams = safeJsonParse('school_omr_exams', []);
+                        const oeIdx = omrExams.findIndex(x => String(x.id) === schId);
+                        if (oeIdx !== -1) {
+                            omrExams[oeIdx].students = state.students;
+                            omrExams[oeIdx].totalStudents = state.students.length;
+                            localStorage.setItem('school_omr_exams', JSON.stringify(omrExams));
+                            if (typeof window.saveToDatabaseDirect === 'function') {
+                                await window.saveToDatabaseDirect('school_omr_exams', JSON.stringify(omrExams));
+                            }
+                            try {
+                                fetch('/api/exams', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(omrExams)
+                                }).catch(() => { });
+                            } catch (e) { }
+                        }
+                    }
+                    showToast('শিক্ষার্থীর তথ্য সফলভাবে মুছে ফেলা হয়েছে এবং মূল ডাটাবেজ আপডেট হয়েছে', 'info');
                 }
             };
 
@@ -19354,7 +19822,7 @@ function openExamMarksEntryModal(scheduleId) {
             }
 
             // Reset All Data
-            btnResetData.addEventListener('click', () => {
+            btnResetData.addEventListener('click', async () => {
                 if (confirm('আপনি কি বর্তমান সকল ফলাফল ও আপলোডকৃত ডেটা রিসেট করতে চান?')) {
                     state.students = [];
                     state.studentFiles = [];
@@ -19368,6 +19836,11 @@ function openExamMarksEntryModal(scheduleId) {
                     };
                     state.setSourceFiles = { 'ক': null, 'খ': null, 'গ': null, 'ঘ': null };
                     state.uploadedKeyPreview = null;
+                    state.importedExamInfo = null;
+                    localStorage.removeItem('school_active_omr_imported_exam');
+                    if (typeof window.deleteFromDatabaseDirect === 'function') {
+                        await window.deleteFromDatabaseDirect('school_active_omr_imported_exam');
+                    }
                     if (typeof renderPendingList === 'function') renderPendingList();
                     if (typeof updateTabCounts === 'function') updateTabCounts();
 
@@ -19460,6 +19933,12 @@ function openExamMarksEntryModal(scheduleId) {
                     if (!Array.isArray(currentExams)) currentExams = [];
                     currentExams.unshift(examRecord);
 
+                    // DIRECT SQLITE DATABASE PERSISTENCE
+                    localStorage.setItem('school_omr_exams', JSON.stringify(currentExams));
+                    if (typeof window.saveToDatabaseDirect === 'function') {
+                        await window.saveToDatabaseDirect('school_omr_exams', JSON.stringify(currentExams));
+                    }
+
                     const saveRes = await fetch('/api/exams', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -19467,14 +19946,16 @@ function openExamMarksEntryModal(scheduleId) {
                     });
 
                     if (saveRes.ok) {
-                        showToast('পরীক্ষার ফলাফল সার্ভারে সফলভাবে সংরক্ষিত হয়েছে!', 'success', 'fa-cloud-arrow-up');
+                        showToast('পরীক্ষার ফলাফল মূল ডাটাবেজে সফলভাবে স্থায়ীভাবে সংরক্ষিত হয়েছে!', 'success', 'fa-cloud-arrow-up');
                     } else {
-                        localStorage.setItem('school_omr_exams', JSON.stringify(currentExams));
-                        showToast('ফলাফল লোকাল মেমরিতে সংরক্ষিত হয়েছে', 'info');
+                        showToast('ফলাফল মূল ডাটাবেজে স্থায়ীভাবে সংরক্ষিত হয়েছে', 'success', 'fa-database');
                     }
                 } catch (err) {
                     localStorage.setItem('school_omr_exams', JSON.stringify([examRecord]));
-                    showToast('ফলাফল লোকাল মেমরিতে ব্যাকআপ করা হয়েছে', 'info');
+                    if (typeof window.saveToDatabaseDirect === 'function') {
+                        await window.saveToDatabaseDirect('school_omr_exams', JSON.stringify([examRecord]));
+                    }
+                    showToast('ফলাফল মূল ডাটাবেজে ব্যাকআপ ও সংরক্ষিত হয়েছে', 'info');
                 }
             };
 
@@ -19863,16 +20344,78 @@ function openExamMarksEntryModal(scheduleId) {
                           </div>
                         </div>
 
-                        <div style="flex-shrink: 0;">
+                        <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
                           <button type="button" class="btn btn-sm" 
                                   style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #ffffff; font-weight: 700; border-radius: 8px; padding: 8px 18px; border: none; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3); font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;"
                                   onclick="event.stopPropagation(); selectAndImportExam('${exam.id}', '${exam.source}')">
                             <i class="fa-solid fa-file-import"></i> Import Exam
                           </button>
+                          <button type="button" class="btn btn-sm" 
+                                  style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;"
+                                  title="মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলুন (Permanently Delete from Database)"
+                                  onclick="event.stopPropagation(); deleteSavedOmrExam('${exam.id}', '${exam.source}')">
+                            <i class="fa-solid fa-trash-can"></i>
+                          </button>
                         </div>
                       </div>
                     `;
                 }).join('');
+            };
+
+            window.deleteSavedOmrExam = async function (examId, source) {
+                if (!examId) return;
+                const exam = (cachedAvailableExams || []).find(x => String(x.id) === String(examId) && x.source === source);
+                const examLabel = exam ? (exam.examName || 'পরীক্ষা') : 'এই পরীক্ষা';
+
+                if (!confirm(`⚠️ আপনি কি নিশ্চিত যে "${examLabel}" এর সম্পূর্ণ রেকর্ড মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলতে চান?\n\nএটি মুছে ফেললে মূল ডাটাবেজ ফাইল (school.db) থেকে সংশ্লিষ্ট তথ্য চিরতরে মুছে যাবে।`)) {
+                    return;
+                }
+
+                try {
+                    if (source === 'omr') {
+                        // 1. Delete via /api/exams DELETE method
+                        try {
+                            await fetch(`/api/exams?id=${encodeURIComponent(examId)}`, { method: 'DELETE' });
+                        } catch (e) { }
+
+                        // 2. Delete from school_omr_exams in localStorage and school.db
+                        let omrExams = safeJsonParse('school_omr_exams', []);
+                        omrExams = omrExams.filter(x => String(x.id) !== String(examId));
+                        localStorage.setItem('school_omr_exams', JSON.stringify(omrExams));
+                        if (typeof window.saveToDatabaseDirect === 'function') {
+                            await window.saveToDatabaseDirect('school_omr_exams', JSON.stringify(omrExams));
+                        }
+
+                        // 3. If currently imported, clear state and local storage
+                        if (state.importedExamInfo && String(state.importedExamInfo.id) === String(examId)) {
+                            state.importedExamInfo = null;
+                            localStorage.removeItem('school_active_omr_imported_exam');
+                            if (typeof window.deleteFromDatabaseDirect === 'function') {
+                                await window.deleteFromDatabaseDirect('school_active_omr_imported_exam');
+                            }
+                        }
+
+                        // 4. Update cachedAvailableExams and re-render modal list
+                        cachedAvailableExams = cachedAvailableExams.filter(x => !(String(x.id) === String(examId) && x.source === 'omr'));
+                        renderImportExamList();
+
+                        if (typeof showToast === 'function') {
+                            showToast(`"${examLabel}" ওএমআর রেকর্ডটি মূল ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলা হয়েছে!`, 'success', 'fa-trash-can');
+                        }
+                    } else if (source === 'schedule') {
+                        // Delete schedule directly
+                        if (typeof window.deleteExamSchedule === 'function') {
+                            await window.deleteExamSchedule(examId);
+                            cachedAvailableExams = cachedAvailableExams.filter(x => !(String(x.id) === String(examId) && x.source === 'schedule'));
+                            renderImportExamList();
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error deleting exam:', err);
+                    if (typeof showToast === 'function') {
+                        showToast('রেকর্ডটি মুছে ফেলতে সমস্যা হয়েছে: ' + err.message, 'danger');
+                    }
+                }
             };
 
             window.selectAndImportExam = function (examId, source) {
@@ -20426,11 +20969,6 @@ function openExamMarksEntryModal(scheduleId) {
                     savedMarks[`timestamp_${schId}`] = nowFormatted;
 
                     localStorage.setItem('school_student_marks', JSON.stringify(savedMarks));
-                    fetch('/api/db/set', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key: 'school_student_marks', value: JSON.stringify(savedMarks) })
-                    }).catch(() => { });
 
                     // 3. Save to school_omr_exams & /api/exams
                     const examRecord = {
@@ -20470,6 +21008,16 @@ function openExamMarksEntryModal(scheduleId) {
                         omrExams.unshift(examRecord);
                     }
                     localStorage.setItem('school_omr_exams', JSON.stringify(omrExams));
+
+                    // DIRECT BULK PERSISTENCE TO SQLITE DATABASE (school.db)
+                    if (typeof window.saveBulkToDatabaseDirect === 'function') {
+                        await window.saveBulkToDatabaseDirect({
+                            school_student_marks: JSON.stringify(savedMarks),
+                            school_exam_schedules: JSON.stringify(schedules),
+                            school_omr_exams: JSON.stringify(omrExams),
+                            school_active_omr_imported_exam: JSON.stringify(examInfo)
+                        });
+                    }
 
                     try {
                         await fetch('/api/exams', {

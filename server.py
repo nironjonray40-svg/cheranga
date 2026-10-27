@@ -284,7 +284,12 @@ ESSENTIAL_UI_KEYS = [
     'school_cms_settings',
     'school_cms_data',
     'bd_geo_admission_data',
-    'school_admission_applications'
+    'school_admission_applications',
+    'school_exam_schedules',
+    'school_omr_exams',
+    'school_marking_system',
+    'school_exam_types',
+    'school_student_marks'
 ]
 
 def get_db_connection(max_retries=3, retry_delay=0.08):
@@ -330,6 +335,89 @@ def refresh_db_cache():
                 conn.close()
             except Exception:
                 pass
+
+def get_omr_exams_from_db():
+    if 'school_omr_exams' in DB_STORE_CACHE:
+        val = DB_STORE_CACHE['school_omr_exams'].get('value', '')
+        if val:
+            try:
+                parsed = json.loads(val) if isinstance(val, str) else val
+                if isinstance(parsed, list):
+                    return parsed
+            except Exception:
+                pass
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM local_storage_sync WHERE key='school_omr_exams'")
+        row = cursor.fetchone()
+        if row and row[0]:
+            parsed = json.loads(row[0])
+            if isinstance(parsed, list):
+                return parsed
+    except Exception:
+        pass
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    exams_file = os.path.join(BASE_DIR, 'exams_data.json')
+    if os.path.exists(exams_file):
+        try:
+            with open(exams_file, 'r', encoding='utf-8') as f:
+                exams_data = json.load(f)
+            if isinstance(exams_data, list) and len(exams_data) > 0:
+                save_omr_exams_to_db(exams_data)
+                return exams_data
+        except Exception:
+            pass
+    return []
+
+def save_omr_exams_to_db(exams_data):
+    if not isinstance(exams_data, list):
+        exams_data = [exams_data] if exams_data else []
+    val_str = json.dumps(exams_data, ensure_ascii=False)
+    now_ms = int(time.time() * 1000)
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT OR REPLACE INTO local_storage_sync (key, value, updated_at) VALUES ('school_omr_exams', ?, ?)", (val_str, now_ms))
+        conn.commit()
+        DB_STORE_CACHE['school_omr_exams'] = {'value': val_str, 'updated_at': now_ms}
+        DB_META_CACHE['school_omr_exams'] = now_ms
+        DB_ESSENTIALS_CACHE['school_omr_exams'] = DB_STORE_CACHE['school_omr_exams']
+    except Exception as e:
+        print(f"Error persisting school_omr_exams to school.db: {e}")
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    try:
+        exams_file = os.path.join(BASE_DIR, 'exams_data.json')
+        with open(exams_file, 'w', encoding='utf-8') as f:
+            json.dump(exams_data, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
+    return True
+
+def delete_omr_exam_from_db(exam_id=None):
+    current = get_omr_exams_from_db()
+    if exam_id is None or str(exam_id).strip() in ['', 'all', '*']:
+        filtered = []
+    else:
+        filtered = [x for x in current if str(x.get('id', '')) != str(exam_id) and str(x.get('scheduleId', '')) != str(exam_id)]
+    save_omr_exams_to_db(filtered)
+    return filtered
 
 def init_db():
     conn = get_db_connection()
@@ -385,6 +473,20 @@ def init_db():
     try:
         cursor.execute('ALTER TABLE local_storage_sync ADD COLUMN updated_at INTEGER DEFAULT 0')
     except sqlite3.OperationalError:
+        pass
+
+    try:
+        cursor.execute("SELECT value FROM local_storage_sync WHERE key='school_omr_exams'")
+        row = cursor.fetchone()
+        if not row or not row[0] or row[0].strip() in ['', '[]', '{}']:
+            exams_file = os.path.join(BASE_DIR, 'exams_data.json')
+            if os.path.exists(exams_file):
+                with open(exams_file, 'r', encoding='utf-8') as f:
+                    file_exams = json.load(f)
+                if isinstance(file_exams, list) and len(file_exams) > 0:
+                    now_ms = int(time.time() * 1000)
+                    cursor.execute("INSERT OR REPLACE INTO local_storage_sync (key, value, updated_at) VALUES ('school_omr_exams', ?, ?)", (json.dumps(file_exams, ensure_ascii=False), now_ms))
+    except Exception:
         pass
         
     conn.commit()
@@ -1451,12 +1553,7 @@ async def asgi_app(scope, receive, send):
             return
 
         elif clean_path == '/api/exams':
-            exams_file = os.path.join(BASE_DIR, 'exams_data.json')
-            try:
-                with open(exams_file, 'r', encoding='utf-8') as f:
-                    exams_data = json.load(f)
-            except Exception:
-                exams_data = []
+            exams_data = get_omr_exams_from_db()
             raw_bytes = json.dumps(exams_data, ensure_ascii=False).encode('utf-8')
             await send_response(200, 'application/json', raw_bytes)
             return
@@ -1716,11 +1813,13 @@ async def asgi_app(scope, receive, send):
                 return
             
             if clean_path == '/api/exams':
-                exams_file = os.path.join(BASE_DIR, 'exams_data.json')
                 try:
-                    with open(exams_file, 'w', encoding='utf-8') as f:
-                        json.dump(payload, f, ensure_ascii=False, indent=4)
-                    await send_response(200, 'application/json', b'{"status":"success"}')
+                    if isinstance(payload, dict) and payload.get('action') == 'delete':
+                        res_list = delete_omr_exam_from_db(payload.get('id'))
+                        await send_response(200, 'application/json', json.dumps({"status": "success", "count": len(res_list)}).encode('utf-8'))
+                    else:
+                        save_omr_exams_to_db(payload)
+                        await send_response(200, 'application/json', b'{"status":"success"}')
                 except Exception as e:
                     await send_response(500, 'application/json', json.dumps({"error": str(e)}).encode('utf-8'))
                 return
@@ -1745,6 +1844,28 @@ async def asgi_app(scope, receive, send):
             if conn:
                 conn.close()
         return
+
+    elif method == 'DELETE':
+        if clean_path == '/api/exams':
+            query_params = parse_qs(query_string)
+            del_id = query_params.get('id', [None])[0]
+            res_list = delete_omr_exam_from_db(del_id)
+            await send_response(200, 'application/json', json.dumps({"status": "success", "count": len(res_list)}).encode('utf-8'))
+            return
+        elif clean_path == '/api/db/delete':
+            query_params = parse_qs(query_string)
+            del_key = query_params.get('key', [None])[0]
+            if del_key:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute('DELETE FROM local_storage_sync WHERE key = ?', (del_key,))
+                conn.commit()
+                conn.close()
+                DB_STORE_CACHE.pop(del_key, None)
+                DB_META_CACHE.pop(del_key, None)
+                DB_ESSENTIALS_CACHE.pop(del_key, None)
+            await send_response(200, 'application/json', b'{"status":"success"}')
+            return
 
     await send_response(404, 'text/plain', b'Not Found')
 
@@ -1962,12 +2083,7 @@ class SyncServerHandler(http.server.SimpleHTTPRequestHandler):
                 raw_bytes = json.dumps(resp_obj).encode('utf-8')
                 self.send_compressed_response('application/json', raw_bytes)
             elif clean_path == '/api/exams':
-                exams_file = os.path.join(BASE_DIR, 'exams_data.json')
-                try:
-                    with open(exams_file, 'r', encoding='utf-8') as f:
-                        exams_data = json.load(f)
-                except Exception:
-                    exams_data = []
+                exams_data = get_omr_exams_from_db()
                 raw_bytes = json.dumps(exams_data, ensure_ascii=False).encode('utf-8')
                 self.send_compressed_response('application/json', raw_bytes)
                 return
@@ -2020,11 +2136,13 @@ class SyncServerHandler(http.server.SimpleHTTPRequestHandler):
             payload = {}
 
         if clean_path == '/api/exams':
-            exams_file = os.path.join(BASE_DIR, 'exams_data.json')
             try:
-                with open(exams_file, 'w', encoding='utf-8') as f:
-                    json.dump(payload, f, ensure_ascii=False, indent=4)
-                self.send_compressed_response('application/json', b'{"status":"success"}')
+                if isinstance(payload, dict) and payload.get('action') == 'delete':
+                    res_list = delete_omr_exam_from_db(payload.get('id'))
+                    self.send_compressed_response('application/json', json.dumps({"status": "success", "count": len(res_list)}).encode('utf-8'))
+                else:
+                    save_omr_exams_to_db(payload)
+                    self.send_compressed_response('application/json', b'{"status":"success"}')
             except Exception as e:
                 self.send_compressed_response('application/json', json.dumps({"error": str(e)}).encode('utf-8'), status_code=500)
             return
@@ -2217,6 +2335,34 @@ class SyncServerHandler(http.server.SimpleHTTPRequestHandler):
         finally:
             if conn:
                 conn.close()
+
+    def do_DELETE(self):
+        parsed_url = urlparse(self.path)
+        clean_path = parsed_url.path.rstrip('/') if parsed_url.path != '/' else '/'
+        try:
+            if clean_path == '/api/exams':
+                query_params = parse_qs(parsed_url.query)
+                del_id = query_params.get('id', [None])[0]
+                res_list = delete_omr_exam_from_db(del_id)
+                self.send_compressed_response('application/json', json.dumps({"status": "success", "count": len(res_list)}).encode('utf-8'))
+                return
+            elif clean_path == '/api/db/delete':
+                query_params = parse_qs(parsed_url.query)
+                del_key = query_params.get('key', [None])[0]
+                if del_key:
+                    conn = get_db_connection()
+                    cursor = conn.cursor()
+                    cursor.execute('DELETE FROM local_storage_sync WHERE key = ?', (del_key,))
+                    conn.commit()
+                    conn.close()
+                    DB_STORE_CACHE.pop(del_key, None)
+                    DB_META_CACHE.pop(del_key, None)
+                    DB_ESSENTIALS_CACHE.pop(del_key, None)
+                self.send_compressed_response('application/json', b'{"status":"success"}')
+                return
+            self.send_error(404, 'Not Found')
+        except Exception as e:
+            self.send_compressed_response('application/json', json.dumps({"error": str(e)}).encode('utf-8'), status_code=500)
 
 def run_fallback_server():
     free_ports_if_occupied([PORT])
