@@ -4271,9 +4271,9 @@
                                         <span>🏷️ এই পরীক্ষার আওতাধীন Exam Types:</span>
                                     </span>
                                     <button type="button" onclick="openAddExamTypeForCurrentSelectedExam()"
-                                        style="background:#eff6ff; border:1.5px solid #93c5fd; color:#1d4ed8; padding:4px 12px; border-radius:6px; font-weight:800; font-size:0.82rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 4px rgba(37,99,235,0.1);">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                        <span>+ Exam Type যুক্ত করুন</span>
+                                        style="background:#eff6ff; border:1.5px solid #93c5fd; color:#1d4ed8; padding:5px 14px; border-radius:6px; font-weight:800; font-size:0.84rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 4px rgba(37,99,235,0.1);">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        <span>++ Exam Type যুক্ত করুন</span>
                                     </button>
                                 </div>
                                 <div id="subview-exam-types-list-container" style="display:flex; flex-direction:column; gap:8px;">
@@ -14813,20 +14813,31 @@ function openExamMarksEntryModal(scheduleId) {
             }
         }
 
-        function openAddExamTypeForExam(examId) {
+        function openAddExamTypeForExam(param) {
+            let identifier = param;
+            if (!identifier) {
+                const select = document.getElementById('subview-exam-name-select-target') || document.getElementById('schedule-exam-name');
+                identifier = select ? select.value : '';
+            }
             const types = loadExamTypes();
-            const exam = types.find(x => x.id === examId);
+            const exam = types.find(x => x.id === identifier || x.name.toLowerCase() === (identifier || '').trim().toLowerCase());
             resetExamTypeForm();
             populateOverrideSubjectsDropdown();
-            populateExamTypeNamesDropdown(exam ? exam.name : "");
+            populateExamTypeNamesDropdown(exam ? exam.name : (identifier || ""));
 
             if (exam) {
                 document.getElementById('exam-type-id').value = exam.id;
                 document.getElementById('exam-type-name').value = exam.name;
-                document.getElementById('exam-type-form-title').innerText = `➕ Add Exam Type under "${exam.name}"`;
+                document.getElementById('exam-type-form-title').innerText = `➕ Add New Exam Type under "${exam.name}"`;
+            } else {
+                document.getElementById('exam-type-form-title').innerText = `➕ Add New Exam Type under "${identifier || 'Examination'}"`;
             }
-
+            document.getElementById('exam-type-sub-id').value = "";
             document.getElementById('exam-type-modal').classList.add('active');
+            setTimeout(() => {
+                const catInput = document.getElementById('exam-type-category');
+                if (catInput) catInput.focus();
+            }, 100);
         }
 
         function editExamSubType(examId, subTypeId) {
@@ -14984,6 +14995,9 @@ function openExamMarksEntryModal(scheduleId) {
             if (typeof renderScheduleList === 'function') renderScheduleList();
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
             if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+            if (typeof renderExamNamesSubView === 'function') renderExamNamesSubView();
+            if (typeof renderExamSubTypesInSubview === 'function') renderExamSubTypesInSubview(examName);
+            if (typeof renderExamSubTypesInModal === 'function') renderExamSubTypesInModal(examName);
         }
 
         function editExamType(id) {
@@ -15155,6 +15169,14 @@ function openExamMarksEntryModal(scheduleId) {
             if (typeof renderScheduleList === 'function') renderScheduleList();
             if (typeof renderDashboardRoutineSummary === 'function') renderDashboardRoutineSummary();
             if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
+            if (typeof renderExamNamesSubView === 'function') {
+                renderExamNamesSubView();
+                const selectTarget = document.getElementById('subview-exam-name-select-target');
+                if (selectTarget) {
+                    selectTarget.value = name;
+                    onSubviewTargetExamSelect(name);
+                }
+            }
 
             alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে তৈরি হয়েছে এবং মূল ডাটাবেজে স্থায়ীভাবে সংরক্ষণ করা হয়েছে!`);
         }
@@ -15630,34 +15652,13 @@ function openExamMarksEntryModal(scheduleId) {
             container.innerHTML = html;
         }
 
-        function openAddExamTypeForExam(examName) {
-            if (!examName) {
-                const select = document.getElementById('subview-exam-name-select-target') || document.getElementById('schedule-exam-name');
-                examName = select ? select.value : '';
-            }
-            const types = loadExamTypes();
-            const exam = types.find(t => t.name.toLowerCase() === (examName || '').trim().toLowerCase());
-            resetExamTypeForm();
-            populateOverrideSubjectsDropdown();
-            populateExamTypeNamesDropdown(examName);
-            if (exam) {
-                document.getElementById('exam-type-id').value = exam.id;
-                document.getElementById('exam-type-name').value = exam.name;
-            }
-            document.getElementById('exam-type-sub-id').value = "";
-            document.getElementById('exam-type-form-title').innerText = `➕ Add New Exam Type under "${examName || 'Examination'}"`;
-            document.getElementById('exam-type-modal').classList.add('active');
-            setTimeout(() => {
-                const catInput = document.getElementById('exam-type-category');
-                if (catInput) {
-                    catInput.focus();
-                }
-            }, 100);
-        }
-
         function openAddExamTypeForCurrentSelectedExam() {
             const selectTarget = document.getElementById('subview-exam-name-select-target');
             const examName = selectTarget ? selectTarget.value : '';
+            if (!examName) {
+                alert("অনুগ্রহ করে প্রথমে একটি পরীক্ষার নাম নির্বাচন করুন (Please select an Exam Name first)!");
+                return;
+            }
             openAddExamTypeForExam(examName);
         }
 
@@ -16068,6 +16069,11 @@ function openExamMarksEntryModal(scheduleId) {
             if (typeof updateScheduleDistLivePreview === 'function') updateScheduleDistLivePreview();
 
             renderExamNamesSubView();
+            const selectTarget = document.getElementById('subview-exam-name-select-target');
+            if (selectTarget) {
+                selectTarget.value = name;
+                onSubviewTargetExamSelect(name);
+            }
             alert(`✅ নতুন পরীক্ষার নাম "${name}" সফলভাবে যুক্ত হয়েছে!`);
         }
 
