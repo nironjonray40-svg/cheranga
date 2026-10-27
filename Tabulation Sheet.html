@@ -8757,24 +8757,16 @@
                     mappedSchedules.forEach(item => {
                         if (!item.slot) return;
 
-                        // Look up mark object in savedMarks
+                        // Look up mark object in savedMarks strictly by unique student ID or unique regNo
                         let markRecord = null;
                         if (stId && savedMarks[`marks_${stId}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stId}_${item.id}`];
                         } else if (stReg && savedMarks[`marks_${stReg}_${item.id}`]) {
                             markRecord = savedMarks[`marks_${stReg}_${item.id}`];
-                        } else if (stCode && savedMarks[`marks_${stCode}_${item.id}`]) {
-                            markRecord = savedMarks[`marks_${stCode}_${item.id}`];
-                        } else if (stRoll && savedMarks[`marks_${stRoll}_${item.id}`]) {
-                            markRecord = savedMarks[`marks_${stRoll}_${item.id}`];
                         } else if (stId && savedMarks[`marks_${stId}_${activeExam}`]) {
                             markRecord = savedMarks[`marks_${stId}_${activeExam}`];
                         } else if (stReg && savedMarks[`marks_${stReg}_${activeExam}`]) {
                             markRecord = savedMarks[`marks_${stReg}_${activeExam}`];
-                        } else if (stCode && savedMarks[`marks_${stCode}_${activeExam}`]) {
-                            markRecord = savedMarks[`marks_${stCode}_${activeExam}`];
-                        } else if (stRoll && savedMarks[`marks_${stRoll}_${activeExam}`]) {
-                            markRecord = savedMarks[`marks_${stRoll}_${activeExam}`];
                         }
 
                         if (!markRecord) return;

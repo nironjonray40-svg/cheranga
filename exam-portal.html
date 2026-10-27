@@ -7513,20 +7513,17 @@
             let enteredCount = 0;
 
             students.forEach(student => {
-                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || '').trim();
                 const rawId = toEnglishDigits(student.id || '').trim();
-                const rawRoll = toEnglishDigits(student.roll || '').trim();
 
                 const possibleKeys = [
                     `marks_${student.id}_${sch.id}`,
-                    `marks_${rawReg}_${sch.id}`,
-                    `marks_${rawId}_${sch.id}`,
-                    `marks_${student.regNo}_${sch.id}`,
-                    `marks_${student.studentId}_${sch.id}`,
-                    `marks_${rawRoll}_${sch.id}`,
+                    rawReg ? `marks_${rawReg}_${sch.id}` : null,
+                    rawId ? `marks_${rawId}_${sch.id}` : null,
+                    student.regNo ? `marks_${student.regNo}_${sch.id}` : null,
                     `marks_${student.id}_${sch.term}`,
-                    `marks_${rawReg}_${sch.term}`
-                ];
+                    rawReg ? `marks_${rawReg}_${sch.term}` : null
+                ].filter(Boolean);
 
                 let found = false;
                 for (const k of possibleKeys) {
@@ -9784,6 +9781,34 @@ function openExamMarksEntryModal(scheduleId) {
 
         let currentMarksEntryViewType = localStorage.getItem('school_exam_marks_entry_view_type') || 'roll';
 
+        function isStudentMatchingExamClass(student, examClass) {
+            if (!student || !student.class || !examClass) return false;
+            const sClass = String(student.class).trim().toLowerCase();
+            const eClass = String(examClass).trim().toLowerCase();
+            if (sClass === eClass) return true;
+            if (typeof mapClassToNumber === 'function') {
+                const sNum = mapClassToNumber(sClass);
+                const eNum = mapClassToNumber(eClass);
+                if (sNum && eNum && sNum === eNum) return true;
+            }
+            return sClass.includes(eClass) || eClass.includes(sClass);
+        }
+
+        function isStudentMatchingExamSection(student, examSection) {
+            if (!examSection) return true;
+            const cleanSec = String(examSection).trim().toUpperCase();
+            if (!cleanSec || cleanSec === 'ALL' || cleanSec === 'সব শাখা' || cleanSec === 'সকল শাখা' || cleanSec === 'ALL SECTIONS') {
+                return true;
+            }
+            const allowedSections = cleanSec.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+            if (allowedSections.length === 0) return true;
+
+            const studentSec = String(student.section || '').trim().toUpperCase();
+            if (!studentSec) return false;
+
+            return allowedSections.includes(studentSec);
+        }
+
         function populateActiveExamStudents(viewType = 'roll') {
             if (!activeExamScheduleId) return;
             const schedules = loadSchedules();
@@ -9791,17 +9816,14 @@ function openExamMarksEntryModal(scheduleId) {
             if (!sch) return;
 
             const allStudents = loadStudents();
-            const schClassClean = (sch.class || '').trim().toUpperCase();
+
+            // FIXED: Filter students STRICTLY by the Exam's designated Class and Section(s)
+            activeExamStudents = allStudents.filter(s => {
+                return isStudentMatchingExamClass(s, sch.class) && isStudentMatchingExamSection(s, sch.section);
+            });
 
             if (viewType === 'reg_no') {
-                // Mode: "Reg No" -> Entire class students, sorted by Reg No
-                activeExamStudents = allStudents.filter(s => {
-                    if (!s.class) return false;
-                    const sClassClean = s.class.trim().toUpperCase();
-                    return sClassClean === schClassClean || sClassClean.includes(schClassClean) || schClassClean.includes(sClassClean);
-                });
-
-                // Sort by Registration No
+                // Mode: "Reg No" -> Sort strictly filtered students by Registration No
                 activeExamStudents.sort((a, b) => {
                     const rA = String(a.regNo || a.registrationNo || a.studentId || a.id || '').trim();
                     const rB = String(b.regNo || b.registrationNo || b.studentId || b.id || '').trim();
@@ -9813,28 +9835,13 @@ function openExamMarksEntryModal(scheduleId) {
                     return rA.localeCompare(rB, undefined, { numeric: true, sensitivity: 'base' });
                 });
 
-                // Update UI headers
+                // Update UI headers - Keep Section fixed to the schedule!
                 const secBadge = document.getElementById('modal-exam-section-badge');
-                if (secBadge) secBadge.innerText = `Class: All Sections`;
+                if (secBadge) secBadge.innerText = `Sec: ${sch.section || 'All'}`;
                 const thId = document.getElementById('modal-th-student-id');
                 if (thId) thId.innerText = 'Reg No';
             } else {
-                // Mode: "Student ID/Roll" -> Filter by schedule's Section(s) and sort by Section & Roll
-                const targetSections = sch.section && sch.section !== 'All' ? sch.section.split(',').map(s => s.trim().toUpperCase()) : [];
-
-                activeExamStudents = allStudents.filter(s => {
-                    if (!s.class) return false;
-                    const sClassClean = s.class.trim().toUpperCase();
-                    if (sClassClean !== schClassClean && !sClassClean.includes(schClassClean) && !schClassClean.includes(sClassClean)) {
-                        return false;
-                    }
-                    if (targetSections.length > 0 && s.section) {
-                        return targetSections.includes(s.section.trim().toUpperCase());
-                    }
-                    return true;
-                });
-
-                // Sort by Section first, then Roll numerically
+                // Mode: "Student ID/Roll" -> Sort strictly filtered students by Section first, then Roll numerically
                 activeExamStudents.sort((a, b) => {
                     const secA = (a.section || 'A').trim().toUpperCase();
                     const secB = (b.section || 'A').trim().toUpperCase();
@@ -9891,8 +9898,6 @@ function openExamMarksEntryModal(scheduleId) {
                 if (student.id) targetStudentIds.add(toEnglishDigits(student.id).trim());
                 if (student.regNo) targetStudentIds.add(toEnglishDigits(student.regNo).trim());
                 if (student.registrationNo) targetStudentIds.add(toEnglishDigits(student.registrationNo).trim());
-                if (student.studentId) targetStudentIds.add(toEnglishDigits(student.studentId).trim());
-                if (student.roll && student.class) targetStudentIds.add(`${toEnglishDigits(student.roll).trim()}`);
 
                 const targetSubjectKeys = new Set();
                 if (activeExamSubjectCode) targetSubjectKeys.add(activeExamSubjectCode);
@@ -10044,17 +10049,16 @@ function openExamMarksEntryModal(scheduleId) {
                 }
 
                 let studentExamMarks = null;
-                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || '').trim();
                 const rawId = toEnglishDigits(student.id || '').trim();
                 const possibleKeys = [
                     `marks_${student.id}_${activeExamScheduleId}`,
-                    `marks_${rawReg}_${activeExamScheduleId}`,
-                    `marks_${rawId}_${activeExamScheduleId}`,
-                    `marks_${student.regNo}_${activeExamScheduleId}`,
-                    `marks_${student.studentId}_${activeExamScheduleId}`,
+                    rawReg ? `marks_${rawReg}_${activeExamScheduleId}` : null,
+                    rawId ? `marks_${rawId}_${activeExamScheduleId}` : null,
+                    student.regNo ? `marks_${student.regNo}_${activeExamScheduleId}` : null,
                     `marks_${student.id}_${examVal}`,
-                    `marks_${rawReg}_${examVal}`
-                ];
+                    rawReg ? `marks_${rawReg}_${examVal}` : null
+                ].filter(Boolean);
                 for (const k of possibleKeys) {
                     if (savedMarks[k] && typeof savedMarks[k] === 'object') {
                         if (savedMarks[k][activeExamSubjectCode] !== undefined) {
@@ -10419,8 +10423,6 @@ function openExamMarksEntryModal(scheduleId) {
                 if (student.id) targetStudentIds.add(toEnglishDigits(student.id).trim());
                 if (student.regNo) targetStudentIds.add(toEnglishDigits(student.regNo).trim());
                 if (student.registrationNo) targetStudentIds.add(toEnglishDigits(student.registrationNo).trim());
-                if (student.studentId) targetStudentIds.add(toEnglishDigits(student.studentId).trim());
-                if (student.roll && student.class) targetStudentIds.add(`${toEnglishDigits(student.roll).trim()}`);
 
                 const targetSubjectKeys = new Set();
                 if (activeExamSubjectCode) targetSubjectKeys.add(activeExamSubjectCode);
@@ -10605,17 +10607,16 @@ function openExamMarksEntryModal(scheduleId) {
 
             activeExamStudents.forEach((student, idx) => {
                 let studentExamMarks = null;
-                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || student.studentId || student.id || '').trim();
+                const rawReg = toEnglishDigits(student.regNo || student.registrationNo || '').trim();
                 const rawId = toEnglishDigits(student.id || '').trim();
                 const possibleKeys = [
                     `marks_${student.id}_${activeExamScheduleId}`,
-                    `marks_${rawReg}_${activeExamScheduleId}`,
-                    `marks_${rawId}_${activeExamScheduleId}`,
-                    `marks_${student.regNo}_${activeExamScheduleId}`,
-                    `marks_${student.studentId}_${activeExamScheduleId}`,
+                    rawReg ? `marks_${rawReg}_${activeExamScheduleId}` : null,
+                    rawId ? `marks_${rawId}_${activeExamScheduleId}` : null,
+                    student.regNo ? `marks_${student.regNo}_${activeExamScheduleId}` : null,
                     `marks_${student.id}_${examVal}`,
-                    `marks_${rawReg}_${examVal}`
-                ];
+                    rawReg ? `marks_${rawReg}_${examVal}` : null
+                ].filter(Boolean);
                 for (const k of possibleKeys) {
                     if (savedMarks[k] && typeof savedMarks[k] === 'object') {
                         if (savedMarks[k][activeExamSubjectCode] !== undefined) {
@@ -20610,10 +20611,10 @@ function openExamMarksEntryModal(scheduleId) {
                 let totalLoadedWithMarks = 0;
 
                 const importedStudents = classStudents.map((student, idx) => {
-                    const rawReg = toEnglishDigits(student.regNo || student.id || student.studentId || '').trim();
+                    const rawReg = toEnglishDigits(student.regNo || student.registrationNo || '').trim();
                     const rawId = toEnglishDigits(student.id || '').trim();
                     const fallbackReg = '2211' + String(student.roll || idx + 1).padStart(3, '0');
-                    const studentRegId = toEnglishDigits(student.regNo || student.studentId || student.id || fallbackReg).trim();
+                    const studentRegId = toEnglishDigits(student.regNo || student.registrationNo || student.id || fallbackReg).trim();
 
                     let hasRealMark = false;
                     let correctScore = 0;
@@ -20643,11 +20644,11 @@ function openExamMarksEntryModal(scheduleId) {
                     // 2. If not found in matchingOmrExam, check savedMarks strictly for THIS SCHEDULE ID (sch.id)
                     if (!hasRealMark) {
                         const candidateKeys = [
-                            `marks_${rawReg}_${sch.id}`,
-                            `marks_${rawId}_${sch.id}`,
                             `marks_${student.id}_${sch.id}`,
-                            `marks_${student.studentId}_${sch.id}`
-                        ];
+                            rawReg ? `marks_${rawReg}_${sch.id}` : null,
+                            rawId ? `marks_${rawId}_${sch.id}` : null,
+                            student.regNo ? `marks_${student.regNo}_${sch.id}` : null
+                        ].filter(Boolean);
 
                         let studentMarkObj = null;
                         for (const k of candidateKeys) {
@@ -20917,12 +20918,12 @@ function openExamMarksEntryModal(scheduleId) {
                         const targetStudentIds = new Set();
                         if (masterSt) {
                             if (masterSt.id !== undefined && masterSt.id !== null) targetStudentIds.add(String(masterSt.id));
-                            if (masterSt.studentId) targetStudentIds.add(String(masterSt.studentId));
                             if (masterSt.regNo) targetStudentIds.add(String(masterSt.regNo));
+                            if (masterSt.registrationNo) targetStudentIds.add(String(masterSt.registrationNo));
                         }
                         if (student.id) targetStudentIds.add(String(student.id));
                         if (student.regNo) targetStudentIds.add(String(student.regNo));
-                        if (student.studentId) targetStudentIds.add(String(student.studentId));
+                        if (student.registrationNo) targetStudentIds.add(String(student.registrationNo));
                         if (rawReg) targetStudentIds.add(rawReg);
 
                         // Discover authoritative existing CQ and Practical marks across all candidate lookup keys

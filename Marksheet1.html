@@ -2150,11 +2150,8 @@ function getStudentMarksForSubject(student, subjectObj, selectedExam, savedMarks
     }
     const stIds = [
         student.id,
-        student.studentId,
         student.regNo,
-        student.roll,
-        student.rollNo,
-        student.code
+        student.registrationNo
     ].filter(Boolean).map(x => String(x).trim());
 
     const schedIds = [];
