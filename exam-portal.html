@@ -9161,10 +9161,41 @@
             let marksChanged = false;
             if (savedMarks && typeof savedMarks === 'object') {
                 const markPrefix = `_${id}`;
+                const targetTerm = (targetSchedule?.term || targetSchedule?.examName || '').trim().toLowerCase();
+                const targetSub = (targetSchedule?.subject || '').trim().toLowerCase();
+                const targetSubCode = (targetSchedule?.subjectCode || '').trim().toLowerCase();
+
+                let resolvedSubCode = targetSubCode;
+                if (!resolvedSubCode && targetSchedule) {
+                    try {
+                        const subMap = loadSubjects();
+                        resolvedSubCode = (findSubjectCodeInMap(subMap, targetSchedule.class, targetSchedule.subject) || '').trim().toLowerCase();
+                    } catch (e) { }
+                }
+
                 Object.keys(savedMarks).forEach(k => {
+                    // A. Delete schedule ID specific keys (e.g. marks_st1_1793117127548, timestamp_1793117127548)
                     if (k.endsWith(markPrefix) || k === `timestamp_${id}`) {
                         delete savedMarks[k];
                         marksChanged = true;
+                    }
+                    // B. Delete the subject marks from the exam term key (e.g. marks_st1_Elegible test)
+                    else if (targetTerm && k.toLowerCase().endsWith(`_${targetTerm}`)) {
+                        const termObj = savedMarks[k];
+                        if (termObj && typeof termObj === 'object') {
+                            Object.keys(termObj).forEach(subKey => {
+                                const cleanSubKey = subKey.trim().toLowerCase();
+                                if (cleanSubKey === targetSub || (resolvedSubCode && cleanSubKey === resolvedSubCode)) {
+                                    delete termObj[subKey];
+                                    marksChanged = true;
+                                }
+                            });
+                            // If no subjects left in this term key, remove the empty container
+                            if (Object.keys(termObj).length === 0) {
+                                delete savedMarks[k];
+                                marksChanged = true;
+                            }
+                        }
                     }
                 });
             }
