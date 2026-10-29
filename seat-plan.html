@@ -226,34 +226,352 @@
             display: none !important;
         }
 
-        /* 100% Solid Blue Text Color for Building Option Information inside Building Picker Panel */
-        #building-picker-panel,
-        #building-picker-panel *,
-        #building-picker-panel .card-title,
-        #building-picker-panel .card-meta,
-        #building-picker-panel span,
-        #building-picker-panel div,
-        #building-picker-panel p {
-            color: #1d4ed8 !important;
-            opacity: 1 !important;
-            font-weight: 800 !important;
-        }
-
-        #building-picker-panel .icon-card {
+        /* ==========================================================================
+           HIGH-FIDELITY BUILDING & ROOM VISUALIZATION SYSTEM STYLES
+           ========================================================================== */
+        /* Trigger Controls in Toolbar */
+        #dist-control-panel-card .icon-picker-trigger {
             background: #ffffff !important;
-            border: 1.5px solid #1d4ed8 !important;
-        }
-
-        #building-picker-panel .icon-card .card-title {
-            color: #1d4ed8 !important;
-            font-size: 1.05rem !important;
-            font-weight: 900 !important;
-        }
-
-        #building-picker-panel .icon-card .card-meta {
-            color: #1e40af !important;
-            font-size: 0.88rem !important;
+            border: 1.5px solid #000000 !important;
+            border-radius: 8px !important;
+            color: #000000 !important;
             font-weight: 700 !important;
+            padding: 8px 12px !important;
+            min-height: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 6px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        #dist-control-panel-card .icon-picker-trigger:hover {
+            border-color: #0284c7 !important;
+            background: #f0f9ff !important;
+        }
+
+        #dist-control-panel-card .icon-picker-trigger.active {
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2) !important;
+            background: #f0f9ff !important;
+        }
+
+        #dist-control-panel-card .icon-picker-trigger .trigger-label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 0.94rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        #dist-control-panel-card .icon-picker-trigger .trigger-arrow {
+            font-size: 0.75rem !important;
+            color: #64748b !important;
+            transition: transform 0.2s ease !important;
+        }
+
+        #dist-control-panel-card .icon-picker-trigger.active .trigger-arrow {
+            transform: rotate(180deg) !important;
+            color: #0284c7 !important;
+        }
+
+        /* Dropdown Popover Panels */
+        #dist-control-panel-card .icon-picker-panel {
+            display: none;
+            position: absolute !important;
+            top: calc(100% + 8px) !important;
+            z-index: 1050 !important;
+            background: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 14px !important;
+            padding: 16px !important;
+            box-shadow: 0 20px 45px -5px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+            max-height: 480px !important;
+            overflow-y: auto !important;
+            animation: iconPanelSlide 0.2s ease-out !important;
+        }
+
+        #dist-control-panel-card .icon-picker-panel.show {
+            display: block !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel {
+            left: 0 !important;
+            right: auto !important;
+            min-width: 480px !important;
+            max-width: 580px !important;
+            width: max-content !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel {
+            right: 0 !important;
+            left: auto !important;
+            min-width: 520px !important;
+            max-width: 640px !important;
+            width: max-content !important;
+        }
+
+        @media (max-width: 768px) {
+            #dist-control-panel-card #building-picker-panel,
+            #dist-control-panel-card #room-picker-panel {
+                position: fixed !important;
+                top: 70px !important;
+                left: 10px !important;
+                right: 10px !important;
+                min-width: auto !important;
+                max-width: calc(100vw - 20px) !important;
+                max-height: 80vh !important;
+            }
+        }
+
+        /* Building Picker Panel Styling */
+        #dist-control-panel-card #building-picker-panel * {
+            box-sizing: border-box;
+        }
+
+        #dist-control-panel-card #building-picker-panel .panel-header-title {
+            color: #0f172a !important;
+            font-size: 1.05rem !important;
+            font-weight: 800 !important;
+            margin: 0 0 2px 0 !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .panel-header-sub {
+            color: #64748b !important;
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            margin: 0 0 12px 0 !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .building-card-item {
+            background: #ffffff !important;
+            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            padding: 14px !important;
+            margin-bottom: 10px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            position: relative !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .building-card-item:hover {
+            border-color: #93c5fd !important;
+            background: #f8fafc !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .building-card-item.selected {
+            background: #eff6ff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15) !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .building-card-item.is-excluded {
+            background: #fef2f2 !important;
+            border-color: #fca5a5 !important;
+            opacity: 0.75 !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .b-card-title {
+            color: #0f172a !important;
+            font-size: 1.05rem !important;
+            font-weight: 800 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        #dist-control-panel-card #building-picker-panel .b-card-meta {
+            color: #475569 !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            margin-top: 4px !important;
+        }
+
+        /* Room Picker Panel Styling */
+        #dist-control-panel-card #room-picker-panel * {
+            box-sizing: border-box;
+        }
+
+        #dist-control-panel-card #room-picker-panel .panel-header-title {
+            color: #0f172a !important;
+            font-size: 1.05rem !important;
+            font-weight: 800 !important;
+            margin: 0 0 2px 0 !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .panel-header-sub {
+            color: #64748b !important;
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            margin: 0 0 10px 0 !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .room-search-box {
+            width: 100% !important;
+            background: #f8fafc !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 0.88rem !important;
+            font-weight: 600 !important;
+            color: #0f172a !important;
+            margin-bottom: 10px !important;
+            outline: none !important;
+            transition: border-color 0.2s !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .room-search-box:focus {
+            border-color: #0284c7 !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .room-group-heading {
+            background: #f1f5f9 !important;
+            border-left: 4px solid #0284c7 !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 0.88rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin: 10px 0 6px 0 !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .room-chk-row {
+            background: #ffffff !important;
+            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            margin-bottom: 6px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .room-chk-row:hover {
+            background: #f0fdf4 !important;
+            border-color: #86efac !important;
+        }
+
+        #dist-control-panel-card #room-picker-panel .room-chk-row.is-excluded {
+            background: #fef2f2 !important;
+            border-color: #fca5a5 !important;
+            opacity: 0.65 !important;
+        }
+
+        /* Generic Badge Classes for Building & Room Elements */
+        #dist-control-panel-card .pill-badge {
+            font-size: 0.74rem !important;
+            font-weight: 800 !important;
+            padding: 2px 7px !important;
+            border-radius: 6px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 3px !important;
+            white-space: nowrap !important;
+        }
+
+        #dist-control-panel-card .pill-badge.boys {
+            background: #dbeafe !important;
+            color: #1e40af !important;
+            border: 1px solid #93c5fd !important;
+        }
+
+        #dist-control-panel-card .pill-badge.girls {
+            background: #fce7f3 !important;
+            color: #9d174d !important;
+            border: 1px solid #f472b6 !important;
+        }
+
+        #dist-control-panel-card .pill-badge.both {
+            background: #f3e8ff !important;
+            color: #6b21a8 !important;
+            border: 1px solid #c084fc !important;
+        }
+
+        #dist-control-panel-card .pill-badge.active-status {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border: 1px solid #86efac !important;
+        }
+
+        #dist-control-panel-card .pill-badge.excluded-status {
+            background: #fee2e2 !important;
+            color: #991b1b !important;
+            border: 1px solid #f87171 !important;
+        }
+
+        #dist-control-panel-card .pill-badge.seats-badge {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+            border: 1px solid #6ee7b7 !important;
+        }
+
+        #dist-control-panel-card .pill-badge.neutral {
+            background: #f1f5f9 !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        /* Building & Room Live Overview Card on Page */
+        #dist-building-room-info-card {
+            background: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            margin-top: 16px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #dist-building-room-info-card * {
+            box-sizing: border-box;
+        }
+
+        #dist-building-room-info-card .ov-card-box {
+            background: #f8fafc !important;
+            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 10px !important;
+            padding: 14px !important;
+        }
+
+        #dist-building-room-info-card .ov-room-badge {
+            background: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            padding: 6px 10px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 0.82rem !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+        }
+
+        #dist-building-room-info-card .ov-room-badge:hover {
+            border-color: #0284c7 !important;
+            background: #f0f9ff !important;
+            transform: translateY(-1px) !important;
+        }
+
+        #dist-building-room-info-card .ov-room-badge.is-excluded {
+            background: #fef2f2 !important;
+            border-color: #fca5a5 !important;
+            border-style: dashed !important;
+            opacity: 0.7 !important;
         }
 
         /* 10% Font Size Increase & Orange Header Background for Saved Seat Plans List Table */
@@ -3686,12 +4004,18 @@
                                     <!-- Hidden select for value tracking -->
                                 </select>
                                 <div class="icon-picker-trigger" id="building-picker-trigger"
-                                    onclick="toggleIconPicker('building')">
-                                    <span class="trigger-label" id="building-picker-label">🏢 সকল বিল্ডিং (All
-                                        Buildings)</span>
+                                    onclick="toggleIconPicker('building')" title="বিল্ডিং নির্বাচন করতে ক্লিক করুন">
+                                    <span class="trigger-label" id="building-picker-label">🏢 সকল বিল্ডিং (All Buildings)</span>
                                     <span class="trigger-arrow">▼</span>
                                 </div>
                                 <div class="icon-picker-panel" id="building-picker-panel">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px;">
+                                        <div>
+                                            <h4 class="panel-header-title">🏢 বিল্ডিং ফিল্টার ও সিট সক্ষমতা</h4>
+                                            <div class="panel-header-sub">নির্দিষ্ট ভবনের রুম নির্বাচন করুন বা সবগুলো অন্তর্ভুক্ত রাখুন</div>
+                                        </div>
+                                        <button type="button" onclick="toggleIconPicker('building')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; padding: 2px 6px;" title="বন্ধ করুন">✕</button>
+                                    </div>
                                     <div class="icon-picker-grid" id="building-picker-grid">
                                         <!-- Populated dynamically -->
                                     </div>
@@ -3705,31 +4029,48 @@
                                     <!-- Hidden select for fallback -->
                                 </select>
                                 <div class="icon-picker-trigger" id="room-picker-trigger"
-                                    onclick="toggleIconPicker('room')">
+                                    onclick="toggleIconPicker('room')" title="পরীক্ষার রুম সক্রিয় বা বাদ দিতে ক্লিক করুন">
                                     <span class="trigger-label" id="room-picker-label">🚪 সকল রুম</span>
                                     <span class="trigger-arrow">▼</span>
                                 </div>
-                                <div class="icon-picker-panel" id="room-picker-panel"
-                                    style="min-width: 320px; padding: 12px;">
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; font-weight: 700;">
-                                        <label
-                                            style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--neon-cyan); margin: 0;">
-                                            <input type="checkbox" id="room-select-all-chk"
-                                                onchange="toggleAllRoomCheckboxes(this.checked)"
-                                                style="width: 17px; height: 17px; accent-color: var(--neon-cyan); cursor: pointer;">
-                                            <span>সবগুলো নির্বাচন করুন</span>
-                                        </label>
-                                        <span id="room-checked-count-badge"
-                                            style="font-size: 0.75rem; background: rgba(34,211,238,0.2); color: #38bdf8; padding: 2px 8px; border-radius: 10px;">0
-                                            Selected</span>
+                                <div class="icon-picker-panel" id="room-picker-panel">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px;">
+                                        <div>
+                                            <h4 class="panel-header-title">🚪 পরীক্ষার জন্য রুম নির্বাচন ও সক্ষমতা</h4>
+                                            <div class="panel-header-sub">যে রুমগুলোতে পরীক্ষা হবে সেগুলো টিক দিন, বাকিগুলো আনটিক রাখুন</div>
+                                        </div>
+                                        <button type="button" onclick="toggleIconPicker('room')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; padding: 2px 6px;" title="বন্ধ করুন">✕</button>
+                                    </div>
+                                    <input type="text" id="room-picker-search" class="room-search-box"
+                                        placeholder="🔍 রুম নম্বর বা বিল্ডিং এর নাম দিয়ে খুঁজুন..."
+                                        oninput="filterRoomListInPicker(this.value)">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; gap: 8px; flex-wrap: wrap;">
+                                        <div style="display: flex; gap: 6px; align-items: center;">
+                                            <button type="button" onclick="toggleAllRoomCheckboxes(true)"
+                                                style="background: #0284c7; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                                ✅ সবগুলো নির্বাচন
+                                            </button>
+                                            <button type="button" onclick="toggleAllRoomCheckboxes(false)"
+                                                style="background: #ef4444; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                                🚫 সব বাদ দিন
+                                            </button>
+                                        </div>
+                                        <span id="room-checked-count-badge" class="pill-badge neutral"
+                                            style="font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; font-weight: 800;">
+                                            0 Selected
+                                        </span>
                                     </div>
                                     <div id="room-checkbox-list-container"
-                                        style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+                                        style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px;">
                                         <!-- Dynamic Checkbox Room List -->
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- HIGH-FIDELITY BUILDING & ROOM SUMMARY OVERVIEW CARD -->
+                        <div id="dist-building-room-info-card">
+                            <!-- Dynamically rendered by renderBuildingRoomOverviewCard() -->
                         </div>
 
                         <!-- DYNAMIC CLASS & SECTION SELECTION / EXCLUSION PANEL -->
@@ -6304,10 +6645,10 @@
                     if (typeof populateLayoutExamFilterDropdown === 'function') populateLayoutExamFilterDropdown();
                     if (typeof initSeatGeneratorPanelState === 'function') initSeatGeneratorPanelState();
                     if (typeof updateRealtimeSeatCounter === 'function') updateRealtimeSeatCounter();
-                    if (typeof loadSavedSeatAllocations === 'function') {
-                        if (!loadSavedSeatAllocations()) {
-                            if (typeof generateSeatDistribution === 'function') generateSeatDistribution();
-                        }
+                    if (typeof loadSeatPlanForCurrentCombination === 'function') {
+                        loadSeatPlanForCurrentCombination();
+                    } else if (typeof loadSavedSeatAllocations === 'function') {
+                        loadSavedSeatAllocations();
                     }
                     if (typeof renderSavedSeatPlansTable === 'function') renderSavedSeatPlansTable();
                 } else if (tabName === 'seating-details') {
@@ -8562,9 +8903,8 @@
 
             populateRoomBuildingDropdown();
             renderBuildingRoomInventory();
-            if (typeof generateSeatDistribution === 'function') {
-                generateSeatDistribution();
-            }
+            if (typeof updateRealtimeSeatCounter === 'function') updateRealtimeSeatCounter();
+            if (typeof populateDistRoomSelect === 'function') populateDistRoomSelect();
         }
 
         function saveRoom(e) {
@@ -8605,7 +8945,8 @@
             document.getElementById('room-edit-id').value = '';
             document.getElementById('room-submit-btn').innerText = 'Save Room';
             renderBuildingRoomInventory();
-            generateSeatDistribution();
+            if (typeof updateRealtimeSeatCounter === 'function') updateRealtimeSeatCounter();
+            if (typeof populateDistRoomSelect === 'function') populateDistRoomSelect();
         }
 
         function editRoom(id, buildingId, number, floor, benches, gender) {
@@ -8644,7 +8985,8 @@
             }
 
             renderBuildingRoomInventory();
-            generateSeatDistribution();
+            if (typeof updateRealtimeSeatCounter === 'function') updateRealtimeSeatCounter();
+            if (typeof populateDistRoomSelect === 'function') populateDistRoomSelect();
         }
 
         function renderBuildingRoomInventory() {
@@ -9615,6 +9957,7 @@
             const prevVal = selectEl.value;
             const buildings = loadBuildings();
             const excludedBuildings = getExcludedBuildings();
+            const rooms = loadRooms();
 
             // Populate hidden select
             let selectHtml = `<option value="All">সকল বিল্ডিং (All Buildings)</option>`;
@@ -9630,53 +9973,93 @@
                 selectEl.value = prevVal;
             }
 
-            // Render Large Icon Cards
+            // Render High-Fidelity Building Picker Cards
             const grid = document.getElementById('building-picker-grid');
             if (grid) {
-                const rooms = loadRooms();
                 let cardsHtml = '';
 
                 if (excludedBuildings.length > 0) {
                     cardsHtml += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; grid-column: 1 / -1; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; font-size: 0.82rem; color: #fca5a5;">
-                            <span>⚠️ ${excludedBuildings.length}টি বিল্ডিং বাদ দেওয়া আছে</span>
-                            <button onclick="resetExcludedBuildings()" style="background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 800; cursor: pointer;">🔄 সবগুলো সক্রিয় করুন</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center; grid-column: 1 / -1; background: #fee2e2; border: 1.5px solid #fca5a5; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 0.85rem; color: #991b1b; font-weight: 700;">
+                            <span>⚠️ <strong>${excludedBuildings.length}টি বিল্ডিং</strong> বর্তমানে বাদ দেওয়া আছে</span>
+                            <button type="button" onclick="resetExcludedBuildings()" style="background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; font-weight: 800; cursor: pointer;">🔄 সবগুলো সক্রিয় করুন</button>
                         </div>
                     `;
                 }
 
+                // Total stats for All Buildings card
+                const totalRoomsCount = rooms.length;
+                const totalBenchesCount = rooms.reduce((sum, r) => sum + (r.benches || 0), 0);
+                const totalSeatsCount = totalBenchesCount * 2;
+                const isAllSelected = (selectEl.value === 'All');
+
                 cardsHtml += `
-                    <div class="icon-card ${selectEl.value === 'All' ? 'selected' : ''}" onclick="selectBuildingCard('All')">
-                        <div class="card-icon">🏠</div>
-                        <div class="card-title">সকল বিল্ডিং</div>
-                        <div class="card-meta">All Buildings</div>
-                        <span class="card-badge all-tag">✓ সবগুলো</span>
+                    <div class="building-card-item ${isAllSelected ? 'selected' : ''}" onclick="selectBuildingCard('All')">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div class="b-card-title">
+                                    <span style="font-size: 1.3rem;">🏠</span>
+                                    <span>সকল বিল্ডিং (All Buildings)</span>
+                                </div>
+                                <div class="b-card-meta">সকল ভবনের রুম একসাথে পরীক্ষা ও আসন বণ্টনে ব্যবহৃত হবে</div>
+                            </div>
+                            <span class="pill-badge ${isAllSelected ? 'seats-badge' : 'neutral'}">
+                                ${isAllSelected ? '✓ নির্বাচিত' : 'ক্লিক করে নির্বাচন'}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
+                            <span class="pill-badge neutral">🏛️ ${buildings.length}টি ভবন</span>
+                            <span class="pill-badge neutral">🚪 ${totalRoomsCount}টি রুম</span>
+                            <span class="pill-badge seats-badge">🪑 ${totalSeatsCount}টি মোট সিট (${totalBenchesCount} বেঞ্চ)</span>
+                        </div>
                     </div>
                 `;
+
                 if (Array.isArray(buildings)) {
                     buildings.forEach(b => {
                         const isEx = excludedBuildings.includes(b.id);
+                        const isSelected = (selectEl.value === b.id);
                         const bRooms = rooms.filter(r => r.buildingId === b.id);
-                        const totalSeats = bRooms.reduce((sum, r) => sum + (r.benches * 2), 0);
+                        const bBenches = bRooms.reduce((sum, r) => sum + (r.benches || 0), 0);
+                        const totalSeats = bBenches * 2;
                         const boysRooms = bRooms.filter(r => r.gender === 'Male').length;
                         const girlsRooms = bRooms.filter(r => r.gender === 'Female').length;
-                        const bothRooms = bRooms.filter(r => r.gender === 'Both').length;
+                        const bothRooms = bRooms.filter(r => r.gender === 'Both' || r.gender === 'Co-ed').length;
 
                         cardsHtml += `
-                            <div class="icon-card ${isEx ? 'is-excluded' : ''} ${selectEl.value === b.id ? 'selected' : ''}" onclick="selectBuildingCard('${b.id}')">
-                                <div class="card-icon">🏢</div>
-                                <div class="card-title">${b.name}</div>
-                                <div class="card-meta">${b.floors} Floors • ${bRooms.length} Rooms</div>
-                                <div class="card-meta">${totalSeats} Seats Total</div>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 2px;">
-                                    ${boysRooms > 0 ? `<span class="card-badge boys">♂ ${boysRooms}</span>` : ''}
-                                    ${girlsRooms > 0 ? `<span class="card-badge girls">♀ ${girlsRooms}</span>` : ''}
-                                    ${bothRooms > 0 ? `<span class="card-badge both">⚥ ${bothRooms}</span>` : ''}
-                                    ${isEx ? `<span class="card-badge excluded">🚫 বাদ দেওয়া</span>` : `<span class="card-badge active-tag">✅ সক্রিয়</span>`}
+                            <div class="building-card-item ${isEx ? 'is-excluded' : ''} ${isSelected ? 'selected' : ''}" onclick="selectBuildingCard('${b.id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                    <div>
+                                        <div class="b-card-title">
+                                            <span style="font-size: 1.3rem;">🏢</span>
+                                            <span>${b.name}</span>
+                                        </div>
+                                        <div class="b-card-meta">
+                                            <span>📐 ${b.floors} তলা ভবন</span> • 
+                                            <span>🚪 ${bRooms.length}টি রুম</span> • 
+                                            <strong style="color: #065f46;">🪑 ${totalSeats} আসন (${bBenches} বেঞ্চ)</strong>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                        <span class="pill-badge ${isEx ? 'excluded-status' : 'active-status'}">
+                                            ${isEx ? '🚫 বাদ দেওয়া' : '✅ সক্রিয়'}
+                                        </span>
+                                        ${isSelected ? '<span class="pill-badge seats-badge">✓ নির্বাচিত ফিল্টার</span>' : ''}
+                                    </div>
                                 </div>
-                                <button type="button" class="card-action-toggle ${isEx ? 'restore' : 'omit'}" onclick="toggleExcludeBuilding(event, '${b.id}')">
-                                    ${isEx ? '➕ যুক্ত করুন' : '🚫 বাদ দিন'}
-                                </button>
+
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center;">
+                                    ${boysRooms > 0 ? `<span class="pill-badge boys">♂ ছাত্র রুম: ${boysRooms}টি</span>` : ''}
+                                    ${girlsRooms > 0 ? `<span class="pill-badge girls">♀ ছাত্রী রুম: ${girlsRooms}টি</span>` : ''}
+                                    ${bothRooms > 0 ? `<span class="pill-badge both">⚥ উভমুখী: ${bothRooms}টি</span>` : ''}
+                                    <div style="margin-left: auto;">
+                                        <button type="button" 
+                                            onclick="toggleExcludeBuilding(event, '${b.id}')"
+                                            style="padding: 4px 10px; font-size: 0.78rem; font-weight: 800; border-radius: 6px; border: none; cursor: pointer; color: #fff; background: ${isEx ? '#10b981' : '#ef4444'};">
+                                            ${isEx ? '➕ পুনরায় যুক্ত করুন' : '🚫 ভবনটি বাদ দিন'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         `;
                     });
@@ -9684,9 +10067,10 @@
                 grid.innerHTML = cardsHtml;
             }
 
-            // Update trigger label
+            // Update trigger label & sync room filter
             updateBuildingTriggerLabel();
             populateDistRoomFilterDropdown();
+            renderBuildingRoomOverviewCard();
         }
 
         function selectBuildingCard(val) {
@@ -9697,6 +10081,7 @@
             }
             toggleIconPicker('building'); // Close panel
             populateDistBuildingDropdown(); // Re-render to update selected state
+            renderBuildingRoomOverviewCard();
         }
 
         function updateBuildingTriggerLabel() {
@@ -9706,15 +10091,35 @@
 
             const excludedBuildings = getExcludedBuildings();
             const exCount = excludedBuildings.length;
-            const exSuffix = exCount > 0 ? ` (${exCount}টি বাদ)` : '';
+            const buildings = loadBuildings();
+            const rooms = loadRooms();
 
             if (selectEl.value === 'All') {
-                label.innerHTML = `🏠 সকল বিল্ডিং (All Buildings)${exSuffix}`;
+                const exBadge = exCount > 0 ? `<span style="font-size:0.75rem; background:#fee2e2; color:#b91c1c; padding:2px 7px; border-radius:8px; font-weight:800; border:1px solid #fecaca;">⚠️ ${exCount} বাদ</span>` : '';
+                label.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                        <span>🏠 সকল বিল্ডিং (All Buildings)</span>
+                        <span style="font-size:0.75rem; background:#e0f2fe; color:#0369a1; padding:2px 7px; border-radius:8px; font-weight:800; border:1px solid #bae6fd;">${buildings.length} ভবন</span>
+                        ${exBadge}
+                    </div>
+                `;
             } else {
-                const buildings = loadBuildings();
                 const b = buildings.find(x => x.id === selectEl.value);
                 const isEx = excludedBuildings.includes(selectEl.value);
-                label.innerHTML = b ? `🏢 ${b.name}${isEx ? ' [🚫 বাদ]' : ''}` : `🏢 Selected Building`;
+                const bRooms = rooms.filter(r => r.buildingId === selectEl.value);
+                const bSeats = bRooms.reduce((s, r) => s + (r.benches || 0) * 2, 0);
+
+                if (b) {
+                    label.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                            <span>🏢 ${b.name}</span>
+                            <span style="font-size:0.75rem; background:#e0f2fe; color:#0369a1; padding:2px 7px; border-radius:8px; font-weight:800; border:1px solid #bae6fd;">${bRooms.length} রুম • ${bSeats} সিট</span>
+                            ${isEx ? `<span style="font-size:0.75rem; background:#fee2e2; color:#b91c1c; padding:2px 7px; border-radius:8px; font-weight:800;">🚫 বাদ</span>` : ''}
+                        </div>
+                    `;
+                } else {
+                    label.innerHTML = `🏢 Selected Building`;
+                }
             }
         }
 
@@ -9745,61 +10150,163 @@
             });
             selectEl.innerHTML = selectHtml;
 
-            // Populate Checkbox List Container
+            // Group filtered rooms by Building for organized presentation
             if (container) {
                 let chkHtml = '';
                 let checkedCount = 0;
+                let activeSeatsCount = 0;
+                let activeBenchesCount = 0;
 
+                // Group by building
+                const roomsByBuilding = {};
                 filteredRooms.forEach(r => {
-                    const building = buildings.find(b => b.id === r.buildingId);
-                    const bName = building ? building.name : '';
-                    const genderClass = r.gender === 'Male' ? 'boys' : r.gender === 'Female' ? 'girls' : 'both';
-                    const genderLabel = r.gender === 'Male' ? '♂ Boys' : r.gender === 'Female' ? '♀ Girls' : '⚥ Co-ed';
-                    const isBldgEx = excludedBuildings.includes(r.buildingId);
-                    const isRoomEx = excludedRooms.includes(r.id);
-                    const isExcluded = isBldgEx || isRoomEx;
-                    const isChecked = !isExcluded;
-
-                    if (isChecked) checkedCount++;
-
-                    chkHtml += `
-                        <div class="room-chk-item ${!isChecked ? 'is-unchecked' : ''}" onclick="toggleRoomCheckboxItem(event, '${r.id}')">
-                            <input type="checkbox" id="chk-room-${r.id}" ${isChecked ? 'checked' : ''} onchange="onRoomCheckboxChange(event, '${r.id}')" onclick="event.stopPropagation()">
-                            <label for="chk-room-${r.id}">
-                                <span>Room <strong style="color:var(--neon-cyan);">${r.number}</strong> (${bName})</span>
-                                <span class="card-badge ${!isChecked ? 'excluded' : genderClass}" style="font-size:0.68rem; margin:0;">
-                                    ${!isChecked ? (isBldgEx ? '🚫 বিল্ডিং বাদ' : '🚫 রুম বাদ') : genderLabel} (${r.benches * 2} S)
-                                </span>
-                            </label>
-                        </div>
-                    `;
+                    const bId = r.buildingId || 'other';
+                    if (!roomsByBuilding[bId]) roomsByBuilding[bId] = [];
+                    roomsByBuilding[bId].push(r);
                 });
 
-                container.innerHTML = chkHtml || `<div style="color:var(--muted-text); font-size:0.85rem; padding:10px; text-align:center;">কোনো রুম পাওয়া যায়নি</div>`;
+                Object.keys(roomsByBuilding).forEach(bId => {
+                    const bObj = buildings.find(b => b.id === bId);
+                    const bName = bObj ? bObj.name : 'Other Building';
+                    const bRooms = roomsByBuilding[bId];
+                    const bTotalSeats = bRooms.reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
 
-                // Update Select All checkbox state
-                const allChk = document.getElementById('room-select-all-chk');
-                if (allChk) {
-                    allChk.checked = (filteredRooms.length > 0 && checkedCount === filteredRooms.length);
-                }
+                    chkHtml += `
+                        <div class="room-group-heading" data-building-group="${bId}">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span>🏢</span>
+                                <span>${bName}</span>
+                                <span style="font-size: 0.76rem; background: #e2e8f0; color: #334155; padding: 2px 7px; border-radius: 10px; font-weight: 700;">${bRooms.length}টি রুম • ${bTotalSeats} সিট</span>
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                                <button type="button" onclick="toggleBuildingRooms('${bId}', true)" style="background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;" title="এই ভবনের সকল রুম সক্রিয় করুন">✓ সব টিক</button>
+                                <button type="button" onclick="toggleBuildingRooms('${bId}', false)" style="background: #ef4444; color: #fff; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;" title="এই ভবনের সকল রুম বাদ দিন">✕ সব বাদ</button>
+                            </div>
+                        </div>
+                    `;
+
+                    bRooms.forEach(r => {
+                        const genderClass = r.gender === 'Male' ? 'boys' : r.gender === 'Female' ? 'girls' : 'both';
+                        const genderIcon = r.gender === 'Male' ? '🚹' : r.gender === 'Female' ? '🚺' : '🚻';
+                        const genderLabel = r.gender === 'Male' ? 'ছাত্র (Boys)' : r.gender === 'Female' ? 'ছাত্রী (Girls)' : 'উভয় (Co-ed)';
+                        const isBldgEx = excludedBuildings.includes(r.buildingId);
+                        const isRoomEx = excludedRooms.includes(r.id);
+                        const isExcluded = isBldgEx || isRoomEx;
+                        const isChecked = !isExcluded;
+
+                        if (isChecked) {
+                            checkedCount++;
+                            activeBenchesCount += (r.benches || 0);
+                            activeSeatsCount += (r.benches || 0) * 2;
+                        }
+
+                        chkHtml += `
+                            <div class="room-chk-row ${!isChecked ? 'is-excluded' : ''}" 
+                                data-room-id="${r.id}"
+                                data-search-text="${r.number} ${bName} ${r.floor || ''} ${genderLabel}"
+                                onclick="toggleRoomCheckboxItem(event, '${r.id}')">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="checkbox" id="chk-room-${r.id}" ${isChecked ? 'checked' : ''} 
+                                        onchange="onRoomCheckboxChange(event, '${r.id}')" 
+                                        onclick="event.stopPropagation()"
+                                        style="width: 18px; height: 18px; accent-color: #10b981; cursor: pointer;">
+                                    <label for="chk-room-${r.id}" style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                        <span style="font-size: 1.1rem;">${genderIcon}</span>
+                                        <div>
+                                            <span style="font-weight: 800; color: #0f172a; font-size: 0.95rem;">${r.number}</span>
+                                            <span style="font-size: 0.78rem; color: #64748b; margin-left: 4px;">(${r.floor || 'Floor'})</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <span class="pill-badge seats-badge" style="font-size: 0.75rem;">
+                                        🪑 ${r.benches * 2} সিট (${r.benches} বেঞ্চ)
+                                    </span>
+                                    <span class="pill-badge ${genderClass}" style="font-size: 0.75rem;">
+                                        ${genderLabel}
+                                    </span>
+                                    <span class="pill-badge ${!isChecked ? 'excluded-status' : 'active-status'}" style="font-size: 0.74rem;">
+                                        ${!isChecked ? (isBldgEx ? '🚫 ভবন বাদ' : '🚫 রুম বাদ') : '✅ সক্রিয়'}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+
+                container.innerHTML = chkHtml || `<div style="color: #64748b; font-size: 0.9rem; padding: 15px; text-align: center;">কোনো রুম পাওয়া যায়নি</div>`;
 
                 // Update count badge
                 const badge = document.getElementById('room-checked-count-badge');
                 if (badge) {
-                    badge.innerText = `${checkedCount}/${filteredRooms.length}টি রুম যুক্ত`;
+                    badge.innerHTML = `🟢 সক্রিয়: <strong>${checkedCount}/${filteredRooms.length}টি রুম</strong> (${activeSeatsCount} সিট)`;
                 }
 
                 // Update trigger label
                 const triggerLabel = document.getElementById('room-picker-label');
                 if (triggerLabel) {
-                    triggerLabel.innerHTML = `🚪 ${checkedCount}/${filteredRooms.length}টি রুম সক্রিয়`;
+                    triggerLabel.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                            <span>🚪 ${checkedCount}/${filteredRooms.length}টি রুম সক্রিয়</span>
+                            <span style="font-size:0.75rem; background:#dcfce7; color:#15803d; padding:2px 7px; border-radius:8px; font-weight:800; border:1px solid #bbf7d0;">${activeSeatsCount} সিট</span>
+                        </div>
+                    `;
                 }
             }
+
             updateRealtimeSeatCounter();
+            renderBuildingRoomOverviewCard();
+        }
+
+        function filterRoomListInPicker(query) {
+            const cleanQ = (query || '').trim().toLowerCase();
+            const rows = document.querySelectorAll('#room-checkbox-list-container .room-chk-row');
+            const headings = document.querySelectorAll('#room-checkbox-list-container .room-group-heading');
+
+            rows.forEach(r => {
+                const searchStr = (r.getAttribute('data-search-text') || '').toLowerCase();
+                if (!cleanQ || searchStr.includes(cleanQ)) {
+                    r.style.display = 'flex';
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+
+            // Show/hide building headings based on visible children
+            headings.forEach(h => {
+                const bId = h.getAttribute('data-building-group');
+                let hasVisible = false;
+                let sib = h.nextElementSibling;
+                while (sib && !sib.classList.contains('room-group-heading')) {
+                    if (sib.style.display !== 'none') {
+                        hasVisible = true;
+                        break;
+                    }
+                    sib = sib.nextElementSibling;
+                }
+                h.style.display = (!cleanQ || hasVisible) ? 'flex' : 'none';
+            });
+        }
+
+        function toggleBuildingRooms(buildingId, shouldInclude) {
+            const rooms = loadRooms();
+            const bRooms = rooms.filter(r => r.buildingId === buildingId);
+            let excluded = getExcludedRooms();
+
+            bRooms.forEach(r => {
+                if (shouldInclude) {
+                    excluded = excluded.filter(id => id !== r.id);
+                } else {
+                    if (!excluded.includes(r.id)) excluded.push(r.id);
+                }
+            });
+
+            setExcludedRooms(excluded);
+            populateDistRoomFilterDropdown();
         }
 
         function toggleRoomCheckboxItem(e, roomId) {
-            if (e.target.tagName !== 'INPUT') {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
                 const chk = document.getElementById(`chk-room-${roomId}`);
                 if (chk) {
                     chk.checked = !chk.checked;
@@ -9854,26 +10361,174 @@
                 selectEl.value = val;
             }
             toggleIconPicker('room'); // Close panel
-            populateDistRoomFilterDropdown(); // Re-render to update selected state
+            populateDistRoomFilterDropdown();
         }
 
         function updateRoomTriggerLabel() {
-            const selectEl = document.getElementById('dist-room-filter');
-            const label = document.getElementById('room-picker-label');
-            if (!selectEl || !label) return;
+            populateDistRoomFilterDropdown();
+        }
 
-            if (selectEl.value === 'All') {
-                label.innerHTML = `🚪 সকল রুম (All Rooms)`;
-            } else {
-                const rooms = loadRooms();
-                const r = rooms.find(x => x.id === selectEl.value);
-                if (r) {
-                    const gIcon = r.gender === 'Male' ? '🚹' : r.gender === 'Female' ? '🚺' : '🚻';
-                    label.innerHTML = `${gIcon} ${r.number} (${r.benches * 2} Seats)`;
-                } else {
-                    label.innerHTML = `🚪 Selected Room`;
+        /* ==========================================================================
+           DEDICATED BUILDING & ROOM OVERVIEW CARD GENERATOR (HIGH FIDELITY)
+           ========================================================================== */
+        function renderBuildingRoomOverviewCard() {
+            const cardEl = document.getElementById('dist-building-room-info-card');
+            if (!cardEl) return;
+
+            const selectedBuilding = document.getElementById('dist-building')?.value || 'All';
+            const buildings = loadBuildings();
+            const rooms = loadRooms();
+            const excludedBuildings = getExcludedBuildings();
+            const excludedRooms = getExcludedRooms();
+
+            let targetRooms = rooms;
+            let currentBldgName = "সকল বিল্ডিং (All Buildings)";
+            let currentBldgFloors = buildings.reduce((sum, b) => sum + (Number(b.floors) || 1), 0);
+
+            if (selectedBuilding !== 'All') {
+                const b = buildings.find(x => x.id === selectedBuilding);
+                if (b) {
+                    currentBldgName = b.name;
+                    currentBldgFloors = b.floors;
+                    targetRooms = rooms.filter(r => r.buildingId === b.id);
                 }
             }
+
+            const totalTargetRooms = targetRooms.length;
+            const activeRooms = targetRooms.filter(r => !excludedBuildings.includes(r.buildingId) && !excludedRooms.includes(r.id));
+            const activeRoomsCount = activeRooms.length;
+            const excludedRoomsCount = totalTargetRooms - activeRoomsCount;
+
+            const activeBenches = activeRooms.reduce((sum, r) => sum + (r.benches || 0), 0);
+            const activeSeats = activeBenches * 2;
+
+            const maleRooms = activeRooms.filter(r => r.gender === 'Male');
+            const maleSeats = maleRooms.reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
+
+            const femaleRooms = activeRooms.filter(r => r.gender === 'Female');
+            const femaleSeats = femaleRooms.reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
+
+            const bothRooms = activeRooms.filter(r => r.gender === 'Both' || r.gender === 'Co-ed');
+            const bothSeats = bothRooms.reduce((sum, r) => sum + (r.benches || 0) * 2, 0);
+
+            let html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 1.35rem;">🏢🚪</span>
+                        <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0284c7;">
+                            নির্বাচিত ভবন ও সক্রিয় রুমের বিস্তারিত তথ্য (Active Buildings & Rooms Overview):
+                        </h4>
+                        <span class="pill-badge seats-badge" style="font-size: 0.82rem; padding: 3px 10px;">
+                            🪑 মোট ${activeSeats}টি আসন সক্রিয় (${activeBenches}টি বেঞ্চ)
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" onclick="toggleIconPicker('building')" 
+                            style="background: #0284c7; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(2,132,199,0.2);">
+                            🏢 ভবন পরিবর্তন
+                        </button>
+                        <button type="button" onclick="toggleIconPicker('room')" 
+                            style="background: #10b981; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.82rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(16,185,129,0.2);">
+                            🚪 রুম টিক/বাদ নির্বাচন
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2-COLUMN STATS CARDS -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 14px;">
+                    <!-- LEFT: BUILDING SUMMARY -->
+                    <div class="ov-card-box">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase;">নির্বাচিত ভবন ফিল্টার</span>
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: 2px;">
+                                    ${selectedBuilding === 'All' ? '🏠 সকল বিল্ডিং (All Buildings)' : '🏢 ' + currentBldgName}
+                                </div>
+                            </div>
+                            <span class="pill-badge ${selectedBuilding === 'All' ? 'neutral' : 'seats-badge'}">
+                                ${selectedBuilding === 'All' ? buildings.length + 'টি ভবন অন্তর্ভুক্ত' : 'একক ভবন'}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 0.82rem;">
+                            <span class="pill-badge neutral">📐 ${currentBldgFloors}টি ফ্লোর/তলা</span>
+                            <span class="pill-badge neutral">🚪 মোট ${totalTargetRooms}টি রুম</span>
+                            ${excludedBuildings.length > 0 ? `<span class="pill-badge excluded-status">⚠️ ${excludedBuildings.length}টি ভবন বাদ</span>` : `<span class="pill-badge active-status">✅ সব ভবন সক্রিয়</span>`}
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: SEATS & GENDER CAPACITY -->
+                    <div class="ov-card-box">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase;">রুম ও আসন সক্ষমতা</span>
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: 2px;">
+                                    ${activeRoomsCount}টি রুম সক্রিয় (${excludedRoomsCount > 0 ? excludedRoomsCount + 'টি রুম বাদ' : 'সবগুলো অন্তর্ভুক্ত'})
+                                </div>
+                            </div>
+                            <span class="pill-badge seats-badge" style="font-size: 0.84rem;">
+                                ${activeSeats}টি সিট
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                            <span class="pill-badge boys">👦 ছাত্র আসন: ${maleSeats}টি (${maleRooms.length} রুম)</span>
+                            <span class="pill-badge girls">👧 ছাত্রী আসন: ${femaleSeats}টি (${femaleRooms.length} রুম)</span>
+                            <span class="pill-badge both">🚻 উভমুখী: ${bothSeats}টি (${bothRooms.length} রুম)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM: CLICKABLE INTERACTIVE ROOMS STRIP -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.84rem; font-weight: 800; color: #334155;">
+                            📋 অন্তর্ভুক্ত রুমসমূহ (ক্লিক করে যে কোনো রুম তাৎক্ষণিক সক্রিয় বা বাদ দিন):
+                        </span>
+                        <span style="font-size: 0.78rem; color: #64748b; font-weight: 600;">
+                            মোট ${targetRooms.length}টি রুমের তালিকা
+                        </span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 180px; overflow-y: auto; padding: 4px 2px;">
+            `;
+
+            targetRooms.forEach(r => {
+                const b = buildings.find(x => x.id === r.buildingId);
+                const bName = b ? b.name : '';
+                const isBldgEx = excludedBuildings.includes(r.buildingId);
+                const isRoomEx = excludedRooms.includes(r.id);
+                const isExcluded = isBldgEx || isRoomEx;
+                const gIcon = r.gender === 'Male' ? '🚹' : r.gender === 'Female' ? '🚺' : '🚻';
+                const gLabel = r.gender === 'Male' ? 'ছাত্র' : r.gender === 'Female' ? 'ছাত্রী' : 'উভয়';
+                const gClass = r.gender === 'Male' ? 'boys' : r.gender === 'Female' ? 'girls' : 'both';
+
+                if (!isExcluded) {
+                    html += `
+                        <div class="ov-room-badge" onclick="toggleExcludeRoom(event, '${r.id}')" title="ক্লিক করে রুম ${r.number} বাদ দিন">
+                            <span>${gIcon}</span>
+                            <strong style="color: #0f172a;">${r.number}</strong>
+                            <span style="color: #64748b; font-size: 0.76rem;">(${bName})</span>
+                            <span class="pill-badge seats-badge" style="font-size: 0.72rem; padding: 1px 5px;">${r.benches * 2} সিট</span>
+                            <span class="pill-badge ${gClass}" style="font-size: 0.72rem; padding: 1px 5px;">${gLabel}</span>
+                            <span style="color: #ef4444; font-weight: 800; margin-left: 2px;" title="বাদ দিন">✕</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="ov-room-badge is-excluded" onclick="toggleExcludeRoom(event, '${r.id}')" title="ক্লিক করে রুম ${r.number} সক্রিয় করুন">
+                            <span>🚫</span>
+                            <span style="color: #991b1b; text-decoration: line-through;"><strong>${r.number}</strong></span>
+                            <span style="color: #991b1b; font-size: 0.76rem;">(${bName})</span>
+                            <span class="pill-badge excluded-status" style="font-size: 0.7rem; padding: 1px 5px;">বাদ দেওয়া [➕ যুক্ত করুন]</span>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            cardEl.innerHTML = html;
         }
 
         function toggleIconPicker(type) {
@@ -10826,11 +11481,41 @@
             const examName = document.getElementById('dist-exam-name')?.value || 'All';
             const shift = document.getElementById('dist-shift')?.value || 'Morning Shift';
 
-            const compositeKey = getCompositeSeatPlanKey(dept, examName, shift);
             const store = safeJsonParse('school_seat_plans_store', {});
-            const savedData = store[compositeKey];
+            let matchingKey = null;
+            let savedData = null;
+
+            // 1. If activeSeatPlanKey matches current selection, use it
+            if (activeSeatPlanKey && store[activeSeatPlanKey]) {
+                const item = store[activeSeatPlanKey];
+                const matchDept = !dept || (item.dept || 'High Level') === dept;
+                const matchExam = !examName || examName === 'All' || (item.examName || 'All') === examName;
+                const matchShift = !shift || (item.shift || 'Morning Shift') === shift;
+                if (matchDept && matchExam && matchShift) {
+                    matchingKey = activeSeatPlanKey;
+                    savedData = item;
+                }
+            }
+
+            // 2. Otherwise search for matching entry in store (most recent first)
+            if (!savedData && store && typeof store === 'object') {
+                const entries = Object.entries(store);
+                entries.sort((a, b) => new Date(b[1]?.timestamp || 0) - new Date(a[1]?.timestamp || 0));
+                for (const [k, item] of entries) {
+                    if (!item) continue;
+                    const matchDept = !dept || (item.dept || 'High Level') === dept;
+                    const matchExam = !examName || examName === 'All' || (item.examName || 'All') === examName;
+                    const matchShift = !shift || (item.shift || 'Morning Shift') === shift;
+                    if (matchDept && matchExam && matchShift) {
+                        matchingKey = k;
+                        savedData = item;
+                        break;
+                    }
+                }
+            }
 
             if (savedData && savedData.allocations && typeof savedData.allocations === 'object' && Object.keys(savedData.allocations).length > 0) {
+                activeSeatPlanKey = matchingKey;
                 currentGeneratedAllocations = savedData.allocations;
                 localStorage.setItem('school_saved_seat_allocations', JSON.stringify(currentGeneratedAllocations));
                 clearSeatPlanDataCache('school_saved_seat_allocations');
@@ -10850,6 +11535,7 @@
                 renderSelectedRoomBenchLayout();
                 return true;
             } else {
+                activeSeatPlanKey = null;
                 // Clear current view if no seat plan exists for this combination
                 currentGeneratedAllocations = {};
                 localStorage.setItem('school_saved_seat_allocations', JSON.stringify({}));
@@ -10867,7 +11553,7 @@
                                 <strong>Department:</strong> <span style="color:var(--neon-cyan);">${dept}</span> &bull; 
                                 <strong>Exam:</strong> <span style="color:var(--neon-cyan);">${examName}</span> &bull; 
                                 <strong>Shift:</strong> <span style="color:var(--neon-pink);">${shift}</span><br>
-                                এই সিলেকশনের জন্য এখনো কোনো সিটপ্ল্যান সংরক্ষিত নেই। নতুন সিটপ্ল্যান জেনারেট করতে বাটনে ক্লিক করুন।
+                                এই সিলেকশনের জন্য এখনো কোনো সিটপ্ল্যান তৈরি বা সংরক্ষণ করা হয়নি। সিটপ্ল্যান তৈরি করতে নিচের বাটনে ক্লিক করুন।
                             </p>
                             <button onclick="generateSeatDistribution()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-weight: 800; font-size: 1.02rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
                                 ⚡ জেনারেট করুন (Generate Auto)
@@ -11454,9 +12140,10 @@
                     loadSavedSeatAllocations();
                 }
 
-                // Auto-generate allocations if still empty
+                // Check if allocations exist
                 if (!currentGeneratedAllocations || Object.keys(currentGeneratedAllocations).length === 0) {
-                    generateSeatDistribution();
+                    alert('⚠️ কোনো সিটপ্ল্যান সংরক্ষিত পাওয়া যায়নি। অনুগ্রহ করে প্রথমে "Generate Auto" বাটনে ক্লিক করে সিটপ্ল্যান তৈরি করুন।');
+                    return;
                 }
 
                 // Set default Dept & Shift dropdown values based on main controls
